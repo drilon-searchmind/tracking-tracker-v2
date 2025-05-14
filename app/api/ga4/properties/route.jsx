@@ -39,9 +39,9 @@ export async function GET() {
                     defaultUri: stream.webStreamData.defaultUri || null,
                     createTime: stream.createTime,
                 });
+           }
         }
     }
-}
 
-return NextResponse.json(flattened)
+    return NextResponse.json(flattened)
 }

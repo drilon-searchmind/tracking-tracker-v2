@@ -11,7 +11,7 @@ export async function GET() {
 
     const token = session.user.accessToken
 
-    // *** Fetch accounts → properties → streams
+    // *** Fetch accounts > properties > streams
     const accounts = await listAccounts(token)
     const flattened = []
 

@@ -1,27 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @plugin "daisyui";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+	--background: #ffffff;
+	--foreground: #171717;
+
+	--color-primary-searchmind: #C6ED62;
+	--color-primary-searchmind-hover: #A8D94B;
+	--color-secondary-searchmind: #1E2B2B;
+	--color-secondary-searchmind-hover: #1E2B2B;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--font-sans: var(--font-geist-sans);
+	--font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+	:root {
+		--background: #0a0a0a;
+		--foreground: #ededed;
+	}
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+	background: var(--background);
+	color: var(--foreground);
+	font-family: 'Inter', Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	line-height: 26px;
+	font-weight: 400;
+	color: rgb(117, 118, 147);
+}
+
+.shadow {
+	--tw-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px -1px rgba(0, 0, 0, .1);
+	--tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color)
+}
+
+.shadow,
+.shadow-md {
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.shadow-md {
+	--tw-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color)
+}
+
+.shadow-solid-10 {
+	--tw-shadow: 0px 8px 30px rgba(45, 74, 170, .06);
+	--tw-shadow-colored: 0px 8px 30px var(--tw-shadow-color)
+}
+
+.shadow-solid-10,
+.shadow-solid-11 {
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.shadow-solid-11 {
+	--tw-shadow: 0px 6px 20px rgba(45, 74, 170, .05);
+	--tw-shadow-colored: 0px 6px 20px var(--tw-shadow-color)
+}
+
+.shadow-solid-12 {
+	--tw-shadow: 0px 2px 10px rgba(0, 0, 0, .05);
+	--tw-shadow-colored: 0px 2px 10px var(--tw-shadow-color)
+}
+
+.shadow-solid-12,
+.shadow-solid-13 {
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.shadow-solid-13 {
+	--tw-shadow: 0px 2px 19px rgba(0, 0, 0, .05);
+	--tw-shadow-colored: 0px 2px 19px var(--tw-shadow-color)
+}
+
+.shadow-solid-3 {
+	--tw-shadow: 0px 6px 90px rgba(8, 14, 40, .04);
+	--tw-shadow-colored: 0px 6px 90px var(--tw-shadow-color)
+}
+
+.shadow-solid-3,
+.shadow-solid-4 {
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.shadow-solid-4 {
+	--tw-shadow: 0px 6px 90px rgba(8, 14, 40, .1);
+	--tw-shadow-colored: 0px 6px 90px var(--tw-shadow-color)
+}
+
+.shadow-solid-5 {
+	--tw-shadow: 0px 8px 24px rgba(45, 74, 170, .08);
+	--tw-shadow-colored: 0px 8px 24px var(--tw-shadow-color)
+}
+
+.shadow-solid-5,
+.shadow-solid-7 {
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.shadow-solid-7 {
+	--tw-shadow: 0px 30px 50px rgba(45, 74, 170, .1);
+	--tw-shadow-colored: 0px 30px 50px var(--tw-shadow-color)
+}
+
+.shadow-solid-8 {
+	--tw-shadow: 0px 12px 120px rgba(45, 74, 170, .06);
+	--tw-shadow-colored: 0px 12px 120px var(--tw-shadow-color)
+}
+
+.shadow-solid-8,
+.shadow-solid-9 {
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.shadow-solid-9 {
+	--tw-shadow: 0px 12px 30px rgba(45, 74, 170, .06);
+	--tw-shadow-colored: 0px 12px 30px var(--tw-shadow-color)
+}
+
+.shadow-solid-l {
+	--tw-shadow: 0px 10px 120px 0px rgba(45, 74, 170, .1);
+	--tw-shadow-colored: 0px 10px 120px 0px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
 }

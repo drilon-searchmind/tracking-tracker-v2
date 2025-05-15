@@ -131,3 +131,15 @@ body {
 	--tw-shadow-colored: 0px 10px 120px 0px var(--tw-shadow-color);
 	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
 }
+
+.bg-titlebg:before {
+	content: "";
+	height: 25%;
+	background-color: var(--color-primary-searchmind);
+	position: absolute;
+	width: 102%;
+	bottom: 10px;
+	left: -1%;
+	z-index: -1;
+	opacity: 0.5;
+}

@@ -1,6 +1,6 @@
 export default function HomePage() {
     return (
-        <section id="pageHomePage" className="py-20">
+        <section id="pageHomePage" className="py-40">
             <div className="grid grid-cols-12 gap-10 items-center">
                 <span className="col-span-5">
                     <h4 class="mb-4.5 text-lg font-medium text-black dark:text-white">Searchmind Hub - Home</h4>

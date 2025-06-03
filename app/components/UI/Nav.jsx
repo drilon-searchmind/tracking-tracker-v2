@@ -31,8 +31,8 @@ export default function Nav() {
                         <>
                             <a href="/home" className="hover:text-black">Home</a>
                             <a href="/dashboard" className="hover:text-black">Performance Dashboard</a>
-                            <a href="/ga4-properties" className="hover:text-black">Tracking Tracker</a>
-                            <a href="#" className="hover:text-black">Clients</a>
+                            <a href="#" className="hover:text-black line-through">Tracking Tracker</a>
+                            <a href="#" className="hover:text-black line-through">Clients</a>
                             <button className="bg-[var(--color-primary-searchmind)] py-3 px-8 rounded-full text-black hover:cursor" onClick={() => signOut()}>
                                 Sign Out
                             </button>

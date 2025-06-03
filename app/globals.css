@@ -134,12 +134,12 @@ body {
 
 .bg-titlebg:before {
 	content: "";
-	height: 25%;
+	height: 60%;
 	background-color: var(--color-primary-searchmind);
 	position: absolute;
-	width: 102%;
-	bottom: 10px;
+	width: 101%;
+	bottom: 5px;
 	left: -1%;
-	z-index: -1;
-	opacity: 0.5;
+	z-index: -1000;
+	opacity: 1;
 }

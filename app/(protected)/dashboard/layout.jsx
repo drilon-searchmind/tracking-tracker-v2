@@ -50,6 +50,7 @@ export default function DashboardLayout({ children }) {
                         <ul className="absolute left-0 mt-2 w-52 bg-white border border-gray-200 rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 origin-top z-20">
                             {[
                                 { slug: "pnl", label: "P&L" },
+                                { slug: "pace-report", label: "Pace Report" },
                                 { slug: "kampagneplan", label: "Kampagneplan" },
                                 { slug: "aarshjul", label: "Årshjul" },
                                 { slug: "spendshare", label: "Spendshare" },

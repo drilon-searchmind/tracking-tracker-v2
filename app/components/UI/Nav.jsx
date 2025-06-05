@@ -21,7 +21,7 @@ export default function Nav() {
                         className="w-full max-w-[50px] object-contain"
                     />
                     <a href="/" className="">
-                        <span className="text-lg">Searchmind Hub</span>
+                        <span className="text-lg">Searchmind Core</span>
                         {session ? (
                             <p className="m-0 text-xs">{session.user.email}</p>
                         ) : null}
@@ -37,7 +37,7 @@ export default function Nav() {
                             </button>
                             <a href="#" className="hover:text-black line-through">Tracking Tracker</a>
                             <a href="#" className="hover:text-black line-through">Clients</a>
-                            <button className="bg-[var(--color-primary-searchmind)] py-3 px-8 rounded-full text-black hover:cursor" onClick={() => signOut()}>
+                            <button className="border border-[var(--color-primary-searchmind)] bg-white py-3 px-8 rounded-full text-zinc-800 hover:cursor hover:bg-[var(--color-primary-searchmind)] hover:cursor-pointer transition-all duration-150" onClick={() => signOut()}>
                                 Sign Out
                             </button>
                         </>

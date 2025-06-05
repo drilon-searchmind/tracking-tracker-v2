@@ -2,10 +2,12 @@
 
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import CustomerModal from "@/app/components/Dashboard/CustomerModal.jsx";
 
 export default function Nav() {
     const { data: session } = useSession()
+    const [showModal, setShowModal] = useState(false);
 
     return (
         <section id="componentNav">
@@ -30,7 +32,9 @@ export default function Nav() {
                     {session ? (
                         <>
                             <a href="/home" className="hover:text-black">Home</a>
-                            <a href="/dashboard" className="hover:text-black">Performance Dashboard</a>
+                            <button onClick={() => setShowModal(true)} className="hover:text-black">
+                                Performance Dashboard
+                            </button>
                             <a href="#" className="hover:text-black line-through">Tracking Tracker</a>
                             <a href="#" className="hover:text-black line-through">Clients</a>
                             <button className="bg-[var(--color-primary-searchmind)] py-3 px-8 rounded-full text-black hover:cursor" onClick={() => signOut()}>
@@ -44,6 +48,8 @@ export default function Nav() {
                     )}
                 </div>
             </nav>
+
+            {showModal && <CustomerModal closeModal={() => setShowModal(false)} />}
         </section>
     )
 }

@@ -134,7 +134,7 @@ body {
 
 .bg-titlebg:before {
 	content: "";
-	height: 60%;
+	height: 20%;
 	background-color: var(--color-primary-searchmind);
 	position: absolute;
 	width: 101%;

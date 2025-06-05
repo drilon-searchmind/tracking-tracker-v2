@@ -4,6 +4,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import CustomerModal from "@/app/components/Dashboard/CustomerModal.jsx";
+import { FaMoon } from "react-icons/fa";
 
 export default function Nav() {
     const { data: session } = useSession()
@@ -37,6 +38,7 @@ export default function Nav() {
                             </button>
                             <a href="#" className="hover:text-black line-through">Tracking Tracker</a>
                             <a href="#" className="hover:text-black line-through">Clients</a>
+                            <div className=""><FaMoon /></div>
                             <button className="border border-[var(--color-primary-searchmind)] bg-white py-3 px-8 rounded-full text-zinc-800 hover:cursor hover:bg-[var(--color-primary-searchmind)] hover:cursor-pointer transition-all duration-150" onClick={() => signOut()}>
                                 Sign Out
                             </button>

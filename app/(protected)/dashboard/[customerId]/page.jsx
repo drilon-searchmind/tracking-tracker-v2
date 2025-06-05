@@ -95,7 +95,7 @@ export default function CustomerDashboard({ params }) {
                     <DashboardTable />
                 </div>
 
-                <span className="col-span-6 shadow-solid-l bg-white rounded-lg px-20 py-20 border border-zinc-200 grid grid-cols-12 gap-6">
+                <span className="col-span-6 shadow-solid-l bg-white rounded-lg px-20 py-20 border border-zinc-200 grid grid-cols-12 gap-20">
                     <div className="col-span-6 border border-zinc-200 w-full pt-40 text-center flex justify-center pb-40 rounded-md">
                         <FaPlay className="text-zinc-400 text-6xl" />
                     </div>

@@ -112,13 +112,13 @@ export default function PerformanceDashboard({ params }) {
             </div>
 
             <section>
-                <div className="mt-16 space-y-4 px-20 mx-auto z-10 relative">
+                <div className="mt-16 space-y-4 px-20 mx-auto z-10 relative ">
                     <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Service Dashboards</h3>
 
                     {["SEO", "PPC", "EM", "PS"].map((title, index) => (
                         <div
                             key={index}
-                            className="flex items-center justify-between bg-zinc-50 rounded-md px-6 py-4 border border-zinc-200"
+                            className="flex items-center justify-between bg-zinc-50 rounded-md px-6 py-4 border border-zinc-200 shadow-solid-l"
                         >
                             <div>
                                 <h4 className="text-lg font-semibold text-gray-900">{title}</h4>

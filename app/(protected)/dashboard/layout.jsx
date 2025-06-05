@@ -8,8 +8,8 @@ export default function DashboardLayout({ children }) {
     const customerId = segments[0] || null;
 
     return (
-        <section id="DashboardLayout" className="">
-            <nav className="flex justify-between items-center pt-6 pb-3 border-t border-gray-200 mb-5 bg-white">
+        <section id="DashboardLayout" className="relative">
+            <nav className="flex justify-between items-center pt-6 pb-3 border-t border-gray-200 mb-5 bg-white sticky top-0 z-100">
                 <ul className="flex gap-5">
                     <li><a href={`/dashboard/${customerId}`} className="hover:text-blue-500 text-sm">Overview</a></li>
                     <li><a href={`/dashboard/${customerId}/performance-dashboard`} className="hover:text-blue-500 text-sm">Performance Dashboard </a></li>

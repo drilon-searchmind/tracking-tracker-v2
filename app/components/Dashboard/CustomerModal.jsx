@@ -26,7 +26,7 @@ export default function CustomerModal({ closeModal }) {
     }
 
     return (
-        <div className="fixed inset-0 bg-[#000000c9] flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[#000000c9] flex items-center justify-center z-100">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md relative">
                 <span className="flex justify-between mb-5">
                     <h4 className="text-xl font-semibold">Select a Customer</h4>

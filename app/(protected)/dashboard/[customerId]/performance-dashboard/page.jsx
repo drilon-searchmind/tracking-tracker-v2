@@ -32,7 +32,6 @@ export default function PerformanceDashboard({ params }) {
 
     return (
         <div className="py-20 px-0 relative overflow">
-            {/* Background */}
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -44,9 +43,7 @@ export default function PerformanceDashboard({ params }) {
                 />
             </div>
 
-            {/* Page Content */}
             <div className="px-20 mx-auto z-10 relative">
-                {/* Header */}
                 <div className="mb-8">
                     <h2 className="text-blue-900 font-semibold text-sm uppercase">PomPdeLux DK</h2>
                     <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Performance Dashboard</h1>
@@ -55,7 +52,6 @@ export default function PerformanceDashboard({ params }) {
                     </p>
                 </div>
 
-                {/* Metrics Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
                     {metrics.map((metric, i) => (
                         <div
@@ -76,12 +72,10 @@ export default function PerformanceDashboard({ params }) {
                     ))}
                 </div>
 
-                {/* Charts */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
                         <p className="font-semibold mb-4">Revenue</p>
                         <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            {/* Placeholder for chart */}
                             <FaChartLine className="text-4xl" />
                         </div>
                     </div>

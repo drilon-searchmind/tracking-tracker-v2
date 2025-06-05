@@ -100,7 +100,7 @@ export default function CustomerDashboard({ params }) {
                         <FaPlay className="text-zinc-400 text-6xl" />
                     </div>
                     <div className="col-span-6">
-                        <h3 class="text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5">Get Started</h3>
+                        <h3 className="text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5">Get Started</h3>
                         <div className="">
                             <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore cupiditate perspiciatis.</p>
                         </div>

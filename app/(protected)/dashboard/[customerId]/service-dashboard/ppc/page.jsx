@@ -18,7 +18,6 @@ export default function GoogleAdsDashboard({ params }) {
 
     return (
         <div className="py-20 px-0 relative overflow">
-            {/* Background */}
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -60,7 +59,6 @@ export default function GoogleAdsDashboard({ params }) {
                     />
                 </div>
 
-                {/* Metrics Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
                     {[
                         { label: "Conv. Value", value: "2.560.721", delta: "-32,27%", positive: false },
@@ -82,7 +80,7 @@ export default function GoogleAdsDashboard({ params }) {
                     ))}
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded p-6">
+                <div className="bg-white border border-zinc-200 rounded p-6 shadow-solid-l">
                     <div className="flex justify-between items-center mb-2">
                         <p className="font-semibold">{selectedMetric}</p>
                         <select

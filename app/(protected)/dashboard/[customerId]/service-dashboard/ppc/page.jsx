@@ -99,6 +99,44 @@ export default function GoogleAdsDashboard({ params }) {
                         [Line Chart Placeholder]
                     </div>
                 </div>
+
+                <div className="mt-12">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+                        {[
+                            { label: "Impressions", value: "13.637.169", delta: "+104,93%", positive: true },
+                            { label: "Clicks", value: "215.800", delta: "+48,98%", positive: true },
+                            { label: "CTR", value: "1,58%", delta: "-27,3%", positive: false },
+                            { label: "CPC", value: "3,28", delta: "+43,1%", positive: true },
+                            { label: "Conv. Rate", value: "3,52%", delta: "-25,02%", positive: false },
+                        ].map((item, i) => (
+                            <div key={i} className="bg-white border border-zinc-200 rounded p-4">
+                                <p className="text-sm text-gray-500">{item.label}</p>
+                                <p className="text-2xl font-bold text-zinc-800">{item.value}</p>
+                                <p
+                                    className={`text-sm font-medium ${item.positive ? "text-green-600" : "text-red-500"
+                                        }`}
+                                >
+                                    {item.delta}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="bg-white border border-zinc-200 rounded p-6">
+                        <div className="flex justify-between items-center mb-2">
+                            <p className="font-semibold">CPC</p>
+                            <select className="border px-3 py-1 rounded text-sm" defaultValue="CPC">
+                                <option>CPC</option>
+                                <option>CTR</option>
+                                <option>Conv. Rate</option>
+                            </select>
+                        </div>
+                        <div className="h-64 flex items-center justify-center text-zinc-300">
+                            [Line Chart Placeholder]
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     );

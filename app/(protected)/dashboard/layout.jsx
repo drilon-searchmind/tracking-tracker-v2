@@ -3,10 +3,14 @@
 import { useSelectedLayoutSegments } from "next/navigation";
 import { PiCaretDownThin } from "react-icons/pi";
 import { CiShare2, CiUser } from "react-icons/ci";
+import ShareCustomerModal from "@/app/components/Dashboard/ShareCustomerModal";
+import { useState } from "react";
 
 export default function DashboardLayout({ children }) {
     const segments = useSelectedLayoutSegments()
     const customerId = segments[0] || null;
+    const [showModalShare, setShowModalShare] = useState(false);
+    
 
     return (
         <section id="DashboardLayout" className="relative">
@@ -80,12 +84,14 @@ export default function DashboardLayout({ children }) {
                     <div className="text-center text-xs border border-zinc-200 rounded-full px-4 py-2 bg-zinc-50 text-zinc-700 flex items-center gap-2">
                         POMPDELUX DK <CiUser />
                     </div>
-                    <button className="text-center text-xs bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 flex items-center gap-2 hover:cursor-pointer">
+                    <button onClick={() => setShowModalShare(true)} className="text-center text-xs bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 flex items-center gap-2 hover:cursor-pointer">
                         Share Report <CiShare2 />
                     </button>
                 </span>
             </nav>
             {children}
+
+            {showModalShare && <ShareCustomerModal closeModal={()=> setShowModalShare(false)} />}
         </section>
     )
 }

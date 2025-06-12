@@ -22,8 +22,10 @@ export default function ShareCustomerModal({ closeModal }) {
                     placeholder="Insert email address"
                     value={customers}
                     onChange={(e) => setCustomers(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded mb-4"
+                    className="w-full px-4 py-2 border border-gray-300 rounded mb-2"
                 />
+                <p className="text-xs mb-5">Notice: Email will be sent a login that they can use to view the customer's performance dashboard.</p>
+                <button className="hover:cursor-pointer bg-[var(--color-primary-searchmind)] py-3 px-8 rounded-full text-black w-full">Share Customer Report</button>
             </div>
         </div>
     );

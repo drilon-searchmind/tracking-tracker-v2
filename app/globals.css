@@ -132,6 +132,12 @@ body {
 	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
 }
 
+.shadow-solid-l-searchmind {
+	--tw-shadow: 50px 40px 120px 0px rgba(198, 237, 98, .25);
+	--tw-shadow-colored: 0px 10px 120px 0px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
 .bg-titlebg:before {
 	content: "";
 	height: 20%;

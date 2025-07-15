@@ -15,7 +15,7 @@ export default async function TestPage({ params }) {
 
         return (
             <div>
-                <h1>Analytics for {customerId} (campaign) </h1>
+                <h1>Analytics for {customerId} (ads-insights) </h1>
                 <pre>{JSON.stringify(data, null, 2)}</pre>
             </div>
         );

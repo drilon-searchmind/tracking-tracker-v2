@@ -22,7 +22,7 @@ export default function Nav() {
                         className="w-full max-w-[50px] object-contain"
                     />
                     <a href="/" className="">
-                        <span className="text-lg">Searchmind Core</span>
+                        <span className="text-lg">Searchmind Apex</span>
                         {session ? (
                             <p className="m-0 text-xs">{session.user.email}</p>
                         ) : null}

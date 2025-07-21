@@ -12,7 +12,10 @@ import { FaMoneyCheckAlt, FaChartLine } from "react-icons/fa";
 
 export default function PerformanceDashboard({ params }) {
     const [customerId, setCustomerId] = useState(null);
-
+    const [comparison, setComparison] = useState("Previous Year");
+    const [dateStart, setDateStart] = useState("2025-01-01");
+    const [dateEnd, setDateEnd] = useState("2025-04-15");
+    
     useEffect(() => {
         if (params?.customerId) {
             setCustomerId(params.customerId);
@@ -45,11 +48,35 @@ export default function PerformanceDashboard({ params }) {
 
             <div className="px-20 mx-auto z-10 relative">
                 <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">PomPdeLux DK</h2>
+                    <h2 className="text-blue-900 font-semibold text-sm uppercase">Humdakin DK</h2>
                     <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Performance Dashboard</h1>
                     <p className="text-gray-600 max-w-2xl">
                         Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros scelerisque sed. Commodo in viv...
                     </p>
+                </div>
+
+                <div className="flex flex-wrap gap-4 items-center mb-10 justify-end">
+                    <select
+                        value={comparison}
+                        onChange={(e) => setComparison(e.target.value)}
+                        className="border px-4 py-2 rounded text-sm bg-white"
+                    >
+                        <option>Previous Year</option>
+                        <option>Previous Period</option>
+                    </select>
+                    <input
+                        type="date"
+                        value={dateStart}
+                        onChange={(e) => setDateStart(e.target.value)}
+                        className="border px-2 py-2 rounded text-sm"
+                    />
+                    <span className="text-gray-400">→</span>
+                    <input
+                        type="date"
+                        value={dateEnd}
+                        onChange={(e) => setDateEnd(e.target.value)}
+                        className="border px-2 py-2 rounded text-sm"
+                    />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">

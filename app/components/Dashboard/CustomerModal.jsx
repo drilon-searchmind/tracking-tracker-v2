@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { IoMdClose } from "react-icons/io";
 
 const mockCustomers = [
-    { id: "customer-1", name: "Pompdelux DK" },
-    { id: "customer-2", name: "Pompdeulx DE" },
-    { id: "customer-3", name: "Soylent Ltd." },
-    { id: "customer-4", name: "Initech" },
-    { id: "customer-5", name: "Umbrella Corp." }
+    { id: "customer-1", name: "Humdakin DK" },
+    // { id: "customer-2", name: "Pompdeulx DE" },
+    // { id: "customer-3", name: "Soylent Ltd." },
+    // { id: "customer-4", name: "Initech" },
+    // { id: "customer-5", name: "Umbrella Corp." }
 ];
 
 export default function CustomerModal({ closeModal }) {

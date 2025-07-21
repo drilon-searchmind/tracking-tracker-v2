@@ -37,7 +37,7 @@ export default function ConfigPage({ params }) {
             <div className="px-20 mx-auto z-10 relative">
                 {/* Header */}
                 <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">PomPdeLux DK</h2>
+                    <h2 className="text-blue-900 font-semibold text-sm uppercase">Humdakin DK</h2>
                     <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px]">Config</h1>
                     <p className="text-gray-600 max-w-2xl">
                         Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros

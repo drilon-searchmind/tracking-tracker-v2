@@ -32,7 +32,7 @@ export default function SEOReportPage({ params }) {
 
             <div className="px-20 mx-auto z-10 relative">
                 <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">PomPdeLux DK</h2>
+                    <h2 className="text-blue-900 font-semibold text-sm uppercase">Humdakin DK</h2>
                     <h1 className="mb-5 text-3xl font-bold text-black xl:text-[44px]">SEO Dashboard</h1>
                     <p className="text-gray-600 max-w-2xl">
                         Overview of clicks, impressions, CTR and position based on Google Search Console data.

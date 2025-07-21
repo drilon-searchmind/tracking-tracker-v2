@@ -46,13 +46,10 @@ export default function PerformanceDashboard({ customerId, initialData }) {
     const [dateEnd, setDateEnd] = useState("2025-04-15");
     const [isLoading, setIsLoading] = useState(!initialData);
 
-    // Ensure initialData is valid
     const data = Array.isArray(initialData) ? initialData : [];
 
-    // Use all data (no filtering)
     const filteredData = data;
 
-    // Calculate comparison period (use all data for now)
     const getComparisonDates = () => {
         const end = new Date(dateEnd);
         const start = new Date(dateStart);
@@ -72,12 +69,9 @@ export default function PerformanceDashboard({ customerId, initialData }) {
     };
 
     const { compStart, compEnd } = getComparisonDates();
-    // Use all data for comparison (no date filtering)
     const comparisonData = data;
 
-    // Aggregate metrics for current and comparison periods
     const aggregateMetrics = (data) => {
-        // Aggregate sessions by channel group
         const channelSessions = {};
         data.forEach((row) => {
             if (row.channel_sessions) {
@@ -107,7 +101,6 @@ export default function PerformanceDashboard({ customerId, initialData }) {
     const currentMetrics = aggregateMetrics(filteredData);
     const prevMetrics = aggregateMetrics(comparisonData);
 
-    // Calculate deltas
     const calculateDelta = (current, prev) => {
         if (!prev || prev === 0) return null;
         const delta = ((current - prev) / prev * 100).toFixed(1);
@@ -182,13 +175,18 @@ export default function PerformanceDashboard({ customerId, initialData }) {
         hue4: "#9BABE1",
     };
 
-    // Chart data for Revenue and AOV
+    // Filter data for charts to exclude zero or invalid values
+    const validChartData = filteredData.filter(
+        (row) => row.date && !isNaN(new Date(row.date).getTime()) && row.revenue !== 0 && row.aov !== 0
+    );
+
+    // Chart data for Revenue
     const revenueChartData = {
-        labels: filteredData.map((row) => row.date),
+        labels: validChartData.map((row) => row.date),
         datasets: [
             {
                 label: "Revenue",
-                data: filteredData.map((row) => row.revenue || 0),
+                data: validChartData.map((row) => row.revenue || 0),
                 borderColor: colors.primary,
                 backgroundColor: colors.primary,
                 borderWidth: 1,
@@ -200,11 +198,11 @@ export default function PerformanceDashboard({ customerId, initialData }) {
     };
 
     const aovChartData = {
-        labels: filteredData.map((row) => row.date),
+        labels: validChartData.map((row) => row.date),
         datasets: [
             {
                 label: "AOV",
-                data: filteredData.map((row) => row.aov || 0),
+                data: validChartData.map((row) => row.aov || 0),
                 borderColor: colors.primary,
                 backgroundColor: colors.primary,
                 borderWidth: 1,
@@ -215,7 +213,6 @@ export default function PerformanceDashboard({ customerId, initialData }) {
         ],
     };
 
-    // Pie chart data for Spend Allocation
     const spendAllocationChartData = {
         labels: ["Google Ads", "Meta"],
         datasets: [
@@ -229,7 +226,6 @@ export default function PerformanceDashboard({ customerId, initialData }) {
         ],
     };
 
-    // Bar chart data for Sessions Per Channel Group
     const sessionsChartData = {
         labels: Object.keys(currentMetrics.channel_sessions || {}),
         datasets: [
@@ -418,10 +414,17 @@ export default function PerformanceDashboard({ customerId, initialData }) {
                         >
                             <div className="flex items-center gap-2">
                                 {metric.icon}
-                                <p className="text-xs text-gray-500 uppercase">{metric.title}</p>
+                                <p className="text-xs text-gray-500 uppercase">
+                                    {metric.title}
+                                    
+                                    {metric.title === "Gross Profit" && (
+                                        <span className="text-xs text-red-500 ml-1 font-bold">(TBU)</span>
+                                    )}
+                                          
+                                </p>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-2xl font-semibold text-black">{metric.value}</span>
+                                <span className={`text-2xl font-semibold ${metric.title === "Gross Profit" ? "text-red-500 line-through" : "text-black"}`}>{metric.value}</span>
                                 {metric.delta && (
                                     <span
                                         className={`text-sm font-medium ${metric.positive ? "text-green-600" : "text-red-500"}`}

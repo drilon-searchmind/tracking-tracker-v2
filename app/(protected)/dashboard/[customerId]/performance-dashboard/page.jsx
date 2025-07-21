@@ -1,158 +1,113 @@
-"use client";
+import React from "react";
+import PerformanceDashboard from "./performance-dashboard";
+import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import {
-    HiOutlineCurrencyDollar,
-    HiOutlineChartBar,
-    HiOutlineShoppingCart,
-    HiOutlineArrowTrendingUp,
-} from "react-icons/hi2";
-import { FaMoneyCheckAlt, FaChartLine } from "react-icons/fa";
+export const revalidate = 3600; // ISR: Revalidate every hour
 
-export default function PerformanceDashboard({ params }) {
-    const [customerId, setCustomerId] = useState(null);
-    const [comparison, setComparison] = useState("Previous Year");
-    const [dateStart, setDateStart] = useState("2025-01-01");
-    const [dateEnd, setDateEnd] = useState("2025-04-15");
-    
-    useEffect(() => {
-        if (params?.customerId) {
-            setCustomerId(params.customerId);
-        }
-    }, [params]);
+export default async function DashboardPage({ params }) {
+  const customerId = "airbyte_humdakin_dk";
+  const projectId = `performance-dashboard-airbyte`;
 
-    const metrics = [
-        { title: "Revenue", value: "250+", delta: "+12%", positive: true },
-        { title: "Gross Profit", value: "600+", delta: "+10%", positive: true },
-        { title: "Orders", value: "1.8K+", delta: "+12%", positive: true },
-        { title: "Cost", value: "11K+", delta: "-2%", positive: false },
-        { title: "ROAS (incl. moms)", value: "250+", delta: "+13%", positive: true },
-        { title: "POAS", value: "600+", delta: "+13%", positive: true },
-        { title: "CAC", value: "1.8K+", delta: "+12%", positive: true },
-        { title: "AOV", value: "11K+", delta: "-2%", positive: false },
-    ];
+  try {
+    const dashboardQuery = `
+      WITH orders_data AS (
+        SELECT
+          CAST(DATE(updated_at) AS STRING) as date,
+          CAST(SUM(current_total_price) AS FLOAT64) as revenue,
+          CAST(SUM(current_subtotal_price - total_discounts) AS FLOAT64) as gross_profit,
+          COUNT(id) as order_count,
+          COUNT(id) as unique_customers
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.orders\`
+        WHERE DATE(updated_at) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()
+        GROUP BY date
+      ),
+      ads_data AS (
+        SELECT
+          CAST(segments_date AS STRING) as date,
+          CAST(SUM(metrics_cost_micros) / 1000000 AS FLOAT64) as google_ads_cost,
+          SUM(metrics_impressions) as google_ads_impressions
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+        WHERE segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()
+        GROUP BY date
+      ),
+      meta_data AS (
+        SELECT
+          CAST(date_start AS STRING) as date,
+          CAST(SUM(spend) AS FLOAT64) as meta_spend,
+          SUM(impressions) as meta_impressions
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.ads_insights\`
+        WHERE date_start BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()
+        GROUP BY date
+      ),
+      combined_data AS (
+        SELECT
+          COALESCE(o.date, a.date, m.date) as date,
+          o.revenue,
+          o.gross_profit,
+          o.order_count,
+          COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0) as total_cost,
+          CASE
+            WHEN (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0)) > 0
+            THEN o.revenue / (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0))
+            ELSE 0
+          END as roas,
+          CASE
+            WHEN (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0)) > 0
+            THEN o.gross_profit / (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0))
+            ELSE 0
+          END as poas,
+          CASE
+            WHEN o.unique_customers > 0
+            THEN (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0)) / o.unique_customers
+            ELSE 0
+          END as cac,
+          CASE
+            WHEN o.order_count > 0
+            THEN o.revenue / o.order_count
+            ELSE 0
+          END as aov,
+          COALESCE(a.google_ads_impressions, 0) + COALESCE(m.meta_impressions, 0) as total_impressions
+        FROM orders_data o
+        FULL OUTER JOIN ads_data a ON o.date = a.date
+        FULL OUTER JOIN meta_data m ON o.date = m.date
+        WHERE COALESCE(o.date, a.date, m.date) IS NOT NULL
+      )
+      SELECT
+        date,
+        revenue,
+        gross_profit,
+        order_count as orders,
+        total_cost as cost,
+        roas,
+        poas,
+        cac,
+        aov,
+        total_impressions as impressions
+      FROM combined_data
+      ORDER BY date
+    `;
+
+    const data = await queryBigQueryDashboardMetrics({
+      tableId: projectId,
+      customerId,
+      customQuery: dashboardQuery,
+    });
+
+    // console.log("Dashboard data:", data);
+
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn("No data returned from BigQuery for customerId:", customerId);
+      return <div>No data available for {customerId}</div>;
+    }
 
     return (
-        <div className="py-20 px-0 relative overflow">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
-            <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
-                <Image
-                    width={1920}
-                    height={1080}
-                    src="/images/shape-dotted-light.svg"
-                    alt="bg"
-                    className="w-full h-full"
-                />
-            </div>
-
-            <div className="px-20 mx-auto z-10 relative">
-                <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">Humdakin DK</h2>
-                    <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Performance Dashboard</h1>
-                    <p className="text-gray-600 max-w-2xl">
-                        Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros scelerisque sed. Commodo in viv...
-                    </p>
-                </div>
-
-                <div className="flex flex-wrap gap-4 items-center mb-10 justify-end">
-                    <select
-                        value={comparison}
-                        onChange={(e) => setComparison(e.target.value)}
-                        className="border px-4 py-2 rounded text-sm bg-white"
-                    >
-                        <option>Previous Year</option>
-                        <option>Previous Period</option>
-                    </select>
-                    <input
-                        type="date"
-                        value={dateStart}
-                        onChange={(e) => setDateStart(e.target.value)}
-                        className="border px-2 py-2 rounded text-sm"
-                    />
-                    <span className="text-gray-400">→</span>
-                    <input
-                        type="date"
-                        value={dateEnd}
-                        onChange={(e) => setDateEnd(e.target.value)}
-                        className="border px-2 py-2 rounded text-sm"
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-                    {metrics.map((metric, i) => (
-                        <div
-                            key={i}
-                            className="bg-white border border-zinc-200 rounded-lg p-5 flex flex-col gap-2"
-                        >
-                            <p className="text-xs text-gray-500 uppercase">{metric.title}</p>
-                            <div className="flex items-center justify-between">
-                                <span className="text-2xl font-semibold text-black">{metric.value}</span>
-                                <span
-                                    className={`text-sm font-medium ${metric.positive ? "text-green-600" : "text-red-500"
-                                        }`}
-                                >
-                                    {metric.delta}
-                                </span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
-                        <p className="font-semibold mb-4">Revenue</p>
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <FaChartLine className="text-4xl" />
-                        </div>
-                    </div>
-
-                    <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
-                        <p className="font-semibold mb-4">Spend Allocation</p>
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <FaChartLine className="text-4xl" />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
-                        <p className="font-semibold mb-4">Average Order Value</p>
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <FaChartLine className="text-4xl" />
-                        </div>
-                    </div>
-
-                    <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
-                        <p className="font-semibold mb-4">Sessions Per Channel Group</p>
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <FaChartLine className="text-4xl" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <section>
-                <div className="mt-16 space-y-4 px-20 mx-auto z-10 relative ">
-                    <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Service Dashboards</h3>
-
-                    {["SEO", "PPC", "EM", "PS"].map((title, index) => (
-                        <div
-                            key={index}
-                            className="flex items-center justify-between bg-zinc-50 rounded-md px-6 py-4 border border-zinc-200 shadow-solid-l"
-                        >
-                            <div>
-                                <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
-                                <p className="text-sm text-gray-500">Subtitle</p>
-                            </div>
-                            <button className="text-xs border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50 flex items-center gap-2">
-                                <span className="text-sm">+</span> Open
-                            </button>
-                        </div>
-                    ))}
-                </div>
-
-            </section>
-        </div>
+      <PerformanceDashboard
+        customerId={customerId}
+        initialData={data}
+      />
     );
+  } catch (error) {
+    console.error("Dashboard error:", error.message, error.stack);
+    return <div>Error: Failed to load dashboard - {error.message}</div>;
+  }
 }

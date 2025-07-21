@@ -5,18 +5,17 @@ import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function DashboardPage({ params }) {
-  const customerId = "airbyte_humdakin_dk";
-  const projectId = `performance-dashboard-airbyte`;
+    const customerId = "airbyte_humdakin_dk";
+    const projectId = `performance-dashboard-airbyte`;
 
-  try {
-    const dashboardQuery = `
+    try {
+        const dashboardQuery = `
       WITH orders_data AS (
         SELECT
           CAST(DATE(updated_at) AS STRING) as date,
           CAST(SUM(current_total_price) AS FLOAT64) as revenue,
           CAST(SUM(current_subtotal_price - total_discounts) AS FLOAT64) as gross_profit,
-          COUNT(id) as order_count,
-          COUNT(id) as unique_customers
+          COUNT(id) as order_count
         FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.orders\`
         WHERE DATE(updated_at) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()
         GROUP BY date
@@ -39,12 +38,23 @@ export default async function DashboardPage({ params }) {
         WHERE date_start BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()
         GROUP BY date
       ),
+      sessions_data AS (
+        SELECT
+          date as date,
+          sessionDefaultChannelGrouping as channel_group,
+          SUM(sessions) as sessions
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.traffic_acquisition_session_default_channel_grouping_report\`
+        WHERE PARSE_DATE('%Y%m%d', date) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()
+        GROUP BY date, channel_group
+      ),
       combined_data AS (
         SELECT
-          COALESCE(o.date, a.date, m.date) as date,
+          COALESCE(o.date, a.date, m.date, s.date) as date,
           o.revenue,
           o.gross_profit,
           o.order_count,
+          COALESCE(a.google_ads_cost, 0) as google_ads_cost,
+          COALESCE(m.meta_spend, 0) as meta_spend,
           COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0) as total_cost,
           CASE
             WHEN (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0)) > 0
@@ -57,57 +67,66 @@ export default async function DashboardPage({ params }) {
             ELSE 0
           END as poas,
           CASE
-            WHEN o.unique_customers > 0
-            THEN (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0)) / o.unique_customers
-            ELSE 0
-          END as cac,
-          CASE
             WHEN o.order_count > 0
             THEN o.revenue / o.order_count
             ELSE 0
           END as aov,
-          COALESCE(a.google_ads_impressions, 0) + COALESCE(m.meta_impressions, 0) as total_impressions
+          COALESCE(a.google_ads_impressions, 0) + COALESCE(m.meta_impressions, 0) as total_impressions,
+          ARRAY_AGG(STRUCT(s.channel_group, s.sessions) IGNORE NULLS) as channel_sessions
         FROM orders_data o
         FULL OUTER JOIN ads_data a ON o.date = a.date
         FULL OUTER JOIN meta_data m ON o.date = m.date
-        WHERE COALESCE(o.date, a.date, m.date) IS NOT NULL
+        FULL OUTER JOIN sessions_data s ON o.date = s.date
+        WHERE COALESCE(o.date, a.date, m.date, s.date) IS NOT NULL
+        GROUP BY date, o.revenue, o.gross_profit, o.order_count, a.google_ads_cost, m.meta_spend, a.google_ads_impressions, m.meta_impressions
       )
       SELECT
         date,
         revenue,
         gross_profit,
         order_count as orders,
+        google_ads_cost,
+        meta_spend,
         total_cost as cost,
         roas,
         poas,
-        cac,
         aov,
-        total_impressions as impressions
+        total_impressions as impressions,
+        channel_sessions
       FROM combined_data
+      WHERE revenue IS NOT NULL
+        OR gross_profit IS NOT NULL
+        OR order_count IS NOT NULL
+        OR total_cost IS NOT NULL
+        OR roas IS NOT NULL
+        OR poas IS NOT NULL
+        OR aov IS NOT NULL
+        OR total_impressions IS NOT NULL
+        OR channel_sessions IS NOT NULL
       ORDER BY date
     `;
 
-    const data = await queryBigQueryDashboardMetrics({
-      tableId: projectId,
-      customerId,
-      customQuery: dashboardQuery,
-    });
+        const data = await queryBigQueryDashboardMetrics({
+            tableId: projectId,
+            customerId,
+            customQuery: dashboardQuery,
+        });
 
-    // console.log("Dashboard data:", data);
+        console.log("Dashboard data:", data);
 
-    if (!Array.isArray(data) || data.length === 0) {
-      console.warn("No data returned from BigQuery for customerId:", customerId);
-      return <div>No data available for {customerId}</div>;
+        if (!Array.isArray(data) || data.length === 0) {
+            console.warn("No data returned from BigQuery for customerId:", customerId);
+            return <div>No data available for {customerId}</div>;
+        }
+
+        return (
+            <PerformanceDashboard
+                customerId={customerId}
+                initialData={data}
+            />
+        );
+    } catch (error) {
+        console.error("Dashboard error:", error.message, error.stack);
+        return <div>Error: Failed to load dashboard - {error.message}</div>;
     }
-
-    return (
-      <PerformanceDashboard
-        customerId={customerId}
-        initialData={data}
-      />
-    );
-  } catch (error) {
-    console.error("Dashboard error:", error.message, error.stack);
-    return <div>Error: Failed to load dashboard - {error.message}</div>;
-  }
 }

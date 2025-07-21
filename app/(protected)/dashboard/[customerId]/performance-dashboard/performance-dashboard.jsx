@@ -8,8 +8,8 @@ import {
     HiOutlineShoppingCart,
     HiOutlineArrowTrendingUp,
 } from "react-icons/hi2";
-import { FaMoneyCheckAlt, FaChartLine } from "react-icons/fa";
-import { Line } from "react-chartjs-2";
+import { FaMoneyCheckAlt } from "react-icons/fa";
+import { Line, Pie, Bar } from "react-chartjs-2";
 import {
     Chart as ChartJS,
     LineElement,
@@ -19,7 +19,11 @@ import {
     Title,
     Tooltip,
     Legend,
+    ArcElement,
+    BarElement,
+    CategoryScale,
 } from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import "chartjs-adapter-date-fns";
 
 ChartJS.register(
@@ -29,7 +33,11 @@ ChartJS.register(
     TimeScale,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    ArcElement,
+    BarElement,
+    CategoryScale,
+    ChartDataLabels,
 );
 
 export default function PerformanceDashboard({ customerId, initialData }) {
@@ -68,17 +76,33 @@ export default function PerformanceDashboard({ customerId, initialData }) {
     const comparisonData = data;
 
     // Aggregate metrics for current and comparison periods
-    const aggregateMetrics = (data) => ({
-        revenue: data.reduce((sum, row) => sum + (row.revenue || 0), 0),
-        gross_profit: data.reduce((sum, row) => sum + (row.gross_profit || 0), 0),
-        orders: data.reduce((sum, row) => sum + (row.orders || 0), 0),
-        cost: data.reduce((sum, row) => sum + (row.cost || 0), 0),
-        roas: data.reduce((sum, row) => sum + (row.roas || 0), 0) / (data.length || 1),
-        poas: data.reduce((sum, row) => sum + (row.poas || 0), 0) / (data.length || 1),
-        cac: data.reduce((sum, row) => sum + (row.cac || 0), 0) / (data.length || 1),
-        aov: data.reduce((sum, row) => sum + (row.aov || 0), 0) / (data.length || 1),
-        impressions: data.reduce((sum, row) => sum + (row.impressions || 0), 0),
-    });
+    const aggregateMetrics = (data) => {
+        // Aggregate sessions by channel group
+        const channelSessions = {};
+        data.forEach((row) => {
+            if (row.channel_sessions) {
+                row.channel_sessions.forEach(({ channel_group, sessions }) => {
+                    if (channel_group) {
+                        channelSessions[channel_group] = (channelSessions[channel_group] || 0) + (sessions || 0);
+                    }
+                });
+            }
+        });
+
+        return {
+            revenue: data.reduce((sum, row) => sum + (row.revenue || 0), 0),
+            gross_profit: data.reduce((sum, row) => sum + (row.gross_profit || 0), 0),
+            orders: data.reduce((sum, row) => sum + (row.orders || 0), 0),
+            cost: data.reduce((sum, row) => sum + (row.cost || 0), 0),
+            roas: data.reduce((sum, row) => sum + (row.roas || 0), 0) / (data.length || 1),
+            poas: data.reduce((sum, row) => sum + (row.poas || 0), 0) / (data.length || 1),
+            aov: data.reduce((sum, row) => sum + (row.aov || 0), 0) / (data.length || 1),
+            impressions: data.reduce((sum, row) => sum + (row.impressions || 0), 0),
+            google_ads_cost: data.reduce((sum, row) => sum + (row.google_ads_cost || 0), 0),
+            meta_spend: data.reduce((sum, row) => sum + (row.meta_spend || 0), 0),
+            channel_sessions: channelSessions,
+        };
+    };
 
     const currentMetrics = aggregateMetrics(filteredData);
     const prevMetrics = aggregateMetrics(comparisonData);
@@ -93,14 +117,14 @@ export default function PerformanceDashboard({ customerId, initialData }) {
     const metrics = [
         {
             title: "Revenue",
-            value: `$${Math.round(currentMetrics.revenue).toLocaleString()}`,
+            value: `${Math.round(currentMetrics.revenue).toLocaleString()} DKK`,
             delta: calculateDelta(currentMetrics.revenue, prevMetrics.revenue),
             positive: currentMetrics.revenue >= prevMetrics.revenue,
             icon: <HiOutlineCurrencyDollar className="text-2xl text-gray-400" />,
         },
         {
             title: "Gross Profit",
-            value: `$${Math.round(currentMetrics.gross_profit).toLocaleString()}`,
+            value: `${Math.round(currentMetrics.gross_profit).toLocaleString()} DKK`,
             delta: calculateDelta(currentMetrics.gross_profit, prevMetrics.gross_profit),
             positive: currentMetrics.gross_profit >= prevMetrics.gross_profit,
             icon: <FaMoneyCheckAlt className="text-2xl text-gray-400" />,
@@ -114,7 +138,7 @@ export default function PerformanceDashboard({ customerId, initialData }) {
         },
         {
             title: "Cost",
-            value: `$${Math.round(currentMetrics.cost).toLocaleString()}`,
+            value: `${Math.round(currentMetrics.cost).toLocaleString()} DKK`,
             delta: calculateDelta(currentMetrics.cost, prevMetrics.cost),
             positive: currentMetrics.cost <= prevMetrics.cost,
             icon: <HiOutlineChartBar className="text-2xl text-gray-400" />,
@@ -134,15 +158,8 @@ export default function PerformanceDashboard({ customerId, initialData }) {
             icon: <HiOutlineArrowTrendingUp className="text-2xl text-gray-400" />,
         },
         {
-            title: "CAC",
-            value: `$${Math.round(currentMetrics.cac).toLocaleString()}`,
-            delta: calculateDelta(currentMetrics.cac, prevMetrics.cac),
-            positive: currentMetrics.cac <= prevMetrics.cac,
-            icon: <HiOutlineChartBar className="text-2xl text-gray-400" />,
-        },
-        {
             title: "AOV",
-            value: `$${Math.round(currentMetrics.aov).toLocaleString()}`,
+            value: `${Math.round(currentMetrics.aov).toLocaleString()} DKK`,
             delta: calculateDelta(currentMetrics.aov, prevMetrics.aov),
             positive: currentMetrics.aov >= prevMetrics.aov,
             icon: <HiOutlineChartBar className="text-2xl text-gray-400" />,
@@ -156,6 +173,15 @@ export default function PerformanceDashboard({ customerId, initialData }) {
         },
     ];
 
+    // Color palette based on rgb(28, 57, 142)
+    const colors = {
+        primary: "#1C398E", // rgb(28, 57, 142)
+        hue1: "#2E4CA8",
+        hue2: "#4963BE",
+        hue3: "#6E82D0",
+        hue4: "#9BABE1",
+    };
+
     // Chart data for Revenue and AOV
     const revenueChartData = {
         labels: filteredData.map((row) => row.date),
@@ -163,9 +189,12 @@ export default function PerformanceDashboard({ customerId, initialData }) {
             {
                 label: "Revenue",
                 data: filteredData.map((row) => row.revenue || 0),
-                borderColor: "#2563eb",
-                backgroundColor: "rgba(37, 99, 235, 0.2)",
-                fill: true,
+                borderColor: colors.primary,
+                backgroundColor: colors.primary,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
             },
         ],
     };
@@ -176,17 +205,154 @@ export default function PerformanceDashboard({ customerId, initialData }) {
             {
                 label: "AOV",
                 data: filteredData.map((row) => row.aov || 0),
-                borderColor: "#2563eb",
-                backgroundColor: "rgba(37, 99, 235, 0.2)",
-                fill: true,
+                borderColor: colors.primary,
+                backgroundColor: colors.primary,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+            },
+        ],
+    };
+
+    // Pie chart data for Spend Allocation
+    const spendAllocationChartData = {
+        labels: ["Google Ads", "Meta"],
+        datasets: [
+            {
+                label: "Spend Allocation",
+                data: [currentMetrics.google_ads_cost || 0, currentMetrics.meta_spend || 0],
+                backgroundColor: [colors.primary, colors.hue1],
+                borderColor: [colors.primary, colors.hue1],
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    // Bar chart data for Sessions Per Channel Group
+    const sessionsChartData = {
+        labels: Object.keys(currentMetrics.channel_sessions || {}),
+        datasets: [
+            {
+                label: "Sessions",
+                data: Object.values(currentMetrics.channel_sessions || {}),
+                backgroundColor: [colors.primary, colors.hue1, colors.hue2, colors.hue3, colors.hue4],
+                borderColor: [colors.primary, colors.hue1, colors.hue2, colors.hue3, colors.hue4],
+                borderWidth: 1,
             },
         ],
     };
 
     const chartOptions = {
+        maintainAspectRatio: false,
         scales: {
-            x: { type: "time", time: { unit: "day" } },
-            y: { beginAtZero: true },
+            x: {
+                type: "time",
+                time: { unit: "day" },
+                grid: { display: false },
+                ticks: { font: { size: 10 } },
+            },
+            y: {
+                beginAtZero: true,
+                grid: { color: "rgba(0, 0, 0, 0.05)" },
+                ticks: { font: { size: 10 } },
+            },
+        },
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                titleFont: { size: 12 },
+                bodyFont: { size: 10 },
+                padding: 8,
+                cornerRadius: 4,
+            },
+            datalabels: {
+                display: false,
+            },
+        },
+    };
+
+    const pieChartOptions = {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: "top",
+                labels: {
+                    font: { size: 10 },
+                    padding: 10,
+                },
+            },
+            tooltip: {
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                titleFont: { size: 12 },
+                bodyFont: { size: 10 },
+                padding: 8,
+                cornerRadius: 4,
+                callbacks: {
+                    label: (context) => {
+                        const label = context.label || "";
+                        const value = context.raw || 0;
+                        return `${label}: ${Math.round(value).toLocaleString()} DKK`;
+                    },
+                },
+            },
+            datalabels: {
+                color: "#fff",
+                font: { size: 10, weight: "bold" },
+                formatter: (value) => `${Math.round(value).toLocaleString()} DKK`,
+                anchor: "center",
+                align: "center",
+            },
+        },
+    };
+
+    const barChartOptions = {
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: "rgba(0, 0, 0, 0.05)" },
+                ticks: { font: { size: 10 } },
+                title: {
+                    display: true,
+                    text: "Sessions",
+                    font: { size: 12 },
+                },
+            },
+            x: {
+                grid: { display: false },
+                ticks: { font: { size: 10 } },
+                title: {
+                    display: true,
+                    text: "Channel Group",
+                    font: { size: 12 },
+                },
+            },
+        },
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                titleFont: { size: 12 },
+                bodyFont: { size: 10 },
+                padding: 8,
+                cornerRadius: 4,
+                callbacks: {
+                    label: (context) => {
+                        const label = context.label || "";
+                        const value = context.raw || 0;
+                        return `${label}: ${Math.round(value).toLocaleString()} sessions`;
+                    },
+                },
+            },
+            datalabels: {
+                display: false,
+            },
         },
     };
 
@@ -271,13 +437,15 @@ export default function PerformanceDashboard({ customerId, initialData }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
                         <p className="font-semibold mb-4">Revenue</p>
-                        <Line data={revenueChartData} options={chartOptions} />
+                        <div className="w-full h-[calc(100%-2rem)]">
+                            <Line data={revenueChartData} options={chartOptions} />
+                        </div>
                     </div>
 
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
                         <p className="font-semibold mb-4">Spend Allocation</p>
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <FaChartLine className="text-4xl" />
+                        <div className="w-full h-[calc(100%-2rem)]">
+                            <Pie data={spendAllocationChartData} options={pieChartOptions} />
                         </div>
                     </div>
                 </div>
@@ -285,13 +453,15 @@ export default function PerformanceDashboard({ customerId, initialData }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
                         <p className="font-semibold mb-4">Average Order Value</p>
-                        <Line data={aovChartData} options={chartOptions} />
+                        <div className="w-full h-[calc(100%-2rem)]">
+                            <Line data={aovChartData} options={chartOptions} />
+                        </div>
                     </div>
 
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
                         <p className="font-semibold mb-4">Sessions Per Channel Group</p>
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <FaChartLine className="text-4xl" />
+                        <div className="w-full h-[calc(100%-2rem)]">
+                            <Bar data={sessionsChartData} options={barChartOptions} />
                         </div>
                     </div>
                 </div>

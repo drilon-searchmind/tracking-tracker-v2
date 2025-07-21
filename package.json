@@ -12,6 +12,7 @@
     "@auth/mongodb-adapter": "^3.8.0",
     "@google-cloud/bigquery": "^8.1.0",
     "chartjs-adapter-date-fns": "^3.0.0",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "date-fns": "^4.1.0",
     "googleapis": "^148.0.0",
     "mongodb": "^6.15.0",

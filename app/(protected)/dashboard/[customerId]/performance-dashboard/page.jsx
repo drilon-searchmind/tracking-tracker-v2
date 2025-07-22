@@ -5,11 +5,11 @@ import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
 export const revalidate = 3600; // *** ISR: Revalidate every hour
 
 export default async function DashboardPage({ params }) {
-    const customerId = "airbyte_humdakin_dk";
-    const projectId = `performance-dashboard-airbyte`;
+	const customerId = "airbyte_humdakin_dk";
+	const projectId = `performance-dashboard-airbyte`;
 
-    try {
-        const dashboardQuery = `
+	try {
+		const dashboardQuery = `
   WITH orders_data AS (
     SELECT
       CAST(DATE(created_at) AS STRING) as date,
@@ -97,27 +97,27 @@ export default async function DashboardPage({ params }) {
   ORDER BY date
 `;
 
-        const data = await queryBigQueryDashboardMetrics({
-            tableId: projectId,
-            customerId,
-            customQuery: dashboardQuery,
-        });
+		const data = await queryBigQueryDashboardMetrics({
+			tableId: projectId,
+			customerId,
+			customQuery: dashboardQuery,
+		});
 
-        console.log("Dashboard data:", data);
+		console.log("Dashboard data:", data);
 
-        if (!Array.isArray(data) || data.length === 0) {
-            console.warn("No data returned from BigQuery for customerId:", customerId);
-            return <div>No data available for {customerId}</div>;
-        }
+		if (!Array.isArray(data) || data.length === 0) {
+			console.warn("No data returned from BigQuery for customerId:", customerId);
+			return <div>No data available for {customerId}</div>;
+		}
 
-        return (
-            <PerformanceDashboard
-                customerId={customerId}
-                initialData={data}
-            />
-        );
-    } catch (error) {
-        console.error("Dashboard error:", error.message, error.stack);
-        return <div>Error: Failed to load dashboard - {error.message}</div>;
-    }
+		return (
+			<PerformanceDashboard
+				customerId={customerId}
+				initialData={data}
+			/>
+		);
+	} catch (error) {
+		console.error("Dashboard error:", error.message, error.stack);
+		return <div>Error: Failed to load dashboard - {error.message}</div>;
+	}
 }

@@ -35,9 +35,11 @@ export default function SEODashboard({ customerId, initialData }) {
     const [filter, setFilter] = useState("Med brand");
     // Fix selectedUrls to top 5 URLs
     const selectedUrls = initialData.top_urls?.slice(0, 5).map((item) => item.url) || [];
+    // Fix selectedKeywords to top 5 keywords
+    const selectedKeywords = initialData.top_keywords?.slice(0, 5).map((item) => item.keyword) || [];
 
     // Ensure initialData is valid
-    const { metrics, impressions_data, top_keywords, top_urls, urls_by_date } = initialData || {};
+    const { metrics, impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = initialData || {};
 
     // Color palette matching Performance Dashboard
     const colors = {
@@ -149,7 +151,27 @@ export default function SEODashboard({ customerId, initialData }) {
         })),
     };
 
-    if (!metrics || !impressions_data || !top_keywords || !top_urls || !urls_by_date) {
+    // Top Keywords line chart data (top 5 keywords with daily clicks)
+    const keywordChartData = {
+        labels: [...new Set(keywords_by_date?.map((row) => row.date) || [])].sort(),
+        datasets: selectedKeywords.map((keyword, i) => ({
+            label: keyword,
+            data: keywords_by_date
+                ?.filter((row) => row.keyword === keyword && row.impressions > 0)
+                .map((row) => ({
+                    x: row.date,
+                    y: row.impressions
+                })) || [],
+            borderColor: colors[`hue${i % 5}`] || colors.primary,
+            backgroundColor: colors[`hue${i % 5}`] || colors.primary,
+            borderWidth: 1,
+            pointRadius: 2,
+            pointHoverRadius: 4,
+            fill: false,
+        })),
+    };
+
+    if (!metrics || !impressions_data || !top_keywords || !top_urls || !urls_by_date || !keywords_by_date) {
         return <div>No data available for {customerId}</div>;
     }
 
@@ -252,7 +274,7 @@ export default function SEODashboard({ customerId, initialData }) {
                                     <th className="px-4 py-2">Click</th>
                                     <th className="px-4 py-2">Impr</th>
                                     <th className="px-4 py-2">Position</th>
-                                    <th className="px-4 py-2 text-center">Select</th>
+                                    <th className="px-4 py-2 text-center hidden">Select</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -263,13 +285,19 @@ export default function SEODashboard({ customerId, initialData }) {
                                         <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString()}</td>
                                         <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString()}</td>
                                         <td className="px-4 py-2">{row.position.toFixed(0)}</td>
-                                        <td className="px-4 py-2 text-center">
+                                        <td className="px-4 py-2 text-center hidden">
                                             <input type="checkbox" className="rounded border-zinc-300" />
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                    <div className="mt-6">
+                        <p className="font-semibold mb-4">Top Keywords Impressions Over Time</p>
+                        <div className="w-full h-[300px]">
+                            <Line data={keywordChartData} options={chartOptions} />
+                        </div>
                     </div>
                 </div>
 

@@ -178,12 +178,12 @@ export default function EmailDashboard({ customerId, initialData, emailType }) {
     };
 
     useEffect(() => {
-        if (emailType && emailType === "active_campaign") {
-            setEmailTypeName("Active Campaign");
-        } else if (emailType && emailType === "mailchimp") {
-            setEmailTypeName("Mailchimp"); 
-        } else if (emailType && emailType === "klaviyo") {
-            setEmailTypeName("Klaviyo");
+        if (emailType) {
+            const formattedName = emailType
+                .split("_")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ");
+            setEmailTypeName(formattedName);
         } else {
             setEmailTypeName("");
         }

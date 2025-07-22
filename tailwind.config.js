@@ -1,10 +1,10 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
-        "./app/**/*.{js,jsx}",        // scans your App‑Router files
-        "./components/**/*.{js,jsx}", // scans your shared components
+        "./app/**/*.{js,jsx,ts,tsx}",        // Include all files in the `app` directory
+        "./components/**/*.{js,jsx,ts,tsx}", // Include all files in the `components` directory
+        "./lib/**/*.{js,jsx,ts,tsx}",        // Include utility files if Tailwind classes are used
     ],
     theme: { extend: {} },
-    plugins: [require("daisyui")],
-    daisyui: { themes: ["light", "dark"] },
+    // plugins: [require("daisyui")],
+    // daisyui: { themes: ["light", "dark"] },
 };

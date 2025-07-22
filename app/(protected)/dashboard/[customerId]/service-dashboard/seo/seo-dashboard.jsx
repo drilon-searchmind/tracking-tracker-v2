@@ -33,15 +33,13 @@ export default function SEODashboard({ customerId, initialData }) {
     const [dateEnd, setDateEnd] = useState("2025-04-15");
     const [metric, setMetric] = useState("Impressions");
     const [filter, setFilter] = useState("Med brand");
-    // Fix selectedUrls to top 5 URLs
+
     const selectedUrls = initialData.top_urls?.slice(0, 5).map((item) => item.url) || [];
-    // Fix selectedKeywords to top 5 keywords
+
     const selectedKeywords = initialData.top_keywords?.slice(0, 5).map((item) => item.keyword) || [];
 
-    // Ensure initialData is valid
     const { metrics, impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = initialData || {};
 
-    // Color palette matching Performance Dashboard
     const colors = {
         primary: "#1C398E",
         hue1: "#2E4CA8",
@@ -50,14 +48,12 @@ export default function SEODashboard({ customerId, initialData }) {
         hue4: "#9BABE1",
     };
 
-    // Calculate deltas (placeholder logic, as no comparison data is fetched)
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;
         const delta = ((current - prev) / prev * 100).toFixed(2);
         return `${delta > 0 ? "+" : ""}${delta}%`;
     };
 
-    // Metrics for cards
     const seoMetrics = [
         {
             label: "Click",
@@ -85,7 +81,6 @@ export default function SEODashboard({ customerId, initialData }) {
         },
     ];
 
-    // Impressions chart data
     const impressionsChartData = {
         labels: impressions_data?.map((row) => row.date) || [],
         datasets: [
@@ -129,7 +124,6 @@ export default function SEODashboard({ customerId, initialData }) {
         },
     };
 
-    // Top URLs line chart data (top 5 URLs with daily data)
     const urlChartData = {
         labels: [...new Set(urls_by_date?.map((row) => row.date) || [])].sort(),
         datasets: selectedUrls.map((url, i) => ({
@@ -151,7 +145,6 @@ export default function SEODashboard({ customerId, initialData }) {
         })),
     };
 
-    // Top Keywords line chart data (top 5 keywords with daily clicks)
     const keywordChartData = {
         labels: [...new Set(keywords_by_date?.map((row) => row.date) || [])].sort(),
         datasets: selectedKeywords.map((keyword, i) => ({

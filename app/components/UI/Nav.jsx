@@ -10,6 +10,10 @@ export default function Nav() {
     const { data: session } = useSession()
     const [showModal, setShowModal] = useState(false);
 
+    useEffect(() => {
+        console.log({session})
+    }, session)
+
     return (
         <section id="componentNav">
             <nav className="flex justify-between items-center container mx-auto">
@@ -22,9 +26,18 @@ export default function Nav() {
                         className="w-full max-w-[50px] object-contain"
                     />
                     <a href="/" className="">
-                        <span className="text-lg">Searchmind Apex</span>
+                        <span className="text-lg text-black font-extrabold">Searchmind Apex</span>
                         {session ? (
-                            <p className="m-0 text-xs">{session.user.email}</p>
+                            <span className="flex items-center gap-2 text-xs text-gray-500">
+                                <Image 
+                                    src={session.user.image}
+                                    alt="User Avatar"
+                                    width={20}
+                                    height={20}
+                                    className="rounded-full inline-block ml-0"
+                                />
+                                <p className="m-0 text-xs">{session.user.email}</p>
+                            </span>
                         ) : null}
                     </a>
 

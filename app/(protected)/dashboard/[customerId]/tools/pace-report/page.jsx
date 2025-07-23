@@ -1,97 +1,143 @@
-"use client";
+import PaceReport from "./pace-report";
+import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { FaChartLine } from "react-icons/fa";
+export const revalidate = 3600; // ISR: Revalidate every hour
 
-export default function PaceReport({ params }) {
-    const [customerId, setCustomerId] = useState(null);
-    const [budget, setBudget] = useState("500.000 kr");
-    const [pace, setPace] = useState("200.000 kr");
-    const [metric, setMetric] = useState("Omsætning");
+export default async function PacePage({ params }) {
+    const customerId = "airbyte_humdakin_dk";
+    const projectId = `performance-dashboard-airbyte`;
 
-    useEffect(() => {
-        if (params?.customerId) {
-            setCustomerId(params.customerId);
+    try {
+        const dashboardQuery = `
+    WITH shopify_data AS (
+        SELECT
+            DATE(processed_at) AS date,
+            COUNT(*) AS orders,
+            SUM(amount) AS revenue
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.transactions\`
+        WHERE status = 'SUCCESS'
+            AND DATE(processed_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+        GROUP BY DATE(processed_at)
+    ),
+    facebook_data AS (
+        SELECT
+            date_start AS date,
+            SUM(spend) AS ps_cost
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.ads_insights\`
+        WHERE date_start >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+        GROUP BY date_start
+    ),
+    google_ads_data AS (
+        SELECT
+            segments_date AS date,
+            SUM(metrics_cost_micros / 1000000.0) AS ppc_cost
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+        WHERE segments_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+        GROUP BY segments_date
+    ),
+    combined_data AS (
+        SELECT
+            COALESCE(s.date, f.date, g.date) AS date,
+            COALESCE(s.orders, 0) AS orders,
+            COALESCE(s.revenue, 0) AS revenue,
+            COALESCE(f.ps_cost, 0) AS ps_cost,
+            COALESCE(g.ppc_cost, 0) AS ppc_cost
+        FROM shopify_data s
+        FULL OUTER JOIN facebook_data f
+            ON s.date = f.date
+        FULL OUTER JOIN google_ads_data g
+            ON s.date = g.date
+        WHERE COALESCE(s.date, f.date, g.date) IS NOT NULL
+    ),
+    daily_metrics AS (
+        SELECT
+            CAST(date AS STRING) AS date,
+            SUM(orders) OVER (ORDER BY date) AS orders,
+            CAST(SUM(revenue) OVER (ORDER BY date) AS FLOAT64) AS revenue,
+            CAST(SUM(ps_cost + ppc_cost) OVER (ORDER BY date) AS FLOAT64) AS ad_spend,
+            CAST(
+                CASE
+                    WHEN SUM(ps_cost + ppc_cost) OVER (ORDER BY date) > 0 THEN SUM(revenue) OVER (ORDER BY date) / SUM(ps_cost + ppc_cost) OVER (ORDER BY date)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS roas,
+            CAST(500000 * (ROW_NUMBER() OVER (ORDER BY date) / 31.0) AS FLOAT64) AS revenue_budget,
+            CAST(100000 * (ROW_NUMBER() OVER (ORDER BY date) / 31.0) AS FLOAT64) AS ad_spend_budget
+        FROM combined_data
+        ORDER BY date
+    ),
+    totals AS (
+        SELECT
+            SUM(orders) AS orders,
+            CAST(SUM(revenue) AS FLOAT64) AS revenue,
+            CAST(SUM(ps_cost) AS FLOAT64) AS ps_cost,
+            CAST(SUM(ppc_cost) AS FLOAT64) AS ppc_cost,
+            CAST(SUM(ps_cost + ppc_cost) AS FLOAT64) AS ad_spend,
+            CAST(
+                CASE
+                    WHEN SUM(ps_cost + ppc_cost) > 0 THEN SUM(revenue) / SUM(ps_cost + ppc_cost)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS roas
+        FROM combined_data
+    )
+    SELECT
+        ARRAY_AGG(STRUCT(
+            date,
+            orders,
+            revenue,
+            ad_spend,
+            roas,
+            revenue_budget,
+            ad_spend_budget
+        )) AS daily_metrics,
+        (SELECT AS STRUCT
+            orders,
+            revenue,
+            ad_spend,
+            roas,
+            500000 AS revenue_budget,
+            100000 AS ad_spend_budget,
+            CAST(500000 * EXTRACT(DAY FROM CURRENT_DATE() - DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) / 31 AS FLOAT64) AS revenue_pace,
+            CAST(100000 * EXTRACT(DAY FROM CURRENT_DATE() - DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) / 31 AS FLOAT64) AS ad_spend_pace,
+            CAST(
+                CASE
+                    WHEN 500000 > 0 THEN (revenue / 500000) * 100
+                    ELSE 0
+                END AS FLOAT64
+            ) AS revenue_budget_percentage,
+            CAST(
+                CASE
+                    WHEN 100000 > 0 THEN (ad_spend / 100000) * 100
+                    ELSE 0
+                END AS FLOAT64
+            ) AS ad_spend_budget_percentage
+        FROM totals
+        ) AS totals
+    FROM daily_metrics
+`;
+        const data = await queryBigQueryDashboardMetrics({
+            tableId: projectId,
+            customerId,
+            customQuery: dashboardQuery,
+        });
+
+        console.log("Pace Report data:", JSON.stringify(data, null, 2));
+
+        if (!data || !data[0] || !data[0].daily_metrics) {
+            console.warn("No data returned from BigQuery for customerId:", customerId);
+            return <div>No data available for {customerId}</div>;
         }
-    }, [params]);
 
-    return (
-        <div className="py-20 px-0 relative overflow">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
-            <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
-                <Image
-                    width={1920}
-                    height={1080}
-                    src="/images/shape-dotted-light.svg"
-                    alt="bg"
-                    className="w-full h-full"
-                />
-            </div>
-
-            <div className="px-20 mx-auto z-10 relative">
-                <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">Humdakin DK</h2>
-                    <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Pace Report</h1>
-                    <p className="text-gray-600 max-w-2xl">
-                        Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros scelerisque sed. Commodo in viv
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-solid-10">
-                        <div className="flex items-center justify-between mb-4">
-                            <p className="font-semibold">Budget</p>
-                            <div className="flex gap-2 items-center">
-                                <input type="date" className="border px-2 py-1 rounded text-sm" />
-                                <span className="text-gray-400">→</span>
-                                <input type="date" className="border px-2 py-1 rounded text-sm" />
-                            </div>
-                        </div>
-                        <div className="h-[280px] flex items-center justify-center text-gray-400">
-                            <FaChartLine className="text-4xl" />
-                        </div>
-                        <div className="mt-4">
-                            <input
-                                type="text"
-                                value={budget}
-                                onChange={(e) => setBudget(e.target.value)}
-                                className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-solid-l">
-                        <div className="flex items-center justify-between mb-4">
-                            <p className="font-semibold">Pace</p>
-                            <div className="flex gap-2 items-center">
-                                <input type="date" className="border px-2 py-1 rounded text-sm" />
-                                <span className="text-gray-400">→</span>
-                                <input type="date" className="border px-2 py-1 rounded text-sm" />
-                            </div>
-                        </div>
-                        <div className="h-[280px] flex items-center justify-center text-gray-400">
-                            <FaChartLine className="text-4xl" />
-                        </div>
-                        <div className="mt-4 flex gap-2">
-                            <input
-                                type="text"
-                                value={pace}
-                                onChange={(e) => setPace(e.target.value)}
-                                className="w-1/2 border border-gray-300 rounded px-4 py-2 text-sm"
-                            />
-                            <select
-                                value={metric}
-                                onChange={(e) => setMetric(e.target.value)}
-                                className="w-1/2 border border-gray-300 rounded px-4 py-2 text-sm"
-                            >
-                                <option>Omsætning</option>
-                                <option>Ordre</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+        const { daily_metrics, totals } = data[0];
+        return (
+            <PaceReport
+                customerId={customerId}
+                initialData={{ daily_metrics, totals }}
+            />
+        );
+    } catch (error) {
+        console.error("Pace Report error:", error.message, error.stack);
+        return <div>Error: Failed to load Pace Report - {error.message}</div>;
+    }
 }

@@ -1,113 +1,151 @@
-"use client"
+import OverviewDashboard from "./overview-dashboard";
+import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
 
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { HiOutlineCalendar, HiOutlineClock, HiOutlineChartBar, HiOutlineCog, HiOutlineDocumentText } from "react-icons/hi";
-import { FaMoneyCheckAlt, FaPlay } from "react-icons/fa";
-import DashboardTable from "@/app/components/Dashboard/OverviewDayTable";
+export const revalidate = 3600; // ISR: Revalidate every hour
 
-export default function CustomerDashboard({ params }) {
-    const [customerId, setCustomerId] = useState(null)
+export default async function OverviewPage({ params }) {
+    const customerId = "airbyte_humdakin_dk";
+	const projectId = `performance-dashboard-airbyte`;
 
-    const dashboards = [
-        {
-            name: "Overview Day",
-            subtitle: "Happy customer",
-            icon: <HiOutlineCalendar className="text-xl text-gray-400" />
-        },
-        {
-            name: "Overview Hour",
-            subtitle: "Happy customer",
-            icon: <HiOutlineClock className="text-xl text-gray-400" />
-        },
-        {
-            name: "Performance Dashboard",
-            subtitle: "Happy customer",
-            icon: <HiOutlineChartBar className="text-xl text-gray-400" />
-        },
-        {
-            name: "SEO Dashboard",
-            subtitle: "Happy customer",
-            icon: <HiOutlineDocumentText className="text-xl text-gray-400" />
-        },
-        {
-            name: "Budget Report",
-            subtitle: "Happy customer",
-            icon: <FaMoneyCheckAlt className="text-xl text-gray-400" />
-        },
-        {
-            name: "Config",
-            subtitle: "Happy customer",
-            icon: <HiOutlineCog className="text-xl text-gray-400" />
+    try {
+        const dashboardQuery = `
+    WITH shopify_data AS (
+        SELECT
+            DATE(processed_at) AS date,
+            COUNT(*) AS orders,
+            SUM(amount) AS revenue
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.transactions\`
+        GROUP BY DATE(processed_at)
+    ),
+    facebook_data AS (
+        SELECT
+            date_start AS date,
+            SUM(spend) AS ps_cost
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.ads_insights\`
+        GROUP BY date_start
+    ),
+    google_ads_data AS (
+        SELECT
+            segments_date AS date,
+            SUM(metrics_cost_micros / 1000000.0) AS ppc_cost
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+        GROUP BY segments_date
+    ),
+    combined_data AS (
+        SELECT
+            COALESCE(s.date, f.date, g.date) AS date,
+            COALESCE(s.orders, 0) AS orders,
+            COALESCE(s.revenue, 0) AS revenue,
+            COALESCE(f.ps_cost, 0) AS ps_cost,
+            COALESCE(g.ppc_cost, 0) AS ppc_cost
+        FROM shopify_data s
+        FULL OUTER JOIN facebook_data f
+            ON s.date = f.date
+        FULL OUTER JOIN google_ads_data g
+            ON s.date = g.date
+    ),
+    metrics AS (
+        SELECT
+            CAST(date AS STRING) AS date,
+            orders,
+            CAST(revenue AS FLOAT64) AS revenue,
+            CAST(revenue * (1 - 0.25) AS FLOAT64) AS revenue_ex_tax, -- Danish VAT 25%
+            CAST(ppc_cost AS FLOAT64) AS ppc_cost,
+            CAST(ps_cost AS FLOAT64) AS ps_cost,
+            CAST((ppc_cost + ps_cost) AS FLOAT64) AS total_ad_spend,
+            CAST(
+                CASE
+                    WHEN (ppc_cost + ps_cost) > 0 THEN revenue / (ppc_cost + ps_cost)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS roas,
+            CAST(
+                CASE
+                    WHEN (ppc_cost + ps_cost) > 0 THEN (revenue * (1 - 0.25) - revenue * 0.7) / (ppc_cost + ps_cost)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS poas, -- COGS = 70% of Revenue
+            CAST((revenue * (1 - 0.25) - revenue * 0.7) AS FLOAT64) AS gp, -- Gross Profit
+            CAST(
+                CASE
+                    WHEN orders > 0 THEN revenue / orders
+                    ELSE 0
+                END AS FLOAT64
+            ) AS aov
+        FROM combined_data
+        WHERE date IS NOT NULL
+            AND date >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+        ORDER BY date DESC
+    ),
+    totals AS (
+        SELECT
+            'Total' AS date,
+            SUM(orders) AS orders,
+            CAST(SUM(revenue) AS FLOAT64) AS revenue,
+            CAST(SUM(revenue_ex_tax) AS FLOAT64) AS revenue_ex_tax,
+            CAST(SUM(ppc_cost) AS FLOAT64) AS ppc_cost,
+            CAST(SUM(ps_cost) AS FLOAT64) AS ps_cost,
+            CAST(
+                CASE
+                    WHEN SUM(ppc_cost + ps_cost) > 0 THEN SUM(revenue) / SUM(ppc_cost + ps_cost)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS roas,
+            CAST(
+                CASE
+                    WHEN SUM(ppc_cost + ps_cost) > 0 THEN SUM(revenue * (1 - 0.25) - revenue * 0.7) / SUM(ppc_cost + ps_cost)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS poas,
+            CAST(SUM(gp) AS FLOAT64) AS gp,
+            CAST(
+                CASE
+                    WHEN SUM(orders) > 0 THEN SUM(revenue) / SUM(orders)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS aov
+        FROM metrics
+    )
+    SELECT
+        ARRAY_AGG(STRUCT(
+            date,
+            orders,
+            revenue,
+            revenue_ex_tax,
+            ppc_cost,
+            ps_cost,
+            roas,
+            poas,
+            gp,
+            aov
+        )) AS overview_metrics,
+        (SELECT AS STRUCT * FROM totals) AS totals
+    FROM metrics
+`;
+
+        const data = await queryBigQueryDashboardMetrics({
+            tableId: projectId,
+            customerId,
+            customQuery: dashboardQuery,
+        });
+
+        console.log("Overview Dashboard data:", JSON.stringify(data, null, 2));
+
+        if (!data || !data[0] || !data[0].overview_metrics) {
+            console.warn("No data returned from BigQuery for customerId:", customerId);
+            return <div>No data available for {customerId}</div>;
         }
-    ];
 
-    useEffect(() => {
-        if (params?.customerId) {
-            setCustomerId(params.customerId);
-        }
-    }, [params]);
+        const { overview_metrics, totals } = data[0];
 
-
-    return (
-        <div className="py-20 px-0 relative overflow">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
-
-            <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
-                <Image
-                    width={1920}
-                    height={1080}
-                    src="/images/shape-dotted-light.svg"
-                    alt="logo"
-                    className="w-full h-full"
-                />
-            </div>
-
-            <div className="px-20 mx-auto z-10 relative">
-                <div className="mb-8 relative z-10">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">Humdakin DK</h2>
-                    <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Overview</h1>
-                    <p className="text-gray-600">
-                        Below you can choose which dashboard you want to go to first.
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 relative z-10">
-                    {dashboards.map((dashboard) => (
-                        <div
-                            key={dashboard.name}
-                            className="border border-zinc-200 bg-white rounded-lg p-6 transition hover:shadow-lg cursor-pointer hover:bg-blue-50 hover:border-blue-200"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-xl text-gray-400">
-                                    {dashboard.icon}
-                                </div>
-                                <div>
-                                    <p className="text-xl font-medium text-black">{dashboard.name}</p>
-                                    <p className="text-sm text-gray-500">{dashboard.subtitle}</p>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div>
-                    <DashboardTable />
-                </div>
-
-                <span className="col-span-6 shadow-solid-l bg-white rounded-lg px-20 py-20 border border-zinc-200 grid grid-cols-12 gap-20">
-                    <div className="col-span-6 border border-zinc-200 w-full pt-40 text-center flex justify-center pb-40 rounded-md">
-                        <FaPlay className="text-zinc-400 text-6xl" />
-                    </div>
-                    <div className="col-span-6">
-                        <h3 className="text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5">Get Started</h3>
-                        <div className="">
-                            <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore cupiditate perspiciatis.</p>
-                        </div>
-                    </div>
-                </span>
-            </div>
-        </div>
-    );
-
+        return (
+            <OverviewDashboard
+                customerId={customerId}
+                initialData={{ overview_metrics, totals }}
+            />
+        );
+    } catch (error) {
+        console.error("Overview Dashboard error:", error.message, error.stack);
+        return <div>Error: Failed to load Overview dashboard - {error.message}</div>;
+    }
 }

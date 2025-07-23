@@ -98,7 +98,13 @@ export default function PnLDashboard({ customerId, initialData }) {
                             {metrics.map((item, i) => (
                                 <div key={i} className="bg-white border border-zinc-200 rounded p-4">
                                     <p className="text-sm text-gray-500">{item.label}</p>
-                                    <p className="text-2xl font-bold text-zinc-800">kr. {item.value}</p>
+                                    <p className="text-2xl font-bold text-zinc-800">
+                                        {item.label === "Orders" ? (
+                                            <span>{item.value}</span>
+                                        ) : (
+                                            <>kr. {item.value}</>
+                                        )}
+                                    </p>
                                 </div>
                             ))}
                         </div>

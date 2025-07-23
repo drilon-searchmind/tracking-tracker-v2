@@ -73,20 +73,6 @@ export default function OverviewDashboard({ customerId, initialData }) {
                             </tr>
                         </thead>
                         <tbody className="text-gray-800">
-                            {overview_metrics.map((row, i) => (
-                                <tr key={i} className="border-b last:border-0">
-                                    <td className="px-4 py-3">{row.date}</td>
-                                    <td className="px-4 py-3">{Math.round(row.orders).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.revenue).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.revenue_ex_tax).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.ppc_cost).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.ps_cost).toLocaleString()}</td>
-                                    <td className="px-4 py-3">{row.roas.toFixed(2)}</td>
-                                    <td className="px-4 py-3">{row.poas.toFixed(2)}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.gp).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.aov).toLocaleString()}</td>
-                                </tr>
-                            ))}
                             <tr className="bg-gray-200 font-semibold text-sm">
                                 <td className="px-4 py-3">Total</td>
                                 <td className="px-4 py-3">{Math.round(totals.orders).toLocaleString()}</td>
@@ -123,6 +109,20 @@ export default function OverviewDashboard({ customerId, initialData }) {
                                 <td className="px-4 py-3">--</td>
                                 <td className="px-4 py-3">--</td>
                             </tr>
+                            {overview_metrics.map((row, i) => (
+                                <tr key={i} className="border-b last:border-0">
+                                    <td className="px-4 py-3">{row.date}</td>
+                                    <td className="px-4 py-3">{Math.round(row.orders).toLocaleString()}</td>
+                                    <td className="px-4 py-3">kr. {Math.round(row.revenue).toLocaleString()}</td>
+                                    <td className="px-4 py-3">kr. {Math.round(row.revenue_ex_tax).toLocaleString()}</td>
+                                    <td className="px-4 py-3">kr. {Math.round(row.ppc_cost).toLocaleString()}</td>
+                                    <td className="px-4 py-3">kr. {Math.round(row.ps_cost).toLocaleString()}</td>
+                                    <td className="px-4 py-3">{row.roas.toFixed(2)}</td>
+                                    <td className="px-4 py-3">{row.poas.toFixed(2)}</td>
+                                    <td className="px-4 py-3">kr. {Math.round(row.gp).toLocaleString()}</td>
+                                    <td className="px-4 py-3">kr. {Math.round(row.aov).toLocaleString()}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>

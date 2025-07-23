@@ -171,7 +171,7 @@ export default function PnLDashboard({ customerId, initialData }) {
 
                         {/* Section: Resultat */}
                         <div className="border border-zinc-200 rounded bg-white">
-                            <div className="bg-gray-100 px-4 py-2 font-medium">Resultat</div>
+                            <div className="bg-gray-100 px-4 py-2 font-medium">Result</div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Fixed Expenses</span>
                                 <span>kr. {Math.round(fixed_expenses).toLocaleString()}</span>
@@ -198,7 +198,7 @@ export default function PnLDashboard({ customerId, initialData }) {
                     {/* Right: DB Andel Circles */}
                     <div className="space-y-6">
                         <div className="border border-zinc-200 rounded text-center py-2 bg-gray-100 font-medium">
-                            DB andel af samlede udgifter
+                            DB share of total expenses
                         </div>
 
                         {[

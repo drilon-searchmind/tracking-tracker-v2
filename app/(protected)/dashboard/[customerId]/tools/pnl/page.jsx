@@ -1,149 +1,133 @@
-"use client";
+import PnLDashboard from "./pnl-dashboard";
+import { queryBigQueryPNLMetrics } from "@/lib/bigQueryConnect";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
+export const revalidate = 3600; // ISR: Revalidate every hour
 
-export default function PnLPage({ params }) {
-    const [customerId, setCustomerId] = useState(null);
+export default async function PnLPage({ params }) {
+    const customerId = "airbyte_humdakin_dk";
+    const projectId = `performance-dashboard-airbyte`;
 
-    useEffect(() => {
-        if (params?.customerId) {
-            setCustomerId(params.customerId);
+    // Static expenses (fictive, updated per Google Sheet)
+    const staticExpenses = {
+        cogs_percentage: 0.7, // 70% of Net Sales
+        shipping_cost_per_order: 15, // kr. 15 per order
+        transaction_cost_percentage: 0.015, // 1.5% of Net Sales
+        marketing_bureau_cost: 250000, // Fixed kr. 250,000
+        marketing_tooling_cost: 80000, // Fixed kr. 80,000
+        fixed_expenses: 1000000 // Fixed kr. 1,000,000
+    };
+
+    try {
+        const dashboardQuery = `
+    WITH shopify_data AS (
+        SELECT
+            SUM(amount) AS net_sales,
+            COUNT(*) AS orders
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.transactions\`
+    ),
+    facebook_data AS (
+        SELECT
+            SUM(spend) AS marketing_spend_facebook
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.ads_insights\`
+    ),
+    google_ads_data AS (
+        SELECT
+            SUM(metrics_cost_micros / 1000000.0) AS marketing_spend_google
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+    ),
+    email_data AS (
+        SELECT
+            SUM(metrics_cost_micros / 1000000.0) AS marketing_spend_email
+        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+    ),
+    combined_metrics AS (
+        SELECT
+            COALESCE(s.net_sales, 0) AS net_sales,
+            COALESCE(s.orders, 0) AS orders,
+            COALESCE(f.marketing_spend_facebook, 0) AS marketing_spend_facebook,
+            COALESCE(g.marketing_spend_google, 0) AS marketing_spend_google,
+            COALESCE(e.marketing_spend_email, 0) AS marketing_spend_email,
+            COALESCE(f.marketing_spend_facebook, 0) + COALESCE(g.marketing_spend_google, 0) + COALESCE(e.marketing_spend_email, 0) AS total_marketing_spend
+        FROM shopify_data s
+        CROSS JOIN facebook_data f
+        CROSS JOIN google_ads_data g
+        CROSS JOIN email_data e
+    )
+    SELECT
+        net_sales,
+        orders,
+        total_marketing_spend,
+        marketing_spend_facebook,
+        marketing_spend_google,
+        marketing_spend_email
+    FROM combined_metrics
+`;
+
+        const data = await queryBigQueryPNLMetrics({
+            tableId: projectId,
+            customerId,
+            customQuery: dashboardQuery,
+        });
+
+        console.log("P&L Dashboard data:", JSON.stringify(data, null, 2));
+
+        if (!data || !data[0]) {
+            console.warn("No data returned from BigQuery for customerId:", customerId);
+            return <div>No data available for {customerId}</div>;
         }
-    }, [params]);
 
-    return (
-        <div className="py-20 px-0 relative overflow">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
-            <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
-                <Image
-                    width={1920}
-                    height={1080}
-                    src="/images/shape-dotted-light.svg"
-                    alt="bg"
-                    className="w-full h-full"
-                />
-            </div>
+        const { net_sales, orders, total_marketing_spend, marketing_spend_facebook, marketing_spend_google, marketing_spend_email } = data[0];
 
-            <div className="px-20 mx-auto z-10 relative">
-                <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">Humdakin DK</h2>
-                    <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">P&L</h1>
-                    <p className="text-gray-600 max-w-2xl">
-                        Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros scelerisque sed. Commodo in viv
-                    </p>
-                </div>
+        // Calculate P&L metrics
+        const cogs = net_sales * staticExpenses.cogs_percentage;
+        const db1 = net_sales - cogs;
+        const shipping_cost = orders * staticExpenses.shipping_cost_per_order;
+        const transaction_cost = net_sales * staticExpenses.transaction_cost_percentage;
+        const direct_selling_costs = shipping_cost + transaction_cost;
+        const db2 = db1 - direct_selling_costs;
+        const marketing_costs = total_marketing_spend + staticExpenses.marketing_bureau_cost + staticExpenses.marketing_tooling_cost;
+        const db3 = db2 - marketing_costs;
+        const result = db3 - staticExpenses.fixed_expenses;
+        const realized_roas = total_marketing_spend > 0 ? net_sales / total_marketing_spend : 0;
+        const total_costs = cogs + direct_selling_costs + marketing_costs + staticExpenses.fixed_expenses;
+        const break_even_roas = total_marketing_spend > 0 ? total_costs / total_marketing_spend : 0;
 
-                <div className="flex gap-2 mb-6 justify-end">
-                    <input type="date" className="border px-2 py-2 rounded text-sm" />
-                    <span className="text-gray-400">→</span>
-                    <input type="date" className="border px-2 py-2 rounded text-sm" />
-                </div>
+        // Calculate DB percentages
+        const db1_percentage = total_costs > 0 ? (db1 / total_costs) * 100 : 0;
+        const db2_percentage = total_costs > 0 ? (db2 / total_costs) * 100 : 0;
+        const db3_percentage = total_costs > 0 ? (db3 / total_costs) * 100 : 0;
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left: P&L Table */}
-                    <div className="lg:col-span-2 space-y-4">
-                        {/* Section: Nettoomsætning */}
-                        <div className="border border-zinc-200 rounded bg-white">
-                            <div className="bg-gray-100 px-4 py-2 font-medium">Nettoomsætning</div>
-                            <div className="flex justify-between px-4 py-2 border-t">
-                                <span>Netsales</span>
-                                <span>kr. 6.411.233</span>
-                            </div>
-                        </div>
+        const pnlData = {
+            net_sales,
+            orders,
+            cogs,
+            db1,
+            shipping_cost,
+            transaction_cost,
+            db2,
+            marketing_spend: total_marketing_spend,
+            marketing_bureau_cost: staticExpenses.marketing_bureau_cost,
+            marketing_tooling_cost: staticExpenses.marketing_tooling_cost,
+            db3,
+            fixed_expenses: staticExpenses.fixed_expenses,
+            result,
+            realized_roas,
+            break_even_roas,
+            db_percentages: {
+                db1: db1_percentage,
+                db2: db2_percentage,
+                db3: db3_percentage
+            }
+        };
 
-                        {/* Section: DB1 */}
-                        <div className="border border-zinc-200 rounded bg-white">
-                            <div className="bg-gray-100 px-4 py-2 font-medium">DB1</div>
-                            <div className="flex justify-between px-4 py-2 border-t">
-                                <span>COGS</span>
-                                <span>kr. 6.411.233</span>
-                            </div>
-                            <div className="flex justify-between px-4 py-2 border-t">
-                                <span>Total, DB1</span>
-                                <span>kr. 6.411.233</span>
-                            </div>
-                        </div>
-
-                        {/* Section: DB2 */}
-                        <div className="border border-zinc-200 rounded bg-white">
-                            <div className="bg-gray-100 px-4 py-2 font-medium">DB2</div>
-                            <div className="flex justify-between px-4 py-2 border-t">
-                                <span>COGS</span>
-                                <span>kr. 6.411.233</span>
-                            </div>
-                            <div className="flex justify-between px-4 py-2 border-t">
-                                <span>Total, DB1</span>
-                                <span>kr. 6.411.233</span>
-                            </div>
-                            <div className="flex justify-between px-4 py-2 border-t">
-                                <span>Total, DB1</span>
-                                <span>kr. 6.411.233</span>
-                            </div>
-                        </div>
-
-                        {/* Section: Resultat */}
-                        <div className="border border-zinc-200 rounded bg-white">
-                            <div className="bg-gray-100 px-4 py-2 font-medium">Resultat</div>
-                            <div className="flex justify-between px-4 py-2 border-t">
-                                <span>Faste udgifter</span>
-                                <span>kr. 6.411.233</span>
-                            </div>
-                        </div>
-
-                        {/* Section: ROAS */}
-                        <div className="grid grid-cols-2 border border-zinc-200 rounded divide-x divide-gray-300 text-center z-10 bg-white">
-                            <div className="px-4 py-5">
-                                <p className="font-medium text-zinc-500 mb-2">Realiseret ROAS</p>
-                                <p className="text-zinc-800 text-4xl font-bold">12.92</p>
-                            </div>
-                            <div className="px-4 py-5">
-                                <p className="font-medium text-zinc-400 mb-2">Break-even ROAS</p>
-                                <p className="text-zinc-800 text-4xl font-bold">12.92</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right: DB Andel Circles */}
-                    <div className="space-y-6">
-                        <div className="border border-zinc-200 rounded text-center py-2 bg-gray-100 font-medium">
-                            DB andel af samlede udgifter
-                        </div>
-
-                        {[1, 2, 3].map((_, i) => (
-                            <div key={i} className="bg-white border border-zinc-200 rounded-lg p-6 text-center">
-                                <div className="flex justify-between text-sm text-gray-500 mb-2 px-4">
-                                    <span>Achieved</span>
-                                    <span>Remaining</span>
-                                </div>
-                                <div className="relative w-full h-32 flex items-center justify-center">
-                                    <svg className="w-28 h-28 transform -rotate-90">
-                                        <circle
-                                            cx="56"
-                                            cy="56"
-                                            r="50"
-                                            stroke="#E5E7EB"
-                                            strokeWidth="10"
-                                            fill="transparent"
-                                        />
-                                        <circle
-                                            cx="56"
-                                            cy="56"
-                                            r="50"
-                                            stroke="#C6ED62"
-                                            strokeWidth="10"
-                                            strokeDasharray="314"
-                                            strokeDashoffset="104"
-                                            fill="transparent"
-                                        />
-                                    </svg>
-                                    <div className="absolute text-xl font-semibold text-gray-800">67%</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+        return (
+            <PnLDashboard
+                customerId={customerId}
+                initialData={pnlData}
+            />
+        );
+    } catch (error) {
+        console.error("P&L Dashboard error:", error.message, error.stack);
+        return <div>Error: Failed to load P&L dashboard - {error.message}</div>;
+    }
 }

@@ -1,14 +1,17 @@
 import React from "react";
 import PerformanceDashboard from "./performance-dashboard";
 import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
+import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // *** ISR: Revalidate every hour
 
 export default async function DashboardPage({ params }) {
-	const customerId = "airbyte_humdakin_dk";
-	const projectId = `s`;
+	const { customerId } = params;
 
 	try {
+    const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+	    let projectId = bigQueryProjectId
+
 		const dashboardQuery = `
   WITH orders_data AS (
     SELECT
@@ -16,7 +19,7 @@ export default async function DashboardPage({ params }) {
       CAST(SUM(amount) AS FLOAT64) as revenue,
       CAST(SUM(amount) AS FLOAT64) as gross_profit,
       COUNT(id) as order_count
-    FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.transactions\`
+    FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
     WHERE DATE(created_at) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()
     GROUP BY date
   ),
@@ -25,7 +28,7 @@ export default async function DashboardPage({ params }) {
       CAST(segments_date AS STRING) as date,
       CAST(SUM(metrics_cost_micros) / 1000000 AS FLOAT64) as google_ads_cost,
       SUM(metrics_impressions) as google_ads_impressions
-    FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+    FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
     WHERE segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()
     GROUP BY date
   ),
@@ -34,7 +37,7 @@ export default async function DashboardPage({ params }) {
       CAST(date_start AS STRING) as date,
       CAST(SUM(spend) AS FLOAT64) as meta_spend,
       SUM(impressions) as meta_impressions
-    FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.ads_insights\`
+    FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.ads_insights\`
     WHERE date_start BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()
     GROUP BY date
   ),
@@ -43,7 +46,7 @@ export default async function DashboardPage({ params }) {
       date as date,
       sessionDefaultChannelGrouping as channel_group,
       SUM(sessions) as sessions
-    FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.traffic_acquisition_session_default_channel_grouping_report\`
+    FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.traffic_acquisition_session_default_channel_grouping_report\`
     WHERE PARSE_DATE('%Y%m%d', date) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) AND CURRENT_DATE()
     GROUP BY date, channel_group
   ),
@@ -99,7 +102,7 @@ export default async function DashboardPage({ params }) {
 
 		const data = await queryBigQueryDashboardMetrics({
 			tableId: projectId,
-			customerId,
+			customerId: bigQueryCustomerId,
 			customQuery: dashboardQuery,
 		});
 
@@ -113,6 +116,7 @@ export default async function DashboardPage({ params }) {
 		return (
 			<PerformanceDashboard
 				customerId={customerId}
+        customerName={customerName}
 				initialData={data}
 			/>
 		);

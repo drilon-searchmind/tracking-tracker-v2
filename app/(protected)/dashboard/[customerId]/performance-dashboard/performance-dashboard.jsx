@@ -40,7 +40,7 @@ ChartJS.register(
     ChartDataLabels,
 );
 
-export default function PerformanceDashboard({ customerId, initialData }) {
+export default function PerformanceDashboard({ customerId, customerName, initialData }) {
     const [comparison, setComparison] = useState("Previous Year");
     const [dateStart, setDateStart] = useState("2025-01-01");
     const [dateEnd, setDateEnd] = useState("2025-04-15");
@@ -375,7 +375,7 @@ export default function PerformanceDashboard({ customerId, initialData }) {
 
             <div className="px-20 mx-auto z-10 relative">
                 <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerId.replace("airbyte_", "")}</h2>
+                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
                     <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Performance Dashboard</h1>
                     <p className="text-gray-600 max-w-2xl">
                         Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros scelerisque sed. Commodo in viv...

@@ -27,7 +27,7 @@ ChartJS.register(
     CategoryScale
 );
 
-export default function PPCDashboard({ customerId, initialData }) {
+export default function PPCDashboard({ customerId, customerName, initialData }) {
     const [comparison, setComparison] = useState("Previous Year");
     const [startDate, setStartDate] = useState("2025-01-01");
     const [endDate, setEndDate] = useState("2025-04-15");
@@ -233,7 +233,7 @@ export default function PPCDashboard({ customerId, initialData }) {
 
             <div className="px-20 mx-auto z-10 relative">
                 <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerId.replace("airbyte_", "")}</h2>
+                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
                     <h1 className="mb-5 text-3xl font-bold text-black xl:text-[44px]">Google Ads Dashboard</h1>
                     <p className="text-gray-600 max-w-2xl">
                         Overview of key Google Ads metrics including conversions, ad spend, and campaign performance.

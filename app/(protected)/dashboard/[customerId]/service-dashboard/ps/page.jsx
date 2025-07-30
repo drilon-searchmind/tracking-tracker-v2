@@ -1,13 +1,16 @@
 import PSDashboard from "./ps-dashboard";
 import { queryBigQueryPaidSocialDashboardMetrics } from "@/lib/bigQueryConnect";
+import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function PaidSocialDashboardPage({ params }) {
-    const customerId = "airbyte_humdakin_dk";
-    const projectId = `performance-dashboard-airbyte`;
+    const { customerId } = params;
 
     try {
+        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+        let projectId = bigQueryProjectId
+
         const dashboardQuery = `
     WITH raw_data AS (
         SELECT
@@ -18,7 +21,7 @@ export default async function PaidSocialDashboardPage({ params }) {
             CAST(JSON_VALUE(conversions) AS FLOAT64) AS conversions,
             CAST(JSON_VALUE(conversion_values) AS FLOAT64) AS conversion_value,
             spend
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.ads_insights\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.ads_insights\`
     ),
     metrics AS (
         SELECT
@@ -174,7 +177,7 @@ export default async function PaidSocialDashboardPage({ params }) {
 
         const data = await queryBigQueryPaidSocialDashboardMetrics({
             tableId: projectId,
-            customerId,
+            customerId: bigQueryCustomerId,
             customQuery: dashboardQuery,
         });
 
@@ -190,6 +193,7 @@ export default async function PaidSocialDashboardPage({ params }) {
         return (
             <PSDashboard
                 customerId={customerId}
+                customerName={customerName}
                 initialData={{ metrics, metrics_by_date, top_campaigns, campaigns_by_date }}
             />
         );

@@ -1,13 +1,16 @@
 import SEODashboard from "./seo-dashboard";
 import { queryBigQuerySEODashboardMetrics } from "@/lib/bigQueryConnect";
+import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function SEODashboardPage({ params }) {
-    const customerId = "airbyte_humdakin_dk";
-    const projectId = `performance-dashboard-airbyte`;
+    const { customerId } = params;
 
     try {
+        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+        let projectId = bigQueryProjectId
+
         const dashboardQuery = `
             WITH raw_data AS (
                 SELECT
@@ -18,7 +21,7 @@ export default async function SEODashboardPage({ params }) {
                     impressions,
                     ctr,
                     position
-                FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.search_analytics_all_fields\`
+                FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.search_analytics_all_fields\`
             ),
             metrics AS (
                 SELECT
@@ -115,7 +118,7 @@ export default async function SEODashboardPage({ params }) {
 
         const data = await queryBigQuerySEODashboardMetrics({
             tableId: projectId,
-            customerId,
+            customerId: bigQueryCustomerId,
             customQuery: dashboardQuery,
         });
 
@@ -131,6 +134,7 @@ export default async function SEODashboardPage({ params }) {
         return (
             <SEODashboard
                 customerId={customerId}
+                customerName={customerName}
                 initialData={{ metrics, impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date }}
             />
         );

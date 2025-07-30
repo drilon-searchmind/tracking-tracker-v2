@@ -1,20 +1,23 @@
 import PaceReport from "./pace-report";
 import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
+import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function PacePage({ params }) {
-    const customerId = "airbyte_humdakin_dk";
-    const projectId = `performance-dashboard-airbyte`;
+    const { customerId } = params;
 
     try {
+        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+        let projectId = bigQueryProjectId
+
         const dashboardQuery = `
     WITH shopify_data AS (
         SELECT
             DATE(processed_at) AS date,
             COUNT(*) AS orders,
             SUM(amount) AS revenue
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.transactions\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
         WHERE status = 'SUCCESS'
             AND DATE(processed_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
         GROUP BY DATE(processed_at)
@@ -23,7 +26,7 @@ export default async function PacePage({ params }) {
         SELECT
             date_start AS date,
             SUM(spend) AS ps_cost
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.ads_insights\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.ads_insights\`
         WHERE date_start >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
         GROUP BY date_start
     ),
@@ -31,7 +34,7 @@ export default async function PacePage({ params }) {
         SELECT
             segments_date AS date,
             SUM(metrics_cost_micros / 1000000.0) AS ppc_cost
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
         WHERE segments_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
         GROUP BY segments_date
     ),
@@ -118,7 +121,7 @@ export default async function PacePage({ params }) {
 `;
         const data = await queryBigQueryDashboardMetrics({
             tableId: projectId,
-            customerId,
+            customerId: bigQueryCustomerId,
             customQuery: dashboardQuery,
         });
 
@@ -133,6 +136,7 @@ export default async function PacePage({ params }) {
         return (
             <PaceReport
                 customerId={customerId}
+                customerName={customerName}
                 initialData={{ daily_metrics, totals }}
             />
         );

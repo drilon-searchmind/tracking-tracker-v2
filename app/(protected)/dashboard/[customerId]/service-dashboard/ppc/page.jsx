@@ -1,13 +1,16 @@
 import PPCDashboard from "./ppc-dashboard";
 import { queryBigQueryGoogleAdsDashboardMetrics } from "@/lib/bigQueryConnect";
+import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function GoogleAdsDashboardPage({ params }) {
-    const customerId = "airbyte_humdakin_dk";
-    const projectId = `performance-dashboard-airbyte`;
+    const { customerId } = params;
 
     try {
+        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+                let projectId = bigQueryProjectId
+
         const dashboardQuery = `
     WITH raw_data AS (
         SELECT
@@ -18,7 +21,7 @@ export default async function GoogleAdsDashboardPage({ params }) {
             metrics_conversions AS conversions,
             metrics_conversions_value AS conversions_value,
             metrics_cost_micros / 1000000.0 AS cost
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
     ),
     metrics AS (
         SELECT
@@ -161,11 +164,9 @@ export default async function GoogleAdsDashboardPage({ params }) {
 
         const data = await queryBigQueryGoogleAdsDashboardMetrics({
             tableId: projectId,
-            customerId,
+            customerId: bigQueryCustomerId,
             customQuery: dashboardQuery,
         });
-
-        console.log("Google Ads Dashboard data:", JSON.stringify(data, null, 2));
 
         if (!data || !data[0]) {
             console.warn("No data returned from BigQuery for customerId:", customerId);
@@ -177,6 +178,7 @@ export default async function GoogleAdsDashboardPage({ params }) {
         return (
             <PPCDashboard
                 customerId={customerId}
+                customerName={customerName}
                 initialData={{ metrics, metrics_by_date, top_campaigns, campaigns_by_date }}
             />
         );

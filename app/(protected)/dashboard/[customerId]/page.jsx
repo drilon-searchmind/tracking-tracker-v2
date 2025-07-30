@@ -1,34 +1,37 @@
 import OverviewDashboard from "./overview-dashboard";
 import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
+import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function OverviewPage({ params }) {
-    const customerId = "airbyte_humdakin_dk";
-	const projectId = `performance-dashboard-airbyte`;
-
+    const { customerId } = params;
+    
     try {
+        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+	    let projectId = bigQueryProjectId
+
         const dashboardQuery = `
     WITH shopify_data AS (
         SELECT
             DATE(processed_at) AS date,
             COUNT(*) AS orders,
             SUM(amount) AS revenue
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.transactions\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
         GROUP BY DATE(processed_at)
     ),
     facebook_data AS (
         SELECT
             date_start AS date,
             SUM(spend) AS ps_cost
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.ads_insights\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.ads_insights\`
         GROUP BY date_start
     ),
     google_ads_data AS (
         SELECT
             segments_date AS date,
             SUM(metrics_cost_micros / 1000000.0) AS ppc_cost
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
         GROUP BY segments_date
     ),
     combined_data AS (
@@ -125,15 +128,13 @@ export default async function OverviewPage({ params }) {
 
         const data = await queryBigQueryDashboardMetrics({
             tableId: projectId,
-            customerId,
+            customerId: bigQueryCustomerId,
             customQuery: dashboardQuery,
         });
 
-        console.log("Overview Dashboard data:", JSON.stringify(data, null, 2));
-
         if (!data || !data[0] || !data[0].overview_metrics) {
-            console.warn("No data returned from BigQuery for customerId:", customerId);
-            return <div>No data available for {customerId}</div>;
+            console.warn("No data returned from BigQuery for customerId:", bigQueryCustomerId);
+            return <div>No data available for {bigQueryCustomerId}</div>;
         }
 
         const { overview_metrics, totals } = data[0];
@@ -141,6 +142,7 @@ export default async function OverviewPage({ params }) {
         return (
             <OverviewDashboard
                 customerId={customerId}
+                customerName={customerName}
                 initialData={{ overview_metrics, totals }}
             />
         );

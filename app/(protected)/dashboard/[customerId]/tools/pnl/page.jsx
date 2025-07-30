@@ -1,13 +1,13 @@
 import PnLDashboard from "./pnl-dashboard";
 import { queryBigQueryPNLMetrics } from "@/lib/bigQueryConnect";
+import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function PnLPage({ params }) {
-    const customerId = "airbyte_humdakin_dk";
-    const projectId = `performance-dashboard-airbyte`;
+    const { customerId } = params;
 
-    // Static expenses (fictive, updated per Google Sheet)
+    // Static expenses (TEMP: Fictive)
     const staticExpenses = {
         cogs_percentage: 0.7, // 70% of Net Sales
         shipping_cost_per_order: 15, // kr. 15 per order
@@ -18,27 +18,30 @@ export default async function PnLPage({ params }) {
     };
 
     try {
+        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+        let projectId = bigQueryProjectId
+
         const dashboardQuery = `
     WITH shopify_data AS (
         SELECT
             SUM(amount) AS net_sales,
             COUNT(*) AS orders
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.transactions\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
     ),
     facebook_data AS (
         SELECT
             SUM(spend) AS marketing_spend_facebook
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.ads_insights\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.ads_insights\`
     ),
     google_ads_data AS (
         SELECT
             SUM(metrics_cost_micros / 1000000.0) AS marketing_spend_google
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
     ),
     email_data AS (
         SELECT
             SUM(metrics_cost_micros / 1000000.0) AS marketing_spend_email
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
     ),
     combined_metrics AS (
         SELECT
@@ -65,7 +68,7 @@ export default async function PnLPage({ params }) {
 
         const data = await queryBigQueryPNLMetrics({
             tableId: projectId,
-            customerId,
+            customerId: bigQueryCustomerId,
             customQuery: dashboardQuery,
         });
 
@@ -123,6 +126,7 @@ export default async function PnLPage({ params }) {
         return (
             <PnLDashboard
                 customerId={customerId}
+                customerName={customerName}
                 initialData={pnlData}
             />
         );

@@ -1,14 +1,17 @@
 import EmailDashboard from "./em-dashboard";
 import { queryBigQueryEmailActiveCampaignMetrics } from "@/lib/bigQueryConnect";
+import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function EmailDashboardPage({ params }) {
-    const customerId = "airbyte_humdakin_dk";
-    const projectId = `performance-dashboard-airbyte`;
+    const { customerId } = params;
     const emailType = "active_campaign";
 
     try {
+        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+	    let projectId = bigQueryProjectId
+
         const dashboardQuery = `
     WITH raw_data AS (
         SELECT
@@ -19,7 +22,7 @@ export default async function EmailDashboardPage({ params }) {
             CAST(metrics_conversions AS FLOAT64) AS conversions,
             CAST(metrics_conversions_value AS FLOAT64) AS conversion_value,
             metrics_cost_micros / 1000000.0 AS cost
-        FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.campaign\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
     ),
     metrics AS (
         SELECT
@@ -163,11 +166,9 @@ export default async function EmailDashboardPage({ params }) {
 
         const data = await queryBigQueryEmailActiveCampaignMetrics({
             tableId: projectId,
-            customerId,
+            customerId: bigQueryCustomerId,
             customQuery: dashboardQuery,
         });
-
-        console.log("Email Dashboard data:", JSON.stringify(data, null, 2));
 
         if (!data || !data[0]) {
             console.warn("No data returned from BigQuery for customerId:", customerId);
@@ -180,6 +181,7 @@ export default async function EmailDashboardPage({ params }) {
             <EmailDashboard
                 customerId={customerId}
                 initialData={{ metrics, metrics_by_date, top_campaigns, campaigns_by_date, campaign_performance }}
+                customerName={customerName}
                 emailType={emailType}
             />
         );

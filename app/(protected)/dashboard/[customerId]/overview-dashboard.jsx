@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 
-export default function OverviewDashboard({ customerId, initialData }) {
+export default function OverviewDashboard({ customerId, customerName, initialData }) {
     const [startDate, setStartDate] = useState("2025-01-01");
     const [endDate, setEndDate] = useState("2025-04-15");
 
@@ -28,7 +28,7 @@ export default function OverviewDashboard({ customerId, initialData }) {
 
             <div className="px-20 mx-auto z-10 relative">
                 <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerId.replace("airbyte_", "")}</h2>
+                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
                     <h1 className="mb-5 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Overview</h1>
                     <p className="text-gray-600 max-w-2xl">
                         Daily overview of key performance metrics including orders, revenue, ad spend, and profitability.

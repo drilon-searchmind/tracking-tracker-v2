@@ -24,7 +24,7 @@ ChartJS.register(
     Legend
 );
 
-export default function PaceReport({ customerId, initialData }) {
+export default function PaceReport({ customerId, customerName, initialData }) {
     const [revenueBudget, setRevenueBudget] = useState(initialData.totals.revenue_budget.toLocaleString("da-DK"));
     const [adSpendBudget, setAdSpendBudget] = useState(initialData.totals.ad_spend_budget.toLocaleString("da-DK"));
     const [metric, setMetric] = useState("Revenue");
@@ -203,7 +203,7 @@ export default function PaceReport({ customerId, initialData }) {
 
             <div className="px-20 mx-auto z-10 relative">
                 <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerId.replace("airbyte_", "")}</h2>
+                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
                     <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Pace Report</h1>
                     <p className="text-gray-600 max-w-2xl">
                         Track budget utilization and pacing for revenue and ad spend, with projections for the current month.

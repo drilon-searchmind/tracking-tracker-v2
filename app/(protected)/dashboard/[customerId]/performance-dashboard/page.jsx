@@ -6,7 +6,7 @@ export const revalidate = 3600; // *** ISR: Revalidate every hour
 
 export default async function DashboardPage({ params }) {
 	const customerId = "airbyte_humdakin_dk";
-	const projectId = `performance-dashboard-airbyte`;
+	const projectId = `s`;
 
 	try {
 		const dashboardQuery = `

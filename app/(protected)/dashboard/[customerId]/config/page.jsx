@@ -1,10 +1,14 @@
 import Image from "next/image";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
+import ConfigForm from "./components/ConfigForm";
 
 export default async function ConfigPage({ params }) {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const { customerId } = params;
-
     const { customerName } = await fetchCustomerDetails(customerId);
+
+    const responseRevenueBudget = await fetch(`${baseUrl}/api/config-revenue-budget/${customerId}`);
+    const revenueBudget = await responseRevenueBudget.json();
 
     return (
         <div className="py-20 px-0 relative overflow">
@@ -39,17 +43,13 @@ export default async function ConfigPage({ params }) {
                                         <th className="px-4 py-3">
                                             <input type="checkbox" />
                                         </th>
-                                        <th className="px-4 py-3 font-medium">Målsætning ↓</th>
-                                        <th className="px-4 py-3 font-medium">Omsætning</th>
+                                        <th className="px-4 py-3 font-medium">Date ↓</th>
+                                        <th className="px-4 py-3 font-medium">Revenue</th>
                                         <th className="px-4 py-3 font-medium">Budget</th>
                                     </tr>
                                 </thead>
                                 <tbody className="text-zinc-700">
-                                    {[
-                                        { month: "Januar", year: "2025", omsaetning: "40.000", budget: "40.000" },
-                                        { month: "Februar", year: "2025", omsaetning: "40.000", budget: "40.000" },
-                                        { month: "Marts", year: "2025", omsaetning: "40.000", budget: "40.000" },
-                                    ].map((row, i) => (
+                                    {revenueBudget?.configs?.map((row, i) => (
                                         <tr key={i} className="border-b border-zinc-100">
                                             <td className="px-4 py-3">
                                                 <input type="checkbox" />
@@ -58,7 +58,7 @@ export default async function ConfigPage({ params }) {
                                                 <span className="block font-medium">{row.month}</span>
                                                 <span className="text-xs text-zinc-400">{row.year}</span>
                                             </td>
-                                            <td className="px-4 py-3">{row.omsaetning}</td>
+                                            <td className="px-4 py-3">{row.revenue}</td>
                                             <td className="px-4 py-3">{row.budget}</td>
                                         </tr>
                                     ))}
@@ -68,23 +68,7 @@ export default async function ConfigPage({ params }) {
                     </div>
 
                     <div>
-                        <h3 className="font-semibold text-lg mb-2 text-zinc-800">Marketing Channels</h3>
-                        <div className="border border-zinc-200 rounded bg-white">
-                            <div className="border-b border-zinc-100 px-4 py-2">
-                                <label className="inline-flex items-center gap-2 text-sm font-medium text-zinc-700">
-                                    <input type="checkbox" />
-                                    Channels
-                                </label>
-                            </div>
-                            {["Google Ads", "Microsoft Ads"].map((channel, i) => (
-                                <div key={i} className="border-b last:border-0 border-zinc-100 px-4 py-2">
-                                    <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
-                                        <input type="checkbox" />
-                                        {channel}
-                                    </label>
-                                </div>
-                            ))}
-                        </div>
+                        <ConfigForm customerId={customerId} baseUrl={baseUrl} />
                     </div>
                 </div>
             </div>

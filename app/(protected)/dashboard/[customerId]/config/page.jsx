@@ -2,6 +2,7 @@ import Image from "next/image";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 import ConfigForm from "./components/ConfigForm";
 import ConfigTable from "./components/ConfigTable";
+import StaticExpenses from "./components/StaticExpenses";
 
 export default async function ConfigPage({ params }) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
@@ -44,6 +45,11 @@ export default async function ConfigPage({ params }) {
                     <div>
                         <ConfigForm customerId={customerId} baseUrl={baseUrl} />
                     </div>
+                </div>
+
+                <div className="mt-8">
+                    <h3 className="font-semibold text-lg mb-2 text-zinc-800">Static Expenses</h3>
+                    <StaticExpenses customerId={customerId} baseUrl={baseUrl} />
                 </div>
             </div>
         </div>

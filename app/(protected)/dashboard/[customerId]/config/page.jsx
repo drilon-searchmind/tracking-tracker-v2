@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 import ConfigForm from "./components/ConfigForm";
+import ConfigTable from "./components/ConfigTable";
 
 export default async function ConfigPage({ params }) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
@@ -35,36 +36,9 @@ export default async function ConfigPage({ params }) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2">
-                        <h3 className="font-semibold text-lg mb-2 text-zinc-800">DB</h3>
-                        <div className="overflow-auto border border-zinc-200 rounded bg-white">
-                            <table className="min-w-full text-sm">
-                                <thead className="bg-gray-50 border-b border-zinc-200 text-left">
-                                    <tr className="text-zinc-600">
-                                        <th className="px-4 py-3">
-                                            <input type="checkbox" />
-                                        </th>
-                                        <th className="px-4 py-3 font-medium">Date ↓</th>
-                                        <th className="px-4 py-3 font-medium">Revenue</th>
-                                        <th className="px-4 py-3 font-medium">Budget</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-zinc-700">
-                                    {revenueBudget?.configs?.map((row, i) => (
-                                        <tr key={i} className="border-b border-zinc-100">
-                                            <td className="px-4 py-3">
-                                                <input type="checkbox" />
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className="block font-medium">{row.month}</span>
-                                                <span className="text-xs text-zinc-400">{row.year}</span>
-                                            </td>
-                                            <td className="px-4 py-3">{row.revenue}</td>
-                                            <td className="px-4 py-3">{row.budget}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <h3 className="font-semibold text-lg mb-2 text-zinc-800">Objectives</h3>
+                        <ConfigTable revenueBudget={revenueBudget} customerId={customerId} baseUrl={baseUrl} />
+
                     </div>
 
                     <div>

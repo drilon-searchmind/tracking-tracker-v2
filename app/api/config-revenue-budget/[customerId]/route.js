@@ -43,3 +43,27 @@ export async function POST(req, { params }) {
         return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });
     }
 }
+
+export async function DELETE(req, { params }) {
+    const { customerId } = params;
+    const { configId } = await req.json();
+
+    try {
+        await dbConnect();
+
+        const updatedConfig = await ConfigRevenueBudget.findOneAndUpdate(
+            { customer: customerId },
+            { $pull: { configs: { _id: configId } } },
+            { new: true }
+        );
+
+        if (!updatedConfig) {
+            return new Response(JSON.stringify({ message: "Configuration not found" }), { status: 404 });
+        }
+
+        return new Response(JSON.stringify(updatedConfig), { status: 200 });
+    } catch (error) {
+        console.error("Error deleting configuration:", error);
+        return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });
+    }
+}

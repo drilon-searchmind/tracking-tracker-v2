@@ -29,7 +29,7 @@ export default function ConfigForm({ customerId, baseUrl }) {
 
     return (
         <>
-            <h3 className="font-semibold text-lg mb-2 text-zinc-800">Add New DB</h3>
+            <h3 className="font-semibold text-lg mb-2 text-zinc-800">Add New Objective</h3>
             <div className="mt-0 shadow-solid-l bg-white rounded-md px-10 py-10 border border-zinc-200 z-10">
                 <form onSubmit={handleSubmitConfigRevenue} className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <input
@@ -40,21 +40,21 @@ export default function ConfigForm({ customerId, baseUrl }) {
                         className="col-span-2 border border-gray-300 rounded px-4 py-2 text-sm"
                     />
                     <input
-                        type="text"
+                        type="number"
                         name="year"
                         placeholder="Year"
                         required
                         className="col-span-2 border border-gray-300 rounded px-4 py-2 text-sm"
                     />
                     <input
-                        type="text"
+                        type="number"
                         name="revenue"
                         placeholder="Revenue"
                         required
                         className="col-span-4 border border-gray-300 rounded px-4 py-2 text-sm"
                     />
                     <input
-                        type="text"
+                        type="number"
                         name="budget"
                         placeholder="Budget"
                         required
@@ -64,7 +64,7 @@ export default function ConfigForm({ customerId, baseUrl }) {
                         type="submit"
                         className="col-span-4 w-full text-center bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm"
                     >
-                        Add New DB
+                        Add New Objective
                     </button>
                 </form>
             </div>

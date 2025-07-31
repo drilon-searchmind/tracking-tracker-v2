@@ -6,16 +6,37 @@ export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function PnLPage({ params }) {
     const { customerId } = params;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-    // Static expenses (TEMP: Fictive)
-    const staticExpenses = {
-        cogs_percentage: 0.7, // 70% of Net Sales
-        shipping_cost_per_order: 15, // kr. 15 per order
-        transaction_cost_percentage: 0.015, // 1.5% of Net Sales
-        marketing_bureau_cost: 250000, // Fixed kr. 250,000
-        marketing_tooling_cost: 80000, // Fixed kr. 80,000
-        fixed_expenses: 1000000 // Fixed kr. 1,000,000
+    // Initiate base URL and static expenses
+    let staticExpenses = {
+        cogs_percentage: 0,
+        shipping_cost_per_order: 0, 
+        transaction_cost_percentage: 0,
+        marketing_bureau_cost: 0, 
+        marketing_tooling_cost: 0,
+        fixed_expenses: 0
     };
+
+    try {
+        const response = await fetch(`${baseUrl}/api/config-static-expenses/${customerId}`);
+        const result = await response.json();
+
+        if (result.data) {
+            staticExpenses = {
+                cogs_percentage: result.data.cogs_percentage || 0,
+                shipping_cost_per_order: result.data.shipping_cost_per_order || 0,	
+                transaction_cost_percentage: result.data.transaction_cost_percentage || 0,
+                marketing_bureau_cost: result.data.marketing_bureau_cost || 0,
+                marketing_tooling_cost: result.data.marketing_tooling_cost || 0,
+                fixed_expenses: result.data.fixed_expenses || 0,
+            };
+
+            console.log("Static Expenses:", staticExpenses);
+        }
+    } catch (error) {
+        console.error("P&L Dashboard error:", error.message, error.stack);
+    }
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);

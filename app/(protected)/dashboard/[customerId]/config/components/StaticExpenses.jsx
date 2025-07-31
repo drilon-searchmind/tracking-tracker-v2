@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 
 export default function StaticExpenses({ customerId, baseUrl }) {
-    const [expenses, setExpenses] = useState(null); // State to store fetched expenses
-    const [loading, setLoading] = useState(true); // State to track loading status
+    const [expenses, setExpenses] = useState(null);
+    const [loading, setLoading] = useState(true); 
 
     useEffect(() => {
         async function fetchStaticExpenses() {
@@ -15,7 +15,6 @@ export default function StaticExpenses({ customerId, baseUrl }) {
                 if (result.data) {
                     setExpenses(result.data);
                 } else {
-                    // If no data is found, initialize with default values
                     setExpenses({
                         cogs_percentage: 0,
                         shipping_cost_per_order: 0,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import {
     HiOutlineCurrencyDollar,
@@ -41,15 +41,26 @@ ChartJS.register(
 );
 
 export default function PerformanceDashboard({ customerId, customerName, initialData }) {
+    // Initialize date picker to first day of current month to yesterday
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const formatDate = (date) => date.toISOString().split("T")[0];
+
     const [comparison, setComparison] = useState("Previous Year");
-    const [dateStart, setDateStart] = useState("2025-01-01");
-    const [dateEnd, setDateEnd] = useState("2025-04-15");
+    const [dateStart, setDateStart] = useState(formatDate(firstDayOfMonth));
+    const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
     const [isLoading, setIsLoading] = useState(!initialData);
 
     const data = Array.isArray(initialData) ? initialData : [];
 
-    const filteredData = data;
+    // Filter data for current period
+    const filteredData = useMemo(() => {
+        return data.filter((row) => row.date >= dateStart && row.date <= dateEnd);
+    }, [data, dateStart, dateEnd]);
 
+    // Calculate comparison dates
     const getComparisonDates = () => {
         const end = new Date(dateEnd);
         const start = new Date(dateStart);
@@ -57,19 +68,21 @@ export default function PerformanceDashboard({ customerId, customerName, initial
 
         if (comparison === "Previous Year") {
             return {
-                compStart: new Date(start.setFullYear(start.getFullYear() - 1)).toISOString().split("T")[0],
-                compEnd: new Date(end.setFullYear(end.getFullYear() - 1)).toISOString().split("T")[0],
+                compStart: formatDate(new Date(start.setFullYear(start.getFullYear() - 1))),
+                compEnd: formatDate(new Date(end.setFullYear(end.getFullYear() - 1))),
             };
         } else {
             return {
-                compStart: new Date(start.setDate(start.getDate() - daysDiff)).toISOString().split("T")[0],
-                compEnd: new Date(end.setDate(end.getDate() - daysDiff)).toISOString().split("T")[0],
+                compStart: formatDate(new Date(start.setDate(start.getDate() - daysDiff))),
+                compEnd: formatDate(new Date(end.setDate(end.getDate() - daysDiff))),
             };
         }
     };
 
     const { compStart, compEnd } = getComparisonDates();
-    const comparisonData = data;
+    const comparisonData = useMemo(() => {
+        return data.filter((row) => row.date >= compStart && row.date <= compEnd);
+    }, [data, compStart, compEnd]);
 
     const aggregateMetrics = (data) => {
         const channelSessions = {};
@@ -416,11 +429,9 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                                 {metric.icon}
                                 <p className="text-xs text-gray-500 uppercase">
                                     {metric.title}
-                                    
                                     {metric.title === "Gross Profit" && (
                                         <span className="text-xs text-red-500 ml-1 font-bold">(TBU)</span>
                                     )}
-                                          
                                 </p>
                             </div>
                             <div className="flex items-center justify-between">

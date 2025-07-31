@@ -9,7 +9,7 @@ export default async function GoogleAdsDashboardPage({ params }) {
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
-                let projectId = bigQueryProjectId
+        let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
     WITH raw_data AS (
@@ -22,45 +22,7 @@ export default async function GoogleAdsDashboardPage({ params }) {
             metrics_conversions_value AS conversions_value,
             metrics_cost_micros / 1000000.0 AS cost
         FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
-    ),
-    metrics AS (
-        SELECT
-            SUM(clicks) AS clicks,
-            SUM(impressions) AS impressions,
-            SUM(conversions) AS conversions,
-            SUM(conversions_value) AS conversions_value,
-            SUM(cost) AS ad_spend,
-            CAST(
-                CASE
-                    WHEN SUM(cost) > 0 THEN SUM(conversions_value) / SUM(cost)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS roas,
-            CAST(
-                CASE
-                    WHEN SUM(conversions) > 0 THEN SUM(conversions_value) / SUM(conversions)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS aov,
-            CAST(
-                CASE
-                    WHEN SUM(impressions) > 0 THEN SUM(clicks) / SUM(impressions)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS ctr,
-            CAST(
-                CASE
-                    WHEN SUM(clicks) > 0 THEN SUM(cost) / SUM(clicks)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS cpc,
-            CAST(
-                CASE
-                    WHEN SUM(clicks) > 0 THEN SUM(conversions) / SUM(clicks)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS conv_rate
-        FROM raw_data
+        WHERE segments_date IS NOT NULL
     ),
     metrics_by_date AS (
         SELECT
@@ -76,6 +38,12 @@ export default async function GoogleAdsDashboardPage({ params }) {
                     ELSE 0
                 END AS FLOAT64
             ) AS roas,
+            CAST(
+                CASE
+                    WHEN SUM(conversions) > 0 THEN SUM(conversions_value) / SUM(conversions)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS aov,
             CAST(
                 CASE
                     WHEN SUM(impressions) > 0 THEN SUM(clicks) / SUM(impressions)
@@ -145,7 +113,6 @@ export default async function GoogleAdsDashboardPage({ params }) {
         ORDER BY r.date, clicks DESC
     )
     SELECT
-        (SELECT AS STRUCT * FROM metrics) AS metrics,
         (SELECT ARRAY_AGG(STRUCT(
             date, 
             clicks, 
@@ -154,6 +121,7 @@ export default async function GoogleAdsDashboardPage({ params }) {
             conversions_value, 
             ad_spend, 
             roas, 
+            aov, 
             ctr, 
             cpc, 
             conv_rate
@@ -173,13 +141,13 @@ export default async function GoogleAdsDashboardPage({ params }) {
             return <div>No data available for {customerId}</div>;
         }
 
-        const { metrics, metrics_by_date, top_campaigns, campaigns_by_date } = data[0];
+        const { metrics_by_date, top_campaigns, campaigns_by_date } = data[0];
 
         return (
             <PPCDashboard
                 customerId={customerId}
                 customerName={customerName}
-                initialData={{ metrics, metrics_by_date, top_campaigns, campaigns_by_date }}
+                initialData={{ metrics_by_date, top_campaigns, campaigns_by_date }}
             />
         );
     } catch (error) {

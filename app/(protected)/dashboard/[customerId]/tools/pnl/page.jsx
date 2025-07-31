@@ -8,12 +8,12 @@ export default async function PnLPage({ params }) {
     const { customerId } = params;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-    // Initiate base URL and static expenses
+    // Fetch static expenses
     let staticExpenses = {
         cogs_percentage: 0,
-        shipping_cost_per_order: 0, 
+        shipping_cost_per_order: 0,
         transaction_cost_percentage: 0,
-        marketing_bureau_cost: 0, 
+        marketing_bureau_cost: 0,
         marketing_tooling_cost: 0,
         fixed_expenses: 0
     };
@@ -25,65 +25,86 @@ export default async function PnLPage({ params }) {
         if (result.data) {
             staticExpenses = {
                 cogs_percentage: result.data.cogs_percentage || 0,
-                shipping_cost_per_order: result.data.shipping_cost_per_order || 0,	
+                shipping_cost_per_order: result.data.shipping_cost_per_order || 0,
                 transaction_cost_percentage: result.data.transaction_cost_percentage || 0,
                 marketing_bureau_cost: result.data.marketing_bureau_cost || 0,
                 marketing_tooling_cost: result.data.marketing_tooling_cost || 0,
                 fixed_expenses: result.data.fixed_expenses || 0,
             };
-
             console.log("Static Expenses:", staticExpenses);
         }
     } catch (error) {
-        console.error("P&L Dashboard error:", error.message, error.stack);
+        console.error("P&L Static Expenses error:", error.message, error.stack);
     }
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
-        let projectId = bigQueryProjectId
+        let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
     WITH shopify_data AS (
         SELECT
-            SUM(amount) AS net_sales,
+            date,
+            SUM(COALESCE(amount, 0)) AS net_sales,
             COUNT(*) AS orders
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
+        FROM (
+            SELECT
+                CAST(DATE(created_at) AS STRING) AS date,
+                amount
+            FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
+            WHERE created_at IS NOT NULL
+        ) t
+        GROUP BY date
     ),
     facebook_data AS (
         SELECT
-            SUM(spend) AS marketing_spend_facebook
+            CAST(date_start AS STRING) AS date,
+            SUM(COALESCE(spend, 0)) AS marketing_spend_facebook
         FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.ads_insights\`
+        WHERE date_start IS NOT NULL
+        GROUP BY date_start
     ),
     google_ads_data AS (
         SELECT
-            SUM(metrics_cost_micros / 1000000.0) AS marketing_spend_google
+            CAST(segments_date AS STRING) AS date,
+            SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS marketing_spend_google
         FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
+        WHERE segments_date IS NOT NULL
+        GROUP BY segments_date
     ),
-    email_data AS (
+    /* email_data AS (
+        -- No cost metric in campaigns table; uncomment and replace 'cost' with actual column if available
         SELECT
-            SUM(metrics_cost_micros / 1000000.0) AS marketing_spend_email
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
-    ),
+            CAST(sdate AS STRING) AS date,
+            SUM(COALESCE(cost, 0)) AS marketing_spend_email
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaigns\`
+        WHERE sdate IS NOT NULL
+        GROUP BY sdate
+    ), */
     combined_metrics AS (
         SELECT
+            COALESCE(s.date, f.date, g.date) AS date,
             COALESCE(s.net_sales, 0) AS net_sales,
             COALESCE(s.orders, 0) AS orders,
             COALESCE(f.marketing_spend_facebook, 0) AS marketing_spend_facebook,
             COALESCE(g.marketing_spend_google, 0) AS marketing_spend_google,
-            COALESCE(e.marketing_spend_email, 0) AS marketing_spend_email,
-            COALESCE(f.marketing_spend_facebook, 0) + COALESCE(g.marketing_spend_google, 0) + COALESCE(e.marketing_spend_email, 0) AS total_marketing_spend
+            COALESCE(f.marketing_spend_facebook, 0) + COALESCE(g.marketing_spend_google, 0) AS total_marketing_spend
+            /* Add COALESCE(e.marketing_spend_email, 0) to total_marketing_spend if email_data is included */
         FROM shopify_data s
-        CROSS JOIN facebook_data f
-        CROSS JOIN google_ads_data g
-        CROSS JOIN email_data e
+        FULL OUTER JOIN facebook_data f ON s.date = f.date
+        FULL OUTER JOIN google_ads_data g ON s.date = g.date
+        /* FULL OUTER JOIN email_data e ON s.date = e.date */
     )
     SELECT
-        net_sales,
-        orders,
-        total_marketing_spend,
-        marketing_spend_facebook,
-        marketing_spend_google,
-        marketing_spend_email
+        ARRAY_AGG(STRUCT(
+            date,
+            net_sales,
+            orders,
+            total_marketing_spend,
+            marketing_spend_facebook,
+            marketing_spend_google
+            /* , marketing_spend_email */
+        ) ORDER BY date) AS metrics_by_date
     FROM combined_metrics
 `;
 
@@ -93,62 +114,29 @@ export default async function PnLPage({ params }) {
             customQuery: dashboardQuery,
         });
 
-        console.log("P&L Dashboard data:", JSON.stringify(data, null, 2));
+        console.log("P&L Dashboard data (raw):", JSON.stringify(data, null, 2));
 
-        if (!data || !data[0]) {
+        if (!data || !data[0] || !data[0].metrics_by_date) {
             console.warn("No data returned from BigQuery for customerId:", customerId);
             return <div>No data available for {customerId}</div>;
         }
 
-        const { net_sales, orders, total_marketing_spend, marketing_spend_facebook, marketing_spend_google, marketing_spend_email } = data[0];
-
-        // Calculate P&L metrics
-        const cogs = net_sales * staticExpenses.cogs_percentage;
-        const db1 = net_sales - cogs;
-        const shipping_cost = orders * staticExpenses.shipping_cost_per_order;
-        const transaction_cost = net_sales * staticExpenses.transaction_cost_percentage;
-        const direct_selling_costs = shipping_cost + transaction_cost;
-        const db2 = db1 - direct_selling_costs;
-        const marketing_costs = total_marketing_spend + staticExpenses.marketing_bureau_cost + staticExpenses.marketing_tooling_cost;
-        const db3 = db2 - marketing_costs;
-        const result = db3 - staticExpenses.fixed_expenses;
-        const realized_roas = total_marketing_spend > 0 ? net_sales / total_marketing_spend : 0;
-        const total_costs = cogs + direct_selling_costs + marketing_costs + staticExpenses.fixed_expenses;
-        const break_even_roas = total_marketing_spend > 0 ? total_costs / total_marketing_spend : 0;
-
-        // Calculate DB percentages
-        const db1_percentage = total_costs > 0 ? (db1 / total_costs) * 100 : 0;
-        const db2_percentage = total_costs > 0 ? (db2 / total_costs) * 100 : 0;
-        const db3_percentage = total_costs > 0 ? (db3 / total_costs) * 100 : 0;
-
-        const pnlData = {
-            net_sales,
-            orders,
-            cogs,
-            db1,
-            shipping_cost,
-            transaction_cost,
-            db2,
-            marketing_spend: total_marketing_spend,
-            marketing_bureau_cost: staticExpenses.marketing_bureau_cost,
-            marketing_tooling_cost: staticExpenses.marketing_tooling_cost,
-            db3,
-            fixed_expenses: staticExpenses.fixed_expenses,
-            result,
-            realized_roas,
-            break_even_roas,
-            db_percentages: {
-                db1: db1_percentage,
-                db2: db2_percentage,
-                db3: db3_percentage
-            }
-        };
+        // Convert BigQuery numeric types to plain JavaScript numbers
+        const serializedMetricsByDate = data[0].metrics_by_date.map(row => ({
+            date: row.date,
+            net_sales: Number(row.net_sales || 0),
+            orders: Number(row.orders || 0),
+            total_marketing_spend: Number(row.total_marketing_spend || 0),
+            marketing_spend_facebook: Number(row.marketing_spend_facebook || 0),
+            marketing_spend_google: Number(row.marketing_spend_google || 0),
+            /* marketing_spend_email: Number(row.marketing_spend_email || 0) */
+        }));
 
         return (
             <PnLDashboard
                 customerId={customerId}
                 customerName={customerName}
-                initialData={pnlData}
+                initialData={{ metrics_by_date: serializedMetricsByDate, staticExpenses }}
             />
         );
     } catch (error) {

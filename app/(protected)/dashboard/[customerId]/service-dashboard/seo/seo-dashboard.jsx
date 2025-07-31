@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
 import {
@@ -28,17 +28,128 @@ ChartJS.register(
 );
 
 export default function SEODashboard({ customerId, customerName, initialData }) {
+    // Initialize date picker to first day of current month to yesterday
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const formatDate = (date) => date.toISOString().split("T")[0];
+
     const [comparison, setComparison] = useState("Previous Year");
-    const [dateStart, setDateStart] = useState("2025-01-01");
-    const [dateEnd, setDateEnd] = useState("2025-04-15");
+    const [dateStart, setDateStart] = useState(formatDate(firstDayOfMonth));
+    const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
     const [metric, setMetric] = useState("Impressions");
     const [filter, setFilter] = useState("Med brand");
 
-    const selectedUrls = initialData.top_urls?.slice(0, 5).map((item) => item.url) || [];
+    const { impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = initialData || {};
 
-    const selectedKeywords = initialData.top_keywords?.slice(0, 5).map((item) => item.keyword) || [];
+    // Filter data based on date range
+    const filteredImpressionsData = useMemo(() => {
+        return impressions_data?.filter((row) => row.date >= dateStart && row.date <= dateEnd) || [];
+    }, [impressions_data, dateStart, dateEnd]);
 
-    const { metrics, impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = initialData || {};
+    const filteredUrlsByDate = useMemo(() => {
+        return urls_by_date?.filter((row) => row.date >= dateStart && row.date <= dateEnd) || [];
+    }, [urls_by_date, dateStart, dateEnd]);
+
+    const filteredKeywordsByDate = useMemo(() => {
+        return keywords_by_date?.filter((row) => row.date >= dateStart && row.date <= dateEnd) || [];
+    }, [keywords_by_date, dateStart, dateEnd]);
+
+    // Calculate metrics for current period
+    const metrics = useMemo(() => {
+        return filteredImpressionsData.reduce(
+            (acc, row) => ({
+                clicks: acc.clicks + (row.clicks || 0),
+                impressions: acc.impressions + (row.impressions || 0),
+                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                avg_position: acc.avg_position + (row.avg_position || 0),
+                count: acc.count + 1,
+            }),
+            { clicks: 0, impressions: 0, ctr: 0, avg_position: 0, count: 0 }
+        );
+    }, [filteredImpressionsData]);
+
+    // Calculate comparison dates
+    const getComparisonDates = () => {
+        const end = new Date(dateEnd);
+        const start = new Date(dateStart);
+        const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+        if (comparison === "Previous Year") {
+            return {
+                compStart: formatDate(new Date(start.setFullYear(start.getFullYear() - 1))),
+                compEnd: formatDate(new Date(end.setFullYear(end.getFullYear() - 1))),
+            };
+        } else {
+            return {
+                compStart: formatDate(new Date(start.setDate(start.getDate() - daysDiff))),
+                compEnd: formatDate(new Date(end.setDate(end.getDate() - daysDiff))),
+            };
+        }
+    };
+
+    const { compStart, compEnd } = getComparisonDates();
+
+    // Calculate metrics for comparison period
+    const comparisonMetrics = useMemo(() => {
+        const comparisonData = impressions_data?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
+        return comparisonData.reduce(
+            (acc, row) => ({
+                clicks: acc.clicks + (row.clicks || 0),
+                impressions: acc.impressions + (row.impressions || 0),
+                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                avg_position: acc.avg_position + (row.avg_position || 0),
+                count: acc.count + 1,
+            }),
+            { clicks: 0, impressions: 0, ctr: 0, avg_position: 0, count: 0 }
+        );
+    }, [impressions_data, compStart, compEnd]);
+
+    // Calculate filtered top_keywords and top_urls
+    const filteredTopKeywords = useMemo(() => {
+        const keywordMap = filteredKeywordsByDate.reduce((acc, row) => {
+            acc[row.keyword] = {
+                clicks: (acc[row.keyword]?.clicks || 0) + (row.clicks || 0),
+                impressions: (acc[row.keyword]?.impressions || 0) + (row.impressions || 0),
+                position: (acc[row.keyword]?.position || 0) + (row.position || 0),
+                count: (acc[row.keyword]?.count || 0) + 1,
+            };
+            return acc;
+        }, {});
+        return Object.entries(keywordMap)
+            .map(([keyword, data]) => ({
+                keyword,
+                clicks: data.clicks,
+                impressions: data.impressions,
+                position: data.count > 0 ? data.position / data.count : 0,
+            }))
+            .sort((a, b) => b.clicks - a.clicks)
+            .slice(0, 5);
+    }, [filteredKeywordsByDate]);
+
+    const filteredTopUrls = useMemo(() => {
+        const urlMap = filteredUrlsByDate.reduce((acc, row) => {
+            acc[row.url] = {
+                clicks: (acc[row.url]?.clicks || 0) + (row.clicks || 0),
+                impressions: (acc[row.url]?.impressions || 0) + (row.impressions || 0),
+                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+            };
+            return acc;
+        }, {});
+        return Object.entries(urlMap)
+            .map(([url, data]) => ({
+                url,
+                clicks: data.clicks,
+                impressions: data.impressions,
+                ctr: data.ctr,
+            }))
+            .sort((a, b) => b.clicks - a.clicks)
+            .slice(0, 20);
+    }, [filteredUrlsByDate]);
+
+    const selectedUrls = filteredTopUrls.slice(0, 5).map((item) => item.url);
+    const selectedKeywords = filteredTopKeywords.slice(0, 5).map((item) => item.keyword);
 
     const colors = {
         primary: "#1C398E",
@@ -57,36 +168,40 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     const seoMetrics = [
         {
             label: "Click",
-            value: metrics?.clicks ? Math.round(metrics.clicks).toLocaleString() : "0",
-            delta: calculateDelta(metrics?.clicks),
-            positive: true,
+            value: metrics.clicks ? Math.round(metrics.clicks).toLocaleString() : "0",
+            delta: calculateDelta(metrics.clicks, comparisonMetrics.clicks),
+            positive: metrics.clicks >= comparisonMetrics.clicks,
         },
         {
             label: "Impressions",
-            value: metrics?.impressions ? Math.round(metrics.impressions).toLocaleString() : "0",
-            delta: calculateDelta(metrics?.impressions),
-            positive: true,
+            value: metrics.impressions ? Math.round(metrics.impressions).toLocaleString() : "0",
+            delta: calculateDelta(metrics.impressions, comparisonMetrics.impressions),
+            positive: metrics.impressions >= comparisonMetrics.impressions,
         },
         {
             label: "CTR",
-            value: metrics?.ctr ? `${(metrics.ctr * 100).toFixed(2)}%` : "0.00%",
-            delta: calculateDelta(metrics?.ctr),
-            positive: true,
+            value: metrics.ctr ? `${(metrics.ctr * 100).toFixed(2)}%` : "0.00%",
+            delta: calculateDelta(metrics.ctr, comparisonMetrics.ctr),
+            positive: metrics.ctr >= comparisonMetrics.ctr,
         },
         {
             label: "Avg. Position",
-            value: metrics?.avg_position ? metrics.avg_position.toFixed(2) : "0.00",
-            delta: calculateDelta(metrics?.avg_position),
-            positive: false,
+            value: metrics.count > 0 ? (metrics.avg_position / metrics.count).toFixed(2) : "0.00",
+            delta: calculateDelta(metrics.avg_position / (metrics.count || 1), comparisonMetrics.avg_position / (comparisonMetrics.count || 1)),
+            positive: (metrics.avg_position / (metrics.count || 1)) <= (comparisonMetrics.avg_position / (comparisonMetrics.count || 1)),
         },
     ];
 
     const impressionsChartData = {
-        labels: impressions_data?.map((row) => row.date) || [],
+        labels: filteredImpressionsData.map((row) => row.date) || [],
         datasets: [
             {
                 label: metric,
-                data: impressions_data?.map((row) => row.impressions || 0) || [],
+                data: filteredImpressionsData.map((row) => {
+                    if (metric === "Clicks") return row.clicks || 0;
+                    if (metric === "CTR") return row.ctr || 0;
+                    return row.impressions || 0;
+                }) || [],
                 borderColor: colors.primary,
                 backgroundColor: colors.primary,
                 borderWidth: 1,
@@ -125,17 +240,17 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     };
 
     const urlChartData = {
-        labels: [...new Set(urls_by_date?.map((row) => row.date) || [])].sort(),
+        labels: [...new Set(filteredUrlsByDate.map((row) => row.date))].sort(),
         datasets: selectedUrls.map((url, i) => ({
             label: url,
-            data: urls_by_date
-                ?.filter((row) => row.url === url)
+            data: filteredUrlsByDate
+                .filter((row) => row.url === url)
                 .map((row) => ({
                     x: row.date,
                     y: metric === "Clicks" ? row.clicks || 0 :
                         metric === "Impressions" ? row.impressions || 0 :
                             row.ctr || 0
-                })) || [],
+                })),
             borderColor: colors[`hue${i % 5}`] || colors.primary,
             backgroundColor: colors[`hue${i % 5}`] || colors.primary,
             borderWidth: 1,
@@ -146,15 +261,17 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     };
 
     const keywordChartData = {
-        labels: [...new Set(keywords_by_date?.map((row) => row.date) || [])].sort(),
+        labels: [...new Set(filteredKeywordsByDate.map((row) => row.date))].sort(),
         datasets: selectedKeywords.map((keyword, i) => ({
             label: keyword,
-            data: keywords_by_date
-                ?.filter((row) => row.keyword === keyword && row.impressions > 0)
+            data: filteredKeywordsByDate
+                .filter((row) => row.keyword === keyword && row.impressions > 0)
                 .map((row) => ({
                     x: row.date,
-                    y: row.impressions
-                })) || [],
+                    y: metric === "Clicks" ? row.clicks || 0 :
+                        metric === "Impressions" ? row.impressions || 0 :
+                            row.ctr || 0
+                })),
             borderColor: colors[`hue${i % 5}`] || colors.primary,
             backgroundColor: colors[`hue${i % 5}`] || colors.primary,
             borderWidth: 1,
@@ -164,7 +281,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         })),
     };
 
-    if (!metrics || !impressions_data || !top_keywords || !top_urls || !urls_by_date || !keywords_by_date) {
+    if (!impressions_data || !top_keywords || !top_urls || !urls_by_date || !keywords_by_date) {
         return <div>No data available for {customerId}</div>;
     }
 
@@ -271,7 +388,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                 </tr>
                             </thead>
                             <tbody>
-                                {top_keywords.map((row, i) => (
+                                {filteredTopKeywords.map((row, i) => (
                                     <tr key={i} className="border-b">
                                         <td className="px-4 py-2">{i + 1}</td>
                                         <td className="px-4 py-2">{row.keyword}</td>
@@ -307,7 +424,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                 </tr>
                             </thead>
                             <tbody>
-                                {top_urls.map((row, i) => (
+                                {filteredTopUrls.map((row, i) => (
                                     <tr key={i} className="border-b">
                                         <td className="px-4 py-2 whitespace-nowrap">{row.url}</td>
                                         <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString()}</td>

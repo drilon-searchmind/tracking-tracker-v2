@@ -9,7 +9,7 @@ export default async function SEODashboardPage({ params }) {
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
-        let projectId = bigQueryProjectId
+        let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
             WITH raw_data AS (
@@ -22,11 +22,13 @@ export default async function SEODashboardPage({ params }) {
                     ctr,
                     position
                 FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.search_analytics_all_fields\`
+                WHERE date IS NOT NULL
             ),
-            metrics AS (
+            impressions_by_date AS (
                 SELECT
-                    SUM(clicks) AS clicks,
+                    CAST(date AS STRING) AS date,
                     SUM(impressions) AS impressions,
+                    SUM(clicks) AS clicks,
                     CAST(
                         CASE
                             WHEN SUM(impressions) > 0 THEN SUM(clicks) / SUM(impressions)
@@ -34,12 +36,6 @@ export default async function SEODashboardPage({ params }) {
                         END AS FLOAT64
                     ) AS ctr,
                     CAST(AVG(CAST(position AS FLOAT64)) AS FLOAT64) AS avg_position
-                FROM raw_data
-            ),
-            impressions_by_date AS (
-                SELECT
-                    CAST(date AS STRING) AS date,
-                    SUM(impressions) AS impressions
                 FROM raw_data
                 GROUP BY date
                 ORDER BY date
@@ -108,8 +104,7 @@ export default async function SEODashboardPage({ params }) {
                 ORDER BY r.date, clicks DESC
             )
             SELECT
-                (SELECT AS STRUCT * FROM metrics) AS metrics,
-                (SELECT ARRAY_AGG(STRUCT(date, impressions)) FROM impressions_by_date) AS impressions_data,
+                (SELECT ARRAY_AGG(STRUCT(date, impressions, clicks, ctr, avg_position)) FROM impressions_by_date) AS impressions_data,
                 (SELECT ARRAY_AGG(STRUCT(keyword, clicks, impressions, position)) FROM top_keywords) AS top_keywords,
                 (SELECT ARRAY_AGG(STRUCT(url, clicks, impressions, ctr)) FROM top_urls) AS top_urls,
                 (SELECT ARRAY_AGG(STRUCT(date, url, clicks, impressions, ctr)) FROM urls_by_date) AS urls_by_date,
@@ -122,20 +117,18 @@ export default async function SEODashboardPage({ params }) {
             customQuery: dashboardQuery,
         });
 
-        console.log("SEO Dashboard data:", JSON.stringify(data, null, 2));
-
         if (!data || !data[0]) {
             console.warn("No data returned from BigQuery for customerId:", customerId);
             return <div>No data available for {customerId}</div>;
         }
 
-        const { metrics, impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = data[0];
+        const { impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = data[0];
 
         return (
             <SEODashboard
                 customerId={customerId}
                 customerName={customerName}
-                initialData={{ metrics, impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date }}
+                initialData={{ impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date }}
             />
         );
     } catch (error) {

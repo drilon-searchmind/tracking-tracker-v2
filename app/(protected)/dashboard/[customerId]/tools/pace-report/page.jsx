@@ -9,33 +9,37 @@ export default async function PacePage({ params }) {
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
-        let projectId = bigQueryProjectId
+        let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
     WITH shopify_data AS (
         SELECT
-            DATE(processed_at) AS date,
-            COUNT(*) AS orders,
-            SUM(amount) AS revenue
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
-        WHERE status = 'SUCCESS'
-            AND DATE(processed_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
-        GROUP BY DATE(processed_at)
+            date,
+            SUM(COALESCE(amount, 0)) AS revenue,
+            COUNT(*) AS orders
+        FROM (
+            SELECT
+                CAST(DATE(processed_at) AS STRING) AS date,
+                amount
+            FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
+            WHERE status = 'SUCCESS' AND processed_at IS NOT NULL
+        ) t
+        GROUP BY date
     ),
     facebook_data AS (
         SELECT
-            date_start AS date,
-            SUM(spend) AS ps_cost
+            CAST(date_start AS STRING) AS date,
+            SUM(COALESCE(spend, 0)) AS ps_cost
         FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.ads_insights\`
-        WHERE date_start >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+        WHERE date_start IS NOT NULL
         GROUP BY date_start
     ),
     google_ads_data AS (
         SELECT
-            segments_date AS date,
-            SUM(metrics_cost_micros / 1000000.0) AS ppc_cost
+            CAST(segments_date AS STRING) AS date,
+            SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS ppc_cost
         FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
-        WHERE segments_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+        WHERE segments_date IS NOT NULL
         GROUP BY segments_date
     ),
     combined_data AS (
@@ -46,98 +50,48 @@ export default async function PacePage({ params }) {
             COALESCE(f.ps_cost, 0) AS ps_cost,
             COALESCE(g.ppc_cost, 0) AS ppc_cost
         FROM shopify_data s
-        FULL OUTER JOIN facebook_data f
-            ON s.date = f.date
-        FULL OUTER JOIN google_ads_data g
-            ON s.date = g.date
+        FULL OUTER JOIN facebook_data f ON s.date = f.date
+        FULL OUTER JOIN google_ads_data g ON s.date = g.date
         WHERE COALESCE(s.date, f.date, g.date) IS NOT NULL
-    ),
-    daily_metrics AS (
-        SELECT
-            CAST(date AS STRING) AS date,
-            SUM(orders) OVER (ORDER BY date) AS orders,
-            CAST(SUM(revenue) OVER (ORDER BY date) AS FLOAT64) AS revenue,
-            CAST(SUM(ps_cost + ppc_cost) OVER (ORDER BY date) AS FLOAT64) AS ad_spend,
-            CAST(
-                CASE
-                    WHEN SUM(ps_cost + ppc_cost) OVER (ORDER BY date) > 0 THEN SUM(revenue) OVER (ORDER BY date) / SUM(ps_cost + ppc_cost) OVER (ORDER BY date)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS roas,
-            CAST(500000 * (ROW_NUMBER() OVER (ORDER BY date) / 31.0) AS FLOAT64) AS revenue_budget,
-            CAST(100000 * (ROW_NUMBER() OVER (ORDER BY date) / 31.0) AS FLOAT64) AS ad_spend_budget
-        FROM combined_data
-        ORDER BY date
-    ),
-    totals AS (
-        SELECT
-            SUM(orders) AS orders,
-            CAST(SUM(revenue) AS FLOAT64) AS revenue,
-            CAST(SUM(ps_cost) AS FLOAT64) AS ps_cost,
-            CAST(SUM(ppc_cost) AS FLOAT64) AS ppc_cost,
-            CAST(SUM(ps_cost + ppc_cost) AS FLOAT64) AS ad_spend,
-            CAST(
-                CASE
-                    WHEN SUM(ps_cost + ppc_cost) > 0 THEN SUM(revenue) / SUM(ps_cost + ppc_cost)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS roas
-        FROM combined_data
     )
     SELECT
         ARRAY_AGG(STRUCT(
             date,
             orders,
             revenue,
-            ad_spend,
-            roas,
-            revenue_budget,
-            ad_spend_budget
-        )) AS daily_metrics,
-        (SELECT AS STRUCT
-            orders,
-            revenue,
-            ad_spend,
-            roas,
-            500000 AS revenue_budget,
-            100000 AS ad_spend_budget,
-            CAST(500000 * EXTRACT(DAY FROM CURRENT_DATE() - DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) / 31 AS FLOAT64) AS revenue_pace,
-            CAST(100000 * EXTRACT(DAY FROM CURRENT_DATE() - DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) / 31 AS FLOAT64) AS ad_spend_pace,
-            CAST(
-                CASE
-                    WHEN 500000 > 0 THEN (revenue / 500000) * 100
-                    ELSE 0
-                END AS FLOAT64
-            ) AS revenue_budget_percentage,
-            CAST(
-                CASE
-                    WHEN 100000 > 0 THEN (ad_spend / 100000) * 100
-                    ELSE 0
-                END AS FLOAT64
-            ) AS ad_spend_budget_percentage
-        FROM totals
-        ) AS totals
-    FROM daily_metrics
+            (ps_cost + ppc_cost) AS ad_spend
+        ) ORDER BY date) AS daily_metrics
+    FROM combined_data
 `;
+
         const data = await queryBigQueryDashboardMetrics({
             tableId: projectId,
             customerId: bigQueryCustomerId,
             customQuery: dashboardQuery,
         });
 
-        console.log("Pace Report data:", JSON.stringify(data, null, 2));
+        console.log("Pace Report data (raw):", JSON.stringify(data, null, 2));
 
         if (!data || !data[0] || !data[0].daily_metrics) {
             console.warn("No data returned from BigQuery for customerId:", customerId);
             return <div>No data available for {customerId}</div>;
         }
 
-        const { daily_metrics, totals } = data[0];
+        // Serialize numeric fields to plain JavaScript numbers
+        const serializedDailyMetrics = data[0].daily_metrics.map(row => ({
+            date: row.date,
+            orders: Number(row.orders || 0),
+            revenue: Number(row.revenue || 0),
+            ad_spend: Number(row.ad_spend || 0)
+        }));
+
+        console.log("Pace Report data (serialized):", JSON.stringify(serializedDailyMetrics, null, 2));
+
         return (
             <PaceReport
                 customerId={customerId}
                 customerName={customerName}
-                initialData={{ daily_metrics, totals }}
+                initialData={{ daily_metrics: serializedDailyMetrics }}
             />
         );
     } catch (error) {

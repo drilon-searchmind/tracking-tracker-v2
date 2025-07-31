@@ -25,15 +25,14 @@ ChartJS.register(
 );
 
 export default function PaceReport({ customerId, customerName, initialData }) {
-    // Initialize date picker to first day of current month to yesterday
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const formatDate = (date) => date.toISOString().split("T")[0];
 
-    const [revenueBudget, setRevenueBudget] = useState("500000");
-    const [adSpendBudget, setAdSpendBudget] = useState("100000");
+    const [revenueBudget, setRevenueBudget] = useState("0");
+    const [adSpendBudget, setAdSpendBudget] = useState("0");
     const [metric, setMetric] = useState("Revenue");
     const [comparison, setComparison] = useState("Previous Year");
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
@@ -45,16 +44,14 @@ export default function PaceReport({ customerId, customerName, initialData }) {
 
     const { daily_metrics } = initialData;
 
-    // Filter data based on date range
     const filteredMetrics = useMemo(() => {
         const filtered = daily_metrics
             .filter(row => row.date >= startDate && row.date <= endDate)
-            .sort((a, b) => a.date.localeCompare(b.date)); // Ensure sorted by date
+            .sort((a, b) => a.date.localeCompare(b.date));
         console.log("Filtered Metrics:", filtered);
         return filtered;
     }, [daily_metrics, startDate, endDate]);
 
-    // Calculate cumulative sums for filtered data
     const cumulativeMetrics = useMemo(() => {
         let cumOrders = 0, cumRevenue = 0, cumAdSpend = 0;
         const result = filteredMetrics.map(row => {
@@ -73,7 +70,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         return result;
     }, [filteredMetrics]);
 
-    // Calculate totals for the selected period
     const totals = useMemo(() => {
         const aggregated = cumulativeMetrics.length > 0 ? cumulativeMetrics[cumulativeMetrics.length - 1] : {
             orders: 0,
@@ -85,19 +81,16 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         const revenueBudgetNum = Number(revenueBudget.replace(/[^0-9.-]+/g, "")) || 500000;
         const adSpendBudgetNum = Number(adSpendBudget.replace(/[^0-9.-]+/g, "")) || 100000;
 
-        // Calculate days in range and month
         const start = new Date(startDate);
         const end = new Date(endDate);
         const daysInRange = Math.ceil((end - start + 1) / (1000 * 60 * 60 * 24));
         const daysInMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
         const daysElapsed = daysInRange;
 
-        // Pace: revenue_budget / ((revenue / days_in_month) * (days_elapsed - 1))
         const pace = (aggregated.revenue / daysInMonth) * (daysElapsed - 1) > 0
             ? revenueBudgetNum / ((aggregated.revenue / daysInMonth) * (daysElapsed - 1))
             : 0;
 
-        // Suggested Daily Adjustment: (revenue_budget - revenue) / (days_in_month * days_elapsed)
         const suggestedDailyAdjustment = daysInMonth * daysElapsed > 0
             ? (revenueBudgetNum - aggregated.revenue) / (daysInMonth * daysElapsed)
             : 0;
@@ -120,7 +113,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         return result;
     }, [cumulativeMetrics, revenueBudget, adSpendBudget, startDate, endDate]);
 
-    // Calculate comparison dates
     const getComparisonDates = () => {
         const end = new Date(endDate);
         const start = new Date(startDate);
@@ -141,7 +133,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
 
     const { compStart, compEnd } = getComparisonDates();
 
-    // Calculate totals for comparison period
     const comparisonTotals = useMemo(() => {
         const comparisonData = daily_metrics
             .filter(row => row.date >= compStart && row.date <= compEnd)
@@ -176,7 +167,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         return result;
     }, [daily_metrics, compStart, compEnd, revenueBudget, adSpendBudget]);
 
-    // Calculate deltas
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;
         const delta = ((current - prev) / prev * 100).toFixed(2);
@@ -210,7 +200,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         },
     ];
 
-    // Prepare chart data
     const budgetChartData = {
         labels: cumulativeMetrics.map(row => row.date),
         datasets: [
@@ -223,7 +212,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 tension: 0.3,
                 pointRadius: 0,
                 borderWidth: 2,
-                yAxisID: 'y' // Left y-axis
+                yAxisID: 'y'
             },
             {
                 label: "Revenue Budget",
@@ -235,7 +224,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 tension: 0.3,
                 pointRadius: 0,
                 borderWidth: 2,
-                yAxisID: 'y' // Left y-axis
+                yAxisID: 'y'
             },
             {
                 label: "Ad Spend",
@@ -246,7 +235,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 tension: 0.3,
                 pointRadius: 0,
                 borderWidth: 2,
-                yAxisID: 'yRight' // Right y-axis
+                yAxisID: 'yRight'
             },
             {
                 label: "Ad Spend Budget",
@@ -258,7 +247,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 tension: 0.3,
                 pointRadius: 0,
                 borderWidth: 2,
-                yAxisID: 'yRight' // Right y-axis
+                yAxisID: 'yRight'
             }
         ]
     };
@@ -275,7 +264,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 tension: 0.3,
                 pointRadius: 0,
                 borderWidth: 2,
-                yAxisID: 'y' // Left y-axis
+                yAxisID: 'y'
             },
             {
                 label: "Ad Spend",
@@ -286,7 +275,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 tension: 0.3,
                 pointRadius: 0,
                 borderWidth: 2,
-                yAxisID: 'yRight' // Right y-axis
+                yAxisID: 'yRight'
             }
         ]
     }

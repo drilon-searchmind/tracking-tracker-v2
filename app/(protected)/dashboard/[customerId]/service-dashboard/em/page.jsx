@@ -10,7 +10,7 @@ export default async function EmailDashboardPage({ params }) {
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
-	    let projectId = bigQueryProjectId
+        let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
     WITH raw_data AS (
@@ -23,33 +23,7 @@ export default async function EmailDashboardPage({ params }) {
             CAST(metrics_conversions_value AS FLOAT64) AS conversion_value,
             metrics_cost_micros / 1000000.0 AS cost
         FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
-    ),
-    metrics AS (
-        SELECT
-            SUM(clicks) AS clicks,
-            SUM(impressions) AS impressions,
-            SUM(conversions) AS conversions,
-            SUM(conversion_value) AS conversion_value,
-            SUM(cost) AS cost,
-            CAST(
-                CASE
-                    WHEN SUM(impressions) > 0 THEN SUM(clicks) / SUM(impressions)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS ctr,
-            CAST(
-                CASE
-                    WHEN SUM(clicks) > 0 THEN SUM(conversions) / SUM(clicks)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS conv_rate,
-            CAST(
-                CASE
-                    WHEN SUM(clicks) > 0 THEN SUM(cost) / SUM(clicks)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS cpc
-        FROM raw_data
+        WHERE segments_date IS NOT NULL
     ),
     metrics_by_date AS (
         SELECT
@@ -147,7 +121,6 @@ export default async function EmailDashboardPage({ params }) {
         LIMIT 30
     )
     SELECT
-        (SELECT AS STRUCT * FROM metrics) AS metrics,
         (SELECT ARRAY_AGG(STRUCT(
             date,
             clicks,
@@ -175,12 +148,12 @@ export default async function EmailDashboardPage({ params }) {
             return <div>No data available for {customerId}</div>;
         }
 
-        const { metrics, metrics_by_date, top_campaigns, campaigns_by_date, campaign_performance } = data[0];
+        const { metrics_by_date, top_campaigns, campaigns_by_date, campaign_performance } = data[0];
 
         return (
             <EmailDashboard
                 customerId={customerId}
-                initialData={{ metrics, metrics_by_date, top_campaigns, campaigns_by_date, campaign_performance }}
+                initialData={{ metrics_by_date, top_campaigns, campaigns_by_date, campaign_performance }}
                 customerName={customerName}
                 emailType={emailType}
             />

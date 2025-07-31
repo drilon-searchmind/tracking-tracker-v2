@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
 import {
@@ -28,14 +28,130 @@ ChartJS.register(
 );
 
 export default function EmailDashboard({ customerId, initialData, customerName, emailType }) {
+    // Initialize date picker to first day of current month to yesterday
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const formatDate = (date) => date.toISOString().split("T")[0];
+
     const [comparison, setComparison] = useState("Previous Year");
-    const [startDate, setStartDate] = useState("2025-01-01");
-    const [endDate, setEndDate] = useState("2025-04-15");
+    const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
+    const [endDate, setEndDate] = useState(formatDate(yesterday));
     const [selectedMetric, setSelectedMetric] = useState("Conversions");
-    const selectedCampaigns = initialData.top_campaigns?.slice(0, 5).map((item) => item.campaign_name) || [];
     const [emailTypeName, setEmailTypeName] = useState("");
 
-    const { metrics, metrics_by_date, top_campaigns, campaigns_by_date, campaign_performance } = initialData || {};
+    const { metrics_by_date, top_campaigns, campaigns_by_date, campaign_performance } = initialData || {};
+
+    // Filter data based on date range
+    const filteredMetricsByDate = useMemo(() => {
+        return metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
+    }, [metrics_by_date, startDate, endDate]);
+
+    const filteredCampaignsByDate = useMemo(() => {
+        return campaigns_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
+    }, [campaigns_by_date, startDate, endDate]);
+
+    const filteredCampaignPerformance = useMemo(() => {
+        return campaign_performance?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
+    }, [campaign_performance, startDate, endDate]);
+
+    // Calculate metrics for current period
+    const metrics = useMemo(() => {
+        return filteredMetricsByDate.reduce(
+            (acc, row) => ({
+                clicks: acc.clicks + (row.clicks || 0),
+                impressions: acc.impressions + (row.impressions || 0),
+                conversions: acc.conversions + (row.conversions || 0),
+                conversion_value: acc.conversion_value + (row.conversion_value || 0),
+                cost: acc.cost + (row.cost || 0),
+                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                conv_rate: acc.clicks > 0 ? acc.conversions / acc.clicks : 0,
+                cpc: acc.clicks > 0 ? acc.cost / acc.clicks : 0,
+            }),
+            {
+                clicks: 0,
+                impressions: 0,
+                conversions: 0,
+                conversion_value: 0,
+                cost: 0,
+                ctr: 0,
+                conv_rate: 0,
+                cpc: 0,
+            }
+        );
+    }, [filteredMetricsByDate]);
+
+    // Calculate comparison dates
+    const getComparisonDates = () => {
+        const end = new Date(endDate);
+        const start = new Date(startDate);
+        const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+        if (comparison === "Previous Year") {
+            return {
+                compStart: formatDate(new Date(start.setFullYear(start.getFullYear() - 1))),
+                compEnd: formatDate(new Date(end.setFullYear(end.getFullYear() - 1))),
+            };
+        } else {
+            return {
+                compStart: formatDate(new Date(start.setDate(start.getDate() - daysDiff))),
+                compEnd: formatDate(new Date(end.setDate(end.getDate() - daysDiff))),
+            };
+        }
+    };
+
+    const { compStart, compEnd } = getComparisonDates();
+
+    // Calculate metrics for comparison period
+    const comparisonMetrics = useMemo(() => {
+        const comparisonData = metrics_by_date?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
+        return comparisonData.reduce(
+            (acc, row) => ({
+                clicks: acc.clicks + (row.clicks || 0),
+                impressions: acc.impressions + (row.impressions || 0),
+                conversions: acc.conversions + (row.conversions || 0),
+                conversion_value: acc.conversion_value + (row.conversion_value || 0),
+                cost: acc.cost + (row.cost || 0),
+                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                conv_rate: acc.clicks > 0 ? acc.conversions / acc.clicks : 0,
+                cpc: acc.clicks > 0 ? acc.cost / acc.clicks : 0,
+            }),
+            {
+                clicks: 0,
+                impressions: 0,
+                conversions: 0,
+                conversion_value: 0,
+                cost: 0,
+                ctr: 0,
+                conv_rate: 0,
+                cpc: 0,
+            }
+        );
+    }, [metrics_by_date, compStart, compEnd]);
+
+    // Calculate filtered top_campaigns
+    const filteredTopCampaigns = useMemo(() => {
+        const campaignMap = filteredCampaignsByDate.reduce((acc, row) => {
+            acc[row.campaign_name] = {
+                clicks: (acc[row.campaign_name]?.clicks || 0) + (row.clicks || 0),
+                impressions: (acc[row.campaign_name]?.impressions || 0) + (row.impressions || 0),
+                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+            };
+            return acc;
+        }, {});
+        return Object.entries(campaignMap)
+            .map(([campaign_name, data]) => ({
+                campaign_name,
+                clicks: data.clicks,
+                impressions: data.impressions,
+                ctr: data.ctr,
+            }))
+            .sort((a, b) => b.clicks - a.clicks)
+            .slice(0, 5);
+    }, [filteredCampaignsByDate]);
+
+    const selectedCampaigns = filteredTopCampaigns.map((item) => item.campaign_name);
 
     const colors = {
         primary: "#1C398E",
@@ -54,60 +170,60 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
     const emailMetrics = [
         {
             label: "Total Emails Sent",
-            value: metrics?.impressions ? Math.round(metrics.impressions).toLocaleString() : "0",
-            delta: calculateDelta(metrics?.impressions),
-            positive: true,
+            value: metrics.impressions ? Math.round(metrics.impressions).toLocaleString() : "0",
+            delta: calculateDelta(metrics.impressions, comparisonMetrics.impressions),
+            positive: metrics.impressions >= comparisonMetrics.impressions,
         },
         {
             label: "Total Clicks",
-            value: metrics?.clicks ? Math.round(metrics.clicks).toLocaleString() : "0",
-            delta: calculateDelta(metrics?.clicks),
-            positive: true,
+            value: metrics.clicks ? Math.round(metrics.clicks).toLocaleString() : "0",
+            delta: calculateDelta(metrics.clicks, comparisonMetrics.clicks),
+            positive: metrics.clicks >= comparisonMetrics.clicks,
         },
         {
             label: "CTR",
-            value: metrics?.ctr ? `${(metrics.ctr * 100).toFixed(2)}%` : "0.00%",
-            delta: calculateDelta(metrics?.ctr),
-            positive: true,
+            value: metrics.ctr ? `${(metrics.ctr * 100).toFixed(2)}%` : "0.00%",
+            delta: calculateDelta(metrics.ctr, comparisonMetrics.ctr),
+            positive: metrics.ctr >= comparisonMetrics.ctr,
         },
         {
             label: "Conversions",
-            value: metrics?.conversions ? Math.round(metrics.conversions).toLocaleString() : "0",
-            delta: calculateDelta(metrics?.conversions),
-            positive: true,
+            value: metrics.conversions ? Math.round(metrics.conversions).toLocaleString() : "0",
+            delta: calculateDelta(metrics.conversions, comparisonMetrics.conversions),
+            positive: metrics.conversions >= comparisonMetrics.conversions,
         },
         {
             label: "Conversion Rate",
-            value: metrics?.conv_rate ? `${(metrics.conv_rate * 100).toFixed(2)}%` : "0.00%",
-            delta: calculateDelta(metrics?.conv_rate),
-            positive: true,
+            value: metrics.conv_rate ? `${(metrics.conv_rate * 100).toFixed(2)}%` : "0.00%",
+            delta: calculateDelta(metrics.conv_rate, comparisonMetrics.conv_rate),
+            positive: metrics.conv_rate >= comparisonMetrics.conv_rate,
         },
         {
             label: "Conversion Value",
-            value: metrics?.conversion_value ? Math.round(metrics.conversion_value).toLocaleString() : "0",
-            delta: calculateDelta(metrics?.conversion_value),
-            positive: true,
+            value: metrics.conversion_value ? Math.round(metrics.conversion_value).toLocaleString() : "0",
+            delta: calculateDelta(metrics.conversion_value, comparisonMetrics.conversion_value),
+            positive: metrics.conversion_value >= comparisonMetrics.conversion_value,
         },
         {
             label: "Cost",
-            value: metrics?.cost ? Math.round(metrics.cost).toLocaleString() : "0",
-            delta: calculateDelta(metrics?.cost),
-            positive: true,
+            value: metrics.cost ? Math.round(metrics.cost).toLocaleString() : "0",
+            delta: calculateDelta(metrics.cost, comparisonMetrics.cost),
+            positive: metrics.cost <= comparisonMetrics.cost,
         },
         {
             label: "CPC",
-            value: metrics?.cpc ? metrics.cpc.toFixed(2) : "0.00",
-            delta: calculateDelta(metrics?.cpc),
-            positive: true,
+            value: metrics.cpc ? metrics.cpc.toFixed(2) : "0.00",
+            delta: calculateDelta(metrics.cpc, comparisonMetrics.cpc),
+            positive: metrics.cpc <= comparisonMetrics.cpc,
         },
     ];
 
     const metricsChartData = {
-        labels: metrics_by_date?.map((row) => row.date) || [],
+        labels: filteredMetricsByDate.map((row) => row.date) || [],
         datasets: [
             {
                 label: selectedMetric,
-                data: metrics_by_date?.map((row) => {
+                data: filteredMetricsByDate.map((row) => {
                     switch (selectedMetric) {
                         case "Conversions":
                             return row.conversions || 0;
@@ -132,15 +248,18 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
     };
 
     const campaignChartData = {
-        labels: [...new Set(campaigns_by_date?.map((row) => row.date) || [])].sort(),
+        labels: [...new Set(filteredCampaignsByDate.map((row) => row.date))].sort(),
         datasets: selectedCampaigns.map((campaign, i) => ({
             label: campaign,
-            data: campaigns_by_date
-                ?.filter((row) => row.campaign_name === campaign && row.impressions > 0)
+            data: filteredCampaignsByDate
+                .filter((row) => row.campaign_name === campaign && row.impressions > 0)
                 .map((row) => ({
                     x: row.date,
-                    y: row.impressions
-                })) || [],
+                    y: selectedMetric === "Conversions" ? row.conv_rate || 0 :
+                        selectedMetric === "Conversion Value" ? row.cpc || 0 :
+                        selectedMetric === "Clicks" ? row.clicks || 0 :
+                            row.ctr || 0
+                })),
             borderColor: colors[`hue${i % 5}`] || colors.primary,
             backgroundColor: colors[`hue${i % 5}`] || colors.primary,
             borderWidth: 1,
@@ -189,7 +308,7 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
         }
     }, [emailType]);
 
-    if (!metrics || !metrics_by_date || !top_campaigns || !campaigns_by_date || !campaign_performance) {
+    if (!metrics_by_date || !top_campaigns || !campaigns_by_date || !campaign_performance) {
         return <div>No data available for {customerId}</div>;
     }
 
@@ -287,7 +406,7 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
                                 </tr>
                             </thead>
                             <tbody>
-                                {top_campaigns.map((row, i) => (
+                                {filteredTopCampaigns.map((row, i) => (
                                     <tr key={i} className="border-b">
                                         <td className="px-4 py-2 whitespace-nowrap">{row.campaign_name}</td>
                                         <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString()}</td>
@@ -324,7 +443,7 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
                                 </tr>
                             </thead>
                             <tbody>
-                                {campaign_performance.map((row, i) => (
+                                {filteredCampaignPerformance.map((row, i) => (
                                     <tr key={i} className="border-b">
                                         <td className="px-4 py-2">{row.date}</td>
                                         <td className="px-4 py-2 whitespace-nowrap">{row.campaign_name}</td>

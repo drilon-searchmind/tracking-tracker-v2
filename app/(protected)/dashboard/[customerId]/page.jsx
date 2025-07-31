@@ -6,10 +6,10 @@ export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function OverviewPage({ params }) {
     const { customerId } = params;
-    
+
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
-	    let projectId = bigQueryProjectId
+        let projectId = bigQueryProjectId
 
         const dashboardQuery = `
     WITH shopify_data AS (
@@ -77,7 +77,6 @@ export default async function OverviewPage({ params }) {
             ) AS aov
         FROM combined_data
         WHERE date IS NOT NULL
-            AND date >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
         ORDER BY date DESC
     ),
     totals AS (
@@ -108,6 +107,67 @@ export default async function OverviewPage({ params }) {
                 END AS FLOAT64
             ) AS aov
         FROM metrics
+    ),
+    last_year_metrics AS (
+        SELECT
+            CAST(DATE_SUB(date, INTERVAL 1 YEAR) AS STRING) AS date,
+            orders,
+            CAST(revenue AS FLOAT64) AS revenue,
+            CAST(revenue * (1 - 0.25) AS FLOAT64) AS revenue_ex_tax,
+            CAST(ppc_cost AS FLOAT64) AS ppc_cost,
+            CAST(ps_cost AS FLOAT64) AS ps_cost,
+            CAST((ppc_cost + ps_cost) AS FLOAT64) AS total_ad_spend,
+            CAST(
+                CASE
+                    WHEN (ppc_cost + ps_cost) > 0 THEN revenue / (ppc_cost + ps_cost)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS roas,
+            CAST(
+                CASE
+                    WHEN (ppc_cost + ps_cost) > 0 THEN (revenue * (1 - 0.25) - revenue * 0.7) / (ppc_cost + ps_cost)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS poas,
+            CAST((revenue * (1 - 0.25) - revenue * 0.7) AS FLOAT64) AS gp,
+            CAST(
+                CASE
+                    WHEN orders > 0 THEN revenue / orders
+                    ELSE 0
+                END AS FLOAT64
+            ) AS aov
+        FROM combined_data
+        WHERE date IS NOT NULL
+        ORDER BY date DESC
+    ),
+    last_year_totals AS (
+        SELECT
+            'Last Year Total' AS date,
+            SUM(orders) AS orders,
+            CAST(SUM(revenue) AS FLOAT64) AS revenue,
+            CAST(SUM(revenue_ex_tax) AS FLOAT64) AS revenue_ex_tax,
+            CAST(SUM(ppc_cost) AS FLOAT64) AS ppc_cost,
+            CAST(SUM(ps_cost) AS FLOAT64) AS ps_cost,
+            CAST(
+                CASE
+                    WHEN SUM(ppc_cost + ps_cost) > 0 THEN SUM(revenue) / SUM(ppc_cost + ps_cost)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS roas,
+            CAST(
+                CASE
+                    WHEN SUM(ppc_cost + ps_cost) > 0 THEN SUM(revenue * (1 - 0.25) - revenue * 0.7) / SUM(ppc_cost + ps_cost)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS poas,
+            CAST(SUM(gp) AS FLOAT64) AS gp,
+            CAST(
+                CASE
+                    WHEN SUM(orders) > 0 THEN SUM(revenue) / SUM(orders)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS aov
+        FROM last_year_metrics
     )
     SELECT
         ARRAY_AGG(STRUCT(
@@ -122,7 +182,8 @@ export default async function OverviewPage({ params }) {
             gp,
             aov
         )) AS overview_metrics,
-        (SELECT AS STRUCT * FROM totals) AS totals
+        (SELECT AS STRUCT * FROM totals) AS totals,
+        (SELECT AS STRUCT * FROM last_year_totals) AS last_year_totals
     FROM metrics
 `;
 
@@ -137,13 +198,13 @@ export default async function OverviewPage({ params }) {
             return <div>No data available for {bigQueryCustomerId}</div>;
         }
 
-        const { overview_metrics, totals } = data[0];
+        const { overview_metrics, totals, last_year_totals } = data[0];
 
         return (
             <OverviewDashboard
                 customerId={customerId}
                 customerName={customerName}
-                initialData={{ overview_metrics, totals }}
+                initialData={{ overview_metrics, totals, last_year_totals }}
             />
         );
     } catch (error) {

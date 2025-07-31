@@ -121,7 +121,6 @@ export default async function PnLPage({ params }) {
             return <div>No data available for {customerId}</div>;
         }
 
-        // Convert BigQuery numeric types to plain JavaScript numbers
         const serializedMetricsByDate = data[0].metrics_by_date.map(row => ({
             date: row.date,
             net_sales: Number(row.net_sales || 0),
@@ -129,7 +128,6 @@ export default async function PnLPage({ params }) {
             total_marketing_spend: Number(row.total_marketing_spend || 0),
             marketing_spend_facebook: Number(row.marketing_spend_facebook || 0),
             marketing_spend_google: Number(row.marketing_spend_google || 0),
-            /* marketing_spend_email: Number(row.marketing_spend_email || 0) */
         }));
 
         return (

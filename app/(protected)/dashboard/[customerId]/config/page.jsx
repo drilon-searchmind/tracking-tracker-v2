@@ -4,6 +4,7 @@ import ConfigForm from "./components/ConfigForm";
 import ConfigTable from "./components/ConfigTable";
 import StaticExpenses from "./components/StaticExpenses";
 import ConfigCustomerInfo from "./components/ConfigCustomerInfo";
+import ConfigCustomerSharings from "./components/ConfigCustomerSharings";
 
 export default async function ConfigPage({ params }) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
@@ -52,9 +53,19 @@ export default async function ConfigPage({ params }) {
                     <StaticExpenses customerId={customerId} baseUrl={baseUrl} />
                 </div>
                 
-                <div className="mt-8">
-                    <h3 className="font-semibold text-lg mb-2 text-zinc-800">Customer Info</h3>
-                    <ConfigCustomerInfo customerId={customerId} baseUrl={baseUrl} />
+                <div className="mt-8 grid grid-cols-2 gap-8 bg-white flex flex-col lg:flex-row p-6 rounded-lg shadow-md border border-zinc-200">
+                    <div className="col-span-2">
+                        <h2 className="font-semibold text-2xl mb-2 text-zinc-800">Customer Settings</h2>
+                    </div>
+                    <div className="col-span-1">
+                        <h3 className="font-semibold text-lg mb-2 text-zinc-800">Customer Info</h3>
+                        <ConfigCustomerInfo customerId={customerId} baseUrl={baseUrl} />
+                    </div>
+
+                    <div className="col-span-1">
+                        <h3 className="font-semibold text-lg mb-2 text-zinc-800">Customer Sharings</h3>
+                        <ConfigCustomerSharings customerId={customerId} baseUrl={baseUrl} />
+                    </div>
                 </div>
 
             </div>

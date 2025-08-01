@@ -1,13 +1,36 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 
 export default function ConfigCustomerSharings({ customerId, baseUrl }) {
-    // Mock data for sharings
-    const sharingsData = [
-        { id: 1, sharedWith: "User A", email: "test@email.dk" },
-        { id: 2, sharedWith: "User B", email: "testuser@email.dk" }, 
-    ]
+    const [sharingsData, setSharingsData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchSharings() {
+            try {
+                const response = await fetch(`${baseUrl}/api/customer-sharings/${customerId}`);
+                const result = await response.json();
+
+                if (result.data) {
+                    setSharingsData(result.data);
+                } else {
+                    setSharingsData([]);
+                }
+            } catch (error) {
+                console.error("Error fetching customer sharings:", error);
+                setSharingsData([]);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchSharings();
+    }, [customerId, baseUrl]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="overflow-auto border border-zinc-200 rounded bg-white shadow-solid-l">
@@ -21,10 +44,17 @@ export default function ConfigCustomerSharings({ customerId, baseUrl }) {
                 </thead>
                 <tbody>
                     {sharingsData.map((sharing) => (
-                        <tr key={sharing.id} className="border-b border-zinc-200">
+                        <tr key={sharing._id} className="border-b border-zinc-200">
                             <td className="px-4 py-3">{sharing.sharedWith}</td>
                             <td className="px-4 py-3">{sharing.email}</td>
-                            <td className="px-4 py-3"><button class="text-red-700 hover:text-red-800 text-xs">Remove</button></td>
+                            <td className="px-4 py-3">
+                                <button
+                                    className="text-red-700 hover:text-red-800 text-xs"
+                                    onClick={() => handleRemoveSharing(sharing._id)}
+                                >
+                                    Remove
+                                </button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

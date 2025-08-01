@@ -91,7 +91,7 @@ export default function DashboardLayout({ children }) {
             </nav>
             {children}
 
-            {showModalShare && <ShareCustomerModal closeModal={()=> setShowModalShare(false)} />}
+            {showModalShare && <ShareCustomerModal customerId={customerId} closeModal={()=> setShowModalShare(false)} />}
         </section>
     )
 }

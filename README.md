@@ -1,10 +1,16 @@
 # Performance Dashboard
 
-A web application for generating and visualizing performance metrics, including **Budget** and **Pace** reports, with configurable customer settings and static expenses. Built for businesses to track revenue, orders, ad spend, and other key metrics, with a user-friendly interface for data analysis and configuration management.
+A web application for generating and visualizing performance metrics, including 
+- **Overview** 
+- **Performance Dashboard** 
+- **Service Dashboard**
+- **Tools**
+- **Config**
+...reports, with configurable customer settings and static expenses. Built for businesses to track revenue, orders, ad spend, and other key metrics, with a user-friendly interface for data analysis and configuration management.
 
 ---
 
-## 🚀 Features
+## 🚀 Features (TBD)
 
 ### Pace Report
 
@@ -17,16 +23,6 @@ A web application for generating and visualizing performance metrics, including 
   - ROAS (Return on Ad Spend)
   - Pace
   - Suggested Daily Adjustment
-- **Pace Calculation**:
-```
-pace = revenue_budget / ((revenue / days_in_month) * (days_elapsed - 1))
-```
-
-- **Suggested Daily Adjustment**:
-```
-(revenue_budget - revenue) / (days_in_month * days_elapsed)
-```
-
 
 - **Date Picker**: Custom date range support (e.g., 2024-07-28 to 2024-07-30).
 - **Comparison Options**:

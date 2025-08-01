@@ -78,30 +78,30 @@ A web application for generating and visualizing performance metrics, including
 ---
 
 ## 📁 Project Structure
-performance-dashboard/
-├── app/
-│ ├── api/
-│ │ ├── customers/[customerId]/route.js # GET/PUT customer info
-│ │ ├── config-static-expenses/[customerId]/ # GET/PUT static expenses
-│ │ ├── config-revenue-budget/[customerId]/ # GET revenue budget
-│ ├── components/
-│ │ ├── ConfigForm.jsx # Form for objectives
-│ │ ├── ConfigTable.jsx # Table for objectives
-│ │ ├── CustomerInfo.jsx # Customer info editing
-│ │ ├── StaticExpenses.jsx # Static expenses editing
-│ ├── config/[customerId]/page.jsx # Config page
-│ ├── pace-report/[customerId]/page.jsx # Pace Report page
-│ ├── pace-report/pace-report.jsx # Pace Report component
-├── lib/
-│ ├── dbConnect.js # MongoDB connection
-│ ├── functions/fetchCustomerDetails.js # Fetch customer details
-│ ├── bigQueryConnect.js # BigQuery utility
-├── models/
-│ ├── Customer.js # Mongoose schema
-├── public/
-│ ├── images/shape-dotted-light.svg # Background image
-├── .env.local # Environment variables
-├── package.json # Dependencies & scripts
+performance-dashboard/ <br>
+├── app/ <br>
+│ ├── api/ <br>
+│ │ ├── customers/[customerId]/route.js # GET/PUT customer info <br>
+│ │ ├── config-static-expenses/[customerId]/ # GET/PUT static expenses <br>
+│ │ ├── config-revenue-budget/[customerId]/ # GET revenue budget <br>
+│ ├── components/ <br>
+│ │ ├── ConfigForm.jsx # Form for objectives <br>
+│ │ ├── ConfigTable.jsx # Table for objectives <br>
+│ │ ├── CustomerInfo.jsx # Customer info editing <br>
+│ │ ├── StaticExpenses.jsx # Static expenses editing <br>
+│ ├── config/[customerId]/page.jsx # Config page <br>
+│ ├── pace-report/[customerId]/page.jsx # Pace Report page <br>
+│ ├── pace-report/pace-report.jsx # Pace Report component <br>
+├── lib/ <br>
+│ ├── dbConnect.js # MongoDB connection <br>
+│ ├── functions/fetchCustomerDetails.js # Fetch customer details <br>
+│ ├── bigQueryConnect.js # BigQuery utility <br>
+├── models/ <br>
+│ ├── Customer.js # Mongoose schema <br>
+├── public/ <br>
+│ ├── images/shape-dotted-light.svg # Background image <br>
+├── .env.local # Environment variables <br>
+├── package.json # Dependencies & scripts <br>
 
 ## 📊 Usage
 

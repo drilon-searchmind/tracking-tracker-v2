@@ -1,36 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { IoMdClose } from "react-icons/io";
 
 export default function CustomerModal({ closeModal }) {
     const [search, setSearch] = useState("");
-    const router = useRouter();
     const [customers, setCustomers] = useState([]);
+    const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showAddCustomerForm, setShowAddCustomerForm] = useState(false);
+    const [newCustomer, setNewCustomer] = useState({
+        name: "",
+        bigQueryCustomerId: "",
+        bigQueryProjectId: "",
+    });
+    const [addingCustomer, setAddingCustomer] = useState(false);
+    const router = useRouter();
 
-    const filteredCustomers = customers.filter((customer) =>
-        customer.name.toLowerCase().includes(search.toLowerCase())
-    );
-
-    const handleSelectCustomer = (customerId) => {
-        closeModal();
-        router.push(`/dashboard/${customerId}`);
-    };
-
+    // Fetch customers on component mount
     useEffect(() => {
         async function fetchCustomers() {
             try {
                 const response = await fetch("/api/customers");
-                if (!response.ok) {
-                    throw new Error("::: Failed to fetch customers");
-                }
-
-                const data = await response.json();
-                setCustomers(data);
+                const result = await response.json();
+                console.log({ result })
+                console.log("Fetched customers:", result); // Log fetched customers
+                setCustomers(result || []);
+                setFilteredCustomers(result || []); // Ensure filteredCustomers is initialized
             } catch (error) {
-                console.error("::: Error fetching customers:", error);
+                console.error("Error fetching customers:", error);
             } finally {
                 setLoading(false);
             }
@@ -38,6 +37,50 @@ export default function CustomerModal({ closeModal }) {
 
         fetchCustomers();
     }, []);
+
+    // Filter customers based on the search input
+    useEffect(() => {
+        const filtered = customers.filter((customer) =>
+            customer.name.toLowerCase().includes(search.toLowerCase())
+        );
+        console.log("Filtered customers:", filtered); // Log filtered customers
+        setFilteredCustomers(filtered);
+    }, [search, customers]);
+
+    const handleAddCustomer = async () => {
+        if (!newCustomer.name || !newCustomer.bigQueryCustomerId || !newCustomer.bigQueryProjectId) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        setAddingCustomer(true);
+
+        try {
+            const response = await fetch("/api/customers", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(newCustomer),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert("Customer added successfully!");
+                setCustomers((prev) => [...prev, result.customer]); // Add the new customer to the list
+                setShowAddCustomerForm(false); // Hide the form
+                setNewCustomer({ name: "", bigQueryCustomerId: "", bigQueryProjectId: "" }); // Reset the form
+            } else {
+                const errorData = await response.json();
+                alert(`Failed to add customer: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error("Error adding customer:", error);
+            alert("An error occurred while adding the customer.");
+        } finally {
+            setAddingCustomer(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-100">
@@ -48,32 +91,87 @@ export default function CustomerModal({ closeModal }) {
                         <IoMdClose className="text-2xl" />
                     </button>
                 </span>
-                <input
-                    type="text"
-                    placeholder="Search customers..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded mb-4"
-                />
-                <ul className="max-h-60 overflow-y-auto">
-                    {loading ? (
-                        <li className="flex justify-center py-4">
-                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-500"></div>
-                        </li>
-                    ) : filteredCustomers.length > 0 ? (
-                        filteredCustomers.map((customer) => (
-                            <li
-                                key={customer._id}
-                                onClick={() => handleSelectCustomer(customer._id)}
-                                className="cursor-pointer px-4 py-2 hover:bg-gray-100 rounded"
+                {showAddCustomerForm ? (
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Customer Name"
+                            value={newCustomer.name}
+                            onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded mb-2"
+                        />
+                        <input
+                            type="text"
+                            placeholder="BigQuery Customer ID"
+                            value={newCustomer.bigQueryCustomerId}
+                            onChange={(e) => setNewCustomer({ ...newCustomer, bigQueryCustomerId: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded mb-2"
+                        />
+                        <input
+                            type="text"
+                            placeholder="BigQuery Project ID"
+                            value={newCustomer.bigQueryProjectId}
+                            onChange={(e) => setNewCustomer({ ...newCustomer, bigQueryProjectId: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded mb-4"
+                        />
+                        <button
+                            onClick={handleAddCustomer}
+                            disabled={addingCustomer}
+                            className={`w-full text-center bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm ${addingCustomer ? "opacity-50 cursor-not-allowed" : "hover:bg-zinc-800"
+                                }`}
+                        >
+                            {addingCustomer ? "Adding..." : "Add Customer"}
+                        </button>
+
+                            <button
+                                onClick={() => setShowAddCustomerForm(false)}
+                                className="mt-2 text-zinc-700 w-full text-center border border-zinc-700 py-2 px-4 rounded-full text-white gap-2 hover:cursor-pointer text-sm"
                             >
-                                {customer.name}
-                            </li>
-                        ))
-                    ) : (
-                        <li className="text-gray-400 px-4 py-2">No customers found</li>
-                    )}
-                </ul>
+                                Cancel
+                            </button>
+                    </div>
+                ) : (
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Search customers..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded mb-4"
+                        />
+                        <ul className="max-h-60 overflow-y-auto">
+                            {loading ? (
+                                <li className="flex justify-center py-4">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-500"></div>
+                                </li>
+                            ) : filteredCustomers.length > 0 ? (
+                                filteredCustomers.map((customer) => (
+                                    <li
+                                        key={customer._id}
+                                        className="cursor-pointer px-4 py-2 hover:bg-gray-100 rounded"
+                                        onClick={() => {
+                                            closeModal();
+                                            router.push(`/dashboard/${customer._id}`);
+                                        }}
+                                    >
+                                        {customer.name}
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="text-gray-400 px-4 py-2">
+                                    No customers found
+                                    <pre>{JSON.stringify(filteredCustomers, null, 2)}</pre> {/* Debug filteredCustomers */}
+                                </li>
+                            )}
+                        </ul>
+                        <button
+                            onClick={() => setShowAddCustomerForm(true)}
+                            className="mt-5 w-full text-center bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm"
+                        >
+                            Add New Customer
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -31,12 +31,17 @@ export default function PaceReport({ customerId, customerName, initialData }) {
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const formatDate = (date) => date.toISOString().split("T")[0];
 
-    const [revenueBudget, setRevenueBudget] = useState("0");
-    const [adSpendBudget, setAdSpendBudget] = useState("0");
+    const [revenueBudget, setRevenueBudget] = useState("500000");
+    const [ordersBudget, setOrdersBudget] = useState("1000");
+    const [adSpendBudget, setAdSpendBudget] = useState("100000");
     const [metric, setMetric] = useState("Revenue");
     const [comparison, setComparison] = useState("Previous Year");
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
     const [endDate, setEndDate] = useState(formatDate(yesterday));
+
+    // Calculate daysInMonth for use in UI
+    const end = new Date(endDate);
+    const daysInMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
 
     if (!initialData || !initialData.daily_metrics) {
         return <div>No data available for {customerId}</div>;
@@ -48,7 +53,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         const filtered = daily_metrics
             .filter(row => row.date >= startDate && row.date <= endDate)
             .sort((a, b) => a.date.localeCompare(b.date));
-        console.log("Filtered Metrics:", filtered);
         return filtered;
     }, [daily_metrics, startDate, endDate]);
 
@@ -66,7 +70,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 roas: cumAdSpend > 0 ? cumRevenue / cumAdSpend : 0,
             };
         });
-        console.log("Cumulative Metrics:", result);
         return result;
     }, [filteredMetrics]);
 
@@ -79,20 +82,39 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         };
 
         const revenueBudgetNum = Number(revenueBudget.replace(/[^0-9.-]+/g, "")) || 500000;
+        const ordersBudgetNum = Number(ordersBudget.replace(/[^0-9.-]+/g, "")) || 1000;
         const adSpendBudgetNum = Number(adSpendBudget.replace(/[^0-9.-]+/g, "")) || 100000;
 
         const start = new Date(startDate);
-        const end = new Date(endDate);
         const daysInRange = Math.ceil((end - start + 1) / (1000 * 60 * 60 * 24));
-        const daysInMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
         const daysElapsed = daysInRange;
+        const daysRemaining = daysInMonth - daysElapsed;
 
-        const pace = (aggregated.revenue / daysInMonth) * (daysElapsed - 1) > 0
+        // Revenue pace calculation
+        const revenuePace = (aggregated.revenue / daysInMonth) * (daysElapsed - 1) > 0
             ? revenueBudgetNum / ((aggregated.revenue / daysInMonth) * (daysElapsed - 1))
             : 0;
 
-        const suggestedDailyAdjustment = daysInMonth * daysElapsed > 0
-            ? (revenueBudgetNum - aggregated.revenue) / (daysInMonth * daysElapsed)
+        // Orders pace calculation
+        const ordersPace = (aggregated.orders / daysInMonth) * (daysElapsed - 1) > 0
+            ? ordersBudgetNum / ((aggregated.orders / daysInMonth) * (daysElapsed - 1))
+            : 0;
+
+        // Ad spend pace calculation
+        const adSpendPace = (aggregated.ad_spend / daysInMonth) * (daysElapsed - 1) > 0
+            ? adSpendBudgetNum / ((aggregated.ad_spend / daysInMonth) * (daysElapsed - 1))
+            : 0;
+
+        const dailyRevenueGap = daysRemaining > 0
+            ? (revenueBudgetNum - aggregated.revenue) / daysRemaining
+            : 0;
+
+        const dailyOrdersGap = daysRemaining > 0
+            ? (ordersBudgetNum - aggregated.orders) / daysRemaining
+            : 0;
+
+        const dailyAdSpendGap = daysRemaining > 0
+            ? (adSpendBudgetNum - aggregated.ad_spend) / daysRemaining
             : 0;
 
         const result = {
@@ -101,17 +123,21 @@ export default function PaceReport({ customerId, customerName, initialData }) {
             ad_spend: aggregated.ad_spend,
             roas: isFinite(aggregated.roas) ? aggregated.roas : 0,
             revenue_budget: revenueBudgetNum,
+            orders_budget: ordersBudgetNum,
             ad_spend_budget: adSpendBudgetNum,
             revenue_pace: revenueBudgetNum * (daysInRange / daysInMonth),
+            orders_pace: ordersBudgetNum * (daysInRange / daysInMonth),
             ad_spend_pace: adSpendBudgetNum * (daysInRange / daysInMonth),
-            revenue_budget_percentage: revenueBudgetNum > 0 ? (aggregated.revenue / revenueBudgetNum) * 100 : 0,
-            ad_spend_budget_percentage: adSpendBudgetNum > 0 ? (aggregated.ad_spend / adSpendBudgetNum) * 100 : 0,
-            pace: isFinite(pace) ? pace : 0,
-            suggested_daily_adjustment: isFinite(suggestedDailyAdjustment) ? suggestedDailyAdjustment : 0
+            revenue_pace_ratio: isFinite(revenuePace) ? revenuePace : 0,
+            orders_pace_ratio: isFinite(ordersPace) ? ordersPace : 0,
+            ad_spend_pace_ratio: isFinite(adSpendPace) ? adSpendPace : 0,
+            daily_revenue_gap: isFinite(dailyRevenueGap) ? dailyRevenueGap : 0,
+            daily_orders_gap: isFinite(dailyOrdersGap) ? dailyOrdersGap : 0,
+            daily_ad_spend_gap: isFinite(dailyAdSpendGap) ? dailyAdSpendGap : 0
         };
-        console.log("Calculated Totals:", result);
+        
         return result;
-    }, [cumulativeMetrics, revenueBudget, adSpendBudget, startDate, endDate]);
+    }, [cumulativeMetrics, revenueBudget, ordersBudget, adSpendBudget, startDate, endDate, daysInMonth]);
 
     const getComparisonDates = () => {
         const end = new Date(endDate);
@@ -152,20 +178,16 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         };
 
         const roas = aggregated.ad_spend > 0 ? aggregated.revenue / aggregated.ad_spend : 0;
-        const revenueBudgetNum = Number(revenueBudget.replace(/[^0-9.-]+/g, "")) || 500000;
-        const adSpendBudgetNum = Number(adSpendBudget.replace(/[^0-9.-]+/g, "")) || 100000;
 
         const result = {
             orders: aggregated.orders,
             revenue: aggregated.revenue,
             ad_spend: aggregated.ad_spend,
-            roas: isFinite(roas) ? roas : 0,
-            revenue_budget: revenueBudgetNum,
-            ad_spend_budget: adSpendBudgetNum,
+            roas: isFinite(roas) ? roas : 0
         };
-        console.log("Comparison Totals:", result);
+        
         return result;
-    }, [daily_metrics, compStart, compEnd, revenueBudget, adSpendBudget]);
+    }, [daily_metrics, compStart, compEnd]);
 
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;
@@ -173,59 +195,9 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         return `${delta > 0 ? "+" : ""}${delta}%`;
     };
 
-    const metricsDisplay = [
-        {
-            label: "Revenue",
-            value: totals.revenue ? Math.round(totals.revenue).toLocaleString("da-DK") : "0",
-            delta: calculateDelta(totals.revenue, comparisonTotals.revenue),
-            positive: totals.revenue >= comparisonTotals.revenue,
-        },
-        {
-            label: "Orders",
-            value: totals.orders ? Math.round(totals.orders).toLocaleString("da-DK") : "0",
-            delta: calculateDelta(totals.orders, comparisonTotals.orders),
-            positive: totals.orders >= comparisonTotals.orders,
-        },
-        {
-            label: "Ad Spend",
-            value: totals.ad_spend ? Math.round(totals.ad_spend).toLocaleString("da-DK") : "0",
-            delta: calculateDelta(totals.ad_spend, comparisonTotals.ad_spend),
-            positive: totals.ad_spend <= comparisonTotals.ad_spend,
-        },
-        {
-            label: "ROAS",
-            value: totals.roas.toFixed(2),
-            delta: calculateDelta(totals.roas, comparisonTotals.roas),
-            positive: totals.roas >= comparisonTotals.roas,
-        },
-    ];
-
     const budgetChartData = {
         labels: cumulativeMetrics.map(row => row.date),
         datasets: [
-            {
-                label: "Revenue",
-                data: cumulativeMetrics.map(row => row.revenue),
-                borderColor: "#1e3a8a",
-                backgroundColor: "#1e3a8a",
-                fill: false,
-                tension: 0.3,
-                pointRadius: 0,
-                borderWidth: 2,
-                yAxisID: 'y'
-            },
-            {
-                label: "Revenue Budget",
-                data: cumulativeMetrics.map((_, i) => totals.revenue_budget * ((i + 1) / cumulativeMetrics.length)),
-                borderColor: "#d1d5db",
-                backgroundColor: "#d1d5db",
-                fill: false,
-                borderDash: [5, 5],
-                tension: 0.3,
-                pointRadius: 0,
-                borderWidth: 2,
-                yAxisID: 'y'
-            },
             {
                 label: "Ad Spend",
                 data: cumulativeMetrics.map(row => row.ad_spend),
@@ -234,8 +206,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 fill: false,
                 tension: 0.3,
                 pointRadius: 0,
-                borderWidth: 2,
-                yAxisID: 'yRight'
+                borderWidth: 2
             },
             {
                 label: "Ad Spend Budget",
@@ -246,8 +217,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 borderDash: [5, 5],
                 tension: 0.3,
                 pointRadius: 0,
-                borderWidth: 2,
-                yAxisID: 'yRight'
+                borderWidth: 2
             }
         ]
     };
@@ -263,24 +233,73 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 fill: false,
                 tension: 0.3,
                 pointRadius: 0,
-                borderWidth: 2,
-                yAxisID: 'y'
+                borderWidth: 2
             },
             {
-                label: "Ad Spend",
-                data: cumulativeMetrics.map(row => row.ad_spend),
-                borderColor: "#dc2626",
-                backgroundColor: "#dc2626",
+                label: `${metric} Budget`,
+                data: cumulativeMetrics.map((_, i) => {
+                    const totalBudget = metric === "Revenue" ? totals.revenue_budget : totals.orders_budget;
+                    return totalBudget * ((i + 1) / cumulativeMetrics.length);
+                }),
+                borderColor: "#d1d5db",
+                backgroundColor: "#d1d5db",
                 fill: false,
+                borderDash: [5, 5],
                 tension: 0.3,
                 pointRadius: 0,
-                borderWidth: 2,
-                yAxisID: 'yRight'
+                borderWidth: 2
             }
         ]
-    }
+    };
 
-    const chartOptions = {
+    const budgetChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: "top",
+                labels: {
+                    font: { size: 10, family: "'Inter', sans-serif" },
+                    color: "#4b5563",
+                    padding: 10,
+                    boxWidth: 20,
+                    usePointStyle: false
+                }
+            },
+            tooltip: {
+                backgroundColor: "#1e3a8a",
+                titleFont: { size: 10, family: "'Inter', sans-serif" },
+                bodyFont: { size: 10, family: "'Inter', sans-serif" },
+                padding: 8
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { font: { size: 10, family: "'Inter', sans-serif" }, color: "#4b5563" },
+                title: { display: true, text: "Date", font: { size: 10, family: "'Inter', sans-serif" }, color: "#4b5563" }
+            },
+            y: {
+                grid: { display: false },
+                ticks: {
+                    font: { size: 10, family: "'Inter', sans-serif" },
+                    color: "#4b5563",
+                    callback: function (value) {
+                        return `kr. ${value.toLocaleString("da-DK")}`;
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Ad Spend (kr.)",
+                    font: { size: 10, family: "'Inter', sans-serif" },
+                    color: "#4b5563"
+                },
+                beginAtZero: true
+            }
+        }
+    };
+
+    const paceChartOptions = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -323,24 +342,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                     color: "#4b5563"
                 },
                 beginAtZero: true
-            },
-            yRight: {
-                grid: { display: false },
-                ticks: {
-                    font: { size: 10, family: "'Inter', sans-serif" },
-                    color: "#4b5563",
-                    callback: function (value) {
-                        return `kr. ${value.toLocaleString("da-DK")}`;
-                    }
-                },
-                title: {
-                    display: true,
-                    text: "Ad Spend (kr.)",
-                    font: { size: 10, family: "'Inter', sans-serif" },
-                    color: "#4b5563"
-                },
-                beginAtZero: true,
-                position: 'right'
             }
         }
     };
@@ -394,23 +395,13 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-solid-l">
                         <div className="flex items-center justify-between mb-4">
-                            <p className="font-semibold">Budget</p>
+                            <p className="font-semibold">Ad Spend Budget</p>
                         </div>
                         <div className="h-[280px]">
-                            <Line data={budgetChartData} options={chartOptions} />
+                            <Line data={budgetChartData} options={budgetChartOptions} />
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-sm text-gray-500 mb-2">Revenue Budget</p>
-                                <input
-                                    type="text"
-                                    value={revenueBudget}
-                                    onChange={(e) => setRevenueBudget(e.target.value)}
-                                    className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
-                                    placeholder="kr. 500,000"
-                                />
-                            </div>
-                            <div>
+                            <div className="col-span-2">
                                 <p className="text-sm text-gray-500 mb-2">Ad Spend Budget</p>
                                 <input
                                     type="text"
@@ -420,26 +411,19 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                                     placeholder="kr. 100,000"
                                 />
                             </div>
-                            {metricsDisplay.slice(0, 2).map((item, i) => (
-                                <div key={i}>
-                                    <p className="text-sm text-gray-500">{item.label}</p>
-                                    <p className="text-lg font-semibold">
-                                        {item.label === "Orders" ? item.value : `kr. ${item.value}`}
-                                        {item.delta && (
-                                            <span className={`ml-2 text-sm ${item.positive ? "text-green-600" : "text-red-500"}`}>
-                                                {item.delta}
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
-                            ))}
-                            <div>
-                                <p className="text-sm text-gray-500">Revenue % of Budget</p>
-                                <p className="text-lg font-semibold">{totals.revenue_budget_percentage.toFixed(2)}%</p>
+                            <div className="hidden">
+                                <p className="text-sm text-gray-500">ROAS</p>
+                                <p className="text-lg font-semibold">{totals.roas.toFixed(2)}x</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Ad Spend % of Budget</p>
-                                <p className="text-lg font-semibold">{totals.ad_spend_budget_percentage.toFixed(2)}%</p>
+                                <p className="text-sm text-gray-500">Ad Spend</p>
+                                <p className="text-lg font-semibold">kr. {Math.round(totals.ad_spend).toLocaleString("da-DK")}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-500">Pace Ratio</p>
+                                <p className="text-lg font-semibold">
+                                    {totals.ad_spend_pace_ratio.toFixed(2)}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -449,7 +433,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                             <p className="font-semibold">Pace</p>
                         </div>
                         <div className="h-[280px]">
-                            <Line data={paceChartData} options={{ ...chartOptions, scales: { ...chartOptions.scales, y: { ...chartOptions.scales.y, title: { ...chartOptions.scales.y.title, text: metric === "Revenue" ? "kr." : "Count" } } } }} />
+                            <Line data={paceChartData} options={paceChartOptions} />
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4">
                             <div>
@@ -464,42 +448,50 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                                 </select>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 mb-2">Current {metric}</p>
+                                <p className="text-sm text-gray-500 mb-2">{metric} Budget</p>
                                 <input
                                     type="text"
-                                    value={metric === "Revenue" ? `kr. ${Math.round(totals.revenue).toLocaleString("da-DK")}` : Math.round(totals.orders).toLocaleString("da-DK")}
-                                    readOnly
-                                    className="w-full border border-gray-300 rounded px-4 py-2 text-sm bg-gray-50"
+                                    value={metric === "Revenue" ? revenueBudget : ordersBudget}
+                                    onChange={(e) => metric === "Revenue" ? setRevenueBudget(e.target.value) : setOrdersBudget(e.target.value)}
+                                    className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
+                                    placeholder={metric === "Revenue" ? "kr. 500,000" : "1000"}
                                 />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-500">Current {metric}</p>
+                                <p className="text-lg font-semibold">
+                                    {metric === "Revenue" 
+                                        ? `kr. ${Math.round(totals.revenue).toLocaleString("da-DK")}`
+                                        : Math.round(totals.orders).toLocaleString("da-DK")
+                                    }
+                                </p>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">{metric} Pace</p>
                                 <p className="text-lg font-semibold">
-                                    {metric === "Revenue" ? `kr. ${Math.round(totals.revenue_pace).toLocaleString("da-DK")}` : Math.round(totals.orders * (31 / filteredMetrics.length)).toLocaleString("da-DK")}
+                                    {metric === "Revenue" 
+                                        ? `kr. ${Math.round(totals.revenue_pace).toLocaleString("da-DK")}`
+                                        : Math.round(totals.orders_pace).toLocaleString("da-DK")
+                                    }
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Ad Spend Pace</p>
-                                <p className="text-lg font-semibold">kr. {Math.round(totals.ad_spend_pace).toLocaleString("da-DK")}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-500">ROAS</p>
+                                <p className="text-sm text-gray-500">Pace Ratio</p>
                                 <p className="text-lg font-semibold">
-                                    {totals.roas.toFixed(2)}
-                                    {metricsDisplay[3].delta && (
-                                        <span className={`ml-2 text-sm ${metricsDisplay[3].positive ? "text-green-600" : "text-red-500"}`}>
-                                            {metricsDisplay[3].delta}
-                                        </span>
-                                    )}
+                                    {metric === "Revenue" 
+                                        ? totals.revenue_pace_ratio.toFixed(2)
+                                        : totals.orders_pace_ratio.toFixed(2)
+                                    }
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Pace</p>
-                                <p className="text-lg font-semibold">{totals.pace.toFixed(2)}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-500">Suggested Daily Adjustment</p>
-                                <p className="text-lg font-semibold">kr. {Math.round(totals.suggested_daily_adjustment).toLocaleString("da-DK")}</p>
+                                <p className="text-sm text-gray-500">Daily {metric} Gap</p>
+                                <p className="text-lg font-semibold">
+                                    {metric === "Revenue" 
+                                        ? `kr. ${Math.round(totals.daily_revenue_gap).toLocaleString("da-DK")}`
+                                        : Math.round(totals.daily_orders_gap).toLocaleString("da-DK")
+                                    }
+                                </p>
                             </div>
                         </div>
                     </div>

@@ -86,7 +86,7 @@ export default function CustomerModal({ closeModal }) {
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-100">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md relative">
                 <span className="flex justify-between mb-5">
-                    <h4 className="text-xl font-semibold">Select a Customer</h4>
+                    <h4 className="text-xl font-semibold">Select a customer</h4>
                     <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 text-lg">
                         <IoMdClose className="text-2xl" />
                     </button>
@@ -117,7 +117,7 @@ export default function CustomerModal({ closeModal }) {
                         <button
                             onClick={handleAddCustomer}
                             disabled={addingCustomer}
-                            className={`w-full text-center bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm ${addingCustomer ? "opacity-50 cursor-not-allowed" : "hover:bg-zinc-800"
+                            className={`mt-5 w-full text-center bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm ${addingCustomer ? "opacity-50 cursor-not-allowed" : "hover:bg-zinc-800"
                                 }`}
                         >
                             {addingCustomer ? "Adding..." : "Add Customer"}
@@ -148,7 +148,7 @@ export default function CustomerModal({ closeModal }) {
                                 filteredCustomers.map((customer) => (
                                     <li
                                         key={customer._id}
-                                        className="cursor-pointer px-4 py-2 hover:bg-gray-100 rounded"
+                                        className="cursor-pointer px-2 py-2 mt-1 text-sm border-gray-300 text-base hover:bg-gray-100 text-black"
                                         onClick={() => {
                                             closeModal();
                                             router.push(`/dashboard/${customer._id}`);

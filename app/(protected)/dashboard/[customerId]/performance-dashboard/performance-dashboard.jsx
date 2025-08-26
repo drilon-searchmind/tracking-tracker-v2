@@ -318,6 +318,32 @@ export default function PerformanceDashboard({ customerId, customerName, initial
         },
     };
 
+    const spendAllocationLineChartData = {
+        labels: validChartData.map((row) => row.date),
+        datasets: [
+            {
+                label: "Google Ads",
+                data: validChartData.map((row) => row.google_ads_cost || 0),
+                borderColor: colors.primary,
+                backgroundColor: colors.primary,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+            },
+            {
+                label: "Meta",
+                data: validChartData.map((row) => row.meta_spend || 0),
+                borderColor: colors.hue4,
+                backgroundColor: colors.hue5,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+            },
+        ],
+    };
+
     const barChartOptions = {
         maintainAspectRatio: false,
         scales: {
@@ -459,7 +485,7 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
                         <p className="font-semibold mb-4">Spend Allocation</p>
                         <div className="w-full h-[calc(100%-2rem)]">
-                            <Pie data={spendAllocationChartData} options={pieChartOptions} />
+                            <Line data={spendAllocationLineChartData} options={chartOptions} />
                         </div>
                     </div>
                 </div>

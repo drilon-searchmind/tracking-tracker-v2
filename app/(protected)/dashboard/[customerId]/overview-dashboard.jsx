@@ -4,12 +4,10 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 
 export default function OverviewDashboard({ customerId, customerName, initialData }) {
-    // Initialize startDate to first day of current month, endDate to yesterday
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
     const formatDate = (date) => date.toISOString().split("T")[0];
 
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
@@ -21,14 +19,12 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         return <div>No data available for {customerId}</div>;
     }
 
-    // Filter metrics based on date range
     const filteredMetrics = useMemo(() => {
         return overview_metrics.filter(
             (row) => row.date >= startDate && row.date <= endDate
-        );
+        ).sort((a, b) => a.date.localeCompare(b.date));
     }, [overview_metrics, startDate, endDate]);
 
-    // Calculate totals for filtered metrics
     const filteredTotals = useMemo(() => {
         return filteredMetrics.reduce(
             (acc, row) => ({
@@ -64,7 +60,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         );
     }, [filteredMetrics]);
 
-    // Filter last year metrics based on equivalent date range (1 year earlier)
     const lastYearStart = formatDate(new Date(new Date(startDate).setFullYear(new Date(startDate).getFullYear() - 1)));
     const lastYearEnd = formatDate(new Date(new Date(endDate).setFullYear(new Date(endDate).getFullYear() - 1)));
     
@@ -109,7 +104,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         );
     }, [lastYearMetrics]);
 
-    // Calculate differences
     const differences = useMemo(() => ({
         orders: filteredTotals.orders - filteredLastYearTotals.orders,
         revenue: filteredTotals.revenue - filteredLastYearTotals.revenue,
@@ -122,7 +116,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         aov: filteredTotals.aov - filteredLastYearTotals.aov,
     }), [filteredTotals, filteredLastYearTotals]);
 
-    // Calculate min and max values for each metric to use in heatmap
     const metricRanges = useMemo(() => {
         const ranges = {
             orders: { min: Infinity, max: -Infinity },
@@ -138,15 +131,16 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
 
         filteredMetrics.forEach(row => {
             Object.keys(ranges).forEach(key => {
-                if (row[key] < ranges[key].min && row[key] !== 0) ranges[key].min = row[key];
-                if (row[key] > ranges[key].max) ranges[key].max = row[key];
+                if (row[key] !== 0 && row[key] !== null && row[key] !== undefined) {
+                    if (row[key] < ranges[key].min) ranges[key].min = row[key];
+                    if (row[key] > ranges[key].max) ranges[key].max = row[key];
+                }
             });
         });
 
         return ranges;
     }, [filteredMetrics]);
     
-    // Calculate min and max values for last year metrics
     const lastYearMetricRanges = useMemo(() => {
         const ranges = {
             orders: { min: Infinity, max: -Infinity },
@@ -162,8 +156,10 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
 
         lastYearMetrics.forEach(row => {
             Object.keys(ranges).forEach(key => {
-                if (row[key] < ranges[key].min && row[key] !== 0) ranges[key].min = row[key];
-                if (row[key] > ranges[key].max) ranges[key].max = row[key];
+                if (row[key] !== 0 && row[key] !== null && row[key] !== undefined) {
+                    if (row[key] < ranges[key].min) ranges[key].min = row[key];
+                    if (row[key] > ranges[key].max) ranges[key].max = row[key];
+                }
             });
         });
 
@@ -171,42 +167,16 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
     }, [lastYearMetrics]);
 
     const getHeatmapStyle = (value, metricKey, isLastYear = false) => {
-        // Handle zero or null values
         if (value === 0 || value === null || value === undefined) {
             return { backgroundColor: 'transparent' };
         }
     
         const ranges = isLastYear ? lastYearMetricRanges : metricRanges;
         
-        // If there's only one data point, we can't create a gradient
         if (ranges[metricKey].min === ranges[metricKey].max) {
             return { backgroundColor: 'transparent' };
         }
     
-        // Special handling for ROAS and POAS where higher is better
-        if (metricKey === 'roas' || metricKey === 'poas') {
-            const normalizedValue = (value - ranges[metricKey].min) / 
-                (ranges[metricKey].max - ranges[metricKey].min);
-            
-            // Higher value = more intense color for ROAS and POAS
-            const opacity = Math.max(0.05, normalizedValue);
-            return {
-                backgroundColor: `rgba(198, 237, 98, ${opacity})`,
-            };
-        }
-        
-        // For costs (PPC and PS), lower is better
-        if (metricKey === 'ppc_cost' || metricKey === 'ps_cost') {
-            const normalizedValue = 1 - (value - ranges[metricKey].min) / 
-                (ranges[metricKey].max - ranges[metricKey].min);
-            
-            const opacity = Math.max(0.05, normalizedValue);
-            return {
-                backgroundColor: `rgba(198, 237, 98, ${opacity})`,
-            };
-        }
-    
-        // For all other metrics (orders, revenue, GP, AOV), higher is better
         const normalizedValue = (value - ranges[metricKey].min) / 
             (ranges[metricKey].max - ranges[metricKey].min);
         
@@ -238,7 +208,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                     </p>
                 </div>
 
-                {/* Current Period Table */}
                 <div className="mb-12 overflow-x-auto bg-white border border-gray-200 rounded-lg">
                     <div className="flex flex-wrap gap-4 items-center p-4 border-b border-gray-200 bg-gray-50 justify-between">
                         <h3 className="text-lg font-semibold">Current Period</h3>
@@ -349,7 +318,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                     </table>
                 </div>
 
-                {/* Last Year Table */}
                 <div className="mb-12 overflow-x-auto bg-white border border-gray-200 rounded-lg">
                     <div className="flex flex-wrap gap-4 items-center p-4 border-b border-gray-200 bg-gray-50 justify-between">
                         <h3 className="text-lg font-semibold">Last Year Period ({lastYearStart} to {lastYearEnd})</h3>

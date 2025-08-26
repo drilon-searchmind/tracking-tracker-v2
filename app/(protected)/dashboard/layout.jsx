@@ -1,6 +1,6 @@
 "use client";
 
-import { useSelectedLayoutSegments } from "next/navigation";
+import { usePathname, useSelectedLayoutSegments } from "next/navigation";
 import { PiCaretDownThin } from "react-icons/pi";
 import { CiShare2, CiUser } from "react-icons/ci";
 import ShareCustomerModal from "@/app/components/Dashboard/ShareCustomerModal";
@@ -10,26 +10,42 @@ export default function DashboardLayout({ children }) {
     const segments = useSelectedLayoutSegments()
     const customerId = segments[0] || null;
     const [showModalShare, setShowModalShare] = useState(false);
-    
+    const pathname = usePathname()
+
+    const isActive = (path) => {
+        const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
+        const cleanPathname = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+
+        return cleanPathname === cleanPath;
+    };
+
+    const isServiceActive = pathname.startsWith(`/dashboard/${customerId}/service-dashboard`);
+    const isToolsActive = pathname.startsWith(`/dashboard/${customerId}/tools`);
 
     return (
         <section id="DashboardLayout" className="relative">
             <nav className="flex justify-between items-center pt-6 pb-3 border-t border-gray-200 mb-5 bg-white sticky top-0 z-50">
                 <ul className="flex gap-5 relative items-baseline">
                     <li>
-                        <a href={`/dashboard/${customerId}`} className="hover:text-blue-500 text-sm">
+                        <a
+                            href={`/dashboard/${customerId}`}
+                            className={`hover:text-blue-500 text-sm ${isActive(`/dashboard/${customerId}`) ? "text-black font-bold" : ""}`}
+                        >
                             Overview
                         </a>
                     </li>
 
                     <li>
-                        <a href={`/dashboard/${customerId}/performance-dashboard`} className="hover:text-blue-500 text-sm">
+                        <a
+                            href={`/dashboard/${customerId}/performance-dashboard`}
+                            className={`hover:text-blue-500 text-sm ${isActive(`/dashboard/${customerId}/performance-dashboard`) ? "text-black font-bold" : ""}`}
+                        >
                             Performance Dashboard
                         </a>
                     </li>
 
                     <li className="relative group">
-                        <div className="flex items-center gap-2 cursor-pointer text-sm hover:text-blue-500">
+                        <div className={`flex items-center gap-2 cursor-pointer text-sm hover:text-blue-500 ${isServiceActive ? "text-black font-bold" : ""}`}>
                             <a href={`#`}>Service Dashboard</a>
                             <PiCaretDownThin />
                         </div>
@@ -38,7 +54,10 @@ export default function DashboardLayout({ children }) {
                                 <li key={slug}>
                                     <a
                                         href={`/dashboard/${customerId}/service-dashboard/${slug}`}
-                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                                        className={`block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 ${pathname === `/dashboard/${customerId}/service-dashboard/${slug}`
+                                            ? "text-black font-bold bg-blue-50"
+                                            : "text-gray-700"
+                                            }`}
                                     >
                                         {slug.toUpperCase()}
                                     </a>
@@ -48,7 +67,7 @@ export default function DashboardLayout({ children }) {
                     </li>
 
                     <li className="relative group">
-                        <div className="flex items-center gap-2 cursor-pointer text-sm hover:text-blue-500">
+                        <div className={`flex items-center gap-2 cursor-pointer text-sm hover:text-blue-500 ${isToolsActive ? "text-black font-bold" : ""}`}>
                             <a href={`#`}>Tools</a>
                             <PiCaretDownThin />
                         </div>
@@ -64,7 +83,10 @@ export default function DashboardLayout({ children }) {
                                 <li key={slug}>
                                     <a
                                         href={`/dashboard/${customerId}/tools/${slug}`}
-                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                                        className={`block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 ${pathname === `/dashboard/${customerId}/tools/${slug}`
+                                                ? "text-black font-bold bg-blue-50"
+                                                : "text-gray-700"
+                                            }`}
                                     >
                                         {label}
                                     </a>
@@ -74,7 +96,10 @@ export default function DashboardLayout({ children }) {
                     </li>
 
                     <li>
-                        <a href={`/dashboard/${customerId}/config`} className="hover:text-blue-500 text-sm">
+                        <a
+                            href={`/dashboard/${customerId}/config`}
+                            className={`hover:text-blue-500 text-sm ${isActive(`/dashboard/${customerId}/config`) ? "text-black font-bold" : ""}`}
+                        >
                             Config
                         </a>
                     </li>
@@ -91,7 +116,7 @@ export default function DashboardLayout({ children }) {
             </nav>
             {children}
 
-            {showModalShare && <ShareCustomerModal customerId={customerId} closeModal={()=> setShowModalShare(false)} />}
+            {showModalShare && <ShareCustomerModal customerId={customerId} closeModal={() => setShowModalShare(false)} />}
         </section>
-    )
+    );
 }

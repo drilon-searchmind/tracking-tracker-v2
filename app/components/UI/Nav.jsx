@@ -52,7 +52,7 @@ export default function Nav() {
                             <a href="#" className="hover:text-black line-through">Tracking Tracker</a>
                             <a href="#" className="hover:text-black line-through">Clients</a>
                             <div className=""><FaMoon /></div>
-                            <button className="border border-[var(--color-primary-searchmind)] bg-white py-3 px-8 rounded text-zinc-800 hover:cursor hover:bg-[var(--color-primary-searchmind)] hover:cursor-pointer transition-all duration-150" onClick={() => signOut()}>
+                            <button className="border border-[var(--color-primary-searchmind)] bg-white py-3 px-8 rounded text-zinc-800 hover:cursor hover:bg-[var(--color-primary-searchmind)] hover:cursor-pointer hover:text-white transition-all duration-150" onClick={() => signOut()}>
                                 Sign Out
                             </button>
                         </>

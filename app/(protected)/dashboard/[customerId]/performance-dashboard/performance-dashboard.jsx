@@ -55,12 +55,20 @@ export default function PerformanceDashboard({ customerId, customerName, initial
 
     const data = Array.isArray(initialData) ? initialData : [];
 
-    // Filter data for current period
+    const formatComparisonDate = (date) => {
+        const compDate = new Date(date);
+        const offset = comparison === "Previous Year" 
+            ? 365 // Add a year for comparison
+            : Math.ceil((new Date(dateEnd) - new Date(dateStart)) / (1000 * 60 * 60 * 24));
+        
+        compDate.setDate(compDate.getDate() + offset);
+        return formatDate(compDate);
+    };
+
     const filteredData = useMemo(() => {
         return data.filter((row) => row.date >= dateStart && row.date <= dateEnd);
     }, [data, dateStart, dateEnd]);
 
-    // Calculate comparison dates
     const getComparisonDates = () => {
         const end = new Date(dateEnd);
         const start = new Date(dateStart);
@@ -179,7 +187,6 @@ export default function PerformanceDashboard({ customerId, customerName, initial
         },
     ];
 
-    // Color palette based on rgb(28, 57, 142)
     const colors = {
         primary: "#1C398E", // rgb(28, 57, 142)
         hue1: "#2E4CA8",
@@ -188,12 +195,10 @@ export default function PerformanceDashboard({ customerId, customerName, initial
         hue4: "#9BABE1",
     };
 
-    // Filter data for charts to exclude zero or invalid values
     const validChartData = filteredData.filter(
         (row) => row.date && !isNaN(new Date(row.date).getTime()) && row.revenue !== 0 && row.aov !== 0
     );
 
-    // Chart data for Revenue
     const revenueChartData = {
         labels: validChartData.map((row) => row.date),
         datasets: [
@@ -206,6 +211,20 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                 pointRadius: 2,
                 pointHoverRadius: 4,
                 fill: false,
+            },
+            {
+                label: `Revenue (${comparison})`,
+                data: comparisonData.map((row) => ({
+                    x: formatComparisonDate(row.date),
+                    y: row.revenue || 0
+                })),
+                borderColor: colors.hue3,
+                backgroundColor: colors.hue3,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+                borderDash: [5, 5],
             },
         ],
     };
@@ -222,6 +241,20 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                 pointRadius: 2,
                 pointHoverRadius: 4,
                 fill: false,
+            },
+            {
+                label: `AOV (${comparison})`,
+                data: comparisonData.map((row) => ({
+                    x: formatComparisonDate(row.date),
+                    y: row.aov || 0
+                })),
+                borderColor: colors.hue3,
+                backgroundColor: colors.hue3,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+                borderDash: [5, 5],
             },
         ],
     };
@@ -253,6 +286,38 @@ export default function PerformanceDashboard({ customerId, customerName, initial
     };
 
     const chartOptions = {
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                type: "time",
+                time: { unit: "day" },
+                grid: { display: false },
+                ticks: { font: { size: 10 } },
+            },
+            y: {
+                beginAtZero: true,
+                grid: { color: "rgba(0, 0, 0, 0.05)" },
+                ticks: { font: { size: 10 } },
+            },
+        },
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                titleFont: { size: 12 },
+                bodyFont: { size: 10 },
+                padding: 8,
+                cornerRadius: 4,
+            },
+            datalabels: {
+                display: false,
+            },
+        },
+    };
+
+    const revenueChartOptions = {
         maintainAspectRatio: false,
         scales: {
             x: {
@@ -478,7 +543,7 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
                         <p className="font-semibold mb-4">Revenue</p>
                         <div className="w-full h-[calc(100%-2rem)]">
-                            <Line data={revenueChartData} options={chartOptions} />
+                            <Line data={revenueChartData} options={revenueChartOptions} />
                         </div>
                     </div>
 

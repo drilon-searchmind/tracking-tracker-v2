@@ -420,7 +420,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                             cx="56"
                                             cy="56"
                                             r="50"
-                                            stroke="#C6ED62"
+                                            stroke="#1E2B2B"
                                             strokeWidth="10"
                                             strokeDasharray="314"
                                             strokeDashoffset={314 * (1 - (item.percentage / 100))}

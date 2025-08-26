@@ -182,7 +182,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         
         const opacity = Math.max(0.05, normalizedValue);
         return {
-            backgroundColor: `rgba(198, 237, 98, ${opacity})`,
+            backgroundColor: `rgba(214, 205, 182, ${opacity})`,
         };
     };
 

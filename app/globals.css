@@ -5,10 +5,10 @@
 	--background: #ffffff;
 	--foreground: #171717;
 
-	--color-primary-searchmind: #C6ED62;
-	--color-primary-searchmind-hover: #A8D94B;
-	--color-secondary-searchmind: #1E2B2B;
-	--color-secondary-searchmind-hover: #1E2B2B;
+	--color-primary-searchmind: #1E2B2B;
+	--color-primary-searchmind-hover: #344b4b;
+	--color-secondary-searchmind: #D6CDB6;
+	--color-secondary-searchmind-hover: #c0b8a3;
 }
 
 @theme inline {

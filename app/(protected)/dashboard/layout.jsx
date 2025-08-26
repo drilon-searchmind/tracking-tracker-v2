@@ -21,6 +21,7 @@ export default function DashboardLayout({ children }) {
 
     const isServiceActive = pathname.startsWith(`/dashboard/${customerId}/service-dashboard`);
     const isToolsActive = pathname.startsWith(`/dashboard/${customerId}/tools`);
+    const isConfigActive = pathname.startsWith(`/dashboard/${customerId}/config`);
 
     return (
         <section id="DashboardLayout" className="relative">
@@ -84,8 +85,8 @@ export default function DashboardLayout({ children }) {
                                     <a
                                         href={`/dashboard/${customerId}/tools/${slug}`}
                                         className={`block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 ${pathname === `/dashboard/${customerId}/tools/${slug}`
-                                                ? "text-black font-bold bg-blue-50"
-                                                : "text-gray-700"
+                                            ? "text-black font-bold bg-blue-50"
+                                            : "text-gray-700"
                                             }`}
                                     >
                                         {label}
@@ -98,7 +99,8 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}/config`}
-                            className={`hover:text-blue-500 text-sm ${isActive(`/dashboard/${customerId}/config`) ? "text-black font-bold" : ""}`}
+                            className={`hover:text-blue-500 text-sm ${pathname === `/dashboard/${customerId}/config` ? "text-black font-bold" : ""
+                                }`}
                         >
                             Config
                         </a>

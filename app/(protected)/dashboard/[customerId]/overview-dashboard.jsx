@@ -67,10 +67,14 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
     // Filter last year metrics based on equivalent date range (1 year earlier)
     const lastYearStart = formatDate(new Date(new Date(startDate).setFullYear(new Date(startDate).getFullYear() - 1)));
     const lastYearEnd = formatDate(new Date(new Date(endDate).setFullYear(new Date(endDate).getFullYear() - 1)));
-    const filteredLastYearTotals = useMemo(() => {
-        const lastYearMetrics = overview_metrics.filter(
+    
+    const lastYearMetrics = useMemo(() => {
+        return overview_metrics.filter(
             (row) => row.date >= lastYearStart && row.date <= lastYearEnd
-        );
+        ).sort((a, b) => a.date.localeCompare(b.date));
+    }, [overview_metrics, lastYearStart, lastYearEnd]);
+    
+    const filteredLastYearTotals = useMemo(() => {
         return lastYearMetrics.reduce(
             (acc, row) => ({
                 date: "Last Year Total",
@@ -103,7 +107,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                 aov: 0,
             }
         );
-    }, [overview_metrics, lastYearStart, lastYearEnd]);
+    }, [lastYearMetrics]);
 
     // Calculate differences
     const differences = useMemo(() => ({
@@ -117,6 +121,100 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         gp: filteredTotals.gp - filteredLastYearTotals.gp,
         aov: filteredTotals.aov - filteredLastYearTotals.aov,
     }), [filteredTotals, filteredLastYearTotals]);
+
+    // Calculate min and max values for each metric to use in heatmap
+    const metricRanges = useMemo(() => {
+        const ranges = {
+            orders: { min: Infinity, max: -Infinity },
+            revenue: { min: Infinity, max: -Infinity },
+            revenue_ex_tax: { min: Infinity, max: -Infinity },
+            ppc_cost: { min: Infinity, max: -Infinity },
+            ps_cost: { min: Infinity, max: -Infinity },
+            roas: { min: Infinity, max: -Infinity },
+            poas: { min: Infinity, max: -Infinity },
+            gp: { min: Infinity, max: -Infinity },
+            aov: { min: Infinity, max: -Infinity },
+        };
+
+        filteredMetrics.forEach(row => {
+            Object.keys(ranges).forEach(key => {
+                if (row[key] < ranges[key].min && row[key] !== 0) ranges[key].min = row[key];
+                if (row[key] > ranges[key].max) ranges[key].max = row[key];
+            });
+        });
+
+        return ranges;
+    }, [filteredMetrics]);
+    
+    // Calculate min and max values for last year metrics
+    const lastYearMetricRanges = useMemo(() => {
+        const ranges = {
+            orders: { min: Infinity, max: -Infinity },
+            revenue: { min: Infinity, max: -Infinity },
+            revenue_ex_tax: { min: Infinity, max: -Infinity },
+            ppc_cost: { min: Infinity, max: -Infinity },
+            ps_cost: { min: Infinity, max: -Infinity },
+            roas: { min: Infinity, max: -Infinity },
+            poas: { min: Infinity, max: -Infinity },
+            gp: { min: Infinity, max: -Infinity },
+            aov: { min: Infinity, max: -Infinity },
+        };
+
+        lastYearMetrics.forEach(row => {
+            Object.keys(ranges).forEach(key => {
+                if (row[key] < ranges[key].min && row[key] !== 0) ranges[key].min = row[key];
+                if (row[key] > ranges[key].max) ranges[key].max = row[key];
+            });
+        });
+
+        return ranges;
+    }, [lastYearMetrics]);
+
+    const getHeatmapStyle = (value, metricKey, isLastYear = false) => {
+        // Handle zero or null values
+        if (value === 0 || value === null || value === undefined) {
+            return { backgroundColor: 'transparent' };
+        }
+    
+        const ranges = isLastYear ? lastYearMetricRanges : metricRanges;
+        
+        // If there's only one data point, we can't create a gradient
+        if (ranges[metricKey].min === ranges[metricKey].max) {
+            return { backgroundColor: 'transparent' };
+        }
+    
+        // Special handling for ROAS and POAS where higher is better
+        if (metricKey === 'roas' || metricKey === 'poas') {
+            const normalizedValue = (value - ranges[metricKey].min) / 
+                (ranges[metricKey].max - ranges[metricKey].min);
+            
+            // Higher value = more intense color for ROAS and POAS
+            const opacity = Math.max(0.05, normalizedValue);
+            return {
+                backgroundColor: `rgba(198, 237, 98, ${opacity})`,
+            };
+        }
+        
+        // For costs (PPC and PS), lower is better
+        if (metricKey === 'ppc_cost' || metricKey === 'ps_cost') {
+            const normalizedValue = 1 - (value - ranges[metricKey].min) / 
+                (ranges[metricKey].max - ranges[metricKey].min);
+            
+            const opacity = Math.max(0.05, normalizedValue);
+            return {
+                backgroundColor: `rgba(198, 237, 98, ${opacity})`,
+            };
+        }
+    
+        // For all other metrics (orders, revenue, GP, AOV), higher is better
+        const normalizedValue = (value - ranges[metricKey].min) / 
+            (ranges[metricKey].max - ranges[metricKey].min);
+        
+        const opacity = Math.max(0.05, normalizedValue);
+        return {
+            backgroundColor: `rgba(198, 237, 98, ${opacity})`,
+        };
+    };
 
     return (
         <div className="py-20 px-0 relative overflow">
@@ -140,26 +238,27 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                     </p>
                 </div>
 
+                {/* Current Period Table */}
                 <div className="mb-12 overflow-x-auto bg-white border border-gray-200 rounded-lg">
-                    <div className="flex flex-wrap gap-4 items-center p-4 border-b border-gray-200 bg-gray-50 justify-end">
-                        <button className="border border-gray-300 px-4 py-2 rounded text-sm bg-white hover:bg-gray-100">
-                            Comparison: Last Period
-                        </button>
-                        <input
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="border border-gray-300 px-3 py-2 rounded text-sm"
-                            placeholder="Start date"
-                        />
-                        <span className="text-gray-400">→</span>
-                        <input
-                            type="date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            className="border border-gray-300 px-3 py-2 rounded text-sm"
-                            placeholder="End date"
-                        />
+                    <div className="flex flex-wrap gap-4 items-center p-4 border-b border-gray-200 bg-gray-50 justify-between">
+                        <h3 className="text-lg font-semibold">Current Period</h3>
+                        <div className="flex gap-4 items-center">
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="border border-gray-300 px-3 py-2 rounded text-sm"
+                                placeholder="Start date"
+                            />
+                            <span className="text-gray-400">→</span>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="border border-gray-300 px-3 py-2 rounded text-sm"
+                                placeholder="End date"
+                            />
+                        </div>
                     </div>
 
                     <table className="min-w-full text-sm text-left">
@@ -178,6 +277,38 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                             </tr>
                         </thead>
                         <tbody className="text-gray-800">
+                            {filteredMetrics.map((row, i) => (
+                                <tr key={i} className="border-b last:border-0">
+                                    <td className="px-4 py-3">{row.date}</td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.orders, 'orders')}>
+                                        {Math.round(row.orders).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.revenue, 'revenue')}>
+                                        kr. {Math.round(row.revenue).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax')}>
+                                        kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost')}>
+                                        kr. {Math.round(row.ppc_cost).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.ps_cost, 'ps_cost')}>
+                                        kr. {Math.round(row.ps_cost).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.roas, 'roas')}>
+                                        {row.roas.toFixed(2)}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.poas, 'poas')}>
+                                        {row.poas.toFixed(2)}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.gp, 'gp')}>
+                                        kr. {Math.round(row.gp).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.aov, 'aov')}>
+                                        kr. {Math.round(row.aov).toLocaleString()}
+                                    </td>
+                                </tr>
+                            ))}
                             <tr className="bg-gray-200 font-semibold text-sm">
                                 <td className="px-4 py-3">Total</td>
                                 <td className="px-4 py-3">{Math.round(filteredTotals.orders).toLocaleString()}</td>
@@ -214,18 +345,74 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                 <td className="px-4 py-3">kr. {Math.round(differences.gp).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(differences.aov).toLocaleString()}</td>
                             </tr>
-                            {filteredMetrics.map((row, i) => (
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Last Year Table */}
+                <div className="mb-12 overflow-x-auto bg-white border border-gray-200 rounded-lg">
+                    <div className="flex flex-wrap gap-4 items-center p-4 border-b border-gray-200 bg-gray-50 justify-between">
+                        <h3 className="text-lg font-semibold">Last Year Period ({lastYearStart} to {lastYearEnd})</h3>
+                    </div>
+
+                    <table className="min-w-full text-sm text-left">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr className="text-gray-600 uppercase text-xs">
+                                <th className="px-4 py-3 font-medium">Date</th>
+                                <th className="px-4 py-3 font-medium">Orders</th>
+                                <th className="px-4 py-3 font-medium">Revenue</th>
+                                <th className="px-4 py-3 font-medium">Revenue Ex Tax</th>
+                                <th className="px-4 py-3 font-medium">PPC Cost</th>
+                                <th className="px-4 py-3 font-medium">PS Cost</th>
+                                <th className="px-4 py-3 font-medium">ROAS</th>
+                                <th className="px-4 py-3 font-medium">POAS</th>
+                                <th className="px-4 py-3 font-medium">GP</th>
+                                <th className="px-4 py-3 font-medium">AOV</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-gray-800">
+                            <tr className="bg-gray-200 font-semibold text-sm">
+                                <td className="px-4 py-3">Total</td>
+                                <td className="px-4 py-3">{Math.round(filteredLastYearTotals.orders).toLocaleString()}</td>
+                                <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</td>
+                                <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
+                                <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
+                                <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
+                                <td className="px-4 py-3">{filteredLastYearTotals.roas.toFixed(2)}</td>
+                                <td className="px-4 py-3">{filteredLastYearTotals.poas.toFixed(2)}</td>
+                                <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</td>
+                                <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
+                            </tr>
+                            {lastYearMetrics.map((row, i) => (
                                 <tr key={i} className="border-b last:border-0">
                                     <td className="px-4 py-3">{row.date}</td>
-                                    <td className="px-4 py-3">{Math.round(row.orders).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.revenue).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.revenue_ex_tax).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.ppc_cost).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.ps_cost).toLocaleString()}</td>
-                                    <td className="px-4 py-3">{row.roas.toFixed(2)}</td>
-                                    <td className="px-4 py-3">{row.poas.toFixed(2)}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.gp).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(row.aov).toLocaleString()}</td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.orders, 'orders', true)}>
+                                        {Math.round(row.orders).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.revenue, 'revenue', true)}>
+                                        kr. {Math.round(row.revenue).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax', true)}>
+                                        kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost', true)}>
+                                        kr. {Math.round(row.ppc_cost).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.ps_cost, 'ps_cost', true)}>
+                                        kr. {Math.round(row.ps_cost).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.roas, 'roas', true)}>
+                                        {row.roas.toFixed(2)}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.poas, 'poas', true)}>
+                                        {row.poas.toFixed(2)}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.gp, 'gp', true)}>
+                                        kr. {Math.round(row.gp).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3" style={getHeatmapStyle(row.aov, 'aov', true)}>
+                                        kr. {Math.round(row.aov).toLocaleString()}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

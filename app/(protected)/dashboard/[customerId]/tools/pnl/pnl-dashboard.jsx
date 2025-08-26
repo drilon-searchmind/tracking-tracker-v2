@@ -285,7 +285,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                     {/* Left: P&L Table */}
                     <div className="lg:col-span-2 space-y-4">
                         {/* Metric Cards */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10 hidden">
                             {metricsDisplay.map((item, i) => (
                                 <div key={i} className="bg-white border border-zinc-200 rounded p-4">
                                     <p className="text-sm text-gray-500">{item.label}</p>

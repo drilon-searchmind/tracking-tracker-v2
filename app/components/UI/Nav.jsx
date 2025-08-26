@@ -34,7 +34,7 @@ export default function Nav() {
                                     alt="User Avatar"
                                     width={20}
                                     height={20}
-                                    className="rounded-full inline-block ml-0"
+                                    className="rounded inline-block ml-0"
                                 />
                                 <p className="m-0 text-xs">{session.user.email}</p>
                             </span>
@@ -52,12 +52,12 @@ export default function Nav() {
                             <a href="#" className="hover:text-black line-through">Tracking Tracker</a>
                             <a href="#" className="hover:text-black line-through">Clients</a>
                             <div className=""><FaMoon /></div>
-                            <button className="border border-[var(--color-primary-searchmind)] bg-white py-3 px-8 rounded-full text-zinc-800 hover:cursor hover:bg-[var(--color-primary-searchmind)] hover:cursor-pointer transition-all duration-150" onClick={() => signOut()}>
+                            <button className="border border-[var(--color-primary-searchmind)] bg-white py-3 px-8 rounded text-zinc-800 hover:cursor hover:bg-[var(--color-primary-searchmind)] hover:cursor-pointer transition-all duration-150" onClick={() => signOut()}>
                                 Sign Out
                             </button>
                         </>
                     ) : (
-                        <button className="bg-[var(--color-primary-searchmind)] py-3 px-8 rounded-full text-black" onClick={() => signIn("google")}>
+                        <button className="bg-[var(--color-primary-searchmind)] py-3 px-8 rounded text-black" onClick={() => signIn("google")}>
                             Sign In
                         </button>
                     )}

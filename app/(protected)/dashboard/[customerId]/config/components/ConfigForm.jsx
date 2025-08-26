@@ -62,7 +62,7 @@ export default function ConfigForm({ customerId, baseUrl }) {
                     />
                     <button
                         type="submit"
-                        className="col-span-4 w-full text-center bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm"
+                        className="col-span-4 w-full text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm"
                     >
                         Add New Objective
                     </button>

@@ -81,10 +81,10 @@ export default function DashboardLayout({ children }) {
                 </ul>
 
                 <span className="flex items-center gap-4">
-                    <div className="text-center text-xs border border-zinc-200 rounded-full px-4 py-2 bg-zinc-50 text-zinc-700 flex items-center gap-2">
+                    <div className="text-center text-xs border border-zinc-200 rounded px-4 py-2 bg-zinc-50 text-zinc-700 flex items-center gap-2">
                         HUMDAKIN DK <CiUser />
                     </div>
-                    <button onClick={() => setShowModalShare(true)} className="text-center text-xs bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 flex items-center gap-2 hover:cursor-pointer">
+                    <button onClick={() => setShowModalShare(true)} className="text-center text-xs bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 flex items-center gap-2 hover:cursor-pointer">
                         Share Report <CiShare2 />
                     </button>
                 </span>

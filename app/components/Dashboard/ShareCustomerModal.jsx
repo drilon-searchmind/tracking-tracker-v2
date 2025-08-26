@@ -74,7 +74,7 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
                 <button
                     onClick={handleShareReport}
                     disabled={loading}
-                    className={`hover:cursor-pointer bg-[var(--color-primary-searchmind)] py-3 px-8 rounded-full text-black w-full ${
+                    className={`hover:cursor-pointer bg-[var(--color-primary-searchmind)] py-3 px-8 rounded text-black w-full ${
                         loading ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                 >

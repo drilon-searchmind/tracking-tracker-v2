@@ -117,7 +117,7 @@ export default function CustomerModal({ closeModal }) {
                         <button
                             onClick={handleAddCustomer}
                             disabled={addingCustomer}
-                            className={`mt-5 w-full text-center bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm ${addingCustomer ? "opacity-50 cursor-not-allowed" : "hover:bg-zinc-800"
+                            className={`mt-5 w-full text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm ${addingCustomer ? "opacity-50 cursor-not-allowed" : "hover:bg-zinc-800"
                                 }`}
                         >
                             {addingCustomer ? "Adding..." : "Add Customer"}
@@ -125,7 +125,7 @@ export default function CustomerModal({ closeModal }) {
 
                             <button
                                 onClick={() => setShowAddCustomerForm(false)}
-                                className="mt-2 text-zinc-700 w-full text-center border border-zinc-700 py-2 px-4 rounded-full text-white gap-2 hover:cursor-pointer text-sm"
+                                className="mt-2 text-zinc-700 w-full text-center border border-zinc-700 py-2 px-4 rounded text-white gap-2 hover:cursor-pointer text-sm"
                             >
                                 Cancel
                             </button>
@@ -142,7 +142,7 @@ export default function CustomerModal({ closeModal }) {
                         <ul className="max-h-60 overflow-y-auto">
                             {loading ? (
                                 <li className="flex justify-center py-4">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-500"></div>
+                                    <div className="animate-spin rounded h-8 w-8 border-t-2 border-b-2 border-gray-500"></div>
                                 </li>
                             ) : filteredCustomers.length > 0 ? (
                                 filteredCustomers.map((customer) => (
@@ -166,7 +166,7 @@ export default function CustomerModal({ closeModal }) {
                         </ul>
                         <button
                             onClick={() => setShowAddCustomerForm(true)}
-                            className="mt-5 w-full text-center bg-zinc-700 py-2 px-4 rounded-full text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm"
+                            className="mt-5 w-full text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm"
                         >
                             Add New Customer
                         </button>

@@ -140,7 +140,7 @@ body {
 .bg-titlebg:before {
 	content: "";
 	height: 20%;
-	background-color: var(--color-primary-searchmind);
+	background-color: var(--color-secondary-searchmind);
 	position: absolute;
 	width: 101%;
 	bottom: 5px;

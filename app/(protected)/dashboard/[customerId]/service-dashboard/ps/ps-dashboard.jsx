@@ -242,12 +242,12 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
             delta: calculateDelta(metrics.cpm, comparisonMetrics.cpm),
             positive: metrics.cpm <= comparisonMetrics.cpm,
         },
-        {
-            label: "Conv. Rate",
-            value: metrics.conv_rate ? `${(metrics.conv_rate * 100).toFixed(2)}%` : "0.00%",
-            delta: calculateDelta(metrics.conv_rate, comparisonMetrics.conv_rate),
-            positive: metrics.conv_rate >= comparisonMetrics.conv_rate,
-        },
+        // {
+        //     label: "Conv. Rate",
+        //     value: metrics.conv_rate ? `${(metrics.conv_rate * 100).toFixed(2)}%` : "0.00%",
+        //     delta: calculateDelta(metrics.conv_rate, comparisonMetrics.conv_rate),
+        //     positive: metrics.conv_rate >= comparisonMetrics.conv_rate,
+        // },
     ];
 
     const metricsChartData = {

@@ -57,7 +57,7 @@ export default function Nav() {
                             </button>
                         </>
                     ) : (
-                        <button className="bg-[var(--color-primary-searchmind)] py-3 px-8 rounded text-black" onClick={() => signIn("google")}>
+                        <button className="bg-[var(--color-primary-searchmind)] py-3 px-8 rounded text-white" onClick={() => signIn("google")}>
                             Sign In
                         </button>
                     )}

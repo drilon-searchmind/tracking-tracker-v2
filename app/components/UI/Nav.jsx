@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import CustomerModal from "@/app/components/Dashboard/CustomerModal.jsx";
 import { FaMoon } from "react-icons/fa";
+import LogoutButton from "../Auth/LogoutButton";
+import LoginButton from "../Auth/LoginButton";
 
 export default function Nav() {
     const { data: session } = useSession()
@@ -29,13 +31,6 @@ export default function Nav() {
                         <span className="text-lg text-black font-extrabold">Searchmind Apex</span>
                         {session ? (
                             <span className="flex items-center gap-2 text-xs text-gray-500">
-                                <Image 
-                                    src={session.user.image}
-                                    alt="User Avatar"
-                                    width={20}
-                                    height={20}
-                                    className="rounded inline-block ml-0"
-                                />
                                 <p className="m-0 text-xs">{session.user.email}</p>
                             </span>
                         ) : null}
@@ -52,14 +47,10 @@ export default function Nav() {
                             <a href="#" className="hover:text-black line-through hidden">Tracking Tracker</a>
                             <a href="#" className="hover:text-black line-through">Clients</a>
                             <div className=""><FaMoon /></div>
-                            <button className="border border-[var(--color-primary-searchmind)] bg-white py-3 px-8 rounded text-zinc-800 hover:cursor hover:bg-[var(--color-primary-searchmind)] hover:cursor-pointer hover:text-white transition-all duration-150" onClick={() => signOut()}>
-                                Sign Out
-                            </button>
+                            <LogoutButton />
                         </>
                     ) : (
-                        <button className="bg-[var(--color-primary-searchmind)] py-3 px-8 rounded text-white" onClick={() => signIn("google")}>
-                            Sign In
-                        </button>
+                        <LoginButton />
                     )}
                 </div>
             </nav>

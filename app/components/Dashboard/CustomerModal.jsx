@@ -24,14 +24,12 @@ export default function CustomerModal({ closeModal }) {
         async function fetchCustomers() {
             try {
                 const userEmail = session?.user?.email || "";
-                console.log("Current user email:", userEmail);
-                const isSearchmindUser = userEmail.includes("searchmind");
+                const isAdmin = userEmail === "admin@example.com"; // Check admin flag
 
                 const allCustomersResponse = await fetch("/api/customers");
                 const allCustomers = await allCustomersResponse.json();
-                console.log("All customers:", allCustomers);
 
-                if (isSearchmindUser) {
+                if (isAdmin) {
                     setCustomers(allCustomers || []);
                     setFilteredCustomers(allCustomers || []);
                     return;
@@ -39,18 +37,15 @@ export default function CustomerModal({ closeModal }) {
 
                 const sharingsResponse = await fetch(`/api/customer-sharings?email=${encodeURIComponent(userEmail)}`);
                 const sharingsResult = await sharingsResponse.json();
-                console.log("Sharings result:", sharingsResult);
 
                 if (sharingsResult?.data?.length > 0) {
                     const customerIds = sharingsResult.data.map(sharing => sharing.customer);
-                    console.log("Customer IDs from sharings:", customerIds);
 
                     const accessibleCustomers = allCustomers.filter(customer => {
                         const customerId = customer._id ? customer._id.toString() : customer._id;
                         return customerIds.some(id => id === customerId);
                     });
 
-                    console.log("Accessible customers:", accessibleCustomers);
                     setCustomers(accessibleCustomers || []);
                     setFilteredCustomers(accessibleCustomers || []);
                 } else {

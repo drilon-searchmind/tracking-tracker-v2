@@ -8,12 +8,13 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const [email, setEmail] = useState("");
     const [sharedWith, setSharedWith] = useState("");
+    const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleShareReport = async () => {
-        if (!email || !sharedWith) {
-            alert("Please fill in both fields.");
+        if (!email || !sharedWith || !password) {
+            alert("Please fill in all fields.");
             return;
         }
 
@@ -25,13 +26,19 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ email, sharedWith }),
+                body: JSON.stringify({ email, sharedWith, password }),
             });
 
             if (response.ok) {
-                alert("Report shared successfully!");
+                const result = await response.json();
+                if (result.userCreated) {
+                    alert("Report shared successfully! A new user account has been created.");
+                } else {
+                    alert("Report shared successfully! User already exists.");
+                }
                 setEmail("");
                 setSharedWith("");
+                setPassword("");
                 closeModal();
             } else {
                 const errorData = await response.json();
@@ -68,15 +75,21 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
                     onChange={(e) => setSharedWith(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded mb-2"
                 />
+                <input
+                    type="password"
+                    placeholder="Set Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded mb-2"
+                />
                 <p className="text-xs mb-5">
-                    Notice: Email will be sent a login that they can use to view the customer's performance dashboard.
+                    Notice: A new user account will be created for this email with the provided password.
                 </p>
                 <button
                     onClick={handleShareReport}
                     disabled={loading}
-                    className={`hover:cursor-pointer bg-[var(--color-primary-searchmind)] py-3 px-8 rounded text-white w-full ${
-                        loading ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                    className={`hover:cursor-pointer bg-[var(--color-primary-searchmind)] py-3 px-8 rounded text-white w-full ${loading ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                 >
                     {loading ? "Sharing..." : "Share Customer Report"}
                 </button>

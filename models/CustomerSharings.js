@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const CustomerSharingsSchema = new mongoose.Schema({
     customer: {
-        type: String, // Changed from mongoose.Schema.Types.ObjectId to String
+        type: String,
         required: true,
     },
     email: {
@@ -12,6 +12,10 @@ const CustomerSharingsSchema = new mongoose.Schema({
     sharedWith: {
         type: String,
         required: true,
+    },
+    userCreated: {
+        type: Boolean,
+        default: false,
     },
     createdAt: {
         type: Date,

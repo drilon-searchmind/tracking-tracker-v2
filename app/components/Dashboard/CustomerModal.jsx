@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { IoMdClose } from "react-icons/io";
+import { useSession } from "next-auth/react";
 
 export default function CustomerModal({ closeModal }) {
     const [search, setSearch] = useState("");
@@ -17,17 +18,46 @@ export default function CustomerModal({ closeModal }) {
     });
     const [addingCustomer, setAddingCustomer] = useState(false);
     const router = useRouter();
+    const { data: session } = useSession();
 
-    // Fetch customers on component mount
     useEffect(() => {
         async function fetchCustomers() {
             try {
-                const response = await fetch("/api/customers");
-                const result = await response.json();
-                console.log({ result })
-                console.log("Fetched customers:", result); // Log fetched customers
-                setCustomers(result || []);
-                setFilteredCustomers(result || []); // Ensure filteredCustomers is initialized
+                const userEmail = session?.user?.email || "";
+                console.log("Current user email:", userEmail);
+                const isSearchmindUser = userEmail.includes("searchmind");
+
+                const allCustomersResponse = await fetch("/api/customers");
+                const allCustomers = await allCustomersResponse.json();
+                console.log("All customers:", allCustomers);
+
+                if (isSearchmindUser) {
+                    setCustomers(allCustomers || []);
+                    setFilteredCustomers(allCustomers || []);
+                    return;
+                }
+
+                const sharingsResponse = await fetch(`/api/customer-sharings?email=${encodeURIComponent(userEmail)}`);
+                const sharingsResult = await sharingsResponse.json();
+                console.log("Sharings result:", sharingsResult);
+
+                if (sharingsResult?.data?.length > 0) {
+                    const customerIds = sharingsResult.data.map(sharing => sharing.customer);
+                    console.log("Customer IDs from sharings:", customerIds);
+
+                    const accessibleCustomers = allCustomers.filter(customer => {
+                        const customerId = customer._id ? customer._id.toString() : customer._id;
+                        return customerIds.some(id => id === customerId);
+                    });
+
+                    console.log("Accessible customers:", accessibleCustomers);
+                    setCustomers(accessibleCustomers || []);
+                    setFilteredCustomers(accessibleCustomers || []);
+                } else {
+                    console.log("No sharings found for this user");
+                    setCustomers([]);
+                    setFilteredCustomers([]);
+                }
             } catch (error) {
                 console.error("Error fetching customers:", error);
             } finally {
@@ -35,10 +65,11 @@ export default function CustomerModal({ closeModal }) {
             }
         }
 
-        fetchCustomers();
-    }, []);
+        if (session) {
+            fetchCustomers();
+        }
+    }, [session]);
 
-    // Filter customers based on the search input
     useEffect(() => {
         const filtered = customers.filter((customer) =>
             customer.name.toLowerCase().includes(search.toLowerCase())
@@ -123,12 +154,12 @@ export default function CustomerModal({ closeModal }) {
                             {addingCustomer ? "Adding..." : "Add Customer"}
                         </button>
 
-                            <button
-                                onClick={() => setShowAddCustomerForm(false)}
-                                className="mt-2 text-zinc-700 w-full text-center border border-zinc-700 py-2 px-4 rounded text-white gap-2 hover:cursor-pointer text-sm"
-                            >
-                                Cancel
-                            </button>
+                        <button
+                            onClick={() => setShowAddCustomerForm(false)}
+                            className="mt-2 text-zinc-700 w-full text-center border border-zinc-700 py-2 px-4 rounded text-white gap-2 hover:cursor-pointer text-sm"
+                        >
+                            Cancel
+                        </button>
                     </div>
                 ) : (
                     <div>

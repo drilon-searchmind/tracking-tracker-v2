@@ -2,14 +2,12 @@ import mongoose from "mongoose";
 
 const CustomerSharingsSchema = new mongoose.Schema({
     customer: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Customer",
+        type: String, // Changed from mongoose.Schema.Types.ObjectId to String
         required: true,
     },
     email: {
         type: String,
         required: true,
-        unique: true,
     },
     sharedWith: {
         type: String,
@@ -23,6 +21,8 @@ const CustomerSharingsSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-})
+});
+
+CustomerSharingsSchema.index({ customer: 1, email: 1 }, { unique: true });
 
 export default mongoose.models.CustomerSharings || mongoose.model("CustomerSharings", CustomerSharingsSchema);

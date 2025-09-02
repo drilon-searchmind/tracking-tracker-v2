@@ -27,17 +27,27 @@ export async function POST(req, { params }) {
     }
 }
 
-export async function GET(req, { params }) {
-    const { customerId } = params;
-
+export async function GET(request, { params }) {
     try {
+        const { customerId } = params;
+
+        if (!customerId) {
+            return new Response(JSON.stringify({ message: "Customer ID is required" }), { status: 400 });
+        }
+
         await dbConnect();
 
-        const sharings = await CustomerSharings.find({ customer: customerId });
+        console.log(`Looking for sharings with customer ID: ${customerId}`);
+
+        const sharings = await CustomerSharings.find({
+            customer: { $in: [customerId, customerId.toString()] }
+        });
+
+        console.log(`Found ${sharings.length} sharings for customer: ${customerId}`);
 
         return new Response(JSON.stringify({ data: sharings }), { status: 200 });
     } catch (error) {
-        console.error("Error fetching customer sharings:", error);
+        console.error("Error fetching customer sharings by ID:", error);
         return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });
     }
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { SessionProvider } from "next-auth/react";
+import { ToastProvider } from "./contexts/ToastContext";
 import Nav from "./components/UI/Nav";
 
 import { Geist, Geist_Mono } from "next/font/google";
@@ -23,8 +24,10 @@ export default function RootLayout({ children }) {
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
                 <SessionProvider>
-                    <Nav />
-                    {children}
+                    <ToastProvider>
+                        <Nav />
+                        {children}
+                    </ToastProvider>
                 </SessionProvider>
             </body>
         </html>

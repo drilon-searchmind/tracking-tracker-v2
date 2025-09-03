@@ -118,76 +118,76 @@ export default function Spendshare({ customerId, customerName, initialData }) {
                 <div className="mb-12 overflow-x-auto bg-white border border-gray-200 rounded-lg">
                     <table className="min-w-full text-sm text-left">
                         <thead className="bg-gray-50 border-b border-gray-200">
-                            <tr className="text-gray-600 uppercase text-xs">
+                            <tr className="text-gray-600 uppercase text-[10px]">
                                 <th className="px-4 py-3 font-medium">Metric</th>
                                 {months.map((month, i) => (
-                                    <th key={i} className="px-4 py-3 font-medium">{month}</th>
+                                    <th key={i} className="px-4 py-3 font-medium text-[10px]">{month}</th>
                                 ))}
-                                <th className="px-4 py-3 font-medium">Total</th>
+                                <th className="px-4 py-3 font-medium text-[10px]">Total</th>
                             </tr>
                         </thead>
                         <tbody className="text-gray-800">
                             <tr>
-                                <td className="px-4 py-3 font-medium">Forecast 20% Spendshare</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">Forecast 20% Spendshare</td>
                                 {months.map((month, i) => (
                                     <td key={i} className="px-4 py-3">
                                         <input
                                             type="number"
                                             value={forecastData.spendshare[i]}
                                             onChange={(e) => handleForecastChange('spendshare', i, e.target.value)}
-                                            className="border px-2 py-1 rounded w-full"
+                                            className="border px-2 py-1 rounded w-full text-[10px]"
                                         />
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(forecastTotals.spendshare / 12).toFixed(2)}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">Forecast Spend: Meta</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">Forecast Spend: Meta</td>
                                 {months.map((month, i) => (
                                     <td key={i} className="px-4 py-3">
                                         <input
                                             type="number"
                                             value={forecastData.spendMeta[i]}
                                             onChange={(e) => handleForecastChange('spendMeta', i, e.target.value)}
-                                            className="border px-2 py-1 rounded w-full"
+                                            className="border px-2 py-1 rounded w-full text-[10px]"
                                         />
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(forecastTotals.spendMeta).toLocaleString()}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">Forecast Spend: Google Ads</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">Forecast Spend: Google Ads</td>
                                 {months.map((month, i) => (
                                     <td key={i} className="px-4 py-3">
                                         <input
                                             type="number"
                                             value={forecastData.spendGoogleAds[i]}
                                             onChange={(e) => handleForecastChange('spendGoogleAds', i, e.target.value)}
-                                            className="border px-2 py-1 rounded w-full"
+                                            className="border px-2 py-1 rounded w-full text-[10px]"
                                         />
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(forecastTotals.spendGoogleAds).toLocaleString()}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">Forecast Net Sales ex VAT</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">Forecast Net Sales ex VAT</td>
                                 {months.map((month, i) => (
                                     <td key={i} className="px-4 py-3">
                                         <input
                                             type="number"
                                             value={forecastData.netSales[i]}
                                             onChange={(e) => handleForecastChange('netSales', i, e.target.value)}
-                                            className="border px-2 py-1 rounded w-full"
+                                            className="border px-2 py-1 rounded w-full text-[10px]"
                                         />
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(forecastTotals.netSales).toLocaleString()}
                                 </td>
                             </tr>
@@ -236,9 +236,9 @@ export default function Spendshare({ customerId, customerName, initialData }) {
 
                 {/* Table 3: Monthly Metrics */}
                 <div className="mb-12 overflow-x-auto bg-white border border-gray-200 rounded-lg">
-                    <table className="min-w-full text-sm text-left">
+                    <table className="min-w-full text-[10px] text-left">
                         <thead className="bg-gray-50 border-b border-gray-200">
-                            <tr className="text-gray-600 uppercase text-xs">
+                            <tr className="text-gray-600 uppercase text-[10px]">
                                 <th className="px-4 py-3 font-medium">Metric</th>
                                 {months.map((month, i) => (
                                     <th key={i} className="px-4 py-3 font-medium">{month}</th>
@@ -250,172 +250,172 @@ export default function Spendshare({ customerId, customerName, initialData }) {
                         </thead>
                         <tbody className="text-gray-800">
                             <tr>
-                                <td className="px-4 py-3 font-medium">DK - Realized - Revenue</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">DK - Realized - Revenue</td>
                                 {months.map((month, i) => (
-                                    <td key={i} className="px-4 py-3">
+                                    <td key={i} className="px-4 py-3 text-[10px]">
                                         {monthlyData[i] ? Math.round(monthlyData[i].revenue).toLocaleString() : 0}
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(totals.revenue).toLocaleString()}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {forecastTotals.netSales > 0 ? ((totals.revenue / forecastTotals.netSales) * 100).toFixed(2) : 0}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(totals.revenue - forecastTotals.netSales).toLocaleString()}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">DK - Realized - Netprofit</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">DK - Realized - Netprofit</td>
                                 {months.map((month, i) => (
-                                    <td key={i} className="px-4 py-3">
+                                    <td key={i} className="px-4 py-3 text-[10px]">
                                         {monthlyData[i] ? Math.round(monthlyData[i].net_profit).toLocaleString() : 0}
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(totals.net_profit).toLocaleString()}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {forecastTotals.netSales > 0 ? ((totals.net_profit / forecastTotals.netSales) * 100).toFixed(2) : 0}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(totals.net_profit - forecastTotals.netSales).toLocaleString()}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">DK - Realized - Spend</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">DK - Realized - Spend</td>
                                 {months.map((month, i) => (
-                                    <td key={i} className="px-4 py-3">
+                                    <td key={i} className="px-4 py-3 text-[10px]">
                                         {monthlyData[i] ? Math.round(monthlyData[i].spend).toLocaleString() : 0}
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(totals.spend).toLocaleString()}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(forecastTotals.spendshare / 12 * 100).toFixed(2)}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(totals.spend - (forecastTotals.spendMeta + forecastTotals.spendGoogleAds)).toLocaleString()}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">DK - Realized - Spend - Meta</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">DK - Realized - Spend - Meta</td>
                                 {months.map((month, i) => (
-                                    <td key={i} className="px-4 py-3">
+                                    <td key={i} className="px-4 py-3 text-[10px]">
                                         {monthlyData[i] ? Math.round(monthlyData[i].meta_spend).toLocaleString() : 0}
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(totals.meta_spend).toLocaleString()}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {forecastTotals.spendMeta > 0 ? ((totals.meta_spend / forecastTotals.spendMeta) * 100).toFixed(2) : 0}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(totals.meta_spend - forecastTotals.spendMeta).toLocaleString()}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">DK - Realized - Spend - Ads</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">DK - Realized - Spend - Ads</td>
                                 {months.map((month, i) => (
-                                    <td key={i} className="px-4 py-3">
+                                    <td key={i} className="px-4 py-3 text-[10px]">
                                         {monthlyData[i] ? Math.round(monthlyData[i].google_ads_spend).toLocaleString() : 0}
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(totals.google_ads_spend).toLocaleString()}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {forecastTotals.spendGoogleAds > 0 ? ((totals.google_ads_spend / forecastTotals.spendGoogleAds) * 100).toFixed(2) : 0}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(totals.google_ads_spend - forecastTotals.spendGoogleAds).toLocaleString()}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">DK - Forecast - Spend</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">DK - Forecast - Spend</td>
                                 {months.map((month, i) => (
-                                    <td key={i} className="px-4 py-3">
+                                    <td key={i} className="px-4 py-3 text-[10px]">
                                         {Math.round(forecastData.spendMeta[i] + forecastData.spendGoogleAds[i]).toLocaleString()}
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(forecastTotals.spendMeta + forecastTotals.spendGoogleAds).toLocaleString()}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(forecastTotals.spendshare / 12 * 100).toFixed(2)}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(forecastTotals.spendMeta + forecastTotals.spendGoogleAds - totals.spend).toLocaleString()}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">DK - Forecast - Spend - Meta</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">DK - Forecast - Spend - Meta</td>
                                 {months.map((month, i) => (
-                                    <td key={i} className="px-4 py-3">
+                                    <td key={i} className="px-4 py-3 text-[10px]">
                                         {Math.round(forecastData.spendMeta[i] * share2).toLocaleString()}
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(forecastTotals.spendMeta * share2).toLocaleString()}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {share2 * 100}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(forecastTotals.spendMeta * share2 - totals.meta_spend).toLocaleString()}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">DK - Forecast - Spend - Ads</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">DK - Forecast - Spend - Ads</td>
                                 {months.map((month, i) => (
-                                    <td key={i} className="px-4 py-3">
+                                    <td key={i} className="px-4 py-3 text-[10px]">
                                         {Math.round(forecastData.spendGoogleAds[i] * share2).toLocaleString()}
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {Math.round(forecastTotals.spendGoogleAds * share2).toLocaleString()}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {share2 * 100}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {(forecastTotals.spendGoogleAds * share2 - totals.google_ads_spend).toLocaleString()}
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">DK - Spendshare</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">DK - Spendshare</td>
                                 {months.map((month, i) => (
-                                    <td key={i} className="px-4 py-3">
+                                    <td key={i} className="px-4 py-3 text-[10px]">
                                         {monthlyData[i] && monthlyData[i].revenue > 0 ? ((monthlyData[i].spend / monthlyData[i].revenue) * 100).toFixed(2) : 0}%
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {totals.revenue > 0 ? ((totals.spend / totals.revenue) * 100).toFixed(2) : 0}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {share1 * 100}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {difference.toFixed(2)}%
                                 </td>
                             </tr>
                             <tr>
-                                <td className="px-4 py-3 font-medium">DK - Return</td>
+                                <td className="px-4 py-3 font-medium text-[10px]">DK - Return</td>
                                 {months.map((month, i) => (
-                                    <td key={i} className="px-4 py-3">
+                                    <td key={i} className="px-4 py-3 text-[10px]">
                                         {monthlyData[i] && monthlyData[i].spend > 0 ? (monthlyData[i].revenue / monthlyData[i].spend).toFixed(2) : 0}
                                     </td>
                                 ))}
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {totals.spend > 0 ? (totals.revenue / totals.spend).toFixed(2) : 0}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {share3 * 100}%
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-[10px]">
                                     {totals.spend > 0 ? (totals.revenue / totals.spend).toFixed(2) : 0}
                                 </td>
                             </tr>

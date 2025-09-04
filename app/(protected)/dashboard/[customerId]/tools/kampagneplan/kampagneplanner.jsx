@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useToast } from "@/app/contexts/ToastContext";
 import CampaignPlannerModal from "@/app/components/CampaignPlanner/CampaignPlannerModal";
 import CampaignList from "@/app/components/CampaignPlanner/CampaignList";
+import CampaignCalendar from "@/app/components/CampaignPlanner/CampaignCalendar";
+import CampaignDetailsModal from "@/app/components/CampaignPlanner/CampaignDetailsModal";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 
 export default function KampagneplanDashboard({ customerId, customerName, initialData }) {
@@ -12,6 +14,10 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { setIsCampaignModalOpen } = useModalContext();
     const [refreshList, setRefreshList] = useState(false);
+    const [campaigns, setCampaigns] = useState([]);
+    const [selectedCampaign, setSelectedCampaign] = useState(null);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [showCalendar, setShowCalendar] = useState(false);
 
     const [formData, setFormData] = useState({
         service: "",
@@ -35,6 +41,24 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
             [name]: value,
         }));
     }
+
+    const fetchCampaigns = async () => {
+        try {
+            const response = await fetch(`/api/campaigns/${customerId}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch campaigns");
+            }
+            const data = await response.json();
+            setCampaigns(data);
+        } catch (error) {
+            console.error("Error fetching campaigns:", error);
+            showToast("Error fetching campaigns", "error");
+        }
+    };
+
+    useEffect(() => {
+        fetchCampaigns();
+    }, [customerId, refreshList]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -85,6 +109,24 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
         setIsCampaignModalOpen(false);
     };
 
+    const handleToggleCalendar = () => {
+        setShowCalendar(!showCalendar);
+    };
+
+    const handleViewCampaignDetails = (campaign) => {
+        setSelectedCampaign(campaign);
+        setShowDetailsModal(true);
+    };
+
+    const handleCloseDetailsModal = () => {
+        setShowDetailsModal(false);
+        setSelectedCampaign(null);
+    };
+
+    const handleCampaignUpdated = () => {
+        fetchCampaigns();
+    };
+
     return (
         <div className="py-20 px-0 relative overflow">
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
@@ -107,7 +149,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                     </p>
                 </div>
 
-                <div className="mb-12">
+                <div className="mb-12 flex gap-4">
                     <button
                         onClick={handleOpenModal}
                         className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800"
@@ -122,6 +164,15 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                     <CampaignList customerId={customerId} key={refreshList} />
                 </div>
 
+                <div className="mb-12">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-4">Campaign Calendar</h2>
+                        <CampaignCalendar 
+                            campaigns={campaigns}
+                            customerId={customerId}
+                            onViewCampaignDetails={handleViewCampaignDetails}
+                        />
+                    </div>
+
                 <CampaignPlannerModal
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
@@ -130,6 +181,16 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                     onSubmit={handleSubmit}
                     customerId={customerId}
                 />
+
+                {showDetailsModal && selectedCampaign && (
+                    <CampaignDetailsModal
+                        isOpen={showDetailsModal}
+                        onClose={handleCloseDetailsModal}
+                        campaign={selectedCampaign}
+                        customerId={customerId}
+                        onUpdate={handleCampaignUpdated}
+                    />
+                )}
             </div>
         </div>
     );

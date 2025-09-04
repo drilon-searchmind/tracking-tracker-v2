@@ -7,8 +7,9 @@ const ModalContext = createContext();
 export function ModalProvider({ children }) {
     const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
     
-    const isAnyModalOpen = isCampaignModalOpen || isDetailsModalOpen;
+    const isAnyModalOpen = isCampaignModalOpen || isDetailsModalOpen || isCalendarModalOpen;
 
     return (
         <ModalContext.Provider value={{ 
@@ -16,6 +17,8 @@ export function ModalProvider({ children }) {
             setIsCampaignModalOpen,
             isDetailsModalOpen,
             setIsDetailsModalOpen,
+            isCalendarModalOpen,
+            setIsCalendarModalOpen,
             isAnyModalOpen
         }}>
             {children}

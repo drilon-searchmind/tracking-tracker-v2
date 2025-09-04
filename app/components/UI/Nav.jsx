@@ -28,7 +28,7 @@ export default function Nav() {
                         className="w-full max-w-[30px] object-contain filter brightness-0"
                     />
                     <a href="/" className="">
-                        <span className="text-lg text-black font-extrabold">Searchmind Apex</span>
+                        <span className="text-lg text-black font-extrabold fontFamilyFustatHeading">Searchmind Apex</span>
                         {session ? (
                             <span className="flex items-center gap-2 text-xs text-gray-500">
                                 <p className="m-0 text-xs">{session.user.email}</p>

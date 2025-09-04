@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -28,11 +29,33 @@
 body {
 	background: var(--background);
 	color: var(--foreground);
-	font-family: 'Inter', Arial, Helvetica, sans-serif;
+	font-family: 'Fustat', Arial, Helvetica, sans-serif;
 	font-size: 16px;
 	line-height: 26px;
 	font-weight: 400;
 	color: rgb(117, 118, 147);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.fontFamilyFustatHeading,
+a {
+	font-family: "Fustat", sans-serif;
+	font-optical-sizing: auto;
+	font-style: normal;
+}
+
+h1,
+.fontFamilyFustatHeading {
+	font-weight: 800;
+}
+
+a {
+	font-weight: 500;
 }
 
 .shadow {
@@ -197,34 +220,42 @@ body {
 .campaign-calendar .rbc-today {
 	background-color: #f8fafc;
 }
+
 .campaign-calendar .rbc-off-range-bg {
 	background-color: #fafafa;
 }
+
 .campaign-calendar .rbc-header {
 	background-color: #f8f9fa;
 	padding: 8px 0;
 	font-weight: 500;
 }
+
 .campaign-calendar .rbc-btn-group button {
 	color: #1C398E;
 	border-color: #e2e8f0;
 }
+
 .campaign-calendar .rbc-btn-group button.rbc-active {
 	background-color: #1C398E;
 	color: white;
 	border-color: #1C398E;
 }
+
 .campaign-calendar .rbc-toolbar-label {
 	font-weight: 600;
 	color: #1C398E;
 }
+
 .campaign-calendar .rbc-event:focus {
 	outline: none;
 }
-.campaign-calendar .rbc-day-bg + .rbc-day-bg {
+
+.campaign-calendar .rbc-day-bg+.rbc-day-bg {
 	border-left: 1px solid #e2e8f0;
 }
-.campaign-calendar .rbc-month-row + .rbc-month-row {
+
+.campaign-calendar .rbc-month-row+.rbc-month-row {
 	border-top: 1px solid #e2e8f0;
 }
 

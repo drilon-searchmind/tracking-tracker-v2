@@ -5,12 +5,14 @@ import { PiCaretDownThin } from "react-icons/pi";
 import { CiShare2, CiUser } from "react-icons/ci";
 import ShareCustomerModal from "@/app/components/Dashboard/ShareCustomerModal";
 import { useState } from "react";
+import { useModalContext } from "@/app/contexts/CampaignModalContext";
 
 export default function DashboardLayout({ children }) {
     const segments = useSelectedLayoutSegments()
     const customerId = segments[0] || null;
     const [showModalShare, setShowModalShare] = useState(false);
     const pathname = usePathname()
+    const { isCampaignModalOpen } = useModalContext();
 
     const isActive = (path) => {
         const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
@@ -25,7 +27,10 @@ export default function DashboardLayout({ children }) {
 
     return (
         <section id="DashboardLayout" className="relative">
-            <nav className="flex justify-between items-center pt-6 pb-3 border-t border-gray-200 mb-5 bg-white sticky top-0 z-50">
+            <nav 
+                className="flex justify-between items-center pt-6 pb-3 border-t border-gray-200 mb-5 bg-white sticky top-0"
+                style={{ zIndex: isCampaignModalOpen ? 1 : 50 }}
+            >
                 <ul className="flex gap-5 relative items-baseline">
                     <li>
                         <a
@@ -76,9 +81,9 @@ export default function DashboardLayout({ children }) {
                             {[
                                 { slug: "pnl", label: "P&L" },
                                 { slug: "pace-report", label: "Pace Report" },
-                                { slug: "kampagneplan", label: "Kampagneplan" },
-                                { slug: "aarshjul", label: "Årshjul" },
-                                { slug: "spendshare", label: "Spendshare" },
+                                { slug: "kampagneplan", label: "Campaign Planner" },
+                                { slug: "aarshjul", label: "Year Wheel" },
+                                // { slug: "spendshare", label: "Spendshare" },
                                 { slug: "share-of-search", label: "Share of Search" },
                             ].map(({ slug, label }) => (
                                 <li key={slug}>

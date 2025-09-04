@@ -56,6 +56,7 @@ export default function Nav() {
             </nav>
 
             {showModal && <CustomerModal closeModal={() => setShowModal(false)} />}
+            
         </section>
     )
 }

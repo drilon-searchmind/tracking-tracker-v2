@@ -9,6 +9,8 @@ import CampaignCalendar from "@/app/components/CampaignPlanner/CampaignCalendar"
 import CampaignDetailsModal from "@/app/components/CampaignPlanner/CampaignDetailsModal";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 
+import { FaCirclePlus } from "react-icons/fa6";
+
 export default function KampagneplanDashboard({ customerId, customerName, initialData }) {
     const { showToast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -141,37 +143,43 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
             </div>
 
             <div className="px-20 mx-auto z-10 relative">
-                <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
-                    <h1 className="mb-5 text-3xl font-bold text-black xl:text-[44px]">Campaign Planner</h1>
-                    <p className="text-gray-600 max-w-2xl">
-                        Plan and adjust your marketing campaigns with precise budgets and expected results.
-                    </p>
+                <div className="mb-8 flex justify-between items-top">
+                    <span>
+                        <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
+                        <h1 className="mb-5 text-3xl font-bold text-black xl:text-[44px]">Campaign Planner</h1>
+                        <p className="text-gray-600 max-w-2xl">
+                            Plan and adjust your marketing campaigns with precise budgets and expected results.
+                        </p>
+                    </span>
+                    <span>
+                        <div className="mb-12 flex gap-4">
+                            <button
+                                onClick={handleOpenModal}
+                                className="text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center"
+                            >
+                                <FaCirclePlus />
+                                Create New Campaign
+                            </button>
+                        </div>
+                    </span>
                 </div>
 
-                <div className="mb-12 flex gap-4">
-                    <button
-                        onClick={handleOpenModal}
-                        className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800"
-                    >
-                        Create a New Campaign
-                    </button>
-                </div>
+
 
                 {/* Campaign List */}
                 <div className="mb-12">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Campaigns</h2>
+                    <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Your Campaigns</h3>
                     <CampaignList customerId={customerId} key={refreshList} />
                 </div>
 
                 <div className="mb-12">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-4">Campaign Calendar</h2>
-                        <CampaignCalendar 
-                            campaigns={campaigns}
-                            customerId={customerId}
-                            onViewCampaignDetails={handleViewCampaignDetails}
-                        />
-                    </div>
+                    <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Campaign Calendar</h3>
+                    <CampaignCalendar
+                        campaigns={campaigns}
+                        customerId={customerId}
+                        onViewCampaignDetails={handleViewCampaignDetails}
+                    />
+                </div>
 
                 <CampaignPlannerModal
                     isOpen={isModalOpen}

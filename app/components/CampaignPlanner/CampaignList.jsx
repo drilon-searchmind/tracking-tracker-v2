@@ -38,7 +38,7 @@ export default function CampaignList({ customerId }) {
             }
             const data = await response.json();
             setCampaigns(data);
-            
+
             if (selectedCampaign && modalUpdateTriggered) {
                 const updatedSelectedCampaign = data.find(c => c._id === selectedCampaign._id);
                 if (updatedSelectedCampaign) {
@@ -192,13 +192,13 @@ export default function CampaignList({ customerId }) {
     }
 
     return (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="flex border-b border-gray-200">
+        <div className="bg-white border border-zinc-200 rounded-lg shadow overflow-hidden">
+            <div className="flex border-b border-gray-200 bg-[#f8fafc]">
                 {["All", "Social", "Email", "Paid Search", "SEO"].map((filter) => (
                     <button
                         key={filter}
                         className={`px-6 py-3 text-sm font-medium ${activeFilter === filter
-                            ? "border-b-2 border-blue-900 text-blue-900"
+                            ? "border-b-2 border-[#1C398E] text-[#1C398E]"
                             : "text-gray-500 hover:text-gray-700"
                             }`}
                         onClick={() => setActiveFilter(filter)}
@@ -236,9 +236,6 @@ export default function CampaignList({ customerId }) {
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                             </th>
-                            {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Comment
-                            </th> */}
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                             </th>
@@ -247,8 +244,8 @@ export default function CampaignList({ customerId }) {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {filteredCampaigns.length > 0 ? (
                             filteredCampaigns.map((campaign) => (
-                                <tr key={campaign._id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <tr key={campaign._id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1C398E]">
                                         {campaign.campaignName}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -263,7 +260,7 @@ export default function CampaignList({ customerId }) {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {new Date(campaign.startDate).toLocaleDateString()} - {new Date(campaign.endDate).toLocaleDateString()}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {campaign.budget.toLocaleString()} DKK
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -271,14 +268,14 @@ export default function CampaignList({ customerId }) {
                                             type="checkbox"
                                             checked={campaign.readyForApproval || false}
                                             onChange={(e) => handleReadyForApprovalChange(campaign._id, e.target.checked)}
-                                            className="h-4 w-4 text-blue-600 rounded"
+                                            className="h-4 w-4 text-[#1C398E] border-gray-300 rounded focus:ring-[#1C398E]"
                                         />
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <select
                                             value={campaign.status || "Draft"}
                                             onChange={(e) => handleStatusChange(campaign._id, e.target.value)}
-                                            className="text-sm border border-gray-300 rounded px-2 py-1"
+                                            className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
                                         >
                                             <option value="Draft">Draft</option>
                                             <option value="Pending">Pending</option>
@@ -287,28 +284,19 @@ export default function CampaignList({ customerId }) {
                                             <option value="Completed">Completed</option>
                                         </select>
                                     </td>
-                                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <input
-                                            type="text"
-                                            value={campaign.commentToCustomer || ""}
-                                            onChange={(e) => handleCommentChange(campaign._id, e.target.value)}
-                                            className="text-sm border border-gray-300 rounded px-2 py-1 w-full"
-                                            placeholder="Add comment..."
-                                        />
-                                    </td> */}
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <div className="flex space-x-2">
                                             <button
                                                 onClick={() => handleViewDetails(campaign)}
-                                                className="text-blue-600 hover:text-blue-900"
+                                                className="text-[#1C398E] hover:text-[#2E4CA8] font-medium flex items-center"
                                             >
-                                                View
+                                                <span className="mr-1">View</span>
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteCampaign(campaign._id)}
-                                                className="text-red-600 hover:text-red-900"
+                                                className="text-red-600 hover:text-red-800 font-medium flex items-center"
                                             >
-                                                Delete
+                                                <span className="mr-1">Delete</span>
                                             </button>
                                         </div>
                                     </td>
@@ -316,8 +304,8 @@ export default function CampaignList({ customerId }) {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="9" className="px-6 py-4 text-center text-gray-500">
-                                    No campaigns found
+                                <td colSpan="9" className="px-6 py-10 text-center text-gray-500">
+                                    No campaigns found for the selected filter
                                 </td>
                             </tr>
                         )}
@@ -331,7 +319,7 @@ export default function CampaignList({ customerId }) {
                     onClose={handleCloseDetailsModal}
                     campaign={selectedCampaign}
                     customerId={customerId}
-                    onUpdate={handleCampaignUpdated} // Use the new handler
+                    onUpdate={handleCampaignUpdated}
                 />
             )}
         </div>

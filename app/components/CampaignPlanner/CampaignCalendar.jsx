@@ -28,13 +28,21 @@ export default function CampaignCalendar({
 	const [view, setView] = useState("month");
 	const [events, setEvents] = useState([]);
 
+	const colors = {
+		primary: "#3B82F6",    // Bright blue
+		hue1: "#10B981",       // Green
+		hue2: "#F59E0B",       // Amber/Orange
+		hue3: "#8B5CF6",       // Purple
+		hue4: "#EC4899",       // Pink
+	};
+
 	useEffect(() => {
 		if (campaigns && campaigns.length > 0) {
 			const formattedEvents = campaigns.map(campaign => ({
 				id: campaign._id,
 				title: campaign.campaignName,
 				start: new Date(campaign.startDate),
-				end: new Date(campaign.startDate),
+				end: new Date(campaign.endDate || campaign.startDate),
 				resource: {
 					...campaign,
 					service: campaign.service,
@@ -51,20 +59,20 @@ export default function CampaignCalendar({
 	};
 
 	const eventStyleGetter = (event) => {
-		let backgroundColor = '#3174ad';
+		let backgroundColor = colors.primary;
 
 		switch (event.resource.service) {
 			case 'Paid Social':
-				backgroundColor = '#1DA1F2';
+				backgroundColor = colors.hue1;
 				break;
 			case 'Paid Search':
-				backgroundColor = '#EA4335';
+				backgroundColor = colors.hue2;
 				break;
 			case 'Email Marketing':
-				backgroundColor = '#6B5B95';
+				backgroundColor = colors.hue3;
 				break;
 			case 'SEO':
-				backgroundColor = '#2E8B57'; 
+				backgroundColor = colors.hue4;
 				break;
 		}
 
@@ -72,10 +80,14 @@ export default function CampaignCalendar({
 			style: {
 				backgroundColor,
 				borderRadius: '4px',
-				opacity: 0.8,
+				opacity: 0.9,
 				color: 'white',
 				border: 'none',
-				display: 'block'
+				display: 'block',
+				fontWeight: '500',
+				fontSize: '13px',
+				boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+				padding: '2px 5px'
 			}
 		};
 	};
@@ -89,28 +101,49 @@ export default function CampaignCalendar({
 		}
 	};
 
+	const calendarCustomizations = {
+		dayPropGetter: (date) => {
+			const today = new Date();
+			return {
+				style: {
+					backgroundColor: date.getDate() === today.getDate() &&
+						date.getMonth() === today.getMonth() &&
+						date.getFullYear() === today.getFullYear()
+						? '#f8fafc' : 'inherit'
+				}
+			};
+		},
+		dayHeaderFormat: (date) => {
+			return format(date, 'EEE');
+		}
+	};
+
 	return (
-		<div className="bg-white rounded-lg shadow-xl p-6">
-			<div className="flex justify-between items-center mb-6">
+		<div className="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
+			<div className="flex justify-between items-center p-6 border-b border-zinc-200 bg-[#f8fafc]">
 				<div className="flex gap-2 hidden">
 					<button
 						onClick={() => handleViewChange("month")}
-						className={`px-4 py-2 text-sm ${view === "month" ? "bg-blue-900 text-white" : "bg-gray-200 text-gray-700"
-							} rounded-l`}
+						className={`px-4 py-2 text-sm rounded-md transition-colors ${view === "month"
+								? "bg-[#1C398E] text-white"
+								: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+							}`}
 					>
 						Month
 					</button>
 					<button
 						onClick={() => handleViewChange("week")}
-						className={`px-4 py-2 text-sm ${view === "week" ? "bg-blue-900 text-white" : "bg-gray-200 text-gray-700"
-							} rounded-r`}
+						className={`px-4 py-2 text-sm rounded-md transition-colors ${view === "week"
+								? "bg-[#1C398E] text-white"
+								: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+							}`}
 					>
 						Week
 					</button>
 				</div>
 			</div>
 
-			<div className="h-[600px]">
+			<div className="h-[600px] px-6 pt-4">
 				<Calendar
 					localizer={localizer}
 					events={events}
@@ -122,25 +155,34 @@ export default function CampaignCalendar({
 					views={["month", "week"]}
 					eventPropGetter={eventStyleGetter}
 					onSelectEvent={handleEventSelect}
+					dayPropGetter={calendarCustomizations.dayPropGetter}
+					formats={{
+						dayHeaderFormat: date => format(date, 'EEE')
+					}}
+					popup
+					className="campaign-calendar"
 				/>
 			</div>
 
-			<div className="mt-4 flex gap-4 flex-wrap">
-				<div className="flex items-center gap-2">
-					<div className="w-4 h-4 bg-[#1DA1F2] rounded"></div>
-					<span className="text-sm">Paid Social</span>
-				</div>
-				<div className="flex items-center gap-2">
-					<div className="w-4 h-4 bg-[#EA4335] rounded"></div>
-					<span className="text-sm">Paid Search</span>
-				</div>
-				<div className="flex items-center gap-2">
-					<div className="w-4 h-4 bg-[#6B5B95] rounded"></div>
-					<span className="text-sm">Email Marketing</span>
-				</div>
-				<div className="flex items-center gap-2">
-					<div className="w-4 h-4 bg-[#2E8B57] rounded"></div>
-					<span className="text-sm">SEO</span>
+			<div className="p-6 border-t border-zinc-200 bg-[#f8fafc] mt-4">
+				<p className="text-sm font-medium text-gray-500 mb-3">Campaign Types</p>
+				<div className="flex gap-6 flex-wrap">
+					<div className="flex items-center gap-2">
+						<div className="w-4 h-4 rounded-sm" style={{ backgroundColor: colors.hue1 }}></div>
+						<span className="text-sm text-gray-700">Paid Social</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<div className="w-4 h-4 rounded-sm" style={{ backgroundColor: colors.hue2 }}></div>
+						<span className="text-sm text-gray-700">Paid Search</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<div className="w-4 h-4 rounded-sm" style={{ backgroundColor: colors.hue3 }}></div>
+						<span className="text-sm text-gray-700">Email Marketing</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<div className="w-4 h-4 rounded-sm" style={{ backgroundColor: colors.hue4 }}></div>
+						<span className="text-sm text-gray-700">SEO</span>
+					</div>
 				</div>
 			</div>
 		</div>

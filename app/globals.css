@@ -193,3 +193,37 @@ body {
 .rbc-today {
 	background-color: rgba(219, 234, 254, 0.3);
 }
+
+.campaign-calendar .rbc-today {
+	background-color: #f8fafc;
+}
+.campaign-calendar .rbc-off-range-bg {
+	background-color: #fafafa;
+}
+.campaign-calendar .rbc-header {
+	background-color: #f8f9fa;
+	padding: 8px 0;
+	font-weight: 500;
+}
+.campaign-calendar .rbc-btn-group button {
+	color: #1C398E;
+	border-color: #e2e8f0;
+}
+.campaign-calendar .rbc-btn-group button.rbc-active {
+	background-color: #1C398E;
+	color: white;
+	border-color: #1C398E;
+}
+.campaign-calendar .rbc-toolbar-label {
+	font-weight: 600;
+	color: #1C398E;
+}
+.campaign-calendar .rbc-event:focus {
+	outline: none;
+}
+.campaign-calendar .rbc-day-bg + .rbc-day-bg {
+	border-left: 1px solid #e2e8f0;
+}
+.campaign-calendar .rbc-month-row + .rbc-month-row {
+	border-top: 1px solid #e2e8f0;
+}

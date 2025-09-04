@@ -29,13 +29,12 @@ export default function CampaignCalendar({
 	const [events, setEvents] = useState([]);
 
 	useEffect(() => {
-		// Format campaigns as calendar events
 		if (campaigns && campaigns.length > 0) {
 			const formattedEvents = campaigns.map(campaign => ({
 				id: campaign._id,
 				title: campaign.campaignName,
 				start: new Date(campaign.startDate),
-				end: new Date(campaign.endDate),
+				end: new Date(campaign.startDate),
 				resource: {
 					...campaign,
 					service: campaign.service,
@@ -52,21 +51,20 @@ export default function CampaignCalendar({
 	};
 
 	const eventStyleGetter = (event) => {
-		// Set color based on campaign service
-		let backgroundColor = '#3174ad'; // default blue
+		let backgroundColor = '#3174ad';
 
 		switch (event.resource.service) {
 			case 'Paid Social':
-				backgroundColor = '#1DA1F2'; // Twitter blue
+				backgroundColor = '#1DA1F2';
 				break;
 			case 'Paid Search':
-				backgroundColor = '#EA4335'; // Google red
+				backgroundColor = '#EA4335';
 				break;
 			case 'Email Marketing':
-				backgroundColor = '#6B5B95'; // Purple
+				backgroundColor = '#6B5B95';
 				break;
 			case 'SEO':
-				backgroundColor = '#2E8B57'; // Sea green
+				backgroundColor = '#2E8B57'; 
 				break;
 		}
 
@@ -94,8 +92,7 @@ export default function CampaignCalendar({
 	return (
 		<div className="bg-white rounded-lg shadow-xl p-6">
 			<div className="flex justify-between items-center mb-6">
-				<h3 className="text-xl font-semibold text-blue-900">Campaign Calendar</h3>
-				<div className="flex gap-2">
+				<div className="flex gap-2 hidden">
 					<button
 						onClick={() => handleViewChange("month")}
 						className={`px-4 py-2 text-sm ${view === "month" ? "bg-blue-900 text-white" : "bg-gray-200 text-gray-700"

@@ -16,6 +16,8 @@ export default function CampaignList({ customerId }) {
     const [selectedCampaign, setSelectedCampaign] = useState(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
 
+    const [modalUpdateTriggered, setModalUpdateTriggered] = useState(false);
+
     const handleViewDetails = (campaign) => {
         setSelectedCampaign(campaign);
         setShowDetailsModal(true);
@@ -25,6 +27,37 @@ export default function CampaignList({ customerId }) {
     const handleCloseDetailsModal = () => {
         setShowDetailsModal(false);
         setIsDetailsModalOpen(false); // Update the context
+    };
+
+    const refreshCampaigns = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/campaigns/${customerId}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch campaigns");
+            }
+            const data = await response.json();
+            setCampaigns(data);
+            
+            // If we have a selected campaign and just updated it, update the selectedCampaign state
+            if (selectedCampaign && modalUpdateTriggered) {
+                const updatedSelectedCampaign = data.find(c => c._id === selectedCampaign._id);
+                if (updatedSelectedCampaign) {
+                    setSelectedCampaign(updatedSelectedCampaign);
+                }
+                setModalUpdateTriggered(false);
+            }
+        } catch (error) {
+            console.error("Error fetching campaigns:", error);
+            showToast("Error refreshing campaign list", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCampaignUpdated = () => {
+        setModalUpdateTriggered(true);
+        refreshCampaigns();
     };
 
     // Fetch campaigns when component mounts
@@ -214,9 +247,9 @@ export default function CampaignList({ customerId }) {
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Comment
-                            </th>
+                            </th> */}
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                             </th>
@@ -265,7 +298,7 @@ export default function CampaignList({ customerId }) {
                                             <option value="Completed">Completed</option>
                                         </select>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <input
                                             type="text"
                                             value={campaign.commentToCustomer || ""}
@@ -273,7 +306,7 @@ export default function CampaignList({ customerId }) {
                                             className="text-sm border border-gray-300 rounded px-2 py-1 w-full"
                                             placeholder="Add comment..."
                                         />
-                                    </td>
+                                    </td> */}
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <div className="flex space-x-2">
                                             <button
@@ -306,9 +339,10 @@ export default function CampaignList({ customerId }) {
             {showDetailsModal && (
                 <CampaignDetailsModal
                     isOpen={showDetailsModal}
-                    onClose={handleCloseDetailsModal} // Use the updated close handler
+                    onClose={handleCloseDetailsModal}
                     campaign={selectedCampaign}
                     customerId={customerId}
+                    onUpdate={handleCampaignUpdated} // Use the new handler
                 />
             )}
         </div>

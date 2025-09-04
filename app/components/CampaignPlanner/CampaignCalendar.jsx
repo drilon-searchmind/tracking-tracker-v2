@@ -119,7 +119,7 @@ export default function CampaignCalendar({
 	};
 
 	return (
-		<div className="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
+		<div className="bg-white border border-zinc-200 rounded-lg shadow-solid-l overflow-hidden">
 			<div className="flex justify-between items-center p-6 border-b border-zinc-200 bg-[#f8fafc]">
 				<div className="flex gap-2 hidden">
 					<button

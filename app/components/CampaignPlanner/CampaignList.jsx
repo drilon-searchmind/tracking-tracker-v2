@@ -196,7 +196,7 @@ export default function CampaignList({ customerId }) {
     }
 
     return (
-        <div className="bg-white border border-zinc-200 rounded-lg shadow overflow-hidden">
+        <div className="bg-white border border-zinc-200 rounded-lg shadow-solid-9 overflow-hidden">
             <div className="flex border-b border-gray-200 bg-[#f8fafc]">
                 <button
                     key="All"

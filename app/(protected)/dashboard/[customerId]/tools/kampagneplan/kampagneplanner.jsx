@@ -38,7 +38,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
         e.preventDefault();
 
         try {
-            const response = await fetch("/api/campaign/create", {
+            const response = await fetch(`/api/campaigns/${customerId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...formData, customerId }),
@@ -66,6 +66,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                 showToast(`Failed to create campaign: ${errorData.error}`, "error");
             }
         } catch (error) {
+            console.error("Campaign creation error:", error);
             showToast("Error submitting form", "error");
         }
     }

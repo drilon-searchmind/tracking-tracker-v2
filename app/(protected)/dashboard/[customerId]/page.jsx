@@ -9,7 +9,7 @@ export default async function OverviewPage({ params }) {
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
-        let projectId = bigQueryProjectId
+        let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
     WITH shopify_data AS (
@@ -39,6 +39,7 @@ export default async function OverviewPage({ params }) {
             COALESCE(s.date, f.date, g.date) AS date,
             COALESCE(s.orders, 0) AS orders,
             COALESCE(s.revenue, 0) AS revenue,
+            COALESCE(s.revenue * (1 - 0.25), 0) AS revenue_ex_tax, -- Danish VAT 25%
             COALESCE(f.ps_cost, 0) AS ps_cost,
             COALESCE(g.ppc_cost, 0) AS ppc_cost
         FROM shopify_data s
@@ -52,7 +53,7 @@ export default async function OverviewPage({ params }) {
             CAST(date AS STRING) AS date,
             orders,
             CAST(revenue AS FLOAT64) AS revenue,
-            CAST(revenue * (1 - 0.25) AS FLOAT64) AS revenue_ex_tax, -- Danish VAT 25%
+            CAST(revenue_ex_tax AS FLOAT64) AS revenue_ex_tax,
             CAST(ppc_cost AS FLOAT64) AS ppc_cost,
             CAST(ps_cost AS FLOAT64) AS ps_cost,
             CAST((ppc_cost + ps_cost) AS FLOAT64) AS total_ad_spend,
@@ -68,6 +69,18 @@ export default async function OverviewPage({ params }) {
                     ELSE 0
                 END AS FLOAT64
             ) AS poas, -- COGS = 70% of Revenue
+            CAST(
+                CASE
+                    WHEN revenue_ex_tax > 0 THEN (ppc_cost + ps_cost) / revenue_ex_tax
+                    ELSE 0
+                END AS FLOAT64
+            ) AS spendshare,
+            CAST(
+                CASE
+                    WHEN revenue_ex_tax > 0 THEN (ppc_cost + ps_cost) / (0.7 * revenue_ex_tax)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS spendshare_db, -- COGS = 0.7
             CAST((revenue * (1 - 0.25) - revenue * 0.7) AS FLOAT64) AS gp, -- Gross Profit
             CAST(
                 CASE
@@ -99,6 +112,18 @@ export default async function OverviewPage({ params }) {
                     ELSE 0
                 END AS FLOAT64
             ) AS poas,
+            CAST(
+                CASE
+                    WHEN SUM(revenue_ex_tax) > 0 THEN SUM(ppc_cost + ps_cost) / SUM(revenue_ex_tax)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS spendshare,
+            CAST(
+                CASE
+                    WHEN SUM(revenue_ex_tax) > 0 THEN SUM(ppc_cost + ps_cost) / (0.7 * SUM(revenue_ex_tax))
+                    ELSE 0
+                END AS FLOAT64
+            ) AS spendshare_db,
             CAST(SUM(gp) AS FLOAT64) AS gp,
             CAST(
                 CASE
@@ -113,7 +138,7 @@ export default async function OverviewPage({ params }) {
             CAST(DATE_SUB(date, INTERVAL 1 YEAR) AS STRING) AS date,
             orders,
             CAST(revenue AS FLOAT64) AS revenue,
-            CAST(revenue * (1 - 0.25) AS FLOAT64) AS revenue_ex_tax,
+            CAST(revenue_ex_tax AS FLOAT64) AS revenue_ex_tax,
             CAST(ppc_cost AS FLOAT64) AS ppc_cost,
             CAST(ps_cost AS FLOAT64) AS ps_cost,
             CAST((ppc_cost + ps_cost) AS FLOAT64) AS total_ad_spend,
@@ -129,6 +154,18 @@ export default async function OverviewPage({ params }) {
                     ELSE 0
                 END AS FLOAT64
             ) AS poas,
+            CAST(
+                CASE
+                    WHEN revenue_ex_tax > 0 THEN (ppc_cost + ps_cost) / revenue_ex_tax
+                    ELSE 0
+                END AS FLOAT64
+            ) AS spendshare,
+            CAST(
+                CASE
+                    WHEN revenue_ex_tax > 0 THEN (ppc_cost + ps_cost) / (0.7 * revenue_ex_tax)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS spendshare_db,
             CAST((revenue * (1 - 0.25) - revenue * 0.7) AS FLOAT64) AS gp,
             CAST(
                 CASE
@@ -160,6 +197,18 @@ export default async function OverviewPage({ params }) {
                     ELSE 0
                 END AS FLOAT64
             ) AS poas,
+            CAST(
+                CASE
+                    WHEN SUM(revenue_ex_tax) > 0 THEN SUM(ppc_cost + ps_cost) / SUM(revenue_ex_tax)
+                    ELSE 0
+                END AS FLOAT64
+            ) AS spendshare,
+            CAST(
+                CASE
+                    WHEN SUM(revenue_ex_tax) > 0 THEN SUM(ppc_cost + ps_cost) / (0.7 * SUM(revenue_ex_tax))
+                    ELSE 0
+                END AS FLOAT64
+            ) AS spendshare_db,
             CAST(SUM(gp) AS FLOAT64) AS gp,
             CAST(
                 CASE
@@ -179,6 +228,8 @@ export default async function OverviewPage({ params }) {
             ps_cost,
             roas,
             poas,
+            spendshare,
+            spendshare_db,
             gp,
             aov
         )) AS overview_metrics,

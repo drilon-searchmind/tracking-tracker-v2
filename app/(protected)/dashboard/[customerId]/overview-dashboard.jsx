@@ -12,6 +12,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
 
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
     const [endDate, setEndDate] = useState(formatDate(yesterday));
+    const [metricView, setMetricView] = useState("roas");
 
     const { overview_metrics, totals, last_year_totals } = initialData || {};
 
@@ -19,10 +20,17 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         return <div>No data available for {customerId}</div>;
     }
 
+    const COGS = 0.7;
+
     const filteredMetrics = useMemo(() => {
-        return overview_metrics.filter(
-            (row) => row.date >= startDate && row.date <= endDate
-        ).sort((a, b) => a.date.localeCompare(b.date));
+        return overview_metrics
+            .filter((row) => row.date >= startDate && row.date <= endDate)
+            .sort((a, b) => a.date.localeCompare(b.date))
+            .map(row => ({
+                ...row,
+                spendshare: row.revenue_ex_tax > 0 ? (row.ppc_cost + row.ps_cost) / row.revenue_ex_tax : 0,
+                spendshare_db: row.revenue_ex_tax > 0 ? (row.ppc_cost + row.ps_cost) / (0.7 * row.revenue_ex_tax) : 0,
+            }));
     }, [overview_metrics, startDate, endDate]);
 
     const filteredTotals = useMemo(() => {
@@ -40,9 +48,12 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                         : 0,
                 poas:
                     acc.ppc_cost + acc.ps_cost > 0
-                        ? (acc.revenue * (1 - 0.25) - acc.revenue * 0.7) /
-                          (acc.ppc_cost + acc.ps_cost)
+                        ? (acc.revenue * (1 - 0.25) - acc.revenue * 0.7) / (acc.ppc_cost + acc.ps_cost)
                         : 0,
+                spendshare:
+                    acc.revenue_ex_tax > 0 ? (acc.ppc_cost + acc.ps_cost) / acc.revenue_ex_tax : 0,
+                spendshare_db:
+                    acc.revenue_ex_tax > 0 ? (acc.ppc_cost + acc.ps_cost) / (0.7 * acc.revenue_ex_tax) : 0,
                 gp: acc.gp + row.gp,
                 aov: acc.orders > 0 ? acc.revenue / acc.orders : 0,
             }),
@@ -54,6 +65,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                 ps_cost: 0,
                 roas: 0,
                 poas: 0,
+                spendshare: 0,
+                spendshare_db: 0,
                 gp: 0,
                 aov: 0,
             }
@@ -62,13 +75,18 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
 
     const lastYearStart = formatDate(new Date(new Date(startDate).setFullYear(new Date(startDate).getFullYear() - 1)));
     const lastYearEnd = formatDate(new Date(new Date(endDate).setFullYear(new Date(endDate).getFullYear() - 1)));
-    
+
     const lastYearMetrics = useMemo(() => {
-        return overview_metrics.filter(
-            (row) => row.date >= lastYearStart && row.date <= lastYearEnd
-        ).sort((a, b) => a.date.localeCompare(b.date));
+        return overview_metrics
+            .filter((row) => row.date >= lastYearStart && row.date <= lastYearEnd)
+            .sort((a, b) => a.date.localeCompare(b.date))
+            .map(row => ({
+                ...row,
+                spendshare: row.revenue_ex_tax > 0 ? (row.ppc_cost + row.ps_cost) / row.revenue_ex_tax : 0,
+                spendshare_db: row.revenue_ex_tax > 0 ? (row.ppc_cost + row.ps_cost) / (0.7 * row.revenue_ex_tax) : 0,
+            }));
     }, [overview_metrics, lastYearStart, lastYearEnd]);
-    
+
     const filteredLastYearTotals = useMemo(() => {
         return lastYearMetrics.reduce(
             (acc, row) => ({
@@ -84,9 +102,12 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                         : 0,
                 poas:
                     acc.ppc_cost + acc.ps_cost > 0
-                        ? (acc.revenue * (1 - 0.25) - acc.revenue * 0.7) /
-                          (acc.ppc_cost + acc.ps_cost)
+                        ? (acc.revenue * (1 - 0.25) - acc.revenue * 0.7) / (acc.ppc_cost + acc.ps_cost)
                         : 0,
+                spendshare:
+                    acc.revenue_ex_tax > 0 ? (acc.ppc_cost + acc.ps_cost) / acc.revenue_ex_tax : 0,
+                spendshare_db:
+                    acc.revenue_ex_tax > 0 ? (acc.ppc_cost + acc.ps_cost) / (0.7 * acc.revenue_ex_tax) : 0,
                 gp: acc.gp + row.gp,
                 aov: acc.orders > 0 ? acc.revenue / acc.orders : 0,
             }),
@@ -98,6 +119,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                 ps_cost: 0,
                 roas: 0,
                 poas: 0,
+                spendshare: 0,
+                spendshare_db: 0,
                 gp: 0,
                 aov: 0,
             }
@@ -112,6 +135,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         ps_cost: filteredTotals.ps_cost - filteredLastYearTotals.ps_cost,
         roas: filteredTotals.roas - filteredLastYearTotals.roas,
         poas: filteredTotals.poas - filteredLastYearTotals.poas,
+        spendshare: filteredTotals.spendshare - filteredLastYearTotals.spendshare,
+        spendshare_db: filteredTotals.spendshare_db - filteredLastYearTotals.spendshare_db,
         gp: filteredTotals.gp - filteredLastYearTotals.gp,
         aov: filteredTotals.aov - filteredLastYearTotals.aov,
     }), [filteredTotals, filteredLastYearTotals]);
@@ -125,6 +150,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
             ps_cost: { min: Infinity, max: -Infinity },
             roas: { min: Infinity, max: -Infinity },
             poas: { min: Infinity, max: -Infinity },
+            spendshare: { min: Infinity, max: -Infinity },
+            spendshare_db: { min: Infinity, max: -Infinity },
             gp: { min: Infinity, max: -Infinity },
             aov: { min: Infinity, max: -Infinity },
         };
@@ -140,7 +167,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
 
         return ranges;
     }, [filteredMetrics]);
-    
+
     const lastYearMetricRanges = useMemo(() => {
         const ranges = {
             orders: { min: Infinity, max: -Infinity },
@@ -150,6 +177,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
             ps_cost: { min: Infinity, max: -Infinity },
             roas: { min: Infinity, max: -Infinity },
             poas: { min: Infinity, max: -Infinity },
+            spendshare: { min: Infinity, max: -Infinity },
+            spendshare_db: { min: Infinity, max: -Infinity },
             gp: { min: Infinity, max: -Infinity },
             aov: { min: Infinity, max: -Infinity },
         };
@@ -170,16 +199,16 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         if (value === 0 || value === null || value === undefined) {
             return { backgroundColor: 'transparent' };
         }
-    
+
         const ranges = isLastYear ? lastYearMetricRanges : metricRanges;
-        
+
         if (ranges[metricKey].min === ranges[metricKey].max) {
             return { backgroundColor: 'transparent' };
         }
-    
-        const normalizedValue = (value - ranges[metricKey].min) / 
+
+        const normalizedValue = (value - ranges[metricKey].min) /
             (ranges[metricKey].max - ranges[metricKey].min);
-        
+
         const opacity = Math.max(0.05, normalizedValue);
         return {
             backgroundColor: `rgba(214, 205, 182, ${opacity})`,
@@ -227,6 +256,26 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                 className="border border-gray-300 px-3 py-2 rounded text-sm"
                                 placeholder="End date"
                             />
+                            <div className="flex rounded overflow-hidden">
+                                <button
+                                    onClick={() => setMetricView("roas")}
+                                    className={`text-center py-2 px-4 text-sm ${metricView === "roas"
+                                            ? "bg-zinc-700 text-white"
+                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                        }`}
+                                >
+                                    ROAS/POAS
+                                </button>
+                                <button
+                                    onClick={() => setMetricView("spendshare")}
+                                    className={`text-center py-2 px-4 text-sm ${metricView === "spendshare"
+                                            ? "bg-zinc-700 text-white"
+                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                        }`}
+                                >
+                                    Spendshare
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -239,8 +288,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                 <th className="px-4 py-3 font-medium">Revenue Ex Tax</th>
                                 <th className="px-4 py-3 font-medium">PPC Cost</th>
                                 <th className="px-4 py-3 font-medium">PS Cost</th>
-                                <th className="px-4 py-3 font-medium">ROAS</th>
-                                <th className="px-4 py-3 font-medium">POAS</th>
+                                <th className="px-4 py-3 font-medium">{metricView === "roas" ? "ROAS" : "Spendshare"}</th>
+                                <th className="px-4 py-3 font-medium">{metricView === "roas" ? "POAS" : "Spendshare inc. DB"}</th>
                                 <th className="px-4 py-3 font-medium">GP</th>
                                 <th className="px-4 py-3 font-medium">AOV</th>
                             </tr>
@@ -264,11 +313,11 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                     <td className="px-4 py-3" style={getHeatmapStyle(row.ps_cost, 'ps_cost')}>
                                         kr. {Math.round(row.ps_cost).toLocaleString()}
                                     </td>
-                                    <td className="px-4 py-3" style={getHeatmapStyle(row.roas, 'roas')}>
-                                        {row.roas.toFixed(2)}
+                                    <td className="px-4 py-3" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare')}>
+                                        {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
                                     </td>
-                                    <td className="px-4 py-3" style={getHeatmapStyle(row.poas, 'poas')}>
-                                        {row.poas.toFixed(2)}
+                                    <td className="px-4 py-3" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db')}>
+                                        {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
                                     </td>
                                     <td className="px-4 py-3" style={getHeatmapStyle(row.gp, 'gp')}>
                                         kr. {Math.round(row.gp).toLocaleString()}
@@ -285,8 +334,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                 <td className="px-4 py-3">kr. {Math.round(filteredTotals.revenue_ex_tax).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredTotals.ppc_cost).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredTotals.ps_cost).toLocaleString()}</td>
-                                <td className="px-4 py-3">{filteredTotals.roas.toFixed(2)}</td>
-                                <td className="px-4 py-3">{filteredTotals.poas.toFixed(2)}</td>
+                                <td className="px-4 py-3">{(metricView === "roas" ? filteredTotals.roas : filteredTotals.spendshare).toFixed(2)}</td>
+                                <td className="px-4 py-3">{(metricView === "roas" ? filteredTotals.poas : filteredTotals.spendshare_db).toFixed(2)}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredTotals.gp).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredTotals.aov).toLocaleString()}</td>
                             </tr>
@@ -297,8 +346,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                 <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
-                                <td className="px-4 py-3">{filteredLastYearTotals.roas.toFixed(2)}</td>
-                                <td className="px-4 py-3">{filteredLastYearTotals.poas.toFixed(2)}</td>
+                                <td className="px-4 py-3">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</td>
+                                <td className="px-4 py-3">{(metricView === "roas" ? filteredLastYearTotals.poas : filteredLastYearTotals.spendshare_db).toFixed(2)}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
                             </tr>
@@ -309,8 +358,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                 <td className="px-4 py-3">kr. {Math.round(differences.revenue_ex_tax).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(differences.ppc_cost).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(differences.ps_cost).toLocaleString()}</td>
-                                <td className="px-4 py-3">{differences.roas.toFixed(2)}</td>
-                                <td className="px-4 py-3">{differences.poas.toFixed(2)}</td>
+                                <td className="px-4 py-3">{(metricView === "roas" ? differences.roas : differences.spendshare).toFixed(2)}</td>
+                                <td className="px-4 py-3">{(metricView === "roas" ? differences.poas : differences.spendshare_db).toFixed(2)}</td>
                                 <td className="px-4 py-3">kr. {Math.round(differences.gp).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(differences.aov).toLocaleString()}</td>
                             </tr>
@@ -332,8 +381,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                 <th className="px-4 py-3 font-medium">Revenue Ex Tax</th>
                                 <th className="px-4 py-3 font-medium">PPC Cost</th>
                                 <th className="px-4 py-3 font-medium">PS Cost</th>
-                                <th className="px-4 py-3 font-medium">ROAS</th>
-                                <th className="px-4 py-3 font-medium">POAS</th>
+                                <th className="px-4 py-3 font-medium">{metricView === "roas" ? "ROAS" : "Spendshare"}</th>
+                                <th className="px-4 py-3 font-medium">{metricView === "roas" ? "POAS" : "Spendshare inc. DB"}</th>
                                 <th className="px-4 py-3 font-medium">GP</th>
                                 <th className="px-4 py-3 font-medium">AOV</th>
                             </tr>
@@ -346,8 +395,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                 <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
-                                <td className="px-4 py-3">{filteredLastYearTotals.roas.toFixed(2)}</td>
-                                <td className="px-4 py-3">{filteredLastYearTotals.poas.toFixed(2)}</td>
+                                <td className="px-4 py-3">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</td>
+                                <td className="px-4 py-3">{(metricView === "roas" ? filteredLastYearTotals.poas : filteredLastYearTotals.spendshare_db).toFixed(2)}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</td>
                                 <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
                             </tr>
@@ -369,11 +418,11 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                     <td className="px-4 py-3" style={getHeatmapStyle(row.ps_cost, 'ps_cost', true)}>
                                         kr. {Math.round(row.ps_cost).toLocaleString()}
                                     </td>
-                                    <td className="px-4 py-3" style={getHeatmapStyle(row.roas, 'roas', true)}>
-                                        {row.roas.toFixed(2)}
+                                    <td className="px-4 py-3" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare', true)}>
+                                        {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
                                     </td>
-                                    <td className="px-4 py-3" style={getHeatmapStyle(row.poas, 'poas', true)}>
-                                        {row.poas.toFixed(2)}
+                                    <td className="px-4 py-3" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db', true)}>
+                                        {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
                                     </td>
                                     <td className="px-4 py-3" style={getHeatmapStyle(row.gp, 'gp', true)}>
                                         kr. {Math.round(row.gp).toLocaleString()}

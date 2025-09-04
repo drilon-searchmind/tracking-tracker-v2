@@ -5,6 +5,11 @@ import { useToast } from "@/app/contexts/ToastContext";
 import CampaignDetailsModal from "./CampaignDetailsModal";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 
+import { FaMeta } from "react-icons/fa6";
+import { MdEmail } from "react-icons/md";
+import { SiGoogleads } from "react-icons/si";
+import { FaMagnifyingGlassChart } from "react-icons/fa6";
+
 export default function CampaignList({ customerId }) {
     const { showToast } = useToast();
     const { setIsDetailsModalOpen } = useModalContext();
@@ -193,18 +198,56 @@ export default function CampaignList({ customerId }) {
     return (
         <div className="bg-white border border-zinc-200 rounded-lg shadow overflow-hidden">
             <div className="flex border-b border-gray-200 bg-[#f8fafc]">
-                {["All", "Social", "Email", "Paid Search", "SEO"].map((filter) => (
-                    <button
-                        key={filter}
-                        className={`px-6 py-3 text-sm font-medium ${activeFilter === filter
-                            ? "border-b-2 border-[#1C398E] text-[#1C398E]"
-                            : "text-gray-500 hover:text-gray-700"
-                            }`}
-                        onClick={() => setActiveFilter(filter)}
-                    >
-                        {filter}
-                    </button>
-                ))}
+                <button
+                    key="All"
+                    className={`px-6 py-3 text-sm font-medium ${activeFilter === "All"
+                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
+                    onClick={() => setActiveFilter("All")}
+                >
+                    All
+                </button>
+                <button
+                    key="Social"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "Social"
+                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
+                    onClick={() => setActiveFilter("Social")}
+                >
+                    <FaMeta className="text-lg" /> Social
+                </button>
+                <button
+                    key="Email"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "Email"
+                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
+                    onClick={() => setActiveFilter("Email")}
+                >
+                    <MdEmail className="text-lg" /> Email
+                </button>
+                <button
+                    key="Paid Search"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "Paid Search"
+                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
+                    onClick={() => setActiveFilter("Paid Search")}
+                >
+                    <SiGoogleads className="text-lg" /> Paid Search
+                </button>
+                <button
+                    key="SEO"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "SEO"
+                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
+                    onClick={() => setActiveFilter("SEO")}
+                >
+                    <FaMagnifyingGlassChart className="text-lg" /> SEO
+                </button>
             </div>
 
             <div className="overflow-x-auto">
@@ -244,13 +287,35 @@ export default function CampaignList({ customerId }) {
                         {filteredCampaigns.length > 0 ? (
                             filteredCampaigns.map((campaign) => (
                                 <tr key={campaign._id} className="hover:bg-gray-50">
-                                    <td 
+                                    <td
                                         onClick={() => handleViewDetails(campaign)}
                                         className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1C398E]hover:cursor-pointer hover:underline cursor-pointer">
                                         {campaign.campaignName}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {campaign.service}
+                                        {campaign.service === "Paid Social" ? (
+                                            <div className="flex items-center gap-2">
+                                                <FaMeta className="text-lg" />
+                                                <span>{campaign.service}</span>
+                                            </div>
+                                        ) : campaign.service === "Email Marketing" ? (
+                                            <div className="flex items-center gap-2">
+                                                <MdEmail className="text-lg" />
+                                                <span>{campaign.service}</span>
+                                            </div>
+                                        ) : campaign.service === "Paid Search" ? (
+                                            <div className="flex items-center gap-2">
+                                                <SiGoogleads className="text-lg" />
+                                                <span>{campaign.service}</span>
+                                            </div>
+                                        ) : campaign.service === "SEO" ? (
+                                            <div className="flex items-center gap-2">
+                                                <FaMagnifyingGlassChart className="text-lg" />
+                                                <span>{campaign.service}</span>
+                                            </div>
+                                        ) : (
+                                            <span>{campaign.service}</span>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {campaign.media}

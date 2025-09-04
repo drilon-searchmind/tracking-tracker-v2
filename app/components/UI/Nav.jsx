@@ -13,7 +13,7 @@ export default function Nav() {
     const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
-        console.log({session})
+        console.log({ session })
     }, session)
 
     return (
@@ -21,11 +21,11 @@ export default function Nav() {
             <nav className="flex justify-between items-center container mx-auto">
                 <div className="flex items-center gap-4 py-8">
                     <Image
-                        src="/images/searchmind/662bb267ab2bf43bace3bdc7_searchmind-logo.svg"
+                        src="/images/searchmind/apex-icon.svg"
                         alt="logo"
                         width={20}
                         height={30}
-                        className="w-full max-w-[50px] object-contain"
+                        className="w-full max-w-[30px] object-contain filter brightness-0"
                     />
                     <a href="/" className="">
                         <span className="text-lg text-black font-extrabold">Searchmind Apex</span>
@@ -57,7 +57,7 @@ export default function Nav() {
             </nav>
 
             {showModal && <CustomerModal closeModal={() => setShowModal(false)} />}
-            
+
         </section>
     )
 }

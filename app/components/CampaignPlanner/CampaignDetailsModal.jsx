@@ -9,16 +9,15 @@ export default function CampaignDetailsModal({
     onClose,
     campaign,
     customerId,
-    onUpdate, // Add this prop to refresh the campaign list after update
+    onUpdate,
 }) {
     const { showToast } = useToast();
     const { setIsDetailsModalOpen } = useModalContext();
     const [isEditing, setIsEditing] = useState(false);
     const [editedCampaign, setEditedCampaign] = useState(null);
-    const [displayedCampaign, setDisplayedCampaign] = useState(null); // Add this state
+    const [displayedCampaign, setDisplayedCampaign] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Initialize both edit form and display data when a campaign is selected
     useEffect(() => {
         if (campaign) {
             const formattedCampaign = {
@@ -67,10 +66,8 @@ export default function CampaignDetailsModal({
             if (response.ok) {
                 showToast("Campaign updated successfully!", "success");
                 
-                // Call onUpdate to refresh the campaign list
                 if (onUpdate) onUpdate();
                 
-                // Close the modal after successful update
                 handleClose();
             } else {
                 const errorData = await response.json();

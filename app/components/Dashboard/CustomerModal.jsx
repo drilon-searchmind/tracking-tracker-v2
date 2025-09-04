@@ -24,7 +24,7 @@ export default function CustomerModal({ closeModal }) {
         async function fetchCustomers() {
             try {
                 const userEmail = session?.user?.email || "";
-                const isAdmin = userEmail === "admin@example.com"; // Check admin flag
+                const isAdmin = userEmail === "admin@example.com";
 
                 const allCustomersResponse = await fetch("/api/customers");
                 const allCustomers = await allCustomersResponse.json();
@@ -69,7 +69,7 @@ export default function CustomerModal({ closeModal }) {
         const filtered = customers.filter((customer) =>
             customer.name.toLowerCase().includes(search.toLowerCase())
         );
-        console.log("Filtered customers:", filtered); // Log filtered customers
+        console.log("Filtered customers:", filtered);
         setFilteredCustomers(filtered);
     }, [search, customers]);
 
@@ -93,9 +93,9 @@ export default function CustomerModal({ closeModal }) {
             if (response.ok) {
                 const result = await response.json();
                 alert("Customer added successfully!");
-                setCustomers((prev) => [...prev, result.customer]); // Add the new customer to the list
-                setShowAddCustomerForm(false); // Hide the form
-                setNewCustomer({ name: "", bigQueryCustomerId: "", bigQueryProjectId: "" }); // Reset the form
+                setCustomers((prev) => [...prev, result.customer]);
+                setShowAddCustomerForm(false); 
+                setNewCustomer({ name: "", bigQueryCustomerId: "", bigQueryProjectId: "" });
             } else {
                 const errorData = await response.json();
                 alert(`Failed to add customer: ${errorData.message}`);
@@ -186,7 +186,7 @@ export default function CustomerModal({ closeModal }) {
                             ) : (
                                 <li className="text-gray-400 px-4 py-2">
                                     No customers found
-                                    <pre>{JSON.stringify(filteredCustomers, null, 2)}</pre> {/* Debug filteredCustomers */}
+                                    <pre>{JSON.stringify(filteredCustomers, null, 2)}</pre>
                                 </li>
                             )}
                         </ul>

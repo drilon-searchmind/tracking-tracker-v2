@@ -21,12 +21,12 @@ export default function CampaignList({ customerId }) {
     const handleViewDetails = (campaign) => {
         setSelectedCampaign(campaign);
         setShowDetailsModal(true);
-        setIsDetailsModalOpen(true); // Update the context
+        setIsDetailsModalOpen(true);
     };
 
     const handleCloseDetailsModal = () => {
         setShowDetailsModal(false);
-        setIsDetailsModalOpen(false); // Update the context
+        setIsDetailsModalOpen(false);
     };
 
     const refreshCampaigns = async () => {
@@ -39,7 +39,6 @@ export default function CampaignList({ customerId }) {
             const data = await response.json();
             setCampaigns(data);
             
-            // If we have a selected campaign and just updated it, update the selectedCampaign state
             if (selectedCampaign && modalUpdateTriggered) {
                 const updatedSelectedCampaign = data.find(c => c._id === selectedCampaign._id);
                 if (updatedSelectedCampaign) {
@@ -60,7 +59,6 @@ export default function CampaignList({ customerId }) {
         refreshCampaigns();
     };
 
-    // Fetch campaigns when component mounts
     useEffect(() => {
         const fetchCampaigns = async () => {
             try {
@@ -81,7 +79,6 @@ export default function CampaignList({ customerId }) {
         fetchCampaigns();
     }, [customerId, showToast]);
 
-    // Filter campaigns based on active filter
     const filteredCampaigns = campaigns.filter(campaign => {
         if (activeFilter === "All") return true;
         if (activeFilter === "Social") return campaign.service === "Paid Social";
@@ -103,7 +100,6 @@ export default function CampaignList({ customerId }) {
             });
 
             if (response.ok) {
-                // Update the campaign in the local state
                 setCampaigns(campaigns.map(campaign =>
                     campaign._id === id ? { ...campaign, readyForApproval: value } : campaign
                 ));
@@ -117,7 +113,6 @@ export default function CampaignList({ customerId }) {
         }
     };
 
-    // Handle status change
     const handleStatusChange = async (id, value) => {
         try {
             const response = await fetch(`/api/campaigns/${customerId}?id=${id}`, {
@@ -129,7 +124,6 @@ export default function CampaignList({ customerId }) {
             });
 
             if (response.ok) {
-                // Update the campaign in the local state
                 setCampaigns(campaigns.map(campaign =>
                     campaign._id === id ? { ...campaign, status: value } : campaign
                 ));
@@ -143,7 +137,6 @@ export default function CampaignList({ customerId }) {
         }
     };
 
-    // Handle comment change
     const handleCommentChange = async (id, value) => {
         try {
             const response = await fetch(`/api/campaigns/${customerId}?id=${id}`, {
@@ -155,7 +148,6 @@ export default function CampaignList({ customerId }) {
             });
 
             if (response.ok) {
-                // Update the campaign in the local state
                 setCampaigns(campaigns.map(campaign =>
                     campaign._id === id ? { ...campaign, commentToCustomer: value } : campaign
                 ));
@@ -180,7 +172,6 @@ export default function CampaignList({ customerId }) {
             });
 
             if (response.ok) {
-                // Remove the campaign from the local state
                 setCampaigns(campaigns.filter(campaign => campaign._id !== id));
                 showToast("Campaign deleted", "success");
             } else {
@@ -202,7 +193,6 @@ export default function CampaignList({ customerId }) {
 
     return (
         <div className="bg-white rounded-lg shadow overflow-hidden">
-            {/* Filter tabs */}
             <div className="flex border-b border-gray-200">
                 {["All", "Social", "Email", "Paid Search", "SEO"].map((filter) => (
                     <button
@@ -218,7 +208,6 @@ export default function CampaignList({ customerId }) {
                 ))}
             </div>
 
-            {/* Campaigns table */}
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">

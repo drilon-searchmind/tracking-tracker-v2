@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useToast } from "@/app/contexts/ToastContext";
 import CampaignPlannerModal from "@/app/components/CampaignPlanner/CampaignPlannerModal";
+import CampaignList from "@/app/components/CampaignPlanner/CampaignList";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 
 export default function KampagneplanDashboard({ customerId, customerName, initialData }) {
     const { showToast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { setIsCampaignModalOpen } = useModalContext();
+    const [refreshList, setRefreshList] = useState(false);
 
     const [formData, setFormData] = useState({
         service: "",
@@ -61,6 +63,8 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                     landingpage: "",
                     materialFromCustomer: "",
                 });
+                // Trigger a refresh of the campaign list
+                setRefreshList(prev => !prev);
             } else {
                 const errorData = await response.json();
                 showToast(`Failed to create campaign: ${errorData.error}`, "error");
@@ -105,16 +109,22 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
 
                 <div className="mb-12">
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={handleOpenModal}
                         className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800"
                     >
                         Create a New Campaign
                     </button>
                 </div>
 
+                {/* Campaign List */}
+                <div className="mb-12">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Campaigns</h2>
+                    <CampaignList customerId={customerId} key={refreshList} />
+                </div>
+
                 <CampaignPlannerModal
                     isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
+                    onClose={handleCloseModal}
                     formData={formData}
                     onInputChange={handleInputChange}
                     onSubmit={handleSubmit}

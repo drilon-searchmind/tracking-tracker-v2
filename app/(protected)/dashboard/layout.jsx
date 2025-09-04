@@ -12,7 +12,7 @@ export default function DashboardLayout({ children }) {
     const customerId = segments[0] || null;
     const [showModalShare, setShowModalShare] = useState(false);
     const pathname = usePathname()
-    const { isCampaignModalOpen } = useModalContext();
+    const { isAnyModalOpen } = useModalContext();
 
     const isActive = (path) => {
         const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
@@ -29,7 +29,7 @@ export default function DashboardLayout({ children }) {
         <section id="DashboardLayout" className="relative">
             <nav 
                 className="flex justify-between items-center pt-6 pb-3 border-t border-gray-200 mb-5 bg-white sticky top-0"
-                style={{ zIndex: isCampaignModalOpen ? 1 : 50 }}
+                style={{ zIndex: isAnyModalOpen ? 1 : 50 }}
             >
                 <ul className="flex gap-5 relative items-baseline">
                     <li>

@@ -3,6 +3,7 @@
 import { useToast } from "@/app/contexts/ToastContext";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 import { useEffect, useState } from "react";
+import { IoMdClose } from "react-icons/io";
 
 export default function CampaignDetailsModal({
     isOpen,
@@ -90,75 +91,71 @@ export default function CampaignDetailsModal({
     return (
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-[99999999]">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-3xl relative max-h-[80vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-2xl font-semibold text-blue-900">
+                <span className="flex justify-between items-center mb-5">
+                    <h4 className="text-xl font-semibold">
                         {isEditing ? "Edit Campaign" : "Campaign Details"}
-                    </h3>
-                    <div className="flex gap-2">
-                        {isEditing ? (
-                            <>
-                                <button
-                                    onClick={() => setIsEditing(false)}
-                                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-                                    disabled={isSaving}
-                                >
-                                    Cancel Edit
-                                </button>
-                                <button
-                                    onClick={handleSave}
-                                    className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800"
-                                    disabled={isSaving}
-                                >
-                                    {isSaving ? "Saving..." : "Save"}
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button
-                                    onClick={() => setIsEditing(true)}
-                                    className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={handleClose}
-                                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-                                >
-                                    Close
-                                </button>
-                            </>
-                        )}
-                    </div>
+                    </h4>
+                    <button onClick={handleClose} className="text-gray-500 hover:text-gray-700 text-lg">
+                        <IoMdClose className="text-2xl" />
+                    </button>
+                </span>
+
+                <div className="flex justify-end gap-2 mb-6">
+                    {isEditing ? (
+                        <>
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="px-4 py-2 border border-zinc-700 text-zinc-700 rounded hover:bg-zinc-50 text-sm"
+                                disabled={isSaving}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-800 text-sm"
+                                disabled={isSaving}
+                            >
+                                {isSaving ? "Saving..." : "Save Changes"}
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-800 text-sm"
+                        >
+                            Edit Campaign
+                        </button>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                     <div>
-                        <h4 className="font-medium text-lg mb-4 text-gray-800">Basic Information</h4>
+                        <h4 className="font-medium text-lg mb-4 text-gray-700">Basic Information</h4>
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm text-gray-600 block">Campaign Name</label>
+                                <label className="text-sm text-gray-600 block mb-1">Campaign Name</label>
                                 {isEditing ? (
                                     <input
                                         type="text"
                                         name="campaignName"
                                         value={editedCampaign.campaignName}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                         required
                                     />
                                 ) : (
-                                    <span className="text-base font-medium">{displayedCampaign.campaignName}</span>
+                                    <p className="text-base text-gray-900">{displayedCampaign.campaignName}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">Service</label>
+                                <label className="text-sm text-gray-600 block mb-1">Service</label>
                                 {isEditing ? (
                                     <select
                                         name="service"
                                         value={editedCampaign.service}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                         required
                                     >
                                         <option value="Paid Social">Paid Social</option>
@@ -167,18 +164,18 @@ export default function CampaignDetailsModal({
                                         <option value="SEO">SEO</option>
                                     </select>
                                 ) : (
-                                    <span className="text-base font-medium">{displayedCampaign.service}</span>
+                                    <p className="text-base text-gray-900">{displayedCampaign.service}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">Media</label>
+                                <label className="text-sm text-gray-600 block mb-1">Media</label>
                                 {isEditing ? (
                                     <select
                                         name="media"
                                         value={editedCampaign.media}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                         required
                                     >
                                         <option value="META">META</option>
@@ -192,18 +189,18 @@ export default function CampaignDetailsModal({
                                         <option value="Other">Other</option>
                                     </select>
                                 ) : (
-                                    <span className="text-base font-medium">{displayedCampaign.media}</span>
+                                    <p className="text-base text-gray-900">{displayedCampaign.media}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">Format</label>
+                                <label className="text-sm text-gray-600 block mb-1">Format</label>
                                 {isEditing ? (
                                     <select
                                         name="campaignFormat"
                                         value={editedCampaign.campaignFormat}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                         required
                                     >
                                         <option value="Video">Video</option>
@@ -216,18 +213,18 @@ export default function CampaignDetailsModal({
                                         <option value="Landingpage">Landingpage</option>
                                     </select>
                                 ) : (
-                                    <span className="text-base font-medium">{displayedCampaign.campaignFormat}</span>
+                                    <p className="text-base text-gray-900">{displayedCampaign.campaignFormat}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">Country</label>
+                                <label className="text-sm text-gray-600 block mb-1">Country</label>
                                 {isEditing ? (
                                     <select
                                         name="countryCode"
                                         value={editedCampaign.countryCode}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                         required
                                     >
                                         <option value="DK">DK</option>
@@ -238,91 +235,91 @@ export default function CampaignDetailsModal({
                                         <option value="Other">Other</option>
                                     </select>
                                 ) : (
-                                    <span className="text-base font-medium">{displayedCampaign.countryCode}</span>
+                                    <p className="text-base text-gray-900">{displayedCampaign.countryCode}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">Type</label>
+                                <label className="text-sm text-gray-600 block mb-1">Type</label>
                                 {isEditing ? (
                                     <select
                                         name="b2bOrB2c"
                                         value={editedCampaign.b2bOrB2c}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                         required
                                     >
                                         <option value="B2B">B2B</option>
                                         <option value="B2C">B2C</option>
                                     </select>
                                 ) : (
-                                    <span className="text-base font-medium">{displayedCampaign.b2bOrB2c}</span>
+                                    <p className="text-base text-gray-900">{displayedCampaign.b2bOrB2c}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">Budget</label>
+                                <label className="text-sm text-gray-600 block mb-1">Budget</label>
                                 {isEditing ? (
                                     <input
                                         type="number"
                                         name="budget"
                                         value={editedCampaign.budget}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                         min="0"
                                         step="0.01"
                                         required
                                     />
                                 ) : (
-                                    <span className="text-base font-medium">{displayedCampaign.budget.toLocaleString()} DKK</span>
+                                    <p className="text-base text-gray-900">{displayedCampaign.budget.toLocaleString()} DKK</p>
                                 )}
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <h4 className="font-medium text-lg mb-4 text-gray-800">Additional Information</h4>
+                        <h4 className="font-medium text-lg mb-4 text-gray-700">Additional Information</h4>
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm text-gray-600 block">Start Date</label>
+                                <label className="text-sm text-gray-600 block mb-1">Start Date</label>
                                 {isEditing ? (
                                     <input
                                         type="date"
                                         name="startDate"
                                         value={editedCampaign.startDate}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                         required
                                     />
                                 ) : (
-                                    <span className="text-base font-medium">{formatDate(displayedCampaign.startDate)}</span>
+                                    <p className="text-base text-gray-900">{formatDate(displayedCampaign.startDate)}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">End Date</label>
+                                <label className="text-sm text-gray-600 block mb-1">End Date</label>
                                 {isEditing ? (
                                     <input
                                         type="date"
                                         name="endDate"
                                         value={editedCampaign.endDate}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                         required
                                     />
                                 ) : (
-                                    <span className="text-base font-medium">{formatDate(displayedCampaign.endDate)}</span>
+                                    <p className="text-base text-gray-900">{formatDate(displayedCampaign.endDate)}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">Status</label>
+                                <label className="text-sm text-gray-600 block mb-1">Status</label>
                                 {isEditing ? (
                                     <select
                                         name="status"
                                         value={editedCampaign.status || "Draft"}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                     >
                                         <option value="Draft">Draft</option>
                                         <option value="Pending">Pending</option>
@@ -331,99 +328,99 @@ export default function CampaignDetailsModal({
                                         <option value="Completed">Completed</option>
                                     </select>
                                 ) : (
-                                    <span className="text-base font-medium">{displayedCampaign.status || "Draft"}</span>
+                                    <p className="text-base text-gray-900">{displayedCampaign.status || "Draft"}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">Ready for Approval</label>
+                                <label className="text-sm text-gray-600 block mb-1">Ready for Approval</label>
                                 {isEditing ? (
                                     <input
                                         type="checkbox"
                                         name="readyForApproval"
                                         checked={editedCampaign.readyForApproval || false}
                                         onChange={handleInputChange}
-                                        className="h-4 w-4 text-blue-600 rounded mt-1"
+                                        className="h-4 w-4 text-zinc-700 border-gray-300 rounded focus:ring-zinc-500"
                                     />
                                 ) : (
-                                    <span className="text-base font-medium">
+                                    <p className="text-base text-gray-900">
                                         {displayedCampaign.readyForApproval ? "Yes" : "No"}
-                                    </span>
+                                    </p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">Landingpage</label>
+                                <label className="text-sm text-gray-600 block mb-1">Landingpage</label>
                                 {isEditing ? (
                                     <input
                                         type="text"
                                         name="landingpage"
                                         value={editedCampaign.landingpage || ""}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                     />
                                 ) : (
-                                    <span className="text-base font-medium">
+                                    <p className="text-base text-gray-900">
                                         {displayedCampaign.landingpage || "Not specified"}
-                                    </span>
+                                    </p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block">Created At</label>
-                                <span className="text-base font-medium">{formatDate(displayedCampaign.createdAt)}</span>
+                                <label className="text-sm text-gray-600 block mb-1">Created At</label>
+                                <p className="text-base text-gray-900">{formatDate(displayedCampaign.createdAt)}</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="col-span-2">
-                        <label className="font-medium text-lg mb-4 text-gray-800">Message/Brief</label>
+                        <label className="text-sm text-gray-600 block mb-1">Message/Brief</label>
                         {isEditing ? (
                             <textarea
                                 name="messageBrief"
                                 value={editedCampaign.messageBrief || ""}
                                 onChange={handleInputChange}
-                                className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                 rows="4"
                             />
                         ) : (
-                            <p className="text-base bg-gray-50 p-3 rounded border border-gray-200 mt-1">
+                            <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
                                 {displayedCampaign.messageBrief || "No message/brief provided."}
-                            </p>
+                            </div>
                         )}
                     </div>
 
                     <div className="col-span-2">
-                        <label className="font-medium text-lg mb-4 text-gray-800">Material from Customer</label>
+                        <label className="text-sm text-gray-600 block mb-1">Material from Customer</label>
                         {isEditing ? (
                             <textarea
                                 name="materialFromCustomer"
                                 value={editedCampaign.materialFromCustomer || ""}
                                 onChange={handleInputChange}
-                                className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                 rows="4"
                             />
                         ) : (
-                            <p className="text-base bg-gray-50 p-3 rounded border border-gray-200 mt-1">
+                            <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
                                 {displayedCampaign.materialFromCustomer || "No materials provided."}
-                            </p>
+                            </div>
                         )}
                     </div>
 
                     <div className="col-span-2">
-                        <label className="font-medium text-lg mb-4 text-gray-800">Comment to Customer</label>
+                        <label className="text-sm text-gray-600 block mb-1">Comment to Customer</label>
                         {isEditing ? (
                             <textarea
                                 name="commentToCustomer"
                                 value={editedCampaign.commentToCustomer || ""}
                                 onChange={handleInputChange}
-                                className="border border-gray-300 px-3 py-2 rounded w-full text-sm mt-1"
+                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                 rows="4"
                             />
                         ) : (
-                            <p className="text-base bg-gray-50 p-3 rounded border border-gray-200 mt-1">
+                            <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
                                 {displayedCampaign.commentToCustomer || "No comments provided."}
-                            </p>
+                            </div>
                         )}
                     </div>
                 </div>

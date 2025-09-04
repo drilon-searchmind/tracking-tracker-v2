@@ -151,8 +151,15 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                             Plan and adjust your marketing campaigns with precise budgets and expected results.
                         </p>
                     </span>
-                    <span>
-                        <div className="mb-12 flex gap-4">
+                </div>
+
+
+
+                {/* Campaign List */}
+                <div className="mb-10">
+                    <div className="mb-2 flex justify-between items-center">
+                        <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Your Campaigns</h3>
+                        <div className="flex gap-4">
                             <button
                                 onClick={handleOpenModal}
                                 className="text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center"
@@ -161,14 +168,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                                 Create New Campaign
                             </button>
                         </div>
-                    </span>
-                </div>
-
-
-
-                {/* Campaign List */}
-                <div className="mb-12">
-                    <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Your Campaigns</h3>
+                    </div>
                     <CampaignList customerId={customerId} key={refreshList} />
                 </div>
 

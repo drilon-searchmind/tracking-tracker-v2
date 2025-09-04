@@ -244,7 +244,9 @@ export default function CampaignList({ customerId }) {
                         {filteredCampaigns.length > 0 ? (
                             filteredCampaigns.map((campaign) => (
                                 <tr key={campaign._id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1C398E]">
+                                    <td 
+                                        onClick={() => handleViewDetails(campaign)}
+                                        className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1C398E]hover:cursor-pointer hover:underline cursor-pointer">
                                         {campaign.campaignName}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

@@ -88,7 +88,6 @@ export default function CampaignList({ customerId }) {
         return true;
     });
 
-    // Handle ready for approval change
     const handleReadyForApprovalChange = async (id, value) => {
         try {
             const response = await fetch(`/api/campaigns/${customerId}?id=${id}`, {
@@ -209,7 +208,7 @@ export default function CampaignList({ customerId }) {
             </div>
 
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-gray-200" id="campaignListTable">
                     <thead className="bg-gray-50">
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -288,15 +287,15 @@ export default function CampaignList({ customerId }) {
                                         <div className="flex space-x-2">
                                             <button
                                                 onClick={() => handleViewDetails(campaign)}
-                                                className="text-[#1C398E] hover:text-[#2E4CA8] font-medium flex items-center"
+                                                className="border py-1 text-xs text-center px-2 text-[var(--color-primary-searchmind)] hover:text-[#2E4CA8] font-medium flex items-center"
                                             >
-                                                <span className="mr-1">View</span>
+                                                <span className="">View</span>
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteCampaign(campaign._id)}
-                                                className="text-red-600 hover:text-red-800 font-medium flex items-center"
+                                                className="border py-1 text-xs text-center px-2 text-red-600 hover:text-red-800 font-medium flex items-center"
                                             >
-                                                <span className="mr-1">Delete</span>
+                                                <span className="">Delete</span>
                                             </button>
                                         </div>
                                     </td>

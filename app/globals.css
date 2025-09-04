@@ -227,3 +227,7 @@ body {
 .campaign-calendar .rbc-month-row + .rbc-month-row {
 	border-top: 1px solid #e2e8f0;
 }
+
+#campaignListTable tr th {
+	font-size: 0.65rem;
+}

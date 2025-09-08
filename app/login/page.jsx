@@ -36,15 +36,15 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="flex min-h-[80vh] flex-col items-center justify-center sm:px-6 lg:px-8 bg-gray-50">
             <div className="w-full max-w-md space-y-8">
                 <div>
-                    <h1 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-                        Tracking Tracker V2
+                    <h1 className="mt-0 text-center text-4xl font-bold tracking-tight text-gray-900">
+                        Searchmind Apex
                     </h1>
-                    <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">
+                    <h3 className="mt-6 text-center text-xl font-bold tracking-tight text-gray-900">
                         Sign in to your account
-                    </h2>
+                    </h3>
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -59,7 +59,7 @@ export default function LoginPage() {
                                 type="email"
                                 autoComplete="email"
                                 required
-                                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 focus:z-10 sm:text-sm"
+                                className="relative block w-full px-3 py-4 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 focus:z-10 sm:text-sm"
                                 placeholder="Email address"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -75,7 +75,7 @@ export default function LoginPage() {
                                 type="password"
                                 autoComplete="current-password"
                                 required
-                                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 focus:z-10 sm:text-sm"
+                                className="relative block w-full px-3 py-4 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 focus:z-10 sm:text-sm"
                                 placeholder="Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -91,7 +91,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative flex w-full justify-center rounded-md border border-transparent bg-zinc-700 py-2 px-4 text-sm font-medium text-white hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2"
+                            className="w-full bg-[var(--color-primary-searchmind)] py-3 px-8 rounded text-white hover:cursor"
                         >
                             {loading ? "Signing in..." : "Sign in"}
                         </button>

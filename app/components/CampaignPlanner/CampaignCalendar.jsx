@@ -42,7 +42,7 @@ export default function CampaignCalendar({
 				id: campaign._id,
 				title: campaign.campaignName,
 				start: new Date(campaign.startDate),
-				end: new Date(campaign.endDate),
+				end: new Date(campaign.startDate),
 				resource: {
 					...campaign,
 					service: campaign.service,

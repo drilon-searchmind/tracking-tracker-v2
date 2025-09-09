@@ -4,6 +4,7 @@ import { useToast } from "@/app/contexts/ToastContext";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 import { useEffect, useState } from "react";
 import { IoMdClose } from "react-icons/io";
+import CommentSection from "./CommentSection";
 
 export default function CampaignDetailsModal({
     isOpen,
@@ -55,7 +56,7 @@ export default function CampaignDetailsModal({
     const handleSave = async () => {
         try {
             setIsSaving(true);
-    
+
             const response = await fetch(`/api/campaigns/${customerId}?id=${campaign._id}`, {
                 method: "PUT",
                 headers: {
@@ -63,12 +64,12 @@ export default function CampaignDetailsModal({
                 },
                 body: JSON.stringify(editedCampaign),
             });
-    
+
             if (response.ok) {
                 showToast("Campaign updated successfully!", "success");
-                
+
                 if (onUpdate) onUpdate();
-                
+
                 handleClose();
             } else {
                 const errorData = await response.json();
@@ -405,21 +406,8 @@ export default function CampaignDetailsModal({
                         )}
                     </div>
 
-                    <div className="col-span-2">
-                        <label className="text-sm text-gray-600 block mb-1">Comment</label>
-                        {isEditing ? (
-                            <textarea
-                                name="commentToCustomer"
-                                value={editedCampaign.commentToCustomer || ""}
-                                onChange={handleInputChange}
-                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
-                                rows="4"
-                            />
-                        ) : (
-                            <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
-                                {displayedCampaign.commentToCustomer || "No comments provided."}
-                            </div>
-                        )}
+                    <div className="col-span-2 mt-6 border-t border-gray-200 pt-6">
+                        <CommentSection campaignId={campaign._id} />
                     </div>
                 </div>
             </div>

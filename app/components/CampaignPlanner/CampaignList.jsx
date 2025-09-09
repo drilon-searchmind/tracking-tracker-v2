@@ -24,12 +24,31 @@ export default function CampaignList({ customerId }) {
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
+    const [commentCounts, setCommentCounts] = useState({});
 
     const [modalUpdateTriggered, setModalUpdateTriggered] = useState(false);
 
     const pendingApprovalCount = campaigns.filter(
         campaign => campaign.status === "Pending Approval"
     ).length
+
+    const fetchCommentCounts = async (campaignIds) => {
+        try {
+            const counts = {};
+
+            await Promise.all(campaignIds.map(async (id) => {
+                const response = await fetch(`/api/campaign-comments/${id}`);
+                if (response.ok) {
+                    const comments = await response.json();
+                    counts[id] = comments.length;
+                }
+            }));
+
+            setCommentCounts(counts);
+        } catch (error) {
+            console.error("Error fetching comment counts:", error);
+        }
+    };
 
     const getAvailableMonths = () => {
         const months = [];
@@ -83,6 +102,10 @@ export default function CampaignList({ customerId }) {
             const data = await response.json();
             setCampaigns(data);
 
+            if (data.length > 0) {
+                fetchCommentCounts(data.map(campaign => campaign._id));
+            }
+
             if (selectedCampaign && modalUpdateTriggered) {
                 const updatedSelectedCampaign = data.find(c => c._id === selectedCampaign._id);
                 if (updatedSelectedCampaign) {
@@ -112,6 +135,10 @@ export default function CampaignList({ customerId }) {
                 }
                 const data = await response.json();
                 setCampaigns(data);
+
+                if (data.length > 0) {
+                    fetchCommentCounts(data.map(campaign => campaign._id));
+                }
             } catch (error) {
                 console.error("Error fetching campaigns:", error);
                 showToast("Error fetching campaigns", "error");
@@ -402,6 +429,9 @@ export default function CampaignList({ customerId }) {
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                             </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Comments
+                            </th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -484,6 +514,15 @@ export default function CampaignList({ customerId }) {
                                                 <span className="">Delete</span>
                                             </button>
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {commentCounts[campaign._id] > 0 ? (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {commentCounts[campaign._id]}
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100">0</span>
+                                        )}
                                     </td>
                                 </tr>
                             ))

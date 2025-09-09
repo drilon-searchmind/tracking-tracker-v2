@@ -176,6 +176,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
 
                 <div className="mb-12">
                     <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Campaign Calendar</h3>
+                    {/* TODO: Update data in CampaignCalendar when new campaign is added or edited */}
                     <CampaignCalendar
                         campaigns={campaigns}
                         customerId={customerId}
@@ -185,6 +186,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
 
                 <div className="mb-12">
                     <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Campaign Timeline</h3>
+                    {/* TODO: Update data in CampaignPlannerGanttChart when new campaign is added or edited */}
                     <CampaignPlannerGanttChart
                         campaigns={campaigns}
                         customerId={customerId}

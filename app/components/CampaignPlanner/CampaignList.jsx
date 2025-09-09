@@ -270,6 +270,7 @@ export default function CampaignList({ customerId }) {
             if (response.ok) {
                 setCampaigns(campaigns.filter(campaign => campaign._id !== id));
                 showToast("Campaign deleted", "success");
+                
             } else {
                 throw new Error("Failed to delete campaign");
             }

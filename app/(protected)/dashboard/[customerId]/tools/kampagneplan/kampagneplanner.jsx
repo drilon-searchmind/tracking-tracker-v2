@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useToast } from "@/app/contexts/ToastContext";
+import { useModalContext } from "@/app/contexts/CampaignModalContext";
+
 import CampaignPlannerModal from "@/app/components/CampaignPlanner/CampaignPlannerModal";
 import CampaignList from "@/app/components/CampaignPlanner/CampaignList";
 import CampaignCalendar from "@/app/components/CampaignPlanner/CampaignCalendar";
 import CampaignDetailsModal from "@/app/components/CampaignPlanner/CampaignDetailsModal";
-import { useModalContext } from "@/app/contexts/CampaignModalContext";
+import CampaignPlannerGanttChart from "@/app/components/CampaignPlanner/CampaignPlannerGanttChart";
 
 import { FaCirclePlus } from "react-icons/fa6";
 
@@ -175,6 +177,15 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                 <div className="mb-12">
                     <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Campaign Calendar</h3>
                     <CampaignCalendar
+                        campaigns={campaigns}
+                        customerId={customerId}
+                        onViewCampaignDetails={handleViewCampaignDetails}
+                    />
+                </div>
+
+                <div className="mb-12">
+                    <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Campaign Timeline</h3>
+                    <CampaignPlannerGanttChart
                         campaigns={campaigns}
                         customerId={customerId}
                         onViewCampaignDetails={handleViewCampaignDetails}

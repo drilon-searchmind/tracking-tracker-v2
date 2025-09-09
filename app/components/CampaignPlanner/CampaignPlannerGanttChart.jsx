@@ -40,7 +40,9 @@ export default function CampaignPlannerGanttChart({ campaigns, customerId, onVie
                 };
             });
 
-            setCampaignsWithDates(processedCampaigns);
+            const sortedCampaigns = processedCampaigns.sort((a, b) => a.startDate - b.startDate);
+
+            setCampaignsWithDates(sortedCampaigns);
         }
     }, [campaigns, currentYear]);
 

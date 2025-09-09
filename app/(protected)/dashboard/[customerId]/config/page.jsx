@@ -7,7 +7,12 @@ import ConfigCustomerInfo from "./components/ConfigCustomerInfo";
 import ConfigCustomerSharings from "./components/ConfigCustomerSharings";
 
 export default async function ConfigPage({ params }) {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+        ? process.env.NEXT_PUBLIC_BASE_URL
+        : process.env.NODE_ENV === "development"
+            ? "http://192.168.1.253:3000"
+            : "http://localhost:3000";
+
     const { customerId } = params;
     const { customerName } = await fetchCustomerDetails(customerId);
 
@@ -52,7 +57,7 @@ export default async function ConfigPage({ params }) {
                     <h3 className="font-semibold text-lg mb-2 text-zinc-800">Static Expenses</h3>
                     <StaticExpenses customerId={customerId} baseUrl={baseUrl} />
                 </div>
-                
+
                 <div className="mt-8 grid grid-cols-2 gap-8 bg-white flex flex-col lg:flex-row p-6 rounded-lg shadow-md border border-zinc-200">
                     <div className="col-span-2">
                         <h2 className="font-semibold text-2xl mb-2 text-zinc-800">Customer Settings</h2>

@@ -6,7 +6,11 @@ export const revalidate = 3600;
 
 export default async function SpendSharePage({ params }) {
     const { customerId } = params;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+        ? process.env.NEXT_PUBLIC_BASE_URL
+        : process.env.NODE_ENV === "development"
+            ? "http://192.168.1.253:3000"
+            : "http://localhost:3000";
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);

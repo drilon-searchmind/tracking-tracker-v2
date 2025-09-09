@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { IoMdClose } from "react-icons/io";
 
 export default function ShareCustomerModal({ closeModal, customerId }) {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+        ? process.env.NEXT_PUBLIC_BASE_URL
+        : process.env.NODE_ENV === "development"
+            ? "http://192.168.1.253:3000"
+            : "http://localhost:3000";
     const [email, setEmail] = useState("");
     const [sharedWith, setSharedWith] = useState("");
     const [password, setPassword] = useState("");

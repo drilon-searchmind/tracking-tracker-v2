@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/app/contexts/ToastContext";
 import CampaignDetailsModal from "./CampaignDetailsModal";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
+import { format, isWithinInterval, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 
 import { FaMeta } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import { SiGoogleads } from "react-icons/si";
 import { FaMagnifyingGlassChart } from "react-icons/fa6";
+import { MdOutlinePending } from "react-icons/md";
 
 export default function CampaignList({ customerId }) {
     const { showToast } = useToast();
@@ -20,8 +22,45 @@ export default function CampaignList({ customerId }) {
 
     const [selectedCampaign, setSelectedCampaign] = useState(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedMonth, setSelectedMonth] = useState("All");
+    const [searchQuery, setSearchQuery] = useState("");
 
     const [modalUpdateTriggered, setModalUpdateTriggered] = useState(false);
+
+    const pendingApprovalCount = campaigns.filter(
+        campaign => campaign.status === "Pending Approval"
+    ).length
+
+    const getAvailableMonths = () => {
+        const months = [];
+        const uniqueMonthsSet = new Set();
+
+        campaigns.forEach(campaign => {
+            const startDate = new Date(campaign.startDate);
+            const endDate = new Date(campaign.endDate);
+
+            let currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                const monthKey = format(currentDate, 'yyyy-MM');
+                const monthLabel = format(currentDate, 'MMMM yyyy');
+
+                if (!uniqueMonthsSet.has(monthKey)) {
+                    uniqueMonthsSet.add(monthKey);
+                    months.push({ value: monthKey, label: monthLabel });
+                }
+
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            }
+        });
+
+        months.sort((a, b) => {
+            return new Date(a.value + '-01') - new Date(b.value + '-01');
+        });
+
+        return months;
+    };
+
+    const availableMonths = getAvailableMonths();
 
     const handleViewDetails = (campaign) => {
         setSelectedCampaign(campaign);
@@ -85,12 +124,38 @@ export default function CampaignList({ customerId }) {
     }, [customerId, showToast]);
 
     const filteredCampaigns = campaigns.filter(campaign => {
-        if (activeFilter === "All") return true;
-        if (activeFilter === "Social") return campaign.service === "Paid Social";
-        if (activeFilter === "Email") return campaign.service === "Email Marketing";
-        if (activeFilter === "Paid Search") return campaign.service === "Paid Search";
-        if (activeFilter === "SEO") return campaign.service === "SEO";
-        return true;
+        // Service filter logic
+        let passesServiceFilter = true;
+        if (activeFilter === "Social") passesServiceFilter = campaign.service === "Paid Social";
+        else if (activeFilter === "Email") passesServiceFilter = campaign.service === "Email Marketing";
+        else if (activeFilter === "Paid Search") passesServiceFilter = campaign.service === "Paid Search";
+        else if (activeFilter === "SEO") passesServiceFilter = campaign.service === "SEO";
+        else if (activeFilter === "Pending Approval") passesServiceFilter = campaign.status === "Pending Approval";
+
+        // Month filter logic
+        let passesMonthFilter = true;
+        if (selectedMonth !== "All") {
+            const [year, month] = selectedMonth.split('-').map(num => parseInt(num, 10));
+            const filterStartDate = startOfMonth(new Date(year, month - 1));
+            const filterEndDate = endOfMonth(filterStartDate);
+
+            const campaignStartDate = new Date(campaign.startDate);
+            const campaignEndDate = new Date(campaign.endDate);
+
+            passesMonthFilter = (
+                (campaignStartDate >= filterStartDate && campaignStartDate <= filterEndDate) ||
+                (campaignEndDate >= filterStartDate && campaignEndDate <= filterEndDate) ||
+                (campaignStartDate <= filterStartDate && campaignEndDate >= filterEndDate)
+            );
+        }
+
+        // Search query filter logic
+        let passesSearchFilter = true;
+        if (searchQuery.trim() !== "") {
+            passesSearchFilter = campaign.campaignName.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+
+        return passesServiceFilter && passesMonthFilter && passesSearchFilter;
     });
 
     const handleReadyForApprovalChange = async (id, value) => {
@@ -248,9 +313,65 @@ export default function CampaignList({ customerId }) {
                 >
                     <FaMagnifyingGlassChart className="text-lg" /> SEO
                 </button>
+                <button
+                    key="Pending Approval"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "Pending Approval"
+                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
+                    onClick={() => setActiveFilter("Pending Approval")}
+                >
+                    <MdOutlinePending className="text-lg" />
+                    Pending Approval
+                    {pendingApprovalCount > 0 && (
+                        <span className="ml-0 px-2 py-0.5 text-[0.65rem] bg-red-100 text-red-800 rounded-full">
+                            {pendingApprovalCount}
+                        </span>
+                    )}
+                </button>
             </div>
 
             <div className="overflow-x-auto">
+                <div className="flex justify-end px-6 py-2 bg-gray-50 border-b border-gray-200 gap-4">
+                    <div className="flex items-center">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search campaigns..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="text-sm border border-gray-300 rounded px-3 py-1.5 pr-8 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E] w-64"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery("")}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <span className="text-xs">✕</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex items-center">
+                        <label htmlFor="month-filter" className="mr-2 text-sm font-medium text-gray-700">
+                            Filter by month:
+                        </label>
+                        <select
+                            id="month-filter"
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(e.target.value)}
+                            className="text-sm border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
+                        >
+                            <option value="All">All Months</option>
+                            {availableMonths.map(month => (
+                                <option key={month.value} value={month.value}>
+                                    {month.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
                 <table className="min-w-full divide-y divide-gray-200" id="campaignListTable">
                     <thead className="bg-gray-50">
                         <tr>
@@ -272,7 +393,7 @@ export default function CampaignList({ customerId }) {
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Budget
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="hidden px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Ready for Approval
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -329,7 +450,7 @@ export default function CampaignList({ customerId }) {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {campaign.budget.toLocaleString()} DKK
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td className="hidden px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <input
                                             type="checkbox"
                                             checked={campaign.readyForApproval || false}
@@ -343,24 +464,22 @@ export default function CampaignList({ customerId }) {
                                             onChange={(e) => handleStatusChange(campaign._id, e.target.value)}
                                             className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
                                         >
-                                            <option value="Draft">Draft</option>
-                                            <option value="Pending">Pending</option>
+                                            <option value="Pending Approval">Pending Approval</option>
                                             <option value="Approved">Approved</option>
-                                            <option value="Active">Active</option>
-                                            <option value="Completed">Completed</option>
+                                            <option value="Active">Live</option>
                                         </select>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <div className="flex space-x-2">
                                             <button
                                                 onClick={() => handleViewDetails(campaign)}
-                                                className="border py-1 text-xs text-center px-2 text-[var(--color-primary-searchmind)] hover:text-[#2E4CA8] font-medium flex items-center"
+                                                className="border py-1 text-xs text-center px-2 text-[var(--color-primary-searchmind)] hover:text-[#2E4CA8] font-medium flex items-center rounded-md"
                                             >
                                                 <span className="">View</span>
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteCampaign(campaign._id)}
-                                                className="border py-1 text-xs text-center px-2 text-red-600 hover:text-red-800 font-medium flex items-center"
+                                                className="border py-1 text-xs text-center px-2 text-red-600 hover:text-red-800 font-medium flex items-center rounded-md"
                                             >
                                                 <span className="">Delete</span>
                                             </button>

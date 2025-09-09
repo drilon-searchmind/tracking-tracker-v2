@@ -321,18 +321,16 @@ export default function CampaignDetailsModal({
                                         onChange={handleInputChange}
                                         className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                     >
-                                        <option value="Draft">Draft</option>
-                                        <option value="Pending">Pending</option>
+                                        <option value="Pending Approval">Pending Approval</option>
                                         <option value="Approved">Approved</option>
-                                        <option value="Active">Active</option>
-                                        <option value="Completed">Completed</option>
+                                        <option value="Live">Live</option>
                                     </select>
                                 ) : (
                                     <p className="text-base text-gray-900">{displayedCampaign.status || "Draft"}</p>
                                 )}
                             </div>
 
-                            <div>
+                            <div className="hidden">
                                 <label className="text-sm text-gray-600 block mb-1">Ready for Approval</label>
                                 {isEditing ? (
                                     <input
@@ -408,7 +406,7 @@ export default function CampaignDetailsModal({
                     </div>
 
                     <div className="col-span-2">
-                        <label className="text-sm text-gray-600 block mb-1">Comment to Customer</label>
+                        <label className="text-sm text-gray-600 block mb-1">Comment</label>
                         {isEditing ? (
                             <textarea
                                 name="commentToCustomer"

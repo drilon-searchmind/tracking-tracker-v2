@@ -2,7 +2,8 @@ import StaticExpenses from "@/models/StaticExpenses";
 import { dbConnect } from "@/lib/dbConnect";
 
 export async function GET(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
 
     try {
         await dbConnect();
@@ -21,7 +22,8 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     const body = await req.json();
 
     try {

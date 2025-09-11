@@ -3,7 +3,8 @@ import { dbConnect } from "@/lib/dbConnect";
 import User from "@/models/User";
 
 export async function POST(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     const { email, sharedWith, password } = await req.json();
 
     try {
@@ -49,7 +50,8 @@ export async function POST(req, { params }) {
 
 export async function GET(request, { params }) {
     try {
-        const { customerId } = params;
+        const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
 
         if (!customerId) {
             return new Response(JSON.stringify({ message: "Customer ID is required" }), { status: 400 });

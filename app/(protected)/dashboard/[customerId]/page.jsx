@@ -5,7 +5,10 @@ import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function OverviewPage({ params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
+    
+    console.log("::: Fetching customer with ID:", customerId);
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);

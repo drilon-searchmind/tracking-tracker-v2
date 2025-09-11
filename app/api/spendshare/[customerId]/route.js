@@ -2,7 +2,8 @@ import { dbConnect } from "@/lib/dbConnect";
 import Spendshare from "@/models/Spendshare";
 
 export async function GET(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     try {
         await dbConnect();
 
@@ -15,7 +16,8 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     try {
         await dbConnect();
 

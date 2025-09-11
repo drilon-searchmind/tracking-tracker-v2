@@ -5,7 +5,8 @@ import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 export const revalidate = 3600;
 
 export default async function SpendSharePage({ params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
         ? process.env.NEXT_PUBLIC_BASE_URL
         : process.env.NODE_ENV === "development"

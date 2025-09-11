@@ -2,7 +2,8 @@ import { dbConnect } from "@/lib/dbConnect";
 import Campaign from "@/models/Campaign";
 
 export async function GET(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     console.log("::: Fetching campaigns for customer ID:", customerId);
 
     try {
@@ -18,7 +19,8 @@ export async function GET(req, { params }) {
 }
 
 export async function POST(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     console.log("::: Creating campaign for customer ID:", customerId);
 
     try {
@@ -75,7 +77,8 @@ export async function POST(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     const url = new URL(req.url);
     const campaignId = url.searchParams.get('id');
 
@@ -119,7 +122,8 @@ export async function PUT(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     const url = new URL(req.url);
     const campaignId = url.searchParams.get('id');
 

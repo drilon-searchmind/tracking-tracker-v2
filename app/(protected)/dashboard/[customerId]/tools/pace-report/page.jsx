@@ -38,7 +38,7 @@ export default async function PacePage({ params }) {
         SELECT
             CAST(segments_date AS STRING) AS date,
             SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS ppc_cost
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.google_ads_campaign\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.google_ads_campaign\`
         WHERE segments_date IS NOT NULL
         GROUP BY segments_date
     ),

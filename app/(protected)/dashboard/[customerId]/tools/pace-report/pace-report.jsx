@@ -29,7 +29,13 @@ export default function PaceReport({ customerId, customerName, initialData }) {
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const formatDate = (date) => date.toISOString().split("T")[0];
+    const formatDate = (date) => {
+        if (!(date instanceof Date) || isNaN(date.getTime())) {
+            console.warn('Invalid date encountered:', date);
+            return '';
+        }
+        return date.toISOString().split("T")[0];
+    };
 
     const [revenueBudget, setRevenueBudget] = useState("500000");
     const [ordersBudget, setOrdersBudget] = useState("1000");
@@ -135,25 +141,46 @@ export default function PaceReport({ customerId, customerName, initialData }) {
             daily_orders_gap: isFinite(dailyOrdersGap) ? dailyOrdersGap : 0,
             daily_ad_spend_gap: isFinite(dailyAdSpendGap) ? dailyAdSpendGap : 0
         };
-        
+
         return result;
     }, [cumulativeMetrics, revenueBudget, ordersBudget, adSpendBudget, startDate, endDate, daysInMonth]);
 
     const getComparisonDates = () => {
-        const end = new Date(endDate);
-        const start = new Date(startDate);
-        const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        try {
+            const end = new Date(endDate);
+            const start = new Date(startDate);
 
-        if (comparison === "Previous Year") {
-            return {
-                compStart: formatDate(new Date(start.setFullYear(start.getFullYear() - 1))),
-                compEnd: formatDate(new Date(end.setFullYear(end.getFullYear() - 1))),
-            };
-        } else {
-            return {
-                compStart: formatDate(new Date(start.setDate(start.getDate() - daysDiff))),
-                compEnd: formatDate(new Date(end.setDate(end.getDate() - daysDiff))),
-            };
+            if (isNaN(end.getTime()) || isNaN(start.getTime())) {
+                console.warn('Invalid start or end date:', { start, end });
+                return { compStart: '', compEnd: '' };
+            }
+
+            const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+            if (comparison === "Previous Year") {
+                const prevStart = new Date(start);
+                const prevEnd = new Date(end);
+                prevStart.setFullYear(prevStart.getFullYear() - 1);
+                prevEnd.setFullYear(prevEnd.getFullYear() - 1);
+
+                return {
+                    compStart: formatDate(prevStart),
+                    compEnd: formatDate(prevEnd),
+                };
+            } else {
+                const prevStart = new Date(start);
+                const prevEnd = new Date(end);
+                prevStart.setDate(prevStart.getDate() - daysDiff);
+                prevEnd.setDate(prevEnd.getDate() - daysDiff);
+
+                return {
+                    compStart: formatDate(prevStart),
+                    compEnd: formatDate(prevEnd),
+                };
+            }
+        } catch (error) {
+            console.error('Error calculating comparison dates:', error);
+            return { compStart: '', compEnd: '' };
         }
     };
 
@@ -185,14 +212,14 @@ export default function PaceReport({ customerId, customerName, initialData }) {
             ad_spend: aggregated.ad_spend,
             roas: isFinite(roas) ? roas : 0
         };
-        
+
         return result;
     }, [daily_metrics, compStart, compEnd]);
 
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;
         const delta = ((current - prev) / prev * 100).toFixed(2);
-        return `${delta > 0 ? "+" : ""}${delta}%`;
+        return `${delta > 0 ? "+" : ""}${delta.toLocaleString('en-US')}%`;
     };
 
     const budgetChartData = {
@@ -285,7 +312,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                     font: { size: 10, family: "'Inter', sans-serif" },
                     color: "#4b5563",
                     callback: function (value) {
-                        return `kr. ${value.toLocaleString("da-DK")}`;
+                        return `kr. ${value.toLocaleString("en-US")}`;
                     }
                 },
                 title: {
@@ -332,7 +359,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                     font: { size: 10, family: "'Inter', sans-serif" },
                     color: "#4b5563",
                     callback: function (value) {
-                        return metric === "Revenue" ? `kr. ${value.toLocaleString("da-DK")}` : value;
+                        return metric === "Revenue" ? `kr. ${value.toLocaleString("en-US")}` : value.toLocaleString("en-US");
                     }
                 },
                 title: {
@@ -417,7 +444,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Ad Spend</p>
-                                <p className="text-lg font-semibold">kr. {Math.round(totals.ad_spend).toLocaleString("da-DK")}</p>
+                                <p className="text-lg font-semibold">kr. {Math.round(totals.ad_spend).toLocaleString("en-US")}</p>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Pace Ratio</p>
@@ -460,25 +487,25 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                             <div>
                                 <p className="text-sm text-gray-500">Current {metric}</p>
                                 <p className="text-lg font-semibold">
-                                    {metric === "Revenue" 
-                                        ? `kr. ${Math.round(totals.revenue).toLocaleString("da-DK")}`
-                                        : Math.round(totals.orders).toLocaleString("da-DK")
+                                    {metric === "Revenue"
+                                        ? `kr. ${Math.round(totals.revenue).toLocaleString("en-US")}`
+                                        : Math.round(totals.orders).toLocaleString("en-US")
                                     }
                                 </p>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">{metric} Pace</p>
                                 <p className="text-lg font-semibold">
-                                    {metric === "Revenue" 
-                                        ? `kr. ${Math.round(totals.revenue_pace).toLocaleString("da-DK")}`
-                                        : Math.round(totals.orders_pace).toLocaleString("da-DK")
+                                    {metric === "Revenue"
+                                        ? `kr. ${Math.round(totals.revenue_pace).toLocaleString("en-US")}`
+                                        : Math.round(totals.orders_pace).toLocaleString("en-US")
                                     }
                                 </p>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Pace Ratio</p>
                                 <p className="text-lg font-semibold">
-                                    {metric === "Revenue" 
+                                    {metric === "Revenue"
                                         ? totals.revenue_pace_ratio.toFixed(2)
                                         : totals.orders_pace_ratio.toFixed(2)
                                     }
@@ -487,9 +514,9 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                             <div>
                                 <p className="text-sm text-gray-500">Daily {metric} Gap</p>
                                 <p className="text-lg font-semibold">
-                                    {metric === "Revenue" 
-                                        ? `kr. ${Math.round(totals.daily_revenue_gap).toLocaleString("da-DK")}`
-                                        : Math.round(totals.daily_orders_gap).toLocaleString("da-DK")
+                                    {metric === "Revenue"
+                                        ? `kr. ${Math.round(totals.daily_revenue_gap).toLocaleString("en-US")}`
+                                        : Math.round(totals.daily_orders_gap).toLocaleString("en-US")
                                     }
                                 </p>
                             </div>

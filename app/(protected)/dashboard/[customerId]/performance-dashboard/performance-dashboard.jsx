@@ -46,7 +46,13 @@ export default function PerformanceDashboard({ customerId, customerName, initial
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const formatDate = (date) => date.toISOString().split("T")[0];
+    const formatDate = (date) => {
+        if (!(date instanceof Date) || isNaN(date.getTime())) {
+            console.warn('Invalid date encountered:', date);
+            return '';
+        }
+        return date.toISOString().split("T")[0];
+    };
 
     const [comparison, setComparison] = useState("Previous Year");
     const [dateStart, setDateStart] = useState(formatDate(firstDayOfMonth));
@@ -56,13 +62,27 @@ export default function PerformanceDashboard({ customerId, customerName, initial
     const data = Array.isArray(initialData) ? initialData : [];
 
     const formatComparisonDate = (date) => {
-        const compDate = new Date(date);
-        const offset = comparison === "Previous Year" 
-            ? 365 // Add a year for comparison
-            : Math.ceil((new Date(dateEnd) - new Date(dateStart)) / (1000 * 60 * 60 * 24));
-        
-        compDate.setDate(compDate.getDate() + offset);
-        return formatDate(compDate);
+        if (!date) return '';
+
+        try {
+            const compDate = new Date(date);
+
+            // Check if date is valid
+            if (isNaN(compDate.getTime())) {
+                console.warn('Invalid comparison date:', date);
+                return '';
+            }
+
+            const offset = comparison === "Previous Year"
+                ? 365 // Add a year for comparison
+                : Math.ceil((new Date(dateEnd) - new Date(dateStart)) / (1000 * 60 * 60 * 24));
+
+            compDate.setDate(compDate.getDate() + offset);
+            return formatDate(compDate);
+        } catch (error) {
+            console.error('Error formatting comparison date:', error);
+            return '';
+        }
     };
 
     const filteredData = useMemo(() => {
@@ -125,34 +145,34 @@ export default function PerformanceDashboard({ customerId, customerName, initial
     const calculateDelta = (current, prev) => {
         if (!prev || prev === 0) return null;
         const delta = ((current - prev) / prev * 100).toFixed(1);
-        return `${delta > 0 ? "+" : ""}${delta}%`;
+        return `${delta > 0 ? "+" : ""}${delta.toLocaleString('en-US')}%`;
     };
 
     const metrics = [
         {
             title: "Revenue",
-            value: `${Math.round(currentMetrics.revenue).toLocaleString()} DKK`,
+            value: `${Math.round(currentMetrics.revenue).toLocaleString('en-US')} DKK`,
             delta: calculateDelta(currentMetrics.revenue, prevMetrics.revenue),
             positive: currentMetrics.revenue >= prevMetrics.revenue,
             icon: <HiOutlineCurrencyDollar className="text-2xl text-gray-400" />,
         },
         {
             title: "Gross Profit",
-            value: `${Math.round(currentMetrics.gross_profit).toLocaleString()} DKK`,
+            value: `${Math.round(currentMetrics.gross_profit).toLocaleString('en-US')} DKK`,
             delta: calculateDelta(currentMetrics.gross_profit, prevMetrics.gross_profit),
             positive: currentMetrics.gross_profit >= prevMetrics.gross_profit,
             icon: <FaMoneyCheckAlt className="text-2xl text-gray-400" />,
         },
         {
             title: "Orders",
-            value: Math.round(currentMetrics.orders).toLocaleString(),
+            value: Math.round(currentMetrics.orders).toLocaleString('en-US'),
             delta: calculateDelta(currentMetrics.orders, prevMetrics.orders),
             positive: currentMetrics.orders >= prevMetrics.orders,
             icon: <HiOutlineShoppingCart className="text-2xl text-gray-400" />,
         },
         {
             title: "Cost",
-            value: `${Math.round(currentMetrics.cost).toLocaleString()} DKK`,
+            value: `${Math.round(currentMetrics.cost).toLocaleString('en-US')} DKK`,
             delta: calculateDelta(currentMetrics.cost, prevMetrics.cost),
             positive: currentMetrics.cost <= prevMetrics.cost,
             icon: <HiOutlineChartBar className="text-2xl text-gray-400" />,
@@ -173,14 +193,14 @@ export default function PerformanceDashboard({ customerId, customerName, initial
         },
         {
             title: "AOV",
-            value: `${Math.round(currentMetrics.aov).toLocaleString()} DKK`,
+            value: `${Math.round(currentMetrics.aov).toLocaleString('en-US')} DKK`,
             delta: calculateDelta(currentMetrics.aov, prevMetrics.aov),
             positive: currentMetrics.aov >= prevMetrics.aov,
             icon: <HiOutlineChartBar className="text-2xl text-gray-400" />,
         },
         {
             title: "Impressions",
-            value: Math.round(currentMetrics.impressions).toLocaleString(),
+            value: Math.round(currentMetrics.impressions).toLocaleString('en-US'),
             delta: calculateDelta(currentMetrics.impressions, prevMetrics.impressions),
             positive: currentMetrics.impressions >= prevMetrics.impressions,
             icon: <HiOutlineChartBar className="text-2xl text-gray-400" />,
@@ -214,10 +234,14 @@ export default function PerformanceDashboard({ customerId, customerName, initial
             },
             {
                 label: `Revenue (${comparison})`,
-                data: comparisonData.map((row) => ({
-                    x: formatComparisonDate(row.date),
-                    y: row.revenue || 0
-                })),
+                data: comparisonData.map((row) => {
+                    const formattedDate = formatComparisonDate(row.date);
+                    if (!formattedDate) return null;
+                    return {
+                        x: formattedDate,
+                        y: row.revenue || 0
+                    };
+                }).filter(item => item !== null),
                 borderColor: colors.hue3,
                 backgroundColor: colors.hue3,
                 borderWidth: 1,
@@ -369,14 +393,14 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                     label: (context) => {
                         const label = context.label || "";
                         const value = context.raw || 0;
-                        return `${label}: ${Math.round(value).toLocaleString()} DKK`;
+                        return `${label}: ${Math.round(value).toLocaleString('en-US')} DKK`;
                     },
                 },
             },
             datalabels: {
                 color: "#fff",
                 font: { size: 10, weight: "bold" },
-                formatter: (value) => `${Math.round(value).toLocaleString()} DKK`,
+                formatter: (value) => `${Math.round(value).toLocaleString('en-US')} DKK`,
                 anchor: "center",
                 align: "center",
             },
@@ -446,7 +470,7 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                     label: (context) => {
                         const label = context.label || "";
                         const value = context.raw || 0;
-                        return `${label}: ${Math.round(value).toLocaleString()} sessions`;
+                        return `${label}: ${Math.round(value).toLocaleString('en-US')} sessions`;
                     },
                 },
             },

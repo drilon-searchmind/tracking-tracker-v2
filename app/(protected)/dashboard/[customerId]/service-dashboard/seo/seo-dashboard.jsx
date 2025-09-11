@@ -33,7 +33,13 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const formatDate = (date) => date.toISOString().split("T")[0];
+    const formatDate = (date) => {
+        if (!(date instanceof Date) || isNaN(date.getTime())) {
+            console.warn('Invalid date encountered:', date);
+            return '';
+        }
+        return date.toISOString().split("T")[0];
+    };
 
     const [comparison, setComparison] = useState("Previous Year");
     const [dateStart, setDateStart] = useState(formatDate(firstDayOfMonth));
@@ -72,20 +78,41 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
 
     // Calculate comparison dates
     const getComparisonDates = () => {
-        const end = new Date(dateEnd);
-        const start = new Date(dateStart);
-        const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        try {
+            const end = new Date(dateEnd);
+            const start = new Date(dateStart);
 
-        if (comparison === "Previous Year") {
-            return {
-                compStart: formatDate(new Date(start.setFullYear(start.getFullYear() - 1))),
-                compEnd: formatDate(new Date(end.setFullYear(end.getFullYear() - 1))),
-            };
-        } else {
-            return {
-                compStart: formatDate(new Date(start.setDate(start.getDate() - daysDiff))),
-                compEnd: formatDate(new Date(end.setDate(end.getDate() - daysDiff))),
-            };
+            if (isNaN(end.getTime()) || isNaN(start.getTime())) {
+                console.warn('Invalid start or end date:', { start, end });
+                return { compStart: '', compEnd: '' };
+            }
+
+            const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+            if (comparison === "Previous Year") {
+                const prevStart = new Date(start);
+                const prevEnd = new Date(end);
+                prevStart.setFullYear(prevStart.getFullYear() - 1);
+                prevEnd.setFullYear(prevEnd.getFullYear() - 1);
+
+                return {
+                    compStart: formatDate(prevStart),
+                    compEnd: formatDate(prevEnd),
+                };
+            } else {
+                const prevStart = new Date(start);
+                const prevEnd = new Date(end);
+                prevStart.setDate(prevStart.getDate() - daysDiff);
+                prevEnd.setDate(prevEnd.getDate() - daysDiff);
+
+                return {
+                    compStart: formatDate(prevStart),
+                    compEnd: formatDate(prevEnd),
+                };
+            }
+        } catch (error) {
+            console.error('Error calculating comparison dates:', error);
+            return { compStart: '', compEnd: '' };
         }
     };
 
@@ -161,20 +188,20 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
 
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;
-        const delta = ((current - prev) / prev * 100).toFixed(2);
-        return `${delta > 0 ? "+" : ""}${delta}%`;
+        const delta = ((current - prev) / prev * 100).toFixed(1);
+        return `${delta > 0 ? "+" : ""}${delta.toLocaleString('en-US')}%`;
     };
 
     const seoMetrics = [
         {
             label: "Click",
-            value: metrics.clicks ? Math.round(metrics.clicks).toLocaleString() : "0",
+            value: metrics.clicks ? Math.round(metrics.clicks).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.clicks, comparisonMetrics.clicks),
             positive: metrics.clicks >= comparisonMetrics.clicks,
         },
         {
             label: "Impressions",
-            value: metrics.impressions ? Math.round(metrics.impressions).toLocaleString() : "0",
+            value: metrics.impressions ? Math.round(metrics.impressions).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.impressions, comparisonMetrics.impressions),
             positive: metrics.impressions >= comparisonMetrics.impressions,
         },
@@ -392,8 +419,8 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                     <tr key={i} className="border-b">
                                         <td className="px-4 py-2">{i + 1}</td>
                                         <td className="px-4 py-2">{row.keyword}</td>
-                                        <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString()}</td>
-                                        <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString()}</td>
+                                        <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
+                                        <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
                                         <td className="px-4 py-2">{row.position.toFixed(0)}</td>
                                         <td className="px-4 py-2 text-center hidden">
                                             <input type="checkbox" className="rounded border-zinc-300" />
@@ -427,8 +454,8 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                 {filteredTopUrls.map((row, i) => (
                                     <tr key={i} className="border-b">
                                         <td className="px-4 py-2 whitespace-nowrap">{row.url}</td>
-                                        <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString()}</td>
-                                        <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString()}</td>
+                                        <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
+                                        <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
                                         <td className="px-4 py-2">{(row.ctr * 100).toFixed(2)}%</td>
                                     </tr>
                                 ))}

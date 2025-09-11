@@ -3,7 +3,8 @@ import Customer from "@/models/Customer";
 import { dbConnect } from "@/lib/dbConnect";
 
 export async function GET(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     console.log("::: Fetching customer with ID:", customerId);
     try {
         await dbConnect();
@@ -24,7 +25,8 @@ export async function GET(req, { params }) {
 }
 
 export async function POST(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
 
     try {
         const body = await req.json();
@@ -45,7 +47,8 @@ export async function POST(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     const { configId } = await req.json();
 
     try {

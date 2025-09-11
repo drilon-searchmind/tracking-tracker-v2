@@ -2,7 +2,9 @@ import { dbConnect } from "@/lib/dbConnect";
 import Customer from "@/models/Customer";
 
 export async function GET(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
+
     console.log("::: Fetching customer with ID:", customerId);
     try {
         await dbConnect();
@@ -25,7 +27,8 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     console.log("::: Updating customer with ID:", customerId);
     try {
         await dbConnect();

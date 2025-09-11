@@ -13,7 +13,8 @@ export default async function ConfigPage({ params }) {
             ? "http://192.168.1.253:3000"
             : "http://localhost:3000";
 
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     const { customerName } = await fetchCustomerDetails(customerId);
 
     const responseRevenueBudget = await fetch(`${baseUrl}/api/config-revenue-budget/${customerId}`);

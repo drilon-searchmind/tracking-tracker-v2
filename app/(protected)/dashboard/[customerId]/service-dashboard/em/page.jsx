@@ -6,7 +6,8 @@ export const revalidate = 3600; // ISR: Revalidate every hour
 
 // TODO: Make dynamic for different email providers (active campaign, klaviyo, mailchimp etc)
 export default async function EmailDashboardPage({ params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const customerId = resolvedParams.customerId;
     const emailType = "active_campaign";
 
     try {

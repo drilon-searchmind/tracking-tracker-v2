@@ -9,7 +9,13 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const formatDate = (date) => date.toISOString().split("T")[0];
+    const formatDate = (date) => {
+        if (!(date instanceof Date) || isNaN(date.getTime())) {
+            console.warn('Invalid date encountered:', date);
+            return '';
+        }
+        return date.toISOString().split("T")[0];
+    };
 
     const [comparison, setComparison] = useState("Previous Year");
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
@@ -87,20 +93,41 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
     // Calculate comparison dates
     const getComparisonDates = () => {
-        const end = new Date(endDate);
-        const start = new Date(startDate);
-        const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        try {
+            const end = new Date(endDate);
+            const start = new Date(startDate);
 
-        if (comparison === "Previous Year") {
-            return {
-                compStart: formatDate(new Date(start.setFullYear(start.getFullYear() - 1))),
-                compEnd: formatDate(new Date(end.setFullYear(end.getFullYear() - 1))),
-            };
-        } else {
-            return {
-                compStart: formatDate(new Date(start.setDate(start.getDate() - daysDiff))),
-                compEnd: formatDate(new Date(end.setDate(end.getDate() - daysDiff))),
-            };
+            if (isNaN(end.getTime()) || isNaN(start.getTime())) {
+                console.warn('Invalid start or end date:', { start, end });
+                return { compStart: '', compEnd: '' };
+            }
+
+            const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+            if (comparison === "Previous Year") {
+                const prevStart = new Date(start);
+                const prevEnd = new Date(end);
+                prevStart.setFullYear(prevStart.getFullYear() - 1);
+                prevEnd.setFullYear(prevEnd.getFullYear() - 1);
+
+                return {
+                    compStart: formatDate(prevStart),
+                    compEnd: formatDate(prevEnd),
+                };
+            } else {
+                const prevStart = new Date(start);
+                const prevEnd = new Date(end);
+                prevStart.setDate(prevStart.getDate() - daysDiff);
+                prevEnd.setDate(prevEnd.getDate() - daysDiff);
+
+                return {
+                    compStart: formatDate(prevStart),
+                    compEnd: formatDate(prevEnd),
+                };
+            }
+        } catch (error) {
+            console.error('Error calculating comparison dates:', error);
+            return { compStart: '', compEnd: '' };
         }
     };
 
@@ -171,61 +198,61 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;
         const delta = ((current - prev) / prev * 100).toFixed(2);
-        return `${delta > 0 ? "+" : ""}${delta}%`;
+        return `${delta > 0 ? "+" : ""}${delta.toLocaleString('en-US')}%`;
     };
 
     const metricsDisplay = [
         {
             label: "Net Sales",
-            value: metrics.net_sales ? Math.round(metrics.net_sales).toLocaleString() : "0",
+            value: metrics.net_sales ? Math.round(metrics.net_sales).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.net_sales, comparisonMetrics.net_sales),
             positive: metrics.net_sales >= comparisonMetrics.net_sales,
         },
         {
             label: "Orders",
-            value: metrics.orders ? Math.round(metrics.orders).toLocaleString() : "0",
+            value: metrics.orders ? Math.round(metrics.orders).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.orders, comparisonMetrics.orders),
             positive: metrics.orders >= comparisonMetrics.orders,
         },
         {
             label: "COGS",
-            value: metrics.cogs ? Math.round(metrics.cogs).toLocaleString() : "0",
+            value: metrics.cogs ? Math.round(metrics.cogs).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.cogs, comparisonMetrics.cogs),
             positive: metrics.cogs <= comparisonMetrics.cogs,
         },
         {
             label: "Shipping",
-            value: metrics.shipping_cost ? Math.round(metrics.shipping_cost).toLocaleString() : "0",
+            value: metrics.shipping_cost ? Math.round(metrics.shipping_cost).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.shipping_cost, comparisonMetrics.shipping_cost),
             positive: metrics.shipping_cost <= comparisonMetrics.shipping_cost,
         },
         {
             label: "Transaction Costs",
-            value: metrics.transaction_cost ? Math.round(metrics.transaction_cost).toLocaleString() : "0",
+            value: metrics.transaction_cost ? Math.round(metrics.transaction_cost).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.transaction_cost, comparisonMetrics.transaction_cost),
             positive: metrics.transaction_cost <= comparisonMetrics.transaction_cost,
         },
         {
             label: "Marketing Spend",
-            value: metrics.marketing_spend ? Math.round(metrics.marketing_spend).toLocaleString() : "0",
+            value: metrics.marketing_spend ? Math.round(metrics.marketing_spend).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.marketing_spend, comparisonMetrics.marketing_spend),
             positive: metrics.marketing_spend <= comparisonMetrics.marketing_spend,
         },
         {
             label: "Marketing Bureau",
-            value: metrics.marketing_bureau_cost ? Math.round(metrics.marketing_bureau_cost).toLocaleString() : "0",
+            value: metrics.marketing_bureau_cost ? Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.marketing_bureau_cost, comparisonMetrics.marketing_bureau_cost),
             positive: metrics.marketing_bureau_cost <= comparisonMetrics.marketing_bureau_cost,
         },
         {
             label: "Marketing Tooling",
-            value: metrics.marketing_tooling_cost ? Math.round(metrics.marketing_tooling_cost).toLocaleString() : "0",
+            value: metrics.marketing_tooling_cost ? Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.marketing_tooling_cost, comparisonMetrics.marketing_tooling_cost),
             positive: metrics.marketing_tooling_cost <= comparisonMetrics.marketing_tooling_cost,
         },
         {
             label: "Fixed Expenses",
-            value: metrics.fixed_expenses ? Math.round(metrics.fixed_expenses).toLocaleString() : "0",
+            value: metrics.fixed_expenses ? Math.round(metrics.fixed_expenses).toLocaleString('en-US') : "0",
             delta: calculateDelta(metrics.fixed_expenses, comparisonMetrics.fixed_expenses),
             positive: metrics.fixed_expenses <= comparisonMetrics.fixed_expenses,
         },
@@ -310,7 +337,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                             <div className="bg-gray-100 px-4 py-2 font-medium">Net turnover (turnover - discount & return)</div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Netsales</span>
-                                <span>kr. {Math.round(metrics.net_sales).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.net_sales).toLocaleString('en-US')}</span>
                             </div>
                         </div>
 
@@ -319,11 +346,11 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                             <div className="bg-gray-100 px-4 py-2 font-medium">DB1 (turnover - cost of goods sold)</div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>COGS</span>
-                                <span>kr. {Math.round(metrics.cogs).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.cogs).toLocaleString('en-US')}</span>
                             </div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Total, DB1</span>
-                                <span>kr. {Math.round(metrics.db1).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.db1).toLocaleString('en-US')}</span>
                             </div>
                         </div>
 
@@ -332,15 +359,15 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                             <div className="bg-gray-100 px-4 py-2 font-medium">DB2 (DB1 - direct selling costs)</div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Shipping</span>
-                                <span>kr. {Math.round(metrics.shipping_cost).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.shipping_cost).toLocaleString('en-US')}</span>
                             </div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Transaction Costs</span>
-                                <span>kr. {Math.round(metrics.transaction_cost).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.transaction_cost).toLocaleString('en-US')}</span>
                             </div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Total, DB2</span>
-                                <span>kr. {Math.round(metrics.db2).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.db2).toLocaleString('en-US')}</span>
                             </div>
                         </div>
 
@@ -349,19 +376,19 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                             <div className="bg-gray-100 px-4 py-2 font-medium">DB3 (DB2 - marketing costs)</div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Marketing Spend</span>
-                                <span>kr. {Math.round(metrics.marketing_spend).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')}</span>
                             </div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Marketing Bureau</span>
-                                <span>kr. {Math.round(metrics.marketing_bureau_cost).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US')}</span>
                             </div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Marketing Tooling</span>
-                                <span>kr. {Math.round(metrics.marketing_tooling_cost).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US')}</span>
                             </div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Total, DB3</span>
-                                <span>kr. {Math.round(metrics.db3).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.db3).toLocaleString('en-US')}</span>
                             </div>
                         </div>
 
@@ -370,11 +397,11 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                             <div className="bg-gray-100 px-4 py-2 font-medium">Result</div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Fixed Expenses</span>
-                                <span>kr. {Math.round(metrics.fixed_expenses).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.fixed_expenses).toLocaleString('en-US')}</span>
                             </div>
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Result</span>
-                                <span>kr. {Math.round(metrics.result).toLocaleString()}</span>
+                                <span>kr. {Math.round(metrics.result).toLocaleString('en-US')}</span>
                             </div>
                         </div>
 

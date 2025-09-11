@@ -4,7 +4,7 @@ import { usePathname, useSelectedLayoutSegments } from "next/navigation";
 import { PiCaretDownThin } from "react-icons/pi";
 import { CiShare2, CiUser } from "react-icons/ci";
 import ShareCustomerModal from "@/app/components/Dashboard/ShareCustomerModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 
 export default function DashboardLayout({ children }) {
@@ -13,6 +13,7 @@ export default function DashboardLayout({ children }) {
     const [showModalShare, setShowModalShare] = useState(false);
     const pathname = usePathname()
     const { isAnyModalOpen } = useModalContext();
+    const [customerName, setCustomerName] = useState("");
 
     const isActive = (path) => {
         const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
@@ -25,9 +26,31 @@ export default function DashboardLayout({ children }) {
     const isToolsActive = pathname.startsWith(`/dashboard/${customerId}/tools`);
     const isConfigActive = pathname.startsWith(`/dashboard/${customerId}/config`);
 
+    useEffect(() => {
+        if (customerId) {
+            const fetchCustomerName = async () => {
+                try {
+                    const response = await fetch(`/api/customers/${customerId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setCustomerName(data.name || "Customer");
+                    } else {
+                        console.error("Failed to fetch customer details");
+                        setCustomerName("Customer");
+                    }
+                } catch (error) {
+                    console.error("Error fetching customer details:", error);
+                    setCustomerName("Customer");
+                }
+            };
+
+            fetchCustomerName();
+        }
+    }, [customerId]);
+
     return (
         <section id="DashboardLayout" className="relative">
-            <nav 
+            <nav
                 className="flex justify-between items-center pt-6 pb-3 border-t border-gray-200 mb-5 bg-white sticky top-0"
                 style={{ zIndex: isAnyModalOpen ? 1 : 50 }}
             >
@@ -114,7 +137,7 @@ export default function DashboardLayout({ children }) {
 
                 <span className="flex items-center gap-4">
                     <div className="text-center text-xs border border-zinc-200 rounded px-4 py-2 bg-zinc-50 text-zinc-700 flex items-center gap-2">
-                        HUMDAKIN DK <CiUser />
+                        {customerName} <CiUser />
                     </div>
                     <button onClick={() => setShowModalShare(true)} className="text-center text-xs bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 flex items-center gap-2 hover:cursor-pointer">
                         Share Report <CiShare2 />

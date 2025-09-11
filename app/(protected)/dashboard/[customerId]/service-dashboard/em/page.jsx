@@ -4,6 +4,7 @@ import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
+// TODO: Make dynamic for different email providers (active campaign, klaviyo, mailchimp etc)
 export default async function EmailDashboardPage({ params }) {
     const { customerId } = params;
     const emailType = "active_campaign";

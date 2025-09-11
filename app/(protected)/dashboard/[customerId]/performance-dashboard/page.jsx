@@ -19,7 +19,7 @@ export default async function DashboardPage({ params }) {
       CAST(SUM(amount) AS FLOAT64) as revenue,
       CAST(SUM(amount) AS FLOAT64) as gross_profit,
       COUNT(id) as order_count
-    FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
+    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
     GROUP BY date
   ),
   ads_data AS (
@@ -27,7 +27,7 @@ export default async function DashboardPage({ params }) {
       CAST(segments_date AS STRING) as date,
       CAST(SUM(metrics_cost_micros) / 1000000 AS FLOAT64) as google_ads_cost,
       SUM(metrics_impressions) as google_ads_impressions
-    FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
+    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.google_ads_campaign\`
     GROUP BY date
   ),
   meta_data AS (
@@ -35,7 +35,7 @@ export default async function DashboardPage({ params }) {
       CAST(date_start AS STRING) as date,
       CAST(SUM(spend) AS FLOAT64) as meta_spend,
       SUM(impressions) as meta_impressions
-    FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.ads_insights\`
+    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.meta_ads_insights\`
     GROUP BY date
   ),
   sessions_data AS (
@@ -43,7 +43,7 @@ export default async function DashboardPage({ params }) {
       date as date,
       sessionDefaultChannelGrouping as channel_group,
       SUM(sessions) as sessions
-    FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.traffic_acquisition_session_default_channel_grouping_report\`
+    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.ga4_traffic_acquisition_session_default_channel_grouping_report\`
     GROUP BY date, channel_group
   ),
   combined_data AS (

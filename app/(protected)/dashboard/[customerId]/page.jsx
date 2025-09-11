@@ -17,21 +17,21 @@ export default async function OverviewPage({ params }) {
             DATE(processed_at) AS date,
             COUNT(*) AS orders,
             SUM(amount) AS revenue
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
         GROUP BY DATE(processed_at)
     ),
     facebook_data AS (
         SELECT
             date_start AS date,
             SUM(spend) AS ps_cost
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.ads_insights\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.meta_ads_insights\`
         GROUP BY date_start
     ),
     google_ads_data AS (
         SELECT
             segments_date AS date,
             SUM(metrics_cost_micros / 1000000.0) AS ppc_cost
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.google_ads_campaign\`
         GROUP BY segments_date
     ),
     combined_data AS (

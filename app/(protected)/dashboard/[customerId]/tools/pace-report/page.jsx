@@ -21,7 +21,7 @@ export default async function PacePage({ params }) {
             SELECT
                 CAST(DATE(processed_at) AS STRING) AS date,
                 amount
-            FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.transactions\`
+            FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
             WHERE status = 'SUCCESS' AND processed_at IS NOT NULL
         ) t
         GROUP BY date
@@ -30,7 +30,7 @@ export default async function PacePage({ params }) {
         SELECT
             CAST(date_start AS STRING) AS date,
             SUM(COALESCE(spend, 0)) AS ps_cost
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.ads_insights\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.meta_ads_insights\`
         WHERE date_start IS NOT NULL
         GROUP BY date_start
     ),
@@ -38,7 +38,7 @@ export default async function PacePage({ params }) {
         SELECT
             CAST(segments_date AS STRING) AS date,
             SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS ppc_cost
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.google_ads_campaign\`
         WHERE segments_date IS NOT NULL
         GROUP BY segments_date
     ),

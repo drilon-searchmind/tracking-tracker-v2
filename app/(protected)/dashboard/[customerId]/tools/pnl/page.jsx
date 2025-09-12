@@ -57,7 +57,7 @@ export default async function PnLPage({ params }) {
                 CAST(DATE(created_at) AS STRING) AS date,
                 amount
             FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
-            WHERE created_at IS NOT NULL
+            WHERE status = 'SUCCESS' AND kind = 'AUTHORIZATION'
         ) t
         GROUP BY date
     ),

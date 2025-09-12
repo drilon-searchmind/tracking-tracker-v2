@@ -23,7 +23,7 @@ export default async function PacePage({ params }) {
                 CAST(DATE(processed_at) AS STRING) AS date,
                 amount
             FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
-            WHERE status = 'SUCCESS' AND processed_at IS NOT NULL
+            WHERE status = 'SUCCESS' AND kind = 'AUTHORIZATION'
         ) t
         GROUP BY date
     ),

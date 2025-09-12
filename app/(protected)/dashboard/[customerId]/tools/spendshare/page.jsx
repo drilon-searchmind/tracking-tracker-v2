@@ -24,7 +24,7 @@ export default async function SpendSharePage({ params }) {
                     SUM(amount) AS revenue,
                     SUM(amount) - SUM(amount * 0.25) AS net_profit
                 FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
-                WHERE EXTRACT(YEAR FROM processed_at) = EXTRACT(YEAR FROM CURRENT_DATE())
+                WHERE EXTRACT(YEAR FROM processed_at) = EXTRACT(YEAR FROM CURRENT_DATE()) AND status = 'SUCCESS' AND kind = 'AUTHORIZATION'
                 GROUP BY month
             ),
             meta_data AS (

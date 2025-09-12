@@ -6,7 +6,7 @@ export default function HomePage() {
     return (
         <section id="pageHomePage" className="py-20">
             <div className="grid grid-cols-12 gap-x-20 items-start relative">
-                <div className="absolute bottom-[125px] left-0 w-full h-full z-1">
+                <div className="absolute bottom-[125px] left-0 w-full h-full z-1 pointer-events-none">
                     <Image
                         width={1920}
                         height={1080}
@@ -34,7 +34,7 @@ export default function HomePage() {
                     </div>
                 </span>
 
-                <span className="col-span-12 mt-20">
+                <span className="col-span-12 mt-20 hidden">
                     <HomePageFlowChart />
                 </span>
             </div>

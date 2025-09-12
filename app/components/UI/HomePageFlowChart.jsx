@@ -4,9 +4,8 @@ import React from 'react';
 import { TbBrandNextjs } from "react-icons/tb";
 import { HiOutlineGlobe } from "react-icons/hi";
 import { SiGooglecloud, SiMongodb, SiGooglebigquery, SiGoogleads, SiGoogleanalytics, SiMeta } from "react-icons/si";
-import { BsArrowRight, BsArrowLeft, BsArrowDown, BsArrowDownLeft } from "react-icons/bs";
+import { BsArrowRight, BsArrowLeft, BsArrowDown } from "react-icons/bs";
 
-// TODO: Fix the arrows to be more aligned with the boxes
 const HomePageFlowChart = () => {
     return (
         <span className="mt-10 col-span-12 rounded-lg py-10 z-10">
@@ -18,27 +17,28 @@ const HomePageFlowChart = () => {
             </span>
 
             <div className="border border-zinc-200 w-full py-12 text-center rounded-md mt-10 bg-white">
-                <div className="w-full max-w-6xl mx-auto px-4 py-8">
-                    {/* Top Row - GCE, Airbyte, Services */}
-                    <div className="flex flex-wrap justify-center items-center mb-20 relative">
-                        {/* Google Cloud */}
-                        <div className="mx-10">
-                            <div className="w-36 h-36 rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
+                <div className="w-full mx-auto px-4 py-8">
+                    {/* 5x5 Grid Layout */}
+                    <div className="grid grid-cols-5 gap-4">
+                        {/* Row 1 */}
+                        {/* 1x1: Google Cloud */}
+                        <div className="p-2 flex justify-center items-center">
+                            <div className="w-full h-[200px] rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
                                 <SiGooglecloud className="text-4xl text-blue-600 mb-3" />
                                 <span className="text-sm font-semibold">Google Cloud</span>
                             </div>
                         </div>
 
-                        {/* Arrow GCE to Airbyte */}
-                        <div className="w-32 flex items-center justify-center">
+                        {/* 1x2: Arrow Right */}
+                        <div className="p-2 flex justify-center items-center">
                             <div className="h-0.5 bg-gray-200 w-full relative">
                                 <BsArrowRight className="text-gray-300 text-lg absolute -right-1 -top-2" />
                             </div>
                         </div>
 
-                        {/* Airbyte */}
-                        <div className="mx-10">
-                            <div className="w-36 h-36 rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
+                        {/* 1x3: Airbyte */}
+                        <div className="p-2 flex justify-center items-center">
+                            <div className="w-full h-[200px] rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
                                 <div className="rounded-full bg-blue-500 w-16 h-16 flex items-center justify-center mb-3">
                                     <span className="text-white font-bold text-sm">Airbyte</span>
                                 </div>
@@ -46,9 +46,9 @@ const HomePageFlowChart = () => {
                             </div>
                         </div>
 
-                        {/* Arrow Airbyte to Services */}
-                        <div className="w-32 flex items-center justify-center">
-                            <div className="h-0.5 bg-gray-200 w-full relative">
+                        {/* 1x4: Two Arrows */}
+                        <div className="p-2 flex flex-col justify-center items-center">
+                            <div className="h-0.5 bg-gray-200 w-full relative mb-4">
                                 <BsArrowRight className="text-gray-300 text-lg absolute -right-1 -top-2" />
                             </div>
                             <div className="h-0.5 bg-gray-200 w-full relative">
@@ -56,9 +56,9 @@ const HomePageFlowChart = () => {
                             </div>
                         </div>
 
-                        {/* External Services */}
-                        <div className="mx-10">
-                            <div className="w-36 h-36 rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
+                        {/* 1x5: External Services */}
+                        <div className="p-2 flex justify-center items-center">
+                            <div className="w-full h-[200px] rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
                                 <div className="flex flex-wrap justify-center gap-2 mb-3">
                                     <SiGoogleads className="text-2xl text-blue-600" />
                                     <SiGoogleanalytics className="text-2xl text-yellow-500" />
@@ -68,93 +68,89 @@ const HomePageFlowChart = () => {
                             </div>
                         </div>
 
-                    </div>
+                        {/* Row 2 */}
+                        <div className="p-2"></div>
+                        <div className="p-2"></div>
 
-                    {/* Vertical Arrow from Airbyte to BigQuery */}
-                    <div className="flex justify-center -mt-10 mb-10">
-                        <div className="h-20 w-0.5 bg-gray-200 relative">
-                            <BsArrowDown className="text-gray-300 text-lg absolute -bottom-1 -left-2" />
-                        </div>
-                    </div>
-
-                    {/* Middle Row - BigQuery */}
-                    <div className="flex justify-center mb-20">
-                        <div className="w-36 h-36 rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
-                            <SiGooglebigquery className="text-4xl text-green-600 mb-3" />
-                            <span className="text-sm font-semibold">BigQuery</span>
-                        </div>
-                    </div>
-                    
-                    {/* Container for the bottom row with connections */}
-                    <div className="relative">
-                        {/* Arrows from BigQuery to bottom row */}
-                        <div className="absolute left-1/2 -top-14 transform -translate-x-0.5 h-14 w-0.5 bg-gray-200">
-                            <BsArrowDown className="text-gray-300 text-lg absolute -bottom-1 -left-2" />
-                        </div>
-                        
-                        <div className="absolute left-1/2 -top-24 transform translate-x-32 rotate-45 w-48 h-0.5 bg-gray-200">
-                            <BsArrowDownLeft className="text-gray-300 text-lg absolute bottom-0 right-0 transform rotate-[225deg]" />
-                        </div>
-
-                        {/* Bottom Row - MongoDB, End User, Web App */}
-                        <div className="flex flex-wrap justify-center items-center relative">
-                            {/* MongoDB */}
-                            <div className="mx-10">
-                                <div className="w-36 h-36 rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
-                                    <SiMongodb className="text-4xl text-green-500 mb-3" />
-                                    <span className="text-sm font-semibold">MongoDB</span>
-                                </div>
-                            </div>
-
-                            {/* End User */}
-                            <div className="mx-10">
-                                <div className="w-36 h-36 rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
-                                    <HiOutlineGlobe className="text-4xl text-blue-700 mb-3" />
-                                    <span className="text-sm font-semibold">End User</span>
-                                </div>
-                            </div>
-
-                            {/* Web App */}
-                            <div className="mx-10">
-                                <div className="w-36 h-36 rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
-                                    <TbBrandNextjs className="text-4xl text-black mb-3" />
-                                    <span className="text-sm font-semibold">Web Application</span>
-                                </div>
-                            </div>
-
-                            {/* Arrow from Web App to End User */}
-                            <div className="absolute w-32 left-1/2 top-16 transform -translate-x-[60px]">
-                                <div className="h-0.5 bg-gray-200 w-full relative">
-                                    <BsArrowLeft className="text-gray-300 text-lg absolute -left-1 -top-2" />
-                                </div>
-                            </div>
-
-                            {/* Arrow from MongoDB to Web App */}
-                            <div className="absolute w-32 left-[calc(50%-150px)] top-16">
-                                <div className="h-0.5 bg-gray-200 w-full relative">
-                                    <BsArrowRight className="text-gray-300 text-lg absolute -right-1 -top-2" />
-                                </div>
-                            </div>
-
-                            {/* Arrow from Web App to MongoDB */}
-                            <div className="absolute w-32 left-[calc(50%-150px)] top-28">
-                                <div className="h-0.5 bg-gray-200 w-full relative">
-                                    <BsArrowLeft className="text-gray-300 text-lg absolute -left-1 -top-2" />
-                                </div>
+                        {/* 2x3: Arrow Down */}
+                        <div className="p-2 flex justify-center items-center">
+                            <div className="h-20 w-0.5 bg-gray-200 relative">
+                                <BsArrowDown className="text-gray-300 text-lg absolute -bottom-1 -left-2" />
                             </div>
                         </div>
-                    </div>
 
-                    {/* Section labels */}
-                    <div className="grid grid-cols-3 gap-8 mt-20 border-t border-zinc-100 pt-6">
-                        <div className="text-xs text-gray-500 font-medium text-center">
-                            Data Sources
+                        <div className="p-2"></div>
+                        <div className="p-2"></div>
+
+                        {/* Row 3 */}
+                        <div className="p-2"></div>
+                        <div className="p-2"></div>
+
+                        {/* 3x3: BigQuery */}
+                        <div className="p-2 flex justify-center items-center">
+                            <div className="w-full h-[200px] rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
+                                <SiGooglebigquery className="text-4xl text-green-600 mb-3" />
+                                <span className="text-sm font-semibold">BigQuery</span>
+                            </div>
                         </div>
-                        <div className="text-xs text-gray-500 font-medium text-center">
-                            Data Pipeline
+
+                        <div className="p-2"></div>
+                        <div className="p-2"></div>
+
+                        {/* Row 4 */}
+                        <div className="p-2"></div>
+                        <div className="p-2"></div>
+
+                        {/* 4x3: Arrow Down */}
+                        <div className="p-2 flex justify-center items-center">
+                            <div className="h-20 w-0.5 bg-gray-200 relative">
+                                <BsArrowDown className="text-gray-300 text-lg absolute -bottom-1 -left-2" />
+                            </div>
                         </div>
-                        <div className="text-xs text-gray-500 font-medium text-center">
-                            Data Destinations
+
+                        <div className="p-2"></div>
+                        <div className="p-2"></div>
+
+                        {/* Row 5 */}
+                        {/* 5x1: MongoDB */}
+                        <div className="p-2 flex justify-center items-center">
+                            <div className="w-full h-[200px] rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
+                                <SiMongodb className="text-4xl text-green-500 mb-3" />
+                                <span className="text-sm font-semibold">MongoDB</span>
+                            </div>
+                        </div>
+
+                        {/* 5x2: Two Arrows */}
+                        <div className="p-2 flex flex-col justify-center items-center">
+                            <div className="h-0.5 bg-gray-200 w-full relative mb-4">
+                                <BsArrowRight className="text-gray-300 text-lg absolute -right-1 -top-2" />
+                            </div>
+                            <div className="h-0.5 bg-gray-200 w-full relative">
+                                <BsArrowLeft className="text-gray-300 text-lg absolute -left-1 -top-2" />
+                            </div>
+                        </div>
+
+                        {/* 5x3: Web Application */}
+                        <div className="p-2 flex justify-center items-center">
+                            <div className="w-full h-[200px] rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
+                                <TbBrandNextjs className="text-4xl text-black mb-3" />
+                                <span className="text-sm font-semibold">Web Application</span>
+                            </div>
+                        </div>
+
+                        {/* 5x4: Arrow Right */}
+                        <div className="p-2 flex justify-center items-center">
+                            <div className="h-0.5 bg-gray-200 w-full relative">
+                                <BsArrowRight className="text-gray-300 text-lg absolute -right-1 -top-2" />
+                            </div>
+                        </div>
+
+                        {/* 5x5: End User */}
+                        <div className="p-2 flex justify-center items-center">
+                            <div className="w-full h-[200px] rounded-lg border border-zinc-200 shadow-md flex flex-col items-center justify-center bg-white">
+                                <HiOutlineGlobe className="text-4xl text-blue-700 mb-3" />
+                                <span className="text-sm font-semibold">End User</span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -24,7 +24,7 @@ export default function CustomerModal({ closeModal }) {
         async function fetchCustomers() {
             try {
                 const userEmail = session?.user?.email || "";
-                const isAdmin = userEmail === "admin@example.com";
+                const isAdmin = session?.user?.isAdmin || false
 
                 const allCustomersResponse = await fetch("/api/customers");
                 const allCustomers = await allCustomersResponse.json();

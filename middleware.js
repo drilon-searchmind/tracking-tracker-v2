@@ -7,33 +7,30 @@ export default withAuth(
             const path = req.nextUrl.pathname;
             const token = req.nextauth?.token;
 
-            // Add logging for debugging in production
-            console.log("Middleware path:", path);
-            console.log("Middleware token exists:", !!token);
-            
-            if (path.startsWith('/admin') && token) {
-                // Check if the user is an admin
-                const isAdmin = token?.isAdmin === true;
-                console.log("Is admin:", isAdmin);
-
-                // If not admin, redirect to home page
-                if (!isAdmin) {
-                    return NextResponse.redirect(new URL('/', req.url));
-                }
+            // More detailed logging
+            console.log("Middleware executed for path:", path);
+            console.log("Token exists:", !!token);
+            if (token) {
+                console.log("Token contains:", {
+                    id: token.id,
+                    email: token.email,
+                    name: token.name,
+                    isAdmin: token.isAdmin
+                });
             }
-            
-            // For all other protected routes, proceed as before
-            return NextResponse.next();
+
+            // Rest of your middleware
         } catch (error) {
             console.error("Middleware error:", error);
-            // In case of error, allow the request to continue 
-            // NextAuth will handle unauthorized access appropriately
             return NextResponse.next();
         }
     },
     {
         callbacks: {
-            authorized: ({ token }) => !!token,
+            authorized: ({ token }) => {
+                console.log("Auth callback token exists:", !!token);
+                return !!token;
+            },
         },
     }
 );

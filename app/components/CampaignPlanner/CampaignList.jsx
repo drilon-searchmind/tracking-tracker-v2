@@ -25,6 +25,7 @@ export default function CampaignList({ customerId }) {
     const [selectedMonth, setSelectedMonth] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [commentCounts, setCommentCounts] = useState({});
+    const [parentCampaignMap, setParentCampaignMap] = useState({});
 
     const [modalUpdateTriggered, setModalUpdateTriggered] = useState(false);
 
@@ -150,6 +151,28 @@ export default function CampaignList({ customerId }) {
         fetchCampaigns();
     }, [customerId, showToast]);
 
+    useEffect(() => {
+        const fetchParentCampaigns = async () => {
+            if (campaigns.length === 0) return;
+
+            try {
+                const response = await fetch(`/api/parent-campaigns/${customerId}`);
+                if (response.ok) {
+                    const parentCampaigns = await response.json();
+                    const map = {};
+                    parentCampaigns.forEach(parent => {
+                        map[parent._id] = parent.parentCampaignName;
+                    });
+                    setParentCampaignMap(map);
+                }
+            } catch (error) {
+                console.error("Error fetching parent campaigns:", error);
+            }
+        };
+
+        fetchParentCampaigns();
+    }, [campaigns, customerId]);
+
     const filteredCampaigns = campaigns.filter(campaign => {
         // Service filter logic
         let passesServiceFilter = true;
@@ -270,7 +293,7 @@ export default function CampaignList({ customerId }) {
             if (response.ok) {
                 setCampaigns(campaigns.filter(campaign => campaign._id !== id));
                 showToast("Campaign deleted", "success");
-                
+
             } else {
                 throw new Error("Failed to delete campaign");
             }
@@ -407,6 +430,9 @@ export default function CampaignList({ customerId }) {
                                 Campaign Name
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Parent Campaign
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Service
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -443,6 +469,15 @@ export default function CampaignList({ customerId }) {
                                         onClick={() => handleViewDetails(campaign)}
                                         className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1C398E]hover:cursor-pointer hover:underline cursor-pointer">
                                         {campaign.campaignName}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {campaign.parentCampaignId ? (
+                                            <span className="text-gray-800">
+                                                {parentCampaignMap[campaign.parentCampaignId] || "Unknown Parent"}
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-400">No parent</span>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {campaign.service === "Paid Social" ? (

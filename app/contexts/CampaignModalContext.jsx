@@ -8,19 +8,24 @@ export function ModalProvider({ children }) {
     const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
-    
-    const isAnyModalOpen = isCampaignModalOpen || isDetailsModalOpen || isCalendarModalOpen;
+    const [isParentCampaignModalOpen, setIsParentCampaignModalOpen] = useState(false);
+
+    const isAnyModalOpen = isCampaignModalOpen || isDetailsModalOpen || isCalendarModalOpen || isParentCampaignModalOpen;
 
     return (
-        <ModalContext.Provider value={{ 
-            isCampaignModalOpen, 
-            setIsCampaignModalOpen,
-            isDetailsModalOpen,
-            setIsDetailsModalOpen,
-            isCalendarModalOpen,
-            setIsCalendarModalOpen,
-            isAnyModalOpen
-        }}>
+        <ModalContext.Provider
+            value={{
+                isCampaignModalOpen,
+                setIsCampaignModalOpen,
+                isDetailsModalOpen,
+                setIsDetailsModalOpen,
+                isCalendarModalOpen,
+                setIsCalendarModalOpen,
+                isParentCampaignModalOpen,
+                setIsParentCampaignModalOpen,
+                isAnyModalOpen
+            }}
+        >
             {children}
         </ModalContext.Provider>
     );

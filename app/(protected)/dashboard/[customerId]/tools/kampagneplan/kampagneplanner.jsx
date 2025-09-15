@@ -6,6 +6,7 @@ import { useToast } from "@/app/contexts/ToastContext";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 
 import CampaignPlannerModal from "@/app/components/CampaignPlanner/CampaignPlannerModal";
+import ParentCampaignModal from "@/app/components/CampaignPlanner/ParentCampaignModal";
 import CampaignList from "@/app/components/CampaignPlanner/CampaignList";
 import CampaignCalendar from "@/app/components/CampaignPlanner/CampaignCalendar";
 import CampaignDetailsModal from "@/app/components/CampaignPlanner/CampaignDetailsModal";
@@ -23,6 +24,10 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [showCalendar, setShowCalendar] = useState(false);
 
+    const [isParentModalOpen, setIsParentModalOpen] = useState(false);
+    const [parentCampaigns, setParentCampaigns] = useState([]);
+    const [refreshParentList, setRefreshParentList] = useState(false);
+
     const [formData, setFormData] = useState({
         service: "",
         media: "",
@@ -36,7 +41,22 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
         budget: "",
         landingpage: "",
         materialFromCustomer: "",
+        parentCampaignId: "",
     });
+
+    const fetchParentCampaigns = async () => {
+        try {
+            const response = await fetch(`/api/parent-campaigns/${customerId}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch parent campaigns");
+            }
+            const data = await response.json();
+            setParentCampaigns(data);
+        } catch (error) {
+            console.error("Error fetching parent campaigns:", error);
+            showToast("Error fetching parent campaigns", "error");
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -63,6 +83,22 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
     useEffect(() => {
         fetchCampaigns();
     }, [customerId, refreshList]);
+
+    useEffect(() => {
+        fetchParentCampaigns();
+    }, [customerId, refreshParentList]);
+
+    const handleOpenParentModal = () => {
+        setIsParentModalOpen(true);
+    };
+
+    const handleCloseParentModal = () => {
+        setIsParentModalOpen(false);
+    };
+
+    const handleParentCampaignSuccess = () => {
+        setRefreshParentList(prev => !prev);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -163,6 +199,13 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                         <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Your Campaigns</h3>
                         <div className="flex gap-4">
                             <button
+                                onClick={handleOpenParentModal}
+                                className="text-center text-zinc-900 border border-zinc-700 py-2 px-4 rounded text-white hover:text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center"
+                            >
+                                <FaCirclePlus />
+                                Create New Parent Campaign
+                            </button>
+                            <button
                                 onClick={handleOpenModal}
                                 className="text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center"
                             >
@@ -201,6 +244,14 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                     onInputChange={handleInputChange}
                     onSubmit={handleSubmit}
                     customerId={customerId}
+                    parentCampaigns={parentCampaigns}
+                />
+
+                <ParentCampaignModal
+                    isOpen={isParentModalOpen}
+                    onClose={handleCloseParentModal}
+                    customerId={customerId}
+                    onSuccess={handleParentCampaignSuccess}
                 />
 
                 {showDetailsModal && selectedCampaign && (

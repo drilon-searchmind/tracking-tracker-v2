@@ -73,6 +73,11 @@ const CampaignSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    parentCampaignId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ParentCampaign",
+        default: null
+    },
 });
 
 module.exports = mongoose.models.Campaign || mongoose.model("Campaign", CampaignSchema);

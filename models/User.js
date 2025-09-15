@@ -25,6 +25,14 @@ const UserSchema = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false,
+    },
+    isArchived: {
+        type: Boolean,
+        default: false,
+    },
+    isExternal: {
+        type: Boolean,
+        default: false,
     }
 });
 

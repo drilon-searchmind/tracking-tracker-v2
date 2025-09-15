@@ -11,7 +11,7 @@ const AdminAccordionTab = () => {
 
     const tabs = [
         { id: "users", label: "Users" },
-        { id: "customers", label: "Customers (wip)" },
+        { id: "customers", label: "Customers" },
         { id: "settings", label: "Settings (wip)" },
         { id: "logs", label: "Activity Logs (wip)" }
     ];

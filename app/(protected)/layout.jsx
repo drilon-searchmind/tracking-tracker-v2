@@ -6,8 +6,11 @@ import { ModalProvider } from "../contexts/CampaignModalContext";
 export default async function ProtectedLayout({ children }) {
     const session = await getServerSession(authOptions)
 
+    console.log("Protected layout - session exists:", !!session);
+
     if (!session) {
-        redirect("/")
+        console.log("No session found, redirecting to login");
+        redirect("/login");
     }
 
     return (

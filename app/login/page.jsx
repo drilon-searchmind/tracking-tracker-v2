@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -10,6 +10,16 @@ export default function LoginPage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const { data: session, status } = useSession();
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get("callbackUrl") || "/home";
+
+    useEffect(() => {
+        if (status === "authenticated" && session) {
+            console.log("User already authenticated, redirecting to:", callbackUrl);
+            router.push(callbackUrl);
+        }
+    }, [status, session, router, callbackUrl]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,10 +33,10 @@ export default function LoginPage() {
                 password,
             });
 
-            if (result.error) {
+            if (result?.error) {
                 setError(result.error);
-            } else {
-                router.push("/home");
+            } else if (result?.url) {
+                router.push(callbackUrl);
             }
         } catch (error) {
             setError("An error occurred during login. Please try again.");
@@ -34,6 +44,10 @@ export default function LoginPage() {
             setLoading(false);
         }
     };
+
+    if (status === "authenticated") {
+        return <div className="text-center py-8">Redirecting...</div>;
+    }
 
     return (
         <div className="flex min-h-[80vh] flex-col items-center justify-center sm:px-6 lg:px-8 bg-gray-50">

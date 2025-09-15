@@ -10,7 +10,7 @@ export default async function SpendSharePage({ params }) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
         ? process.env.NEXT_PUBLIC_BASE_URL
         : process.env.NODE_ENV === "development"
-            ? "http://192.168.1.253:3000"
+            ? "http://localhost:3000"
             : "http://localhost:3000";
 
     try {
@@ -24,7 +24,7 @@ export default async function SpendSharePage({ params }) {
                     SUM(amount) AS revenue,
                     SUM(amount) - SUM(amount * 0.25) AS net_profit
                 FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
-                WHERE EXTRACT(YEAR FROM processed_at) = EXTRACT(YEAR FROM CURRENT_DATE())
+                WHERE EXTRACT(YEAR FROM processed_at) = EXTRACT(YEAR FROM CURRENT_DATE()) AND status = 'SUCCESS' AND kind = 'AUTHORIZATION'
                 GROUP BY month
             ),
             meta_data AS (

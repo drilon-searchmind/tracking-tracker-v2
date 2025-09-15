@@ -1,11 +1,12 @@
 import Image from "next/image";
 import { FaPlay } from "react-icons/fa";
+import HomePageFlowChart from "@/app/components/UI/HomePageFlowChart";
 
 export default function HomePage() {
     return (
         <section id="pageHomePage" className="py-20">
             <div className="grid grid-cols-12 gap-x-20 items-start relative">
-                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                <div className="absolute bottom-[125px] left-0 w-full h-full z-1 pointer-events-none">
                     <Image
                         width={1920}
                         height={1080}
@@ -31,6 +32,10 @@ export default function HomePage() {
                     <div className="">
                         <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore cupiditate perspiciatis.</p>
                     </div>
+                </span>
+
+                <span className="col-span-12 mt-20 hidden">
+                    <HomePageFlowChart />
                 </span>
             </div>
         </section>

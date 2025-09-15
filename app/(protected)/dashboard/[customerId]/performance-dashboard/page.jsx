@@ -21,6 +21,7 @@ export default async function DashboardPage({ params }) {
       CAST(SUM(amount) AS FLOAT64) as gross_profit,
       COUNT(id) as order_count
     FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
+    WHERE status = 'SUCCESS' AND kind = 'AUTHORIZATION'
     GROUP BY date
   ),
   ads_data AS (

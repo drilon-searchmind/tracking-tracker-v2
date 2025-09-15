@@ -10,7 +10,7 @@ export default async function KampagneplannerPage({ params }) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
         ? process.env.NEXT_PUBLIC_BASE_URL
         : process.env.NODE_ENV === "development"
-            ? "http://192.168.1.253:3000"
+            ? "http://localhost:3000"
             : "http://localhost:3000";
 
     try {

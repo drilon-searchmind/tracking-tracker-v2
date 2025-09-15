@@ -44,9 +44,9 @@ export default function Nav() {
                             <button onClick={() => setShowModal(true)} className="hover:text-black">
                                 Performance Dashboard
                             </button>
-                            <a href="#" className="hover:text-black">Admin</a>
+                            <a href="/admin" className="hover:text-black">Admin</a>
+                            <a href="/my-profile" className="hover:text-black">My Profile</a>
                             <a href="#" className="hover:text-black line-through hidden">Tracking Tracker</a>
-                            <a href="#" className="hover:text-black line-through">Clients</a>
                             <div className=""><FaMoon /></div>
                             <LogoutButton />
                         </>

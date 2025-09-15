@@ -21,6 +21,7 @@ export default async function OverviewPage({ params }) {
             COUNT(*) AS orders,
             SUM(amount) AS revenue
         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
+        WHERE status = 'SUCCESS' AND kind = 'AUTHORIZATION'
         GROUP BY DATE(processed_at)
     ),
     facebook_data AS (

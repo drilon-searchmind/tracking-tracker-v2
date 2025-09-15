@@ -19,6 +19,8 @@ export default function CampaignDetailsModal({
     const [editedCampaign, setEditedCampaign] = useState(null);
     const [displayedCampaign, setDisplayedCampaign] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [parentCampaigns, setParentCampaigns] = useState([]);
+    const [parentCampaignName, setParentCampaignName] = useState("");
 
     useEffect(() => {
         if (campaign) {
@@ -31,6 +33,31 @@ export default function CampaignDetailsModal({
             setDisplayedCampaign(campaign);
         }
     }, [campaign]);
+
+    useEffect(() => {
+        const fetchParentCampaigns = async () => {
+            if (isOpen && customerId) {
+                try {
+                    const response = await fetch(`/api/parent-campaigns/${customerId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setParentCampaigns(data);
+
+                        if (displayedCampaign?.parentCampaignId) {
+                            const parent = data.find(p => p._id === displayedCampaign.parentCampaignId);
+                            setParentCampaignName(parent?.parentCampaignName || "Unknown Parent");
+                        } else {
+                            setParentCampaignName("");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error fetching parent campaigns:", error);
+                }
+            }
+        };
+
+        fetchParentCampaigns();
+    }, [isOpen, customerId, displayedCampaign]);
 
     useEffect(() => {
         setIsDetailsModalOpen(isOpen);
@@ -146,6 +173,29 @@ export default function CampaignDetailsModal({
                                     />
                                 ) : (
                                     <p className="text-base text-gray-900">{displayedCampaign.campaignName}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="text-sm text-gray-600 block mb-1">Parent Campaign</label>
+                                {isEditing ? (
+                                    <select
+                                        name="parentCampaignId"
+                                        value={editedCampaign.parentCampaignId || ""}
+                                        onChange={handleInputChange}
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                    >
+                                        <option value="">No Parent Campaign</option>
+                                        {parentCampaigns.map(parent => (
+                                            <option key={parent._id} value={parent._id}>
+                                                {parent.parentCampaignName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p className="text-base text-gray-900">
+                                        {parentCampaignName || "No parent campaign"}
+                                    </p>
                                 )}
                             </div>
 

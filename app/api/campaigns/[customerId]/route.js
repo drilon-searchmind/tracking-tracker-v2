@@ -1,5 +1,6 @@
 import { dbConnect } from "@/lib/dbConnect";
 import Campaign from "@/models/Campaign";
+import ParentCampaign from "@/models/ParentCampaign";
 
 export async function GET(req, { params }) {
     const resolvedParams = await params;
@@ -56,9 +57,17 @@ export async function POST(req, { params }) {
             budget: parseFloat(body.budget),
             landingpage: body.landingpage || "",
             materialFromCustomer: body.materialFromCustomer || "",
+            parentCampaignId: body.parentCampaignId || null,
         });
 
         await campaign.save();
+
+        if (body.parentCampaignId) {
+            await ParentCampaign.findByIdAndUpdate(
+                body.parentCampaignId,
+                { $push: { childCampaigns: campaign._id } }
+            );
+        }
 
         return new Response(
             JSON.stringify({
@@ -89,6 +98,33 @@ export async function PUT(req, { params }) {
 
         const body = await req.json();
 
+        const existingCampaign = await Campaign.findById(campaignId);
+        if (!existingCampaign) {
+            return new Response(
+                JSON.stringify({ error: "Campaign not found" }),
+                { status: 404 }
+            );
+        }
+
+        const oldParentId = existingCampaign.parentCampaignId ? existingCampaign.parentCampaignId.toString() : null;
+        const newParentId = body.parentCampaignId || null;
+
+        if (oldParentId !== newParentId) {
+            if (oldParentId) {
+                await ParentCampaign.findByIdAndUpdate(
+                    oldParentId,
+                    { $pull: { childCampaigns: campaignId } }
+                );
+            }
+
+            if (newParentId) {
+                await ParentCampaign.findByIdAndUpdate(
+                    newParentId,
+                    { $push: { childCampaigns: campaignId } }
+                );
+            }
+        }
+
         const campaign = await Campaign.findOneAndUpdate(
             { _id: campaignId, customerId },
             {
@@ -100,13 +136,6 @@ export async function PUT(req, { params }) {
             },
             { new: true }
         );
-
-        if (!campaign) {
-            return new Response(
-                JSON.stringify({ error: "Campaign not found" }),
-                { status: 404 }
-            );
-        }
 
         return new Response(
             JSON.stringify({ message: "Campaign updated successfully", campaign }),
@@ -132,10 +161,7 @@ export async function DELETE(req, { params }) {
     try {
         await dbConnect();
 
-        const campaign = await Campaign.findOneAndDelete({
-            _id: campaignId,
-            customerId
-        });
+        const campaign = await Campaign.findById(campaignId);
 
         if (!campaign) {
             return new Response(
@@ -143,6 +169,15 @@ export async function DELETE(req, { params }) {
                 { status: 404 }
             );
         }
+
+        if (campaign.parentCampaignId) {
+            await ParentCampaign.findByIdAndUpdate(
+                campaign.parentCampaignId,
+                { $pull: { childCampaigns: campaignId } }
+            );
+        }
+
+        await Campaign.deleteOne({ _id: campaignId, customerId });
 
         return new Response(
             JSON.stringify({ message: "Campaign deleted successfully" }),

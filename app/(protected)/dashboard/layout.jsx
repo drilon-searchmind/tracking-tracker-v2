@@ -51,6 +51,7 @@ export default function DashboardLayout({ children }) {
     return (
         <section id="DashboardLayout" className="relative">
             <nav
+                // TODO: add animation when modal opens so it doesn't jump
                 className="flex justify-between items-center pt-6 pb-3 border-t border-gray-200 mb-5 bg-white sticky top-0"
                 style={{ zIndex: isAnyModalOpen ? 1 : 50 }}
             >

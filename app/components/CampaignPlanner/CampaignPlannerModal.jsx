@@ -11,7 +11,8 @@ export default function CampaignPlannerModal({
     formData,
     onInputChange,
     onSubmit,
-    customerId
+    customerId,
+    parentCampaigns,
 }) {
     const { showToast } = useToast();
     const { setIsCampaignModalOpen } = useModalContext();
@@ -42,6 +43,22 @@ export default function CampaignPlannerModal({
                 </span>
 
                 <form onSubmit={onSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Parent Campaign (Optional)</label>
+                        <select
+                            name="parentCampaignId"
+                            value={formData.parentCampaignId || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                        >
+                            <option value="">No Parent Campaign</option>
+                            {parentCampaigns.map(parent => (
+                                <option key={parent._id} value={parent._id}>
+                                    {parent.parentCampaignName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
                         <select

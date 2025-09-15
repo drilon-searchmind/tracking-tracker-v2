@@ -7,9 +7,9 @@ export default withAuth(
             const path = req.nextUrl.pathname;
             const token = req.nextauth?.token;
 
-            // More detailed logging
             console.log("Middleware executed for path:", path);
             console.log("Token exists:", !!token);
+            
             if (token) {
                 console.log("Token contains:", {
                     id: token.id,
@@ -17,9 +17,12 @@ export default withAuth(
                     name: token.name,
                     isAdmin: token.isAdmin
                 });
+                
+                // Remove the admin path redirect - let the layout handle showing the unauthorized component
+                // Admin routes will be handled by the layout component showing UnauthorizedAccess
             }
 
-            // Rest of your middleware
+            return NextResponse.next();
         } catch (error) {
             console.error("Middleware error:", error);
             return NextResponse.next();
@@ -27,10 +30,7 @@ export default withAuth(
     },
     {
         callbacks: {
-            authorized: ({ token }) => {
-                console.log("Auth callback token exists:", !!token);
-                return !!token;
-            },
+            authorized: ({ token }) => !!token,
         },
     }
 );

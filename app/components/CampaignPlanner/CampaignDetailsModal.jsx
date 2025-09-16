@@ -5,6 +5,8 @@ import { useModalContext } from "@/app/contexts/CampaignModalContext";
 import { useEffect, useState } from "react";
 import { IoMdClose } from "react-icons/io";
 import CommentSection from "./CommentSection";
+import Select from 'react-select';
+import countryCodes from '@/lib/static-data/countryCodes.json';
 
 export default function CampaignDetailsModal({
     isOpen,
@@ -21,6 +23,35 @@ export default function CampaignDetailsModal({
     const [isSaving, setIsSaving] = useState(false);
     const [parentCampaigns, setParentCampaigns] = useState([]);
     const [parentCampaignName, setParentCampaignName] = useState("");
+
+    const countryOptions = countryCodes.map(country => ({
+        value: country.code,
+        label: `${country.name} (${country.code})`,
+    }));
+
+    const frequentCountries = [
+        { value: "DK", label: "Denmark (DK)" },
+        { value: "DE", label: "Germany (DE)" },
+        { value: "NL", label: "Netherlands (NL)" },
+        { value: "NO", label: "Norway (NO)" },
+        { value: "FR", label: "France (FR)" },
+        { value: "", label: "───────────────" }, // Divider
+    ];
+
+    const allCountryOptions = [...frequentCountries, ...countryOptions];
+    const selectedCountryOption = allCountryOptions.find(option =>
+        option.value === editedCampaign?.countryCode
+    ) || null;
+
+    const handleCountryChange = (selectedOption) => {
+        const syntheticEvent = {
+            target: {
+                name: 'countryCode',
+                value: selectedOption ? selectedOption.value : ''
+            }
+        };
+        handleInputChange(syntheticEvent);
+    };
 
     useEffect(() => {
         if (campaign) {
@@ -282,20 +313,15 @@ export default function CampaignDetailsModal({
                             <div>
                                 <label className="text-sm text-gray-600 block mb-1">Country</label>
                                 {isEditing ? (
-                                    <select
+                                    <Select
                                         name="countryCode"
-                                        value={editedCampaign.countryCode}
-                                        onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
-                                        required
-                                    >
-                                        <option value="DK">DK</option>
-                                        <option value="DE">DE</option>
-                                        <option value="NL">NL</option>
-                                        <option value="NO">NO</option>
-                                        <option value="FR">FR</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                        value={selectedCountryOption}
+                                        onChange={handleCountryChange}
+                                        options={allCountryOptions}
+                                        className="w-full"
+                                        placeholder="Search for a country..."
+                                        isClearable
+                                    />
                                 ) : (
                                     <p className="text-base text-gray-900">{displayedCampaign.countryCode}</p>
                                 )}

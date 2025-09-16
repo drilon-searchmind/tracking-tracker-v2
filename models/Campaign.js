@@ -23,7 +23,6 @@ const CampaignSchema = new mongoose.Schema({
     },
     countryCode: {
         type: String,
-        enum: ["DK", "DE", "NL", "NO", "FR", "Other"],
         required: true,
     },
     startDate: {

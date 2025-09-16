@@ -4,6 +4,8 @@ import { useToast } from "@/app/contexts/ToastContext";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 import { useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
+import Select from 'react-select';
+import countryCodes from "@/lib/static-data/countryCodes.json";
 
 export default function CampaignPlannerModal({
     isOpen,
@@ -17,6 +19,22 @@ export default function CampaignPlannerModal({
     const { showToast } = useToast();
     const { setIsCampaignModalOpen } = useModalContext();
 
+    const countryOptions = countryCodes.map(country => ({
+        value: country.code,
+        label: `${country.name} (${country.code})`,
+    }));
+
+    const frequentCountries = [
+        { value: "DK", label: "Denmark (DK)" },
+        { value: "DE", label: "Germany (DE)" },
+        { value: "NL", label: "Netherlands (NL)" },
+        { value: "NO", label: "Norway (NO)" },
+        { value: "FR", label: "France (FR)" },
+        { value: "", label: "───────────────" }, // Divider
+    ];
+
+    const allCountryOptions = [...frequentCountries, ...countryOptions];
+
     useEffect(() => {
         setIsCampaignModalOpen(isOpen);
 
@@ -25,12 +43,26 @@ export default function CampaignPlannerModal({
         };
     }, [isOpen, setIsCampaignModalOpen]);
 
-    if (!isOpen) return null;
-
     const handleClose = () => {
         setIsCampaignModalOpen(false);
         onClose();
     };
+
+    const handleCountryChange = (selectedOption) => {
+        const syntheticEvent = {
+            target: {
+                name: 'countryCode',
+                value: selectedOption ? selectedOption.value : ''
+            }
+        };
+        onInputChange(syntheticEvent);
+    };
+
+    const selectedCountryOption = allCountryOptions.find(option =>
+        option.value === formData.countryCode
+    ) || null;
+
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-[99999999]">
@@ -117,23 +149,19 @@ export default function CampaignPlannerModal({
                             <option value="Collection">Collection</option>
                         </select>
                     </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Country Code</label>
-                        <select
+                        <Select
                             name="countryCode"
-                            value={formData.countryCode}
-                            onChange={onInputChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            value={selectedCountryOption}
+                            onChange={handleCountryChange}
+                            options={allCountryOptions}
+                            className="w-full"
+                            placeholder="Search for a country..."
+                            isClearable
                             required
-                        >
-                            <option value="">Select Country</option>
-                            <option value="DK">DK</option>
-                            <option value="DE">DE</option>
-                            <option value="NL">NL</option>
-                            <option value="NO">NO</option>
-                            <option value="FR">FR</option>
-                            <option value="Other">Other</option>
-                        </select>
+                        />
                     </div>
 
                     <div>

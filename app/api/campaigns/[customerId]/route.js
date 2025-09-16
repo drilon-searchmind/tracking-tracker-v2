@@ -29,10 +29,14 @@ export async function POST(req, { params }) {
 
         const body = await req.json();
 
-        const requiredFields = [
+        let requiredFields = [
             'service', 'media', 'campaignFormat', 'countryCode',
-            'startDate', 'endDate', 'campaignName', 'b2bOrB2c', 'budget'
+            'campaignName', 'b2bOrB2c', 'budget'
         ];
+
+        if (body.campaignType !== "Always On") {
+            requiredFields = [...requiredFields, 'startDate', 'endDate'];
+        }
 
         for (const field of requiredFields) {
             if (!body[field]) {
@@ -49,8 +53,8 @@ export async function POST(req, { params }) {
             media: body.media,
             campaignFormat: body.campaignFormat,
             countryCode: body.countryCode,
-            startDate: new Date(body.startDate),
-            endDate: new Date(body.endDate),
+            startDate: body.campaignType === "Always On" ? null : new Date(body.startDate),
+            endDate: body.campaignType === "Always On" ? null : new Date(body.endDate),
             campaignName: body.campaignName,
             messageBrief: body.messageBrief || "",
             b2bOrB2c: body.b2bOrB2c,
@@ -58,6 +62,11 @@ export async function POST(req, { params }) {
             landingpage: body.landingpage || "",
             materialFromCustomer: body.materialFromCustomer || "",
             parentCampaignId: body.parentCampaignId || null,
+            campaignType: body.campaignType || null,
+            campaignDimensions: body.campaignDimensions || "",
+            campaignVariation: body.campaignVariation || "",
+            campaignTextToCreative: body.campaignTextToCreative || "",
+            campaignTextToCreativeTranslation: body.campaignTextToCreativeTranslation || ""
         });
 
         await campaign.save();

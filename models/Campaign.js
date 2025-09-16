@@ -18,21 +18,20 @@ const CampaignSchema = new mongoose.Schema({
     },
     campaignFormat: {
         type: String,
-        enum: ["Video", "Picture", "Carousel", "Display Ad", "Search Ad", "Newsletter", "Email Flow", "Landingpage"],
+        enum: ["Video", "Picture", "Carousel", "Display Ad", "Search Ad", "Newsletter", "Email Flow", "Landingpage", "Collection"],
         required: true,
     },
     countryCode: {
         type: String,
-        enum: ["DK", "DE", "NL", "NO", "FR", "Other"],
         required: true,
     },
     startDate: {
         type: Date,
-        required: true,
+        required: false,
     },
     endDate: {
         type: Date,
-        required: true,
+        required: false,
     },
     campaignName: {
         type: String,
@@ -63,8 +62,8 @@ const CampaignSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Pending Approval", "Approved", "Live"],
-        default: "Pending Approval",
+        enum: ["Pending","Pending Customer Approval", "Approved", "Live", "Ended"],
+        default: "Pending",
     },
     commentToCustomer: {
         type: String,
@@ -78,6 +77,23 @@ const CampaignSchema = new mongoose.Schema({
         ref: "ParentCampaign",
         default: null
     },
+    campaignType: {
+        type: String,
+        enum: ["Always On", "Conversion"],
+        default: null,
+    },
+    campaignDimensions: {
+        type: String,
+    },
+    campaignVariation: {
+        type: String,
+    },
+    campaignTextToCreative: {
+        type: String,
+    },
+    campaignTextToCreativeTranslation: {
+        type: String,
+    }
 });
 
 module.exports = mongoose.models.Campaign || mongoose.model("Campaign", CampaignSchema);

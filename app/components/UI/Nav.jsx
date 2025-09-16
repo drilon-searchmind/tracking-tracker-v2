@@ -4,7 +4,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import CustomerModal from "@/app/components/Dashboard/CustomerModal.jsx";
-import { FaMoon } from "react-icons/fa";
+import { FaMoon, FaHome, FaChartLine, FaUserCog, FaUserCircle } from "react-icons/fa";
 import LogoutButton from "../Auth/LogoutButton";
 import LoginButton from "../Auth/LoginButton";
 
@@ -40,12 +40,18 @@ export default function Nav() {
                 <div className="flex items-center gap-8">
                     {session ? (
                         <>
-                            <a href="/home" className="hover:text-black">Home</a>
-                            <button onClick={() => setShowModal(true)} className="hover:text-black">
-                                Performance Dashboard
+                            <a href="/home" className="hover:text-black flex items-center gap-2 m-0 p-0 text-zinc-700">
+                                <FaHome /> Home
+                            </a>
+                            <button onClick={() => setShowModal(true)} className="text-zinc-700 cursor-pointer hover:text-black flex items-center gap-2 m-0 p-0">
+                                <FaChartLine /> Performance Dashboard
                             </button>
-                            <a href="/admin" className="hover:text-black">Admin</a>
-                            <a href="/my-profile" className="hover:text-black">My Profile</a>
+                            <a href="/admin" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
+                                <FaUserCog /> Admin
+                            </a>
+                            <a href="/my-profile" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
+                                <FaUserCircle /> My Profile
+                            </a>
                             <a href="#" className="hover:text-black line-through hidden">Tracking Tracker</a>
                             <div className=""><FaMoon /></div>
                             <LogoutButton />

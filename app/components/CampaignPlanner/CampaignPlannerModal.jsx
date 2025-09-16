@@ -2,8 +2,10 @@
 
 import { useToast } from "@/app/contexts/ToastContext";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react"; // Make sure to import useState
 import { IoMdClose } from "react-icons/io";
+import Select from 'react-select';
+import countryCodes from "@/lib/static-data/countryCodes.json";
 
 export default function CampaignPlannerModal({
     isOpen,
@@ -16,6 +18,23 @@ export default function CampaignPlannerModal({
 }) {
     const { showToast } = useToast();
     const { setIsCampaignModalOpen } = useModalContext();
+    const [users, setUsers] = useState([]);
+
+    const countryOptions = countryCodes.map(country => ({
+        value: country.code,
+        label: `${country.name} (${country.code})`,
+    }));
+
+    const frequentCountries = [
+        { value: "DK", label: "Denmark (DK)" },
+        { value: "DE", label: "Germany (DE)" },
+        { value: "NL", label: "Netherlands (NL)" },
+        { value: "NO", label: "Norway (NO)" },
+        { value: "FR", label: "France (FR)" },
+        { value: "", label: "───────────────" }, // Divider
+    ];
+
+    const allCountryOptions = [...frequentCountries, ...countryOptions];
 
     useEffect(() => {
         setIsCampaignModalOpen(isOpen);
@@ -25,12 +44,73 @@ export default function CampaignPlannerModal({
         };
     }, [isOpen, setIsCampaignModalOpen]);
 
-    if (!isOpen) return null;
-
     const handleClose = () => {
         setIsCampaignModalOpen(false);
         onClose();
     };
+
+    const handleCountryChange = (selectedOption) => {
+        const syntheticEvent = {
+            target: {
+                name: 'countryCode',
+                value: selectedOption ? selectedOption.value : ''
+            }
+        };
+        onInputChange(syntheticEvent);
+    };
+
+    const selectedCountryOption = allCountryOptions.find(option =>
+        option.value === formData.countryCode
+    ) || null;
+
+    // Get selected user options for the Select component
+    const selectedUserOptions = formData.assignedUsers && formData.assignedUsers.length > 0
+        ? users.filter(user => {
+            return formData.assignedUsers.some(id =>
+                id.toString() === user.value.toString()
+            );
+        })
+        : [];
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            if (isOpen) {
+                try {
+                    const response = await fetch('/api/campaign-assignable-users');
+
+                    if (response.ok) {
+                        const userData = await response.json();
+                        console.log("Fetched users:", userData); // Debug log
+                        setUsers(userData.map(user => ({
+                            value: user._id || user.id, // Handle both _id and id
+                            label: user.name || user.email
+                        })));
+                    }
+                } catch (error) {
+                    console.error("Error fetching users:", error);
+                    showToast("Failed to load users", "error");
+                }
+            }
+        };
+
+        fetchUsers();
+    }, [isOpen, showToast]);
+
+    const handleUserChange = (selectedOptions) => {
+        console.log("Selected options:", selectedOptions); // Debug log
+        
+        const syntheticEvent = {
+            target: {
+                name: 'assignedUsers',
+                value: selectedOptions ? selectedOptions.map(option => option.value) : []
+            }
+        };
+        
+        console.log("New assigned users:", syntheticEvent.target.value); // Debug log
+        onInputChange(syntheticEvent);
+    };
+
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-[99999999]">
@@ -59,6 +139,22 @@ export default function CampaignPlannerModal({
                             ))}
                         </select>
                     </div>
+
+                    {/* Add Assigned Users Field */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Assign Users (Optional)</label>
+                        <Select
+                            name="assignedUsers"
+                            value={selectedUserOptions}
+                            onChange={handleUserChange}
+                            options={users}
+                            className="w-full"
+                            placeholder="Select users to assign..."
+                            isMulti
+                            isClearable
+                        />
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
                         <select
@@ -114,50 +210,65 @@ export default function CampaignPlannerModal({
                             <option value="Newsletter">Newsletter</option>
                             <option value="Email Flow">Email Flow</option>
                             <option value="Landingpage">Landingpage</option>
+                            <option value="Collection">Collection</option>
                         </select>
                     </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Country Code</label>
-                        <select
+                        <Select
                             name="countryCode"
-                            value={formData.countryCode}
+                            value={selectedCountryOption}
+                            onChange={handleCountryChange}
+                            options={allCountryOptions}
+                            className="w-full"
+                            placeholder="Search for a country..."
+                            isClearable
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Type</label>
+                        <select
+                            name="campaignType"
+                            value={formData.campaignType || ""}
                             onChange={onInputChange}
                             className="w-full px-4 py-2 border border-gray-300 rounded"
-                            required
                         >
-                            <option value="">Select Country</option>
-                            <option value="DK">DK</option>
-                            <option value="DE">DE</option>
-                            <option value="NL">NL</option>
-                            <option value="NO">NO</option>
-                            <option value="FR">FR</option>
-                            <option value="Other">Other</option>
+                            <option value="">Select Campaign Type</option>
+                            <option value="Always On">Always On</option>
+                            <option value="Conversion">Conversion</option>
                         </select>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                            <input
-                                type="date"
-                                name="startDate"
-                                value={formData.startDate}
-                                onChange={onInputChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded"
-                                required
-                            />
+
+                    {formData.campaignType !== "Always On" && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                <input
+                                    type="date"
+                                    name="startDate"
+                                    value={formData.startDate}
+                                    onChange={onInputChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded"
+                                    required={formData.campaignType !== "Always On"}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                <input
+                                    type="date"
+                                    name="endDate"
+                                    value={formData.endDate}
+                                    onChange={onInputChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded"
+                                    required={formData.campaignType !== "Always On"}
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                            <input
-                                type="date"
-                                name="endDate"
-                                value={formData.endDate}
-                                onChange={onInputChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded"
-                                required
-                            />
-                        </div>
-                    </div>
+                    )}
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Name</label>
                         <input
@@ -228,6 +339,51 @@ export default function CampaignPlannerModal({
                             rows="3"
                         />
                     </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Dimensions</label>
+                        <input
+                            type="text"
+                            name="campaignDimensions"
+                            value={formData.campaignDimensions || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Variation</label>
+                        <input
+                            type="text"
+                            name="campaignVariation"
+                            value={formData.campaignVariation || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Text to Creative</label>
+                        <textarea
+                            name="campaignTextToCreative"
+                            value={formData.campaignTextToCreative || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            rows="3"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Text to Creative Translation</label>
+                        <textarea
+                            name="campaignTextToCreativeTranslation"
+                            value={formData.campaignTextToCreativeTranslation || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            rows="3"
+                        />
+                    </div>
+
                     <div className="mt-6 space-y-2">
                         <button
                             type="submit"

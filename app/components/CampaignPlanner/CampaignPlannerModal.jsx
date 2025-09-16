@@ -135,30 +135,48 @@ export default function CampaignPlannerModal({
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                            <input
-                                type="date"
-                                name="startDate"
-                                value={formData.startDate}
-                                onChange={onInputChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                            <input
-                                type="date"
-                                name="endDate"
-                                value={formData.endDate}
-                                onChange={onInputChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded"
-                                required
-                            />
-                        </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Type</label>
+                        <select
+                            name="campaignType"
+                            value={formData.campaignType || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                        >
+                            <option value="">Select Campaign Type</option>
+                            <option value="Always On">Always On</option>
+                            <option value="Conversion">Conversion</option>
+                        </select>
                     </div>
+
+                    {formData.campaignType !== "Always On" && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                <input
+                                    type="date"
+                                    name="startDate"
+                                    value={formData.startDate}
+                                    onChange={onInputChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded"
+                                    required={formData.campaignType !== "Always On"}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                <input
+                                    type="date"
+                                    name="endDate"
+                                    value={formData.endDate}
+                                    onChange={onInputChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded"
+                                    required={formData.campaignType !== "Always On"}
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Name</label>
                         <input
@@ -228,20 +246,6 @@ export default function CampaignPlannerModal({
                             className="w-full px-4 py-2 border border-gray-300 rounded"
                             rows="3"
                         />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Type</label>
-                        <select
-                            name="campaignType"
-                            value={formData.campaignType || ""}
-                            onChange={onInputChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded"
-                        >
-                            <option value="">Select Campaign Type</option>
-                            <option value="Always On">Always On</option>
-                            <option value="Conversion">Conversion</option>
-                        </select>
                     </div>
 
                     <div>

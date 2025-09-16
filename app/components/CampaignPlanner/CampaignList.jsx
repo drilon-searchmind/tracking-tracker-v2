@@ -56,17 +56,30 @@ export default function CampaignList({ customerId }) {
         const uniqueMonthsSet = new Set();
 
         campaigns.forEach(campaign => {
+            // Skip "Always On" campaigns when generating month options
+            if (campaign.campaignType === "Always On" || !campaign.startDate || !campaign.endDate) {
+                return;
+            }
+
             const startDate = new Date(campaign.startDate);
             const endDate = new Date(campaign.endDate);
 
             let currentDate = new Date(startDate);
-            while (currentDate <= endDate) {
+
+            // Create a safe end date to prevent infinite loops
+            const safeEndDate = new Date(endDate);
+            safeEndDate.setFullYear(safeEndDate.getFullYear() + 1); // Add a year as safety
+
+            while (currentDate <= endDate && currentDate <= safeEndDate) {
                 const monthKey = format(currentDate, 'yyyy-MM');
                 const monthLabel = format(currentDate, 'MMMM yyyy');
 
                 if (!uniqueMonthsSet.has(monthKey)) {
                     uniqueMonthsSet.add(monthKey);
-                    months.push({ value: monthKey, label: monthLabel });
+                    months.push({
+                        value: monthKey,
+                        label: monthLabel
+                    });
                 }
 
                 currentDate.setMonth(currentDate.getMonth() + 1);
@@ -185,18 +198,26 @@ export default function CampaignList({ customerId }) {
         // Month filter logic
         let passesMonthFilter = true;
         if (selectedMonth !== "All") {
-            const [year, month] = selectedMonth.split('-').map(num => parseInt(num, 10));
-            const filterStartDate = startOfMonth(new Date(year, month - 1));
-            const filterEndDate = endOfMonth(filterStartDate);
+            if (campaign.campaignType === "Always On") {
+                passesMonthFilter = true; // Always include "Always On" campaigns
+            } else {
+                const [year, month] = selectedMonth.split('-').map(num => parseInt(num, 10));
+                const filterStartDate = startOfMonth(new Date(year, month - 1));
+                const filterEndDate = endOfMonth(filterStartDate);
 
-            const campaignStartDate = new Date(campaign.startDate);
-            const campaignEndDate = new Date(campaign.endDate);
+                if (campaign.startDate && campaign.endDate) {
+                    const campaignStartDate = new Date(campaign.startDate);
+                    const campaignEndDate = new Date(campaign.endDate);
 
-            passesMonthFilter = (
-                (campaignStartDate >= filterStartDate && campaignStartDate <= filterEndDate) ||
-                (campaignEndDate >= filterStartDate && campaignEndDate <= filterEndDate) ||
-                (campaignStartDate <= filterStartDate && campaignEndDate >= filterEndDate)
-            );
+                    passesMonthFilter = (
+                        (campaignStartDate >= filterStartDate && campaignStartDate <= filterEndDate) ||
+                        (campaignEndDate >= filterStartDate && campaignEndDate <= filterEndDate) ||
+                        (campaignStartDate <= filterStartDate && campaignEndDate >= filterEndDate)
+                    );
+                } else {
+                    passesMonthFilter = false; // If no dates, don't show in month filter
+                }
+            }
         }
 
         // Search query filter logic
@@ -511,7 +532,17 @@ export default function CampaignList({ customerId }) {
                                         {campaign.campaignFormat}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {new Date(campaign.startDate).toLocaleDateString()} - {new Date(campaign.endDate).toLocaleDateString()}
+                                        {campaign.campaignType === "Always On" ? (
+                                            <span className="text-gray-800 font-medium">Always On</span>
+                                        ) : (
+                                            <>
+                                                {campaign.startDate && campaign.endDate ? (
+                                                    `${new Date(campaign.startDate).toLocaleDateString()} - ${new Date(campaign.endDate).toLocaleDateString()}`
+                                                ) : (
+                                                    <span className="text-gray-400">No dates specified</span>
+                                                )}
+                                            </>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {campaign.budget.toLocaleString()} DKK

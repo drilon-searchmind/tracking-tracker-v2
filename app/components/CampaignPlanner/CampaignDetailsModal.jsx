@@ -74,10 +74,20 @@ export default function CampaignDetailsModal({
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setEditedCampaign(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+
+        if (name === "campaignType" && value === "Always On") {
+            setEditedCampaign(prev => ({
+                ...prev,
+                [name]: value,
+                startDate: '', // Clear start date
+                endDate: ''    // Clear end date
+            }));
+        } else {
+            setEditedCampaign(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
     };
 
     const handleSave = async () => {
@@ -333,36 +343,68 @@ export default function CampaignDetailsModal({
                         <h4 className="font-medium text-lg mb-4 text-gray-700">Additional Information</h4>
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Start Date</label>
+                                <label className="text-sm text-gray-600 block mb-1">Campaign Type</label>
                                 {isEditing ? (
-                                    <input
-                                        type="date"
-                                        name="startDate"
-                                        value={editedCampaign.startDate}
+                                    <select
+                                        name="campaignType"
+                                        value={editedCampaign.campaignType || ""}
                                         onChange={handleInputChange}
                                         className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
-                                        required
-                                    />
+                                    >
+                                        <option value="">None</option>
+                                        <option value="Always On">Always On</option>
+                                        <option value="Conversion">Conversion</option>
+                                    </select>
                                 ) : (
-                                    <p className="text-base text-gray-900">{formatDate(displayedCampaign.startDate)}</p>
+                                    <p className="text-base text-gray-900">
+                                        {displayedCampaign.campaignType || "Not specified"}
+                                    </p>
                                 )}
                             </div>
+                            
+                            {!(isEditing && editedCampaign.campaignType === "Always On") && (
+                                <>
+                                    <div>
+                                        <label className="text-sm text-gray-600 block mb-1">Start Date</label>
+                                        {isEditing ? (
+                                            <input
+                                                type="date"
+                                                name="startDate"
+                                                value={editedCampaign.startDate}
+                                                onChange={handleInputChange}
+                                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                                required={editedCampaign.campaignType !== "Always On"}
+                                            />
+                                        ) : (
+                                            <p className="text-base text-gray-900">
+                                                {displayedCampaign.campaignType === "Always On"
+                                                    ? "Always On"
+                                                    : formatDate(displayedCampaign.startDate)}
+                                            </p>
+                                        )}
+                                    </div>
 
-                            <div>
-                                <label className="text-sm text-gray-600 block mb-1">End Date</label>
-                                {isEditing ? (
-                                    <input
-                                        type="date"
-                                        name="endDate"
-                                        value={editedCampaign.endDate}
-                                        onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
-                                        required
-                                    />
-                                ) : (
-                                    <p className="text-base text-gray-900">{formatDate(displayedCampaign.endDate)}</p>
-                                )}
-                            </div>
+                                    <div>
+                                        <label className="text-sm text-gray-600 block mb-1">End Date</label>
+                                        {isEditing ? (
+                                            <input
+                                                type="date"
+                                                name="endDate"
+                                                value={editedCampaign.endDate}
+                                                onChange={handleInputChange}
+                                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                                required={editedCampaign.campaignType !== "Always On"}
+                                            />
+                                        ) : (
+                                            <p className="text-base text-gray-900">
+                                                {displayedCampaign.campaignType === "Always On"
+                                                    ? "Always On"
+                                                    : formatDate(displayedCampaign.endDate)}
+                                            </p>
+                                        )}
+                                    </div>
+                                </>
+                            )}
 
                             <div>
                                 <label className="text-sm text-gray-600 block mb-1">Status</label>
@@ -412,26 +454,6 @@ export default function CampaignDetailsModal({
                                 ) : (
                                     <p className="text-base text-gray-900">
                                         {displayedCampaign.landingpage || "Not specified"}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="text-sm text-gray-600 block mb-1">Campaign Type</label>
-                                {isEditing ? (
-                                    <select
-                                        name="campaignType"
-                                        value={editedCampaign.campaignType || ""}
-                                        onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
-                                    >
-                                        <option value="">None</option>
-                                        <option value="Always On">Always On</option>
-                                        <option value="Conversion">Conversion</option>
-                                    </select>
-                                ) : (
-                                    <p className="text-base text-gray-900">
-                                        {displayedCampaign.campaignType || "Not specified"}
                                     </p>
                                 )}
                             </div>

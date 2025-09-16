@@ -65,11 +65,21 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    }
+        
+        if (name === "campaignType" && value === "Always On") {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value,
+                startDate: "", // Clear start date
+                endDate: "",   // Clear end date
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
+    };
 
     const fetchCampaigns = async () => {
         try {

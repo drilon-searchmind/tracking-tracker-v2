@@ -1,7 +1,12 @@
+"use client"
+
 import Image from "next/image";
 import ProfileAccordionTab from "./my-profile-components/ProfileAccordionTab";
+import { useSession } from "next-auth/react";
 
 export default function MyProfile() {
+    const { data: session } = useSession();
+    
     return (
         <section id="pageMyProfile" className="">
             <div className="py-20 px-0 relative overflow">
@@ -21,7 +26,9 @@ export default function MyProfile() {
                         <h2 className="text-blue-900 font-semibold text-sm uppercase">Searchmind Hub - My Profile</h2>
                         <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Profile Overview</h1>
                         <p className="text-gray-600 max-w-2xl">
-                            Welcome to your profile page! Manage your profile settings here.
+                            {session?.user?.name
+                                ? `Welcome, ${session.user.name}! Manage your profile settings here.`
+                                : 'Welcome to your profile page! Manage your profile settings here.'}
                         </p>
                     </div>
 

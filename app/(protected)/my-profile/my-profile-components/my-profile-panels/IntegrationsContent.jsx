@@ -45,11 +45,11 @@ export default function IntegrationsContent() {
 
     return (
         <div>
-            <h2 className="text-2xl font-semibold mb-6">Integration Settings</h2>
+            <h2 className="text-2xl font-semibold mb-6">Integration Settings (WIP)</h2>
 
             <div className="space-y-8">
                 {/* Slack Integration */}
-                <div className="border border-gray-200 rounded-lg p-6">
+                <div className="border border-gray-200 rounded-lg p-6 opacity-50 cursor-not-allowed poiner-events-none">
                     <div className="flex items-center gap-3 mb-4">
                         <FaSlack className="text-2xl text-[#4A154B]" />
                         <h3 className="text-lg font-medium">Slack Integration</h3>
@@ -92,7 +92,7 @@ export default function IntegrationsContent() {
                 </div>
 
                 {/* ClickUp Integration */}
-                <div className="border border-gray-200 rounded-lg p-6">
+                <div className="border border-gray-200 rounded-lg p-6 opacity-50 cursor-not-allowed poiner-events-none">
                     <div className="flex items-center gap-3 mb-4">
                         <SiClickup className="text-2xl text-[#7B68EE]" />
                         <h3 className="text-lg font-medium">ClickUp Integration</h3>

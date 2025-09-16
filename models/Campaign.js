@@ -63,8 +63,8 @@ const CampaignSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Pending Approval", "Approved", "Live"],
-        default: "Pending Approval",
+        enum: ["Pending","Pending Customer Approval", "Approved", "Live", "Ended"],
+        default: "Pending",
     },
     commentToCustomer: {
         type: String,

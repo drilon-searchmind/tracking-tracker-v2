@@ -30,8 +30,8 @@ export default function CampaignList({ customerId }) {
     const [modalUpdateTriggered, setModalUpdateTriggered] = useState(false);
 
     const pendingApprovalCount = campaigns.filter(
-        campaign => campaign.status === "Pending Approval"
-    ).length
+        campaign => campaign.status === "Pending Customer Approval"
+    ).length;
 
     const fetchCommentCounts = async (campaignIds) => {
         try {
@@ -193,7 +193,7 @@ export default function CampaignList({ customerId }) {
         else if (activeFilter === "Email") passesServiceFilter = campaign.service === "Email Marketing";
         else if (activeFilter === "Paid Search") passesServiceFilter = campaign.service === "Paid Search";
         else if (activeFilter === "SEO") passesServiceFilter = campaign.service === "SEO";
-        else if (activeFilter === "Pending Approval") passesServiceFilter = campaign.status === "Pending Approval";
+        else if (activeFilter === "Pending Customer Approval") passesServiceFilter = campaign.status === "Pending Customer Approval";
 
         // Month filter logic
         let passesMonthFilter = true;
@@ -386,15 +386,15 @@ export default function CampaignList({ customerId }) {
                     <FaMagnifyingGlassChart className="text-lg" /> SEO
                 </button>
                 <button
-                    key="Pending Approval"
-                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "Pending Approval"
+                    key="Pending Customer Approval"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "Pending Customer Approval"
                         ? "border-b-2 border-[#1C398E] text-[#1C398E]"
                         : "text-gray-500 hover:text-gray-700"
                         }`}
-                    onClick={() => setActiveFilter("Pending Approval")}
+                    onClick={() => setActiveFilter("Pending Customer Approval")}
                 >
                     <MdOutlinePending className="text-lg" />
-                    Pending Approval
+                    Pending Customer Approval
                     {pendingApprovalCount > 0 && (
                         <span className="ml-0 px-2 py-0.5 text-[0.65rem] bg-red-100 text-red-800 rounded-full">
                             {pendingApprovalCount}
@@ -447,6 +447,9 @@ export default function CampaignList({ customerId }) {
                 <table className="min-w-full divide-y divide-gray-200" id="campaignListTable">
                     <thead className="bg-gray-50">
                         <tr>
+                            <th scope="col" className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '40px' }}>
+
+                            </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Campaign Name
                             </th>
@@ -463,16 +466,13 @@ export default function CampaignList({ customerId }) {
                                 Format
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Period
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Budget
-                            </th>
-                            <th scope="col" className="hidden px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Ready for Approval
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
@@ -486,6 +486,18 @@ export default function CampaignList({ customerId }) {
                         {filteredCampaigns.length > 0 ? (
                             filteredCampaigns.map((campaign) => (
                                 <tr key={campaign._id} className="hover:bg-gray-50">
+                                    <td className="px-3 py-4 whitespace-nowrap text-center">
+                                        <div className="flex justify-center">
+                                            <div
+                                                className={`w-3 h-3 rounded-full ${campaign.status === "Live" ? "bg-green-500" :
+                                                    campaign.status === "Pending" || campaign.status === "Pending Customer Approval" ? "bg-amber-500" :
+                                                        campaign.status === "Ended" ? "bg-red-500" :
+                                                            campaign.status === "Approved" ? "bg-blue-500" : "bg-gray-300"
+                                                    }`}
+                                                title={campaign.status}
+                                            ></div>
+                                        </div>
+                                    </td>
                                     <td
                                         onClick={() => handleViewDetails(campaign)}
                                         className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1C398E]hover:cursor-pointer hover:underline cursor-pointer">
@@ -532,6 +544,19 @@ export default function CampaignList({ customerId }) {
                                         {campaign.campaignFormat}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <select
+                                            value={campaign.status || "Pending"}
+                                            onChange={(e) => handleStatusChange(campaign._id, e.target.value)}
+                                            className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
+                                        >
+                                            <option value="Pending">Pending</option>
+                                            <option value="Pending Customer Approval">Pending Customer Approval</option>
+                                            <option value="Approved">Approved</option>
+                                            <option value="Live">Live</option>
+                                            <option value="Ended">Ended</option>
+                                        </select>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {campaign.campaignType === "Always On" ? (
                                             <span className="text-gray-800 font-medium">Always On</span>
                                         ) : (
@@ -546,25 +571,6 @@ export default function CampaignList({ customerId }) {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {campaign.budget.toLocaleString()} DKK
-                                    </td>
-                                    <td className="hidden px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <input
-                                            type="checkbox"
-                                            checked={campaign.readyForApproval || false}
-                                            onChange={(e) => handleReadyForApprovalChange(campaign._id, e.target.checked)}
-                                            className="h-4 w-4 text-[#1C398E] border-gray-300 rounded focus:ring-[#1C398E]"
-                                        />
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <select
-                                            value={campaign.status || "Draft"}
-                                            onChange={(e) => handleStatusChange(campaign._id, e.target.value)}
-                                            className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
-                                        >
-                                            <option value="Pending Approval">Pending Approval</option>
-                                            <option value="Approved">Approved</option>
-                                            <option value="Active">Live</option>
-                                        </select>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <div className="flex space-x-2">
@@ -602,6 +608,25 @@ export default function CampaignList({ customerId }) {
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            <div className="flex items-center gap-6 text-xs text-gray-600 py-2 px-6">
+                <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span>Live</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <span>Pending</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span>Ended</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span>Approved</span>
+                </div>
             </div>
 
             {showDetailsModal && (

@@ -361,7 +361,7 @@ export default function CampaignDetailsModal({
                                     </p>
                                 )}
                             </div>
-                            
+
                             {!(isEditing && editedCampaign.campaignType === "Always On") && (
                                 <>
                                     <div>
@@ -411,13 +411,15 @@ export default function CampaignDetailsModal({
                                 {isEditing ? (
                                     <select
                                         name="status"
-                                        value={editedCampaign.status || "Draft"}
+                                        value={editedCampaign.status || "Pending"}
                                         onChange={handleInputChange}
                                         className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
                                     >
-                                        <option value="Pending Approval">Pending Approval</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Pending Customer Approval">Pending Customer Approval</option>
                                         <option value="Approved">Approved</option>
                                         <option value="Live">Live</option>
+                                        <option value="Ended">Ended</option>
                                     </select>
                                 ) : (
                                     <p className="text-base text-gray-900">{displayedCampaign.status || "Draft"}</p>

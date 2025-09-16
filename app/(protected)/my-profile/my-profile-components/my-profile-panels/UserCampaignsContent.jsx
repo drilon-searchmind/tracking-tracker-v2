@@ -17,64 +17,31 @@ export default function UserCampaignsContent() {
 
     useEffect(() => {
         fetchUserCampaigns();
-        fetchCustomers();
     }, []);
 
     const fetchUserCampaigns = async () => {
         try {
             setLoading(true);
-            // In a real implementation, this would fetch campaigns assigned to the current user
-            // For now, we'll just simulate some data
-            setTimeout(() => {
-                const mockCampaigns = [
-                    {
-                        _id: '1',
-                        campaignName: 'Summer Sale 2025',
-                        customerId: '101',
-                        startDate: '2025-06-01',
-                        endDate: '2025-08-31',
-                        status: 'Live'
-                    },
-                    {
-                        _id: '2',
-                        campaignName: 'Winter Collection Launch',
-                        customerId: '102',
-                        startDate: '2025-10-15',
-                        endDate: '2025-12-15',
-                        status: 'Pending Customer Approval'
-                    },
-                    {
-                        _id: '3',
-                        campaignName: 'Black Friday Special',
-                        customerId: '101',
-                        startDate: '2025-11-20',
-                        endDate: '2025-11-30',
-                        status: 'Approved'
-                    },
-                    {
-                        _id: '4',
-                        campaignName: 'Spring Email Newsletter',
-                        customerId: '103',
-                        startDate: '2025-03-01',
-                        endDate: '2025-03-15',
-                        status: 'Ended'
-                    },
-                    {
-                        _id: '5',
-                        campaignName: 'Product Launch - LinkedIn',
-                        customerId: '102',
-                        startDate: '2025-09-01',
-                        endDate: null,
-                        status: 'Live'
-                    }
-                ];
+            const response = await fetch('/api/users/assigned-campaigns');
 
-                setCampaigns(mockCampaigns);
-                setLoading(false);
-            }, 800);
+            if (!response.ok) {
+                throw new Error('Failed to fetch campaigns');
+            }
+
+            const campaignData = await response.json();
+            setCampaigns(campaignData);
+
+            const customerMapData = {};
+            campaignData.forEach(campaign => {
+                if (campaign.customerId && campaign.customerName) {
+                    customerMapData[campaign.customerId] = campaign.customerName;
+                }
+            });
+            setCustomerMap(customerMapData);
         } catch (error) {
             console.error("Failed to fetch campaigns:", error);
             showToast("Failed to load campaigns", "error");
+        } finally {
             setLoading(false);
         }
     };
@@ -258,7 +225,7 @@ export default function UserCampaignsContent() {
                                         </td>
                                         <td className="px-4 py-3">
                                             <a
-                                                href={`/dashboard/${campaign.customerId}/tools/kampagneplan`}
+                                                href={`/dashboard/${campaign.customerId}/tools/kampagneplan?campaignId=${campaign._id}`}
                                                 className="bg-zinc-700 text-white py-1 px-3 rounded text-sm hover:bg-zinc-800 inline-flex items-center gap-2"
                                             >
                                                 View <FaExternalLinkAlt size={12} />

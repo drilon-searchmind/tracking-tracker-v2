@@ -23,6 +23,9 @@ export default function CampaignDetailsModal({
     const [isSaving, setIsSaving] = useState(false);
     const [parentCampaigns, setParentCampaigns] = useState([]);
     const [parentCampaignName, setParentCampaignName] = useState("");
+    const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+    const [users, setUsers] = useState([]);
+    const [assignedUsers, setAssignedUsers] = useState([]);
 
     const countryOptions = countryCodes.map(country => ({
         value: country.code,
@@ -43,6 +46,15 @@ export default function CampaignDetailsModal({
         option.value === editedCampaign?.countryCode
     ) || null;
 
+    // Add the selector for user options
+    const selectedUserOptions = assignedUsers.length > 0
+        ? users.filter(user => {
+            return assignedUsers.some(id =>
+                id.toString() === user.value.toString()
+            );
+        })
+        : [];
+
     const handleCountryChange = (selectedOption) => {
         const syntheticEvent = {
             target: {
@@ -51,6 +63,18 @@ export default function CampaignDetailsModal({
             }
         };
         handleInputChange(syntheticEvent);
+    };
+
+    // Add handler for user selection changes
+    const handleUserChange = (selectedOptions) => {
+        const newAssignedUsers = selectedOptions ? selectedOptions.map(option => option.value) : [];
+        setAssignedUsers(newAssignedUsers);
+
+        // Also update the edited campaign object to include this data when saved
+        setEditedCampaign(prev => ({
+            ...prev,
+            assignedUsers: newAssignedUsers
+        }));
     };
 
     useEffect(() => {
@@ -62,8 +86,59 @@ export default function CampaignDetailsModal({
             };
             setEditedCampaign(formattedCampaign);
             setDisplayedCampaign(campaign);
+
+            // Fetch assigned users when campaign loads
+            fetchAssignedUsers(campaign._id);
         }
     }, [campaign]);
+
+    // Add function to fetch assigned users
+    const fetchAssignedUsers = async (campaignId) => {
+        try {
+            const response = await fetch(`/api/assigned-campaign-users?campaignId=${campaignId}`);
+            if (response.ok) {
+                const data = await response.json();
+                // Extract just the user IDs
+                const userIds = data.map(assignment => assignment.assignedUserId);
+                setAssignedUsers(userIds);
+
+                // Update editedCampaign with assigned users
+                setEditedCampaign(prev => ({
+                    ...prev,
+                    assignedUsers: userIds
+                }));
+            }
+        } catch (error) {
+            console.error("Error fetching assigned users:", error);
+        }
+    };
+
+    // Add effect to fetch available users
+    useEffect(() => {
+        const fetchUsers = async () => {
+            if (isOpen) {
+                setIsLoadingUsers(true);
+                try {
+                    const response = await fetch('/api/campaign-assignable-users');
+
+                    if (response.ok) {
+                        const userData = await response.json();
+                        setUsers(userData.map(user => ({
+                            value: user._id || user.id,
+                            label: user.name || user.email
+                        })));
+                    }
+                } catch (error) {
+                    console.error("Error fetching users:", error);
+                    showToast("Failed to load users", "error");
+                } finally {
+                    setIsLoadingUsers(false);
+                }
+            }
+        };
+
+        fetchUsers();
+    }, [isOpen, showToast]);
 
     useEffect(() => {
         const fetchParentCampaigns = async () => {
@@ -121,10 +196,12 @@ export default function CampaignDetailsModal({
         }
     };
 
+    // Update handleSave to also update assigned users
     const handleSave = async () => {
         try {
             setIsSaving(true);
 
+            // Update the campaign details
             const response = await fetch(`/api/campaigns/${customerId}?id=${campaign._id}`, {
                 method: "PUT",
                 headers: {
@@ -134,6 +211,9 @@ export default function CampaignDetailsModal({
             });
 
             if (response.ok) {
+                // Now update the assigned users
+                await updateAssignedUsers(campaign._id, assignedUsers);
+
                 showToast("Campaign updated successfully!", "success");
 
                 if (onUpdate) onUpdate();
@@ -150,6 +230,70 @@ export default function CampaignDetailsModal({
             setIsSaving(false);
         }
     };
+
+    // Add function to update assigned users
+    const updateAssignedUsers = async (campaignId, newUserIds) => {
+        try {
+            // First get current assignments to determine what needs to change
+            const response = await fetch(`/api/assigned-campaign-users?campaignId=${campaignId}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch current user assignments");
+            }
+
+            const currentAssignments = await response.json();
+            const currentUserIds = currentAssignments.map(a => a.assignedUserId);
+
+            // Users to add (in new list but not in current list)
+            const usersToAdd = newUserIds.filter(id => !currentUserIds.includes(id));
+
+            // Users to remove (in current list but not in new list)
+            const usersToRemove = currentUserIds.filter(id => !newUserIds.includes(id));
+
+            // Add new assignments
+            const addPromises = usersToAdd.map(userId =>
+                fetch('/api/assigned-campaign-users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        campaignId,
+                        assignedUserId: userId
+                    })
+                })
+            );
+
+            // Remove old assignments
+            const removePromises = usersToRemove.map(userId =>
+                fetch(`/api/assigned-campaign-users?campaignId=${campaignId}&userId=${userId}`, {
+                    method: 'DELETE'
+                })
+            );
+
+            await Promise.all([...addPromises, ...removePromises]);
+
+        } catch (error) {
+            console.error("Error updating user assignments:", error);
+            throw error;
+        }
+    };
+
+    useEffect(() => {
+        if (campaign && campaign._id && users.length > 0) {
+            const loadAssignedUsers = async () => {
+                try {
+                    const response = await fetch(`/api/assigned-campaign-users?campaignId=${campaign._id}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const userIds = data.map(assignment => assignment.assignedUserId);
+                        setAssignedUsers(userIds);
+                    }
+                } catch (error) {
+                    console.error("Error loading assigned users:", error);
+                }
+            };
+
+            loadAssignedUsers();
+        }
+    }, [campaign, users]);
 
     if (!isOpen || !editedCampaign || !displayedCampaign) return null;
 
@@ -237,6 +381,40 @@ export default function CampaignDetailsModal({
                                     <p className="text-base text-gray-900">
                                         {parentCampaignName || "No parent campaign"}
                                     </p>
+                                )}
+                            </div>
+
+                            {/* Add Assigned Users Field */}
+                            <div>
+                                <label className="text-sm text-gray-600 block mb-1">Assigned Users</label>
+                                {isLoadingUsers ? (
+                                    <p className="text-base text-gray-500">Loading users...</p>
+                                ) : isEditing ? (
+                                    <Select
+                                        name="assignedUsers"
+                                        value={selectedUserOptions}
+                                        onChange={handleUserChange}
+                                        options={users}
+                                        className="w-full"
+                                        placeholder="Select users to assign..."
+                                        isMulti
+                                        isClearable
+                                    />
+                                ) : (
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedUserOptions.length > 0 ? (
+                                            selectedUserOptions.map(user => (
+                                                <span
+                                                    key={user.value}
+                                                    className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm"
+                                                >
+                                                    {user.label}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <p className="text-base text-gray-900">No users assigned</p>
+                                        )}
+                                    </div>
                                 )}
                             </div>
 

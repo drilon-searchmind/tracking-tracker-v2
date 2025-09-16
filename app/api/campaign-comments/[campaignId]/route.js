@@ -4,7 +4,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
 export async function GET(req, { params }) {
-    const { campaignId } = params;
+    const resolvedParams = await params;
+    const campaignId = resolvedParams.resolvedParams
 
     try {
         await dbConnect();
@@ -22,7 +23,8 @@ export async function GET(req, { params }) {
 }
 
 export async function POST(req, { params }) {
-    const { campaignId } = params;
+    const resolvedParams = await params;
+    const campaignId = resolvedParams.resolvedParams
     
     try {
         await dbConnect();
@@ -71,7 +73,9 @@ export async function POST(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-    const { campaignId } = params;
+    const resolvedParams = await params;
+    const campaignId = resolvedParams.resolvedParams
+
     const url = new URL(req.url);
     const commentId = url.searchParams.get('id');
     
@@ -134,7 +138,9 @@ export async function PUT(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
-    const { campaignId } = params;
+    const resolvedParams = await params;
+    const campaignId = resolvedParams.resolvedParams
+    
     const url = new URL(req.url);
     const commentId = url.searchParams.get('id');
     

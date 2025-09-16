@@ -47,6 +47,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
         campaignVariation: "",
         campaignTextToCreative: "",
         campaignTextToCreativeTranslation: "",
+        assignedUsers: [],
     });
 
     const fetchParentCampaigns = async () => {
@@ -65,7 +66,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        
+
         if (name === "campaignType" && value === "Always On") {
             setFormData((prev) => ({
                 ...prev,
@@ -123,10 +124,37 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...formData, customerId }),
-            })
+            });
 
             if (response.ok) {
+                const campaignData = await response.json();
+                const campaignId = campaignData.campaign._id;
+            
                 showToast("Campaign created successfully!", "success");
+
+                if (formData.assignedUsers && formData.assignedUsers.length > 0) {
+                    await Promise.all(formData.assignedUsers.map(async (userId) => {
+                        console.log(`Assigning user ${userId} to campaign ${campaignId}`);
+                        try {
+                            const assignResponse = await fetch('/api/assigned-campaign-users', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    campaignId: campaignId,
+                                    assignedUserId: userId
+                                })
+                            });
+                            
+                            if (!assignResponse.ok) {
+                                const errorData = await assignResponse.json();
+                                console.error("Error assigning user:", errorData);
+                            }
+                        } catch (err) {
+                            console.error(`Error assigning user ${userId}:`, err);
+                        }
+                    }));
+                }
+
                 setIsModalOpen(false);
                 setFormData({
                     service: "",
@@ -141,6 +169,13 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                     budget: "",
                     landingpage: "",
                     materialFromCustomer: "",
+                    parentCampaignId: "",
+                    campaignType: "",
+                    campaignDimensions: "",
+                    campaignVariation: "",
+                    campaignTextToCreative: "",
+                    campaignTextToCreativeTranslation: "",
+                    assignedUsers: [],
                 });
                 // Trigger a refresh of the campaign list
                 setRefreshList(prev => !prev);
@@ -181,6 +216,18 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
     const handleCampaignUpdated = () => {
         fetchCampaigns();
     };
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const campaignId = params.get('campaignId');
+        
+        if (campaignId && campaigns.length > 0) {
+            const targetCampaign = campaigns.find(campaign => campaign._id === campaignId);
+            if (targetCampaign) {
+                handleViewCampaignDetails(targetCampaign);
+            }
+        }
+    }, [campaigns]);
 
     return (
         <div className="py-20 px-0 relative overflow">

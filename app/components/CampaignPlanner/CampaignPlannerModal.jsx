@@ -2,7 +2,7 @@
 
 import { useToast } from "@/app/contexts/ToastContext";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react"; // Make sure to import useState
 import { IoMdClose } from "react-icons/io";
 import Select from 'react-select';
 import countryCodes from "@/lib/static-data/countryCodes.json";
@@ -18,6 +18,7 @@ export default function CampaignPlannerModal({
 }) {
     const { showToast } = useToast();
     const { setIsCampaignModalOpen } = useModalContext();
+    const [users, setUsers] = useState([]);
 
     const countryOptions = countryCodes.map(country => ({
         value: country.code,
@@ -62,6 +63,53 @@ export default function CampaignPlannerModal({
         option.value === formData.countryCode
     ) || null;
 
+    // Get selected user options for the Select component
+    const selectedUserOptions = formData.assignedUsers && formData.assignedUsers.length > 0
+        ? users.filter(user => {
+            return formData.assignedUsers.some(id =>
+                id.toString() === user.value.toString()
+            );
+        })
+        : [];
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            if (isOpen) {
+                try {
+                    const response = await fetch('/api/campaign-assignable-users');
+
+                    if (response.ok) {
+                        const userData = await response.json();
+                        console.log("Fetched users:", userData); // Debug log
+                        setUsers(userData.map(user => ({
+                            value: user._id || user.id, // Handle both _id and id
+                            label: user.name || user.email
+                        })));
+                    }
+                } catch (error) {
+                    console.error("Error fetching users:", error);
+                    showToast("Failed to load users", "error");
+                }
+            }
+        };
+
+        fetchUsers();
+    }, [isOpen, showToast]);
+
+    const handleUserChange = (selectedOptions) => {
+        console.log("Selected options:", selectedOptions); // Debug log
+        
+        const syntheticEvent = {
+            target: {
+                name: 'assignedUsers',
+                value: selectedOptions ? selectedOptions.map(option => option.value) : []
+            }
+        };
+        
+        console.log("New assigned users:", syntheticEvent.target.value); // Debug log
+        onInputChange(syntheticEvent);
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -91,6 +139,22 @@ export default function CampaignPlannerModal({
                             ))}
                         </select>
                     </div>
+
+                    {/* Add Assigned Users Field */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Assign Users (Optional)</label>
+                        <Select
+                            name="assignedUsers"
+                            value={selectedUserOptions}
+                            onChange={handleUserChange}
+                            options={users}
+                            className="w-full"
+                            placeholder="Select users to assign..."
+                            isMulti
+                            isClearable
+                        />
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
                         <select

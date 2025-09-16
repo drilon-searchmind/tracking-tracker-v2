@@ -58,6 +58,11 @@ export async function POST(req, { params }) {
             landingpage: body.landingpage || "",
             materialFromCustomer: body.materialFromCustomer || "",
             parentCampaignId: body.parentCampaignId || null,
+            campaignType: body.campaignType || null,
+            campaignDimensions: body.campaignDimensions || "",
+            campaignVariation: body.campaignVariation || "",
+            campaignTextToCreative: body.campaignTextToCreative || "",
+            campaignTextToCreativeTranslation: body.campaignTextToCreativeTranslation || ""
         });
 
         await campaign.save();

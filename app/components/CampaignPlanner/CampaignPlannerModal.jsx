@@ -114,6 +114,7 @@ export default function CampaignPlannerModal({
                             <option value="Newsletter">Newsletter</option>
                             <option value="Email Flow">Email Flow</option>
                             <option value="Landingpage">Landingpage</option>
+                            <option value="Collection">Collection</option>
                         </select>
                     </div>
                     <div>
@@ -228,6 +229,65 @@ export default function CampaignPlannerModal({
                             rows="3"
                         />
                     </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Type</label>
+                        <select
+                            name="campaignType"
+                            value={formData.campaignType || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                        >
+                            <option value="">Select Campaign Type</option>
+                            <option value="Always On">Always On</option>
+                            <option value="Conversion">Conversion</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Dimensions</label>
+                        <input
+                            type="text"
+                            name="campaignDimensions"
+                            value={formData.campaignDimensions || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Variation</label>
+                        <input
+                            type="text"
+                            name="campaignVariation"
+                            value={formData.campaignVariation || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Text to Creative</label>
+                        <textarea
+                            name="campaignTextToCreative"
+                            value={formData.campaignTextToCreative || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            rows="3"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Text to Creative Translation</label>
+                        <textarea
+                            name="campaignTextToCreativeTranslation"
+                            value={formData.campaignTextToCreativeTranslation || ""}
+                            onChange={onInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            rows="3"
+                        />
+                    </div>
+
                     <div className="mt-6 space-y-2">
                         <button
                             type="submit"

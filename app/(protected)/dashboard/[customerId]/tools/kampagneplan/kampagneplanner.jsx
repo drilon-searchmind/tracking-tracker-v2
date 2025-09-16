@@ -42,6 +42,11 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
         landingpage: "",
         materialFromCustomer: "",
         parentCampaignId: "",
+        campaignType: "",
+        campaignDimensions: "",
+        campaignVariation: "",
+        campaignTextToCreative: "",
+        campaignTextToCreativeTranslation: "",
     });
 
     const fetchParentCampaigns = async () => {

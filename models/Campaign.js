@@ -18,7 +18,7 @@ const CampaignSchema = new mongoose.Schema({
     },
     campaignFormat: {
         type: String,
-        enum: ["Video", "Picture", "Carousel", "Display Ad", "Search Ad", "Newsletter", "Email Flow", "Landingpage"],
+        enum: ["Video", "Picture", "Carousel", "Display Ad", "Search Ad", "Newsletter", "Email Flow", "Landingpage", "Collection"],
         required: true,
     },
     countryCode: {
@@ -78,6 +78,23 @@ const CampaignSchema = new mongoose.Schema({
         ref: "ParentCampaign",
         default: null
     },
+    campaignType: {
+        type: String,
+        enum: ["Always On", "Conversion"],
+        default: null,
+    },
+    campaignDimensions: {
+        type: String,
+    },
+    campaignVariation: {
+        type: String,
+    },
+    campaignTextToCreative: {
+        type: String,
+    },
+    campaignTextToCreativeTranslation: {
+        type: String,
+    }
 });
 
 module.exports = mongoose.models.Campaign || mongoose.model("Campaign", CampaignSchema);

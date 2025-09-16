@@ -262,6 +262,7 @@ export default function CampaignDetailsModal({
                                         <option value="Newsletter">Newsletter</option>
                                         <option value="Email Flow">Email Flow</option>
                                         <option value="Landingpage">Landingpage</option>
+                                        <option value="Collection">Collection</option>
                                     </select>
                                 ) : (
                                     <p className="text-base text-gray-900">{displayedCampaign.campaignFormat}</p>
@@ -416,6 +417,60 @@ export default function CampaignDetailsModal({
                             </div>
 
                             <div>
+                                <label className="text-sm text-gray-600 block mb-1">Campaign Type</label>
+                                {isEditing ? (
+                                    <select
+                                        name="campaignType"
+                                        value={editedCampaign.campaignType || ""}
+                                        onChange={handleInputChange}
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                    >
+                                        <option value="">None</option>
+                                        <option value="Always On">Always On</option>
+                                        <option value="Conversion">Conversion</option>
+                                    </select>
+                                ) : (
+                                    <p className="text-base text-gray-900">
+                                        {displayedCampaign.campaignType || "Not specified"}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="text-sm text-gray-600 block mb-1">Campaign Dimensions</label>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        name="campaignDimensions"
+                                        value={editedCampaign.campaignDimensions || ""}
+                                        onChange={handleInputChange}
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                    />
+                                ) : (
+                                    <p className="text-base text-gray-900">
+                                        {displayedCampaign.campaignDimensions || "Not specified"}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="text-sm text-gray-600 block mb-1">Campaign Variation</label>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        name="campaignVariation"
+                                        value={editedCampaign.campaignVariation || ""}
+                                        onChange={handleInputChange}
+                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                    />
+                                ) : (
+                                    <p className="text-base text-gray-900">
+                                        {displayedCampaign.campaignVariation || "Not specified"}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
                                 <label className="text-sm text-gray-600 block mb-1">Created At</label>
                                 <p className="text-base text-gray-900">{formatDate(displayedCampaign.createdAt)}</p>
                             </div>
@@ -452,6 +507,40 @@ export default function CampaignDetailsModal({
                         ) : (
                             <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
                                 {displayedCampaign.materialFromCustomer || "No materials provided."}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="col-span-2">
+                        <label className="text-sm text-gray-600 block mb-1">Text to Creative</label>
+                        {isEditing ? (
+                            <textarea
+                                name="campaignTextToCreative"
+                                value={editedCampaign.campaignTextToCreative || ""}
+                                onChange={handleInputChange}
+                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                rows="4"
+                            />
+                        ) : (
+                            <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
+                                {displayedCampaign.campaignTextToCreative || "No text to creative provided."}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="col-span-2">
+                        <label className="text-sm text-gray-600 block mb-1">Text to Creative Translation</label>
+                        {isEditing ? (
+                            <textarea
+                                name="campaignTextToCreativeTranslation"
+                                value={editedCampaign.campaignTextToCreativeTranslation || ""}
+                                onChange={handleInputChange}
+                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                rows="4"
+                            />
+                        ) : (
+                            <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
+                                {displayedCampaign.campaignTextToCreativeTranslation || "No translation provided."}
                             </div>
                         )}
                     </div>

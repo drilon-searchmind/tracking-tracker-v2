@@ -301,6 +301,45 @@ export default function CampaignList({ customerId }) {
         }
     };
 
+    const [copyingCampaignId, setCopyingCampaignId] = useState(null);
+
+    const handleCopyCampaign = async (id) => {
+        try {
+            setCopyingCampaignId(id);
+
+            const campaignToCopy = campaigns.find(campaign => campaign._id === id);
+            if (!campaignToCopy) {
+                throw new Error("Campaign not found");
+            }
+
+            const newCampaign = { ...campaignToCopy };
+            delete newCampaign._id;
+
+            delete newCampaign.createdAt;
+
+            newCampaign.campaignName = `${newCampaign.campaignName} (Copy)`;
+
+            const response = await fetch(`/api/campaigns/${customerId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newCampaign),
+            });
+
+            if (response.ok) {
+                showToast("Campaign copied successfully", "success");
+                refreshCampaigns();
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to copy campaign");
+            }
+        } catch (error) {
+            console.error("Error copying campaign:", error);
+            showToast(`Error copying campaign: ${error.message}`, "error");
+        } finally {
+            setCopyingCampaignId(null);
+        }
+    };
+
     const handleDeleteCampaign = async (id) => {
         if (!confirm("Are you sure you want to delete this campaign?")) {
             return;
@@ -579,6 +618,15 @@ export default function CampaignList({ customerId }) {
                                                 className="border py-1 text-xs text-center px-2 text-[var(--color-primary-searchmind)] hover:text-[#2E4CA8] font-medium flex items-center rounded-md"
                                             >
                                                 <span className="">View</span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleCopyCampaign(campaign._id)}
+                                                disabled={copyingCampaignId === campaign._id}
+                                                className="border py-1 text-xs text-center px-2 text-blue-600 hover:text-blue-800 font-medium flex items-center rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <span className="">
+                                                    {copyingCampaignId === campaign._id ? "Copying..." : "Copy"}
+                                                </span>
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteCampaign(campaign._id)}

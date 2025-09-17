@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Tooltip } from "react-tooltip"; // Make sure this package is installed
 
 export default function PnLDashboard({ customerId, customerName, initialData }) {
+    const [isClient, setIsClient] = useState(false);
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
     // Initialize date picker to first day of current month to yesterday
     const today = new Date();
     const yesterday = new Date(today);
@@ -368,9 +373,11 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                         {/* Section: Nettoomsætning */}
                         <div className="border border-zinc-200 rounded bg-white">
                             <div className="bg-gray-100 px-4 py-2 font-medium" data-tooltip-id="net-sales-tooltip">Net turnover (turnover - discount & return)</div>
-                            <Tooltip id="net-sales-tooltip" place="top">
-                                Net sales represents total revenue minus discounts and returns
-                            </Tooltip>
+                            {isClient && (
+                                <Tooltip id="net-sales-tooltip" place="top">
+                                    Net sales represents total revenue minus discounts and returns
+                                </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t">
                                 <span>Netsales</span>
                                 <span>kr. {Math.round(metrics.net_sales).toLocaleString('en-US')}</span>
@@ -380,121 +387,151 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                         {/* Section: DB1 */}
                         <div className="border border-zinc-200 rounded bg-white">
                             <div className="bg-gray-100 px-4 py-2 font-medium" data-tooltip-id="db1-tooltip">DB1 (turnover - cost of goods sold)</div>
+                            {isClient && (
                             <Tooltip id="db1-tooltip" place="top">
                                 DB1 = Net Sales - COGS (Cost of Goods Sold)<br />
                                 COGS is calculated as {(staticExpenses.cogs_percentage * 100).toFixed(1)}% of Net Sales
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="cogs-calc-tooltip">
                                 <span>COGS</span>
                                 <span>kr. {Math.round(metrics.cogs).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="cogs-calc-tooltip" place="top">
                                 COGS = Net Sales × {(staticExpenses.cogs_percentage * 100).toFixed(1)}%<br />
                                 = kr. {Math.round(metrics.net_sales).toLocaleString('en-US')} × {(staticExpenses.cogs_percentage * 100).toFixed(1)}%
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="db1-total-tooltip">
                                 <span>Total, DB1</span>
                                 <span>kr. {Math.round(metrics.db1).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="db1-total-tooltip" place="top">
                                 DB1 = Net Sales - COGS<br />
                                 = kr. {Math.round(metrics.net_sales).toLocaleString('en-US')} - kr. {Math.round(metrics.cogs).toLocaleString('en-US')}
                             </Tooltip>
+                            )}
                         </div>
 
                         {/* Section: DB2 */}
                         <div className="border border-zinc-200 rounded bg-white">
                             <div className="bg-gray-100 px-4 py-2 font-medium" data-tooltip-id="db2-tooltip">DB2 (DB1 - direct selling costs)</div>
+                            {isClient && (
                             <Tooltip id="db2-tooltip" place="top">
                                 DB2 = DB1 - Shipping Costs - Transaction Costs<br />
                                 Direct selling costs are the expenses directly related to selling each product
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="shipping-tooltip">
                                 <span>Shipping</span>
                                 <span>kr. {Math.round(metrics.shipping_cost).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="shipping-tooltip" place="top">
                                 Shipping = Orders × Shipping Cost Per Order<br />
                                 = {metrics.orders.toLocaleString('en-US')} × kr. {staticExpenses.shipping_cost_per_order.toLocaleString('en-US')}
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="transaction-tooltip">
                                 <span>Transaction Costs</span>
                                 <span>kr. {Math.round(metrics.transaction_cost).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="transaction-tooltip" place="top">
                                 Transaction Costs = Net Sales × Transaction Cost Percentage<br />
                                 = kr. {Math.round(metrics.net_sales).toLocaleString('en-US')} × {(staticExpenses.transaction_cost_percentage * 100).toFixed(1)}%
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="db2-total-tooltip">
                                 <span>Total, DB2</span>
                                 <span>kr. {Math.round(metrics.db2).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="db2-total-tooltip" place="top">
                                 DB2 = DB1 - Shipping - Transaction Costs<br />
                                 = kr. {Math.round(metrics.db1).toLocaleString('en-US')} - kr. {Math.round(metrics.shipping_cost).toLocaleString('en-US')} - kr. {Math.round(metrics.transaction_cost).toLocaleString('en-US')}
                             </Tooltip>
+                            )}
                         </div>
 
                         {/* Section: DB3 */}
                         <div className="border border-zinc-200 rounded bg-white">
                             <div className="bg-gray-100 px-4 py-2 font-medium" data-tooltip-id="db3-tooltip">DB3 (DB2 - marketing costs)</div>
+                            {isClient && (
                             <Tooltip id="db3-tooltip" place="top">
                                 DB3 = DB2 - Marketing Spend - Marketing Bureau - Marketing Tooling<br />
                                 This represents margin after marketing expenses
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="marketing-spend-tooltip">
                                 <span>Marketing Spend</span>
                                 <span>kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="marketing-spend-tooltip" place="top">
                                 Marketing Spend = Total ad spend from Facebook and Google campaigns
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="bureau-tooltip">
                                 <span>Marketing Bureau</span>
                                 <span>kr. {Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="bureau-tooltip" place="top">
                                 Marketing Bureau = Fixed cost for marketing agency services
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="tooling-tooltip">
                                 <span>Marketing Tooling</span>
                                 <span>kr. {Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="tooling-tooltip" place="top">
                                 Marketing Tooling = Cost for marketing tools and software
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="db3-total-tooltip">
                                 <span>Total, DB3</span>
                                 <span>kr. {Math.round(metrics.db3).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="db3-total-tooltip" place="top">
                                 DB3 = DB2 - Marketing Spend - Marketing Bureau - Marketing Tooling<br />
                                 = kr. {Math.round(metrics.db2).toLocaleString('en-US')} - kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')} - kr. {Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US')} - kr. {Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US')}
                             </Tooltip>
+                            )}
                         </div>
 
                         {/* Section: Resultat */}
                         <div className="border border-zinc-200 rounded bg-white">
                             <div className="bg-gray-100 px-4 py-2 font-medium" data-tooltip-id="result-tooltip">Result</div>
+                            {isClient && (
                             <Tooltip id="result-tooltip" place="top">
                                 Final result = DB3 - Fixed Expenses<br />
                                 This represents the profit after all expenses
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="fixed-expenses-tooltip">
                                 <span>Fixed Expenses</span>
                                 <span>kr. {Math.round(metrics.fixed_expenses).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="fixed-expenses-tooltip" place="top">
                                 Fixed Expenses = Costs that remain constant regardless of sales volume
                             </Tooltip>
+                            )}
                             <div className="flex justify-between px-4 py-2 border-t" data-tooltip-id="final-result-tooltip">
                                 <span>Result</span>
                                 <span>kr. {Math.round(metrics.result).toLocaleString('en-US')}</span>
                             </div>
+                            {isClient && (
                             <Tooltip id="final-result-tooltip" place="top">
                                 Final Result = DB3 - Fixed Expenses<br />
                                 = kr. {Math.round(metrics.db3).toLocaleString('en-US')} - kr. {Math.round(metrics.fixed_expenses).toLocaleString('en-US')}
                             </Tooltip>
+                            )}
                         </div>
 
                         {/* Section: ROAS */}
@@ -503,19 +540,23 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                 <p className="font-medium text-zinc-500 mb-2">Realized ROAS</p>
                                 <p className="text-zinc-800 text-4xl font-bold">{metrics.realized_roas.toFixed(2)}</p>
                             </div>
+                            {isClient && (
                             <Tooltip id="realized-roas-tooltip" place="top">
                                 Realized ROAS = Net Sales ÷ Marketing Spend<br />
                                 = kr. {Math.round(metrics.net_sales).toLocaleString('en-US')} ÷ kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')}<br />
                             </Tooltip>
+                            )}
                             <div className="px-4 py-5" data-tooltip-id="breakeven-roas-tooltip">
                                 <p className="font-medium text-zinc-400 mb-2">Break-even ROAS</p>
                                 <p className="text-zinc-800 text-4xl font-bold">{metrics.break_even_roas.toFixed(2)}</p>
                             </div>
+                            {isClient && (
                             <Tooltip id="breakeven-roas-tooltip" place="top">
                                 Break-even ROAS = Total Costs ÷ Marketing Spend<br />
                                 = kr. {Math.round(metrics.total_costs).toLocaleString('en-US')} ÷ kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')}<br />
 
                             </Tooltip>
+                            )}
                         </div>
                     </div>
 
@@ -524,10 +565,12 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                         <div className="border border-zinc-200 rounded text-center py-2 bg-gray-100 font-medium" data-tooltip-id="db-share-tooltip">
                             DB share of total expenses
                         </div>
+                        {isClient && (
                         <Tooltip id="db-share-tooltip" place="top">
                             These percentages show how much of your total expenses remain<br />
                             at each stage of the profit calculation (higher is better)
                         </Tooltip>
+                        )}
 
                         {[
                             { label: "DB1", percentage: metrics.db_percentages.db1, description: "Nettoomsætning - COGS" },
@@ -562,11 +605,13 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                     </svg>
                                     <div className="absolute text-xl font-semibold text-gray-800">{Math.round(item.percentage)}%</div>
                                 </div>
+                                {isClient && (
                                 <Tooltip id={`db-circle-${i}-tooltip`} place="top">
                                     {i === 0 && `DB1: After deducting COGS, ${Math.round(item.percentage)}% of total costs remain`}
                                     {i === 1 && `DB2: After deducting COGS, shipping and transaction costs, ${Math.round(item.percentage)}% of total costs remain`}
                                     {i === 2 && `DB3: After deducting all costs except fixed expenses, ${Math.round(item.percentage)}% of total costs remain`}
                                 </Tooltip>
+                                )}
                             </div>
                         ))}
                     </div>

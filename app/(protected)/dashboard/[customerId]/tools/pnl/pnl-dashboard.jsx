@@ -27,7 +27,6 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
     // Filter data based on date range
     const filteredMetricsByDate = useMemo(() => {
         const filtered = metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
-        console.log("Filtered Metrics By Date:", filtered);
         return filtered;
     }, [metrics_by_date, startDate, endDate]);
 
@@ -105,7 +104,6 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
             },
             total_costs,
         };
-        console.log("Calculated Metrics:", resultMetrics);
         return resultMetrics;
     }, [filteredMetricsByDate, staticExpenses]);
 

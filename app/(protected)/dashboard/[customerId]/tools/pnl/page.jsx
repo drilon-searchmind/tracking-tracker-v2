@@ -1,17 +1,14 @@
 import PnLDashboard from "./pnl-dashboard";
 import { queryBigQueryPNLMetrics } from "@/lib/bigQueryConnect";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
+import { dbConnect } from "@/lib/dbConnect";
+import StaticExpenses from "@/models/StaticExpenses";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function PnLPage({ params }) {
     const resolvedParams = await params;
     const customerId = resolvedParams.customerId;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
-        ? process.env.NEXT_PUBLIC_BASE_URL
-        : process.env.NODE_ENV === "development"
-            ? "http://localhost:3000"
-            : "http://localhost:3000";
 
     // Fetch static expenses
     let staticExpenses = {
@@ -24,26 +21,18 @@ export default async function PnLPage({ params }) {
     };
 
     try {
-        const response = await fetch(`${baseUrl}/api/config-static-expenses/${customerId}`);
+        await dbConnect()
+        const staticExpensesData = await StaticExpenses.findOne({ customer: customerId });
         
-        if (!response.ok) {
-            console.error("Failed to fetch static expenses:", response.status, response.statusText);
-        } else {
-            try {
-                const result = await response.json();
-                if (result.data) {
-                    staticExpenses = {
-                        cogs_percentage: result.data.cogs_percentage || 0,
-                        shipping_cost_per_order: result.data.shipping_cost_per_order || 0,
-                        transaction_cost_percentage: result.data.transaction_cost_percentage || 0,
-                        marketing_bureau_cost: result.data.marketing_bureau_cost || 0,
-                        marketing_tooling_cost: result.data.marketing_tooling_cost || 0,
-                        fixed_expenses: result.data.fixed_expenses || 0,
-                    };
-                }
-            } catch (parseError) {
-                console.error("Error parsing JSON response:", parseError);
-            }
+        if (staticExpensesData) {
+            staticExpenses = {
+                cogs_percentage: staticExpensesData.cogs_percentage || 0,
+                shipping_cost_per_order: staticExpensesData.shipping_cost_per_order || 0,
+                transaction_cost_percentage: staticExpensesData.transaction_cost_percentage || 0,
+                marketing_bureau_cost: staticExpensesData.marketing_bureau_cost || 0,
+                marketing_tooling_cost: staticExpensesData.marketing_tooling_cost || 0,
+                fixed_expenses: staticExpensesData.fixed_expenses || 0,
+            };
         }
     } catch (error) {
         console.error("P&L Static Expenses error:", error.message, error.stack);

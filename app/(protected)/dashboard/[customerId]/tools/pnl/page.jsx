@@ -36,7 +36,6 @@ export default async function PnLPage({ params }) {
                 marketing_tooling_cost: result.data.marketing_tooling_cost || 0,
                 fixed_expenses: result.data.fixed_expenses || 0,
             };
-            console.log("Static Expenses:", staticExpenses);
         }
     } catch (error) {
         console.error("P&L Static Expenses error:", error.message, error.stack);
@@ -118,8 +117,6 @@ export default async function PnLPage({ params }) {
             customerId: bigQueryCustomerId,
             customQuery: dashboardQuery,
         });
-
-        console.log("P&L Dashboard data (raw):", JSON.stringify(data, null, 2));
 
         if (!data || !data[0] || !data[0].metrics_by_date) {
             console.warn("No data returned from BigQuery for customerId:", customerId);

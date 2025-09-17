@@ -63,7 +63,7 @@ const AdminAccordionTab = () => {
 
             </div>
 
-            <div className='mt-10'>
+            <div className='mt-10 opacity-50'>
                 <GA4Analytics />
             </div>
         </div>

@@ -51,7 +51,7 @@ export async function POST(req, { params }) {
 export async function GET(request, { params }) {
     try {
         const resolvedParams = await params;
-    const customerId = resolvedParams.customerId;
+        const customerId = resolvedParams.customerId;
 
         if (!customerId) {
             return new Response(JSON.stringify({ message: "Customer ID is required" }), { status: 400 });

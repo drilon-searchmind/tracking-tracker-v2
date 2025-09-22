@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
+import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import {
     Chart as ChartJS,
     LineElement,
@@ -46,6 +47,10 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
     const [metric, setMetric] = useState("Impressions");
     const [filter, setFilter] = useState("Med brand");
+    const [activeChartIndex, setActiveChartIndex] = useState(0);
+    const [showMobileUrlDetails, setShowMobileUrlDetails] = useState(false);
+    const [expandedKeywords, setExpandedKeywords] = useState({});
+    const [expandedUrls, setExpandedUrls] = useState({});
 
     const { impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = initialData || {};
 
@@ -241,12 +246,17 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
 
     const chartOptions = {
         maintainAspectRatio: false,
+        responsive: true,
         scales: {
             x: {
                 type: "time",
                 time: { unit: "day" },
                 grid: { display: false },
-                ticks: { font: { size: 10 } },
+                ticks: { 
+                    font: { size: 10 },
+                    maxRotation: 45,
+                    minRotation: 45
+                },
             },
             y: {
                 beginAtZero: true,
@@ -308,12 +318,63 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         })),
     };
 
+    // Mobile chart carousel
+    const chartComponents = [
+        {
+            title: "Impressions",
+            chart: <Line data={impressionsChartData} options={chartOptions} />
+        },
+        {
+            title: "Top Keywords Impressions",
+            chart: <Line data={keywordChartData} options={chartOptions} />
+        },
+        {
+            title: "Top URLs Trends",
+            chart: <Line data={urlChartData} options={chartOptions} />
+        }
+    ];
+
+    // Navigation for chart carousel
+    const navigateChart = (direction) => {
+        if (direction === 'next') {
+            setActiveChartIndex((prev) => 
+                prev === chartComponents.length - 1 ? 0 : prev + 1
+            );
+        } else {
+            setActiveChartIndex((prev) => 
+                prev === 0 ? chartComponents.length - 1 : prev - 1
+            );
+        }
+    };
+
+    // Toggle keyword expansion
+    const toggleKeywordExpansion = (index) => {
+        setExpandedKeywords(prev => ({
+            ...prev,
+            [index]: !prev[index]
+        }));
+    };
+
+    // Toggle URL expansion
+    const toggleUrlExpansion = (index) => {
+        setExpandedUrls(prev => ({
+            ...prev,
+            [index]: !prev[index]
+        }));
+    };
+
+    // Reset expanded items when date range changes
+    useEffect(() => {
+        setExpandedKeywords({});
+        setExpandedUrls({});
+    }, [dateStart, dateEnd]);
+
     if (!impressions_data || !top_keywords || !top_urls || !urls_by_date || !keywords_by_date) {
-        return <div>No data available for {customerId}</div>;
+        return <div className="p-4 text-center">No data available for {customerId}</div>;
     }
 
     return (
-        <div className="py-20 px-0 relative overflow">
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -325,44 +386,51 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                 />
             </div>
 
-            <div className="px-20 mx-auto z-10 relative">
-                <div className="mb-8">
+            <div className="px-0 md:px-20 mx-auto z-10 relative">
+                <div className="mb-6 md:mb-8">
                     <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
-                    <h1 className="mb-5 text-3xl font-bold text-black xl:text-[44px]">SEO Dashboard</h1>
-                    <p className="text-gray-600 max-w-2xl">
+                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">SEO Dashboard</h1>
+                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                         Overview of clicks, impressions, CTR, and position based on Google Search Console data.
                     </p>
                 </div>
 
-                <div className="flex flex-wrap gap-4 items-center mb-10 justify-end">
-                    <select
-                        value={comparison}
-                        onChange={(e) => setComparison(e.target.value)}
-                        className="border px-4 py-2 rounded text-sm bg-white"
-                    >
-                        <option>Previous Year</option>
-                        <option>Previous Period</option>
-                    </select>
-                    <input
-                        type="date"
-                        value={dateStart}
-                        onChange={(e) => setDateStart(e.target.value)}
-                        className="border px-2 py-2 rounded text-sm"
-                    />
-                    <span className="text-gray-400">→</span>
-                    <input
-                        type="date"
-                        value={dateEnd}
-                        onChange={(e) => setDateEnd(e.target.value)}
-                        className="border px-2 py-2 rounded text-sm"
-                    />
+                <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center mb-6 md:mb-10 justify-start md:justify-end">
+                    <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
+                        <select
+                            value={comparison}
+                            onChange={(e) => setComparison(e.target.value)}
+                            className="border px-4 py-2 rounded text-sm bg-white w-full md:w-auto"
+                        >
+                            <option>Previous Year</option>
+                            <option>Previous Period</option>
+                        </select>
+                        
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                            <input
+                                type="date"
+                                value={dateStart}
+                                onChange={(e) => setDateStart(e.target.value)}
+                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
+                            />
+                            <span className="text-gray-400 hidden md:inline">→</span>
+                            <span className="text-gray-400 md:hidden">to</span>
+                            <input
+                                type="date"
+                                value={dateEnd}
+                                onChange={(e) => setDateEnd(e.target.value)}
+                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                {/* Metrics Grid - Responsive */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 md:mb-10">
                     {seoMetrics.map((item, i) => (
                         <div key={i} className="bg-white border border-zinc-200 rounded p-4">
                             <p className="text-sm text-gray-500">{item.label}</p>
-                            <p className="text-2xl font-bold text-zinc-800">{item.value}</p>
+                            <p className="text-xl md:text-2xl font-bold text-zinc-800">{item.value}</p>
                             {item.delta && (
                                 <p className={`text-sm font-medium ${item.positive ? "text-green-600" : "text-red-500"}`}>
                                     {item.delta}
@@ -372,7 +440,8 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     ))}
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded p-6 mb-10">
+                {/* Desktop Chart Section - Hidden on mobile */}
+                <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 mb-10">
                     <div className="flex justify-between items-center mb-4">
                         <p className="font-semibold">Impressions</p>
                         <select
@@ -385,12 +454,58 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                             <option>CTR</option>
                         </select>
                     </div>
-                    <div className="w-full h-[calc(100%-2rem)] min-h-[300px]">
+                    <div className="w-full h-[300px]">
                         <Line data={impressionsChartData} options={chartOptions} />
                     </div>
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded p-6 mb-8 shadow-solid-l">
+                {/* Mobile Chart Carousel */}
+                <div className="md:hidden mb-8">
+                    <div className="bg-white border border-zinc-200 rounded p-4 h-[280px]">
+                        <div className="flex items-center justify-between mb-4">
+                            <p className="font-semibold text-sm">{chartComponents[activeChartIndex].title}</p>
+                            <div className="flex items-center gap-2">
+                                <select
+                                    value={metric}
+                                    onChange={(e) => setMetric(e.target.value)}
+                                    className="border px-2 py-1 rounded text-xs"
+                                >
+                                    <option>Impressions</option>
+                                    <option>Clicks</option>
+                                    <option>CTR</option>
+                                </select>
+                                <div className="flex gap-1">
+                                    <button 
+                                        onClick={() => navigateChart('prev')} 
+                                        className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                    >
+                                        <FaChevronLeft size={12} />
+                                    </button>
+                                    <button 
+                                        onClick={() => navigateChart('next')} 
+                                        className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                    >
+                                        <FaChevronRight size={12} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="w-full h-[210px]">
+                            {chartComponents[activeChartIndex].chart}
+                        </div>
+                    </div>
+                    <div className="flex justify-center mt-2 gap-1">
+                        {chartComponents.map((_, index) => (
+                            <span 
+                                key={index} 
+                                className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Keywords Section - Desktop */}
+                <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 mb-8 shadow-solid-l">
                     <div className="flex justify-between items-center mb-4">
                         <p className="font-semibold">Top Performance Keyword</p>
                         <select
@@ -438,7 +553,58 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-zinc-200 rounded p-6 mt-10 shadow-solid-10">
+                {/* Keywords Section - Mobile */}
+                <div className="md:hidden bg-white border border-zinc-200 rounded mb-6 shadow-solid-l">
+                    <div className="flex justify-between items-center p-4 border-b">
+                        <p className="font-semibold text-sm">Top Performance Keywords</p>
+                        <select
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value)}
+                            className="border px-2 py-1 rounded text-xs"
+                        >
+                            <option>Med brand</option>
+                            <option>Uden brand</option>
+                        </select>
+                    </div>
+                    <div className="p-1">
+                        {filteredTopKeywords.map((row, i) => (
+                            <div key={i} className="border-b border-gray-100 last:border-b-0">
+                                <div 
+                                    className="p-3 flex justify-between items-center"
+                                    onClick={() => toggleKeywordExpansion(i)}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-500 w-5">{i + 1}.</span>
+                                        <span className="font-medium text-sm">{row.keyword}</span>
+                                    </div>
+                                    <FaChevronRight 
+                                        className={`text-gray-400 transition-transform ${expandedKeywords[i] ? 'rotate-90' : ''}`}
+                                        size={12}
+                                    />
+                                </div>
+                                {expandedKeywords[i] && (
+                                    <div className="px-4 pb-3 grid grid-cols-3 gap-1 text-xs">
+                                        <div>
+                                            <span className="text-gray-500 block">Clicks</span>
+                                            <span className="font-medium">{Math.round(row.clicks).toLocaleString('en-US')}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 block">Impressions</span>
+                                            <span className="font-medium">{Math.round(row.impressions).toLocaleString('en-US')}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 block">Position</span>
+                                            <span className="font-medium">{row.position.toFixed(0)}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Desktop URLs Section */}
+                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-zinc-200 rounded p-6 mt-10 shadow-solid-10">
                     <div className="overflow-auto">
                         <p className="font-semibold mb-4">Top Performance URLs</p>
                         <table className="min-w-full text-sm">
@@ -479,6 +645,63 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                             <Line data={urlChartData} options={chartOptions} />
                         </div>
                     </div>
+                </div>
+
+                {/* Mobile URLs Section */}
+                <div className="md:hidden bg-white border border-zinc-200 rounded mt-6 shadow-solid-10">
+                    <div className="flex justify-between items-center p-4 border-b">
+                        <p className="font-semibold text-sm">Top Performance URLs</p>
+                        <button 
+                            onClick={() => setShowMobileUrlDetails(!showMobileUrlDetails)}
+                            className="text-xs bg-gray-100 px-2 py-1 rounded"
+                        >
+                            {showMobileUrlDetails ? 'Show Less' : 'View All'}
+                        </button>
+                    </div>
+                    <div className="p-1">
+                        {(showMobileUrlDetails ? filteredTopUrls : filteredTopUrls.slice(0, 5)).map((row, i) => (
+                            <div key={i} className="border-b border-gray-100 last:border-b-0">
+                                <div 
+                                    className="p-3 flex justify-between items-center"
+                                    onClick={() => toggleUrlExpansion(i)}
+                                >
+                                    <div className="truncate pr-2 w-4/5">
+                                        <span className="font-medium text-xs">{row.url}</span>
+                                    </div>
+                                    <FaChevronRight 
+                                        className={`text-gray-400 transition-transform ${expandedUrls[i] ? 'rotate-90' : ''}`}
+                                        size={12}
+                                    />
+                                </div>
+                                {expandedUrls[i] && (
+                                    <div className="px-4 pb-3 grid grid-cols-3 gap-1 text-xs">
+                                        <div>
+                                            <span className="text-gray-500 block">Clicks</span>
+                                            <span className="font-medium">{Math.round(row.clicks).toLocaleString('en-US')}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 block">Impressions</span>
+                                            <span className="font-medium">{Math.round(row.impressions).toLocaleString('en-US')}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 block">CTR</span>
+                                            <span className="font-medium">{(row.ctr * 100).toFixed(2)}%</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    {filteredTopUrls.length > 5 && !showMobileUrlDetails && (
+                        <div className="p-3 border-t border-gray-100 text-center">
+                            <button 
+                                onClick={() => setShowMobileUrlDetails(true)}
+                                className="text-blue-600 text-xs font-medium"
+                            >
+                                Show all {filteredTopUrls.length} URLs
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

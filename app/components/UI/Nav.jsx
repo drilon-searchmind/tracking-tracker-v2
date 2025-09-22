@@ -4,13 +4,14 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import CustomerModal from "@/app/components/Dashboard/CustomerModal.jsx";
-import { FaMoon, FaHome, FaChartLine, FaUserCog, FaUserCircle } from "react-icons/fa";
+import { FaMoon, FaHome, FaChartLine, FaUserCog, FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
 import LogoutButton from "../Auth/LogoutButton";
 import LoginButton from "../Auth/LoginButton";
 
 export default function Nav() {
     const { data: session } = useSession()
     const [showModal, setShowModal] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         console.log({ session })
@@ -19,7 +20,7 @@ export default function Nav() {
     return (
         <section id="componentNav">
             <nav className="flex justify-between items-center container mx-auto">
-                <div className="flex items-center gap-4 py-8">
+                <div className="flex items-center gap-4 py-6">
                     <Image
                         src="/images/searchmind/apex-icon.svg"
                         alt="logo"
@@ -35,9 +36,19 @@ export default function Nav() {
                             </span>
                         ) : null}
                     </a>
-
                 </div>
-                <div className="flex items-center gap-8">
+
+                {/* Mobile menu button */}
+                <button 
+                    className="md:hidden text-2xl z-50" 
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Toggle menu"
+                >
+                    {isMenuOpen ? <FaTimes /> : <FaBars />}
+                </button>
+
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex items-center gap-8">
                     {session ? (
                         <>
                             <a href="/home" className="hover:text-black flex items-center gap-2 m-0 p-0 text-zinc-700">
@@ -60,10 +71,50 @@ export default function Nav() {
                         <LoginButton />
                     )}
                 </div>
+
+                {/* Mobile Navigation */}
+                <div className={`fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:hidden flex flex-col pt-24 px-6`}>
+                    {session ? (
+                        <>
+                            <a href="/home" className="hover:text-black flex items-center gap-2 m-0 py-4 text-zinc-700 border-b border-gray-100">
+                                <FaHome /> Home
+                            </a>
+                            <button onClick={() => {
+                                setShowModal(true);
+                                setIsMenuOpen(false);
+                            }} className="text-zinc-700 cursor-pointer hover:text-black flex items-center gap-2 m-0 py-4 border-b border-gray-100">
+                                <FaChartLine /> Performance Dashboard
+                            </button>
+                            <a href="/admin" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 py-4 border-b border-gray-100">
+                                <FaUserCog /> Admin
+                            </a>
+                            <a href="/my-profile" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 py-4 border-b border-gray-100">
+                                <FaUserCircle /> My Profile
+                            </a>
+                            <div className="flex items-center gap-2 py-4 border-b border-gray-100">
+                                <FaMoon /> Dark Mode
+                            </div>
+                            <div className="mt-4">
+                                <LogoutButton />
+                            </div>
+                        </>
+                    ) : (
+                        <div className="mt-4">
+                            <LoginButton />
+                        </div>
+                    )}
+                </div>
+                
+                {/* Overlay when mobile menu is open */}
+                {isMenuOpen && (
+                    <div 
+                        className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" 
+                        onClick={() => setIsMenuOpen(false)}
+                    />
+                )}
             </nav>
 
             {showModal && <CustomerModal closeModal={() => setShowModal(false)} />}
-
         </section>
     )
 }

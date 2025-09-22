@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import {
     HiOutlineCurrencyDollar,
@@ -58,6 +58,7 @@ export default function PerformanceDashboard({ customerId, customerName, initial
     const [dateStart, setDateStart] = useState(formatDate(firstDayOfMonth));
     const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
     const [isLoading, setIsLoading] = useState(!initialData);
+    const [activeChartIndex, setActiveChartIndex] = useState(0); // For mobile carousel
 
     const data = Array.isArray(initialData) ? initialData : [];
 
@@ -339,38 +340,11 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                 display: false,
             },
         },
+        responsive: true,
     };
 
     const revenueChartOptions = {
-        maintainAspectRatio: false,
-        scales: {
-            x: {
-                type: "time",
-                time: { unit: "day" },
-                grid: { display: false },
-                ticks: { font: { size: 10 } },
-            },
-            y: {
-                beginAtZero: true,
-                grid: { color: "rgba(0, 0, 0, 0.05)" },
-                ticks: { font: { size: 10 } },
-            },
-        },
-        plugins: {
-            legend: {
-                display: false,
-            },
-            tooltip: {
-                backgroundColor: "rgba(0, 0, 0, 0.7)",
-                titleFont: { size: 12 },
-                bodyFont: { size: 10 },
-                padding: 8,
-                cornerRadius: 4,
-            },
-            datalabels: {
-                display: false,
-            },
-        },
+        ...chartOptions,
     };
 
     const pieChartOptions = {
@@ -405,6 +379,7 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                 align: "center",
             },
         },
+        responsive: true,
     };
 
     const spendAllocationLineChartData = {
@@ -478,18 +453,52 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                 display: false,
             },
         },
+        responsive: true,
+    };
+    
+    // Chart components for mobile carousel
+    const chartComponents = [
+        {
+            title: "Revenue",
+            chart: <Line data={revenueChartData} options={revenueChartOptions} />
+        },
+        {
+            title: "Spend Allocation",
+            chart: <Line data={spendAllocationLineChartData} options={chartOptions} />
+        },
+        {
+            title: "Average Order Value",
+            chart: <Line data={aovChartData} options={chartOptions} />
+        },
+        {
+            title: "Sessions Per Channel Group",
+            chart: <Bar data={sessionsChartData} options={barChartOptions} />
+        }
+    ];
+
+    // Navigation for chart carousel
+    const navigateChart = (direction) => {
+        if (direction === 'next') {
+            setActiveChartIndex((prev) => 
+                prev === chartComponents.length - 1 ? 0 : prev + 1
+            );
+        } else {
+            setActiveChartIndex((prev) => 
+                prev === 0 ? chartComponents.length - 1 : prev - 1
+            );
+        }
     };
 
     if (isLoading) {
-        return <div>Loading dashboard...</div>;
+        return <div className="flex justify-center items-center p-10">Loading dashboard...</div>;
     }
 
     if (!data.length) {
-        return <div>No data available for {customerId}</div>;
+        return <div className="flex justify-center items-center p-10">No data available for {customerId}</div>;
     }
 
     return (
-        <div className="py-20 px-0 relative overflow">
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -501,44 +510,51 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                 />
             </div>
 
-            <div className="px-20 mx-auto z-10 relative">
-                <div className="mb-8">
+            <div className="px-0 md:px-20 mx-auto z-10 relative">
+                <div className="mb-6 md:mb-8">
                     <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
-                    <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Performance Dashboard</h1>
-                    <p className="text-gray-600 max-w-2xl">
+                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black md:pr-16 xl:text-[44px] inline-grid z-10">Performance Dashboard</h1>
+                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                         Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros scelerisque sed. Commodo in viv...
                     </p>
                 </div>
 
-                <div className="flex flex-wrap gap-4 items-center mb-10 justify-end">
-                    <select
-                        value={comparison}
-                        onChange={(e) => setComparison(e.target.value)}
-                        className="border px-4 py-2 rounded text-sm bg-white"
-                    >
-                        <option>Previous Year</option>
-                        <option>Previous Period</option>
-                    </select>
-                    <input
-                        type="date"
-                        value={dateStart}
-                        onChange={(e) => setDateStart(e.target.value)}
-                        className="border px-2 py-2 rounded text-sm"
-                    />
-                    <span className="text-gray-400">→</span>
-                    <input
-                        type="date"
-                        value={dateEnd}
-                        onChange={(e) => setDateEnd(e.target.value)}
-                        className="border px-2 py-2 rounded text-sm"
-                    />
+                <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center mb-6 md:mb-10 md:justify-end">
+                    <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
+                        <select
+                            value={comparison}
+                            onChange={(e) => setComparison(e.target.value)}
+                            className="border px-4 py-2 rounded text-sm bg-white w-full md:w-auto"
+                        >
+                            <option>Previous Year</option>
+                            <option>Previous Period</option>
+                        </select>
+                        
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                            <input
+                                type="date"
+                                value={dateStart}
+                                onChange={(e) => setDateStart(e.target.value)}
+                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
+                            />
+                            <span className="text-gray-400 hidden md:inline">→</span>
+                            <span className="text-gray-400 md:hidden">to</span>
+                            <input
+                                type="date"
+                                value={dateEnd}
+                                onChange={(e) => setDateEnd(e.target.value)}
+                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                {/* Metrics Grid - Responsive */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-16">
                     {metrics.map((metric, i) => (
                         <div
                             key={i}
-                            className="bg-white border border-zinc-200 rounded-lg p-5 flex flex-col gap-2"
+                            className="bg-white border border-zinc-200 rounded-lg p-4 md:p-5 flex flex-col gap-2"
                         >
                             <div className="flex items-center gap-2">
                                 {metric.icon}
@@ -550,10 +566,10 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                                 </p>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className={`text-2xl font-semibold ${metric.title === "Gross Profit" ? "text-red-500 line-through" : "text-black"}`}>{metric.value}</span>
+                                <span className={`text-xl md:text-2xl font-semibold ${metric.title === "Gross Profit" ? "text-red-500 line-through" : "text-black"}`}>{metric.value}</span>
                                 {metric.delta && (
                                     <span
-                                        className={`text-sm font-medium ${metric.positive ? "text-green-600" : "text-red-500"}`}
+                                        className={`text-xs md:text-sm font-medium ${metric.positive ? "text-green-600" : "text-red-500"}`}
                                     >
                                         {metric.delta}
                                     </span>
@@ -563,7 +579,8 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                {/* Desktop Charts - Hidden on mobile */}
+                <div className="hidden md:grid md:grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
                         <p className="font-semibold mb-4">Revenue</p>
                         <div className="w-full h-[calc(100%-2rem)]">
@@ -579,7 +596,7 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="hidden md:grid md:grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
                         <p className="font-semibold mb-4">Average Order Value</p>
                         <div className="w-full h-[calc(100%-2rem)]">
@@ -594,27 +611,63 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <section>
-                <div className="mt-16 space-y-4 px-20 mx-auto z-10 relative">
-                    <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Service Dashboards</h3>
-                    {["SEO", "PPC", "EM", "PS"].map((title, index) => (
-                        <div
-                            key={index}
-                            className="flex items-center justify-between bg-zinc-50 rounded-md px-6 py-4 border border-zinc-200 shadow-solid-l"
-                        >
-                            <div>
-                                <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
-                                <p className="text-sm text-gray-500">Subtitle</p>
+                {/* Mobile Chart Carousel */}
+                <div className="md:hidden mb-8">
+                    <div className="bg-white border border-zinc-200 rounded-lg p-4 h-[300px]">
+                        <div className="flex items-center justify-between mb-4">
+                            <p className="font-semibold">{chartComponents[activeChartIndex].title}</p>
+                            <div className="flex gap-2">
+                                <button 
+                                    onClick={() => navigateChart('prev')} 
+                                    className="text-sm bg-gray-100 w-7 h-7 rounded-full flex items-center justify-center"
+                                >
+                                    &larr;
+                                </button>
+                                <button 
+                                    onClick={() => navigateChart('next')} 
+                                    className="text-sm bg-gray-100 w-7 h-7 rounded-full flex items-center justify-center"
+                                >
+                                    &rarr;
+                                </button>
                             </div>
-                            <button className="text-xs border border-blue-500 text-blue-500 px-4 py-1.5 rounded hover:bg-blue-50 flex items-center gap-2">
-                                <span className="text-sm">+</span> Open
-                            </button>
                         </div>
-                    ))}
+                        <div className="w-full h-[calc(100%-2rem)]">
+                            {chartComponents[activeChartIndex].chart}
+                        </div>
+                    </div>
+                    <div className="flex justify-center mt-3 gap-1">
+                        {chartComponents.map((_, index) => (
+                            <span 
+                                key={index} 
+                                className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
+                            />
+                        ))}
+                    </div>
                 </div>
-            </section>
+
+                <section>
+                    <div className="mt-8 md:mt-16 space-y-4 px-0 md:px-0 mx-auto z-10 relative">
+                        <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Service Dashboards</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {["SEO", "PPC", "EM", "PS"].map((title, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center justify-between bg-zinc-50 rounded-md px-4 md:px-6 py-4 border border-zinc-200 shadow-solid-l"
+                                >
+                                    <div>
+                                        <h4 className="text-base md:text-lg font-semibold text-gray-900">{title}</h4>
+                                        <p className="text-xs md:text-sm text-gray-500">Subtitle</p>
+                                    </div>
+                                    <button className="text-xs border border-blue-500 text-blue-500 px-3 md:px-4 py-1 md:py-1.5 rounded hover:bg-blue-50 flex items-center gap-2">
+                                        <span className="text-sm">+</span> Open
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
     );
 }

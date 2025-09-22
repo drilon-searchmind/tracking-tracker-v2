@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
+import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -44,13 +45,14 @@ export default function PaceReport({ customerId, customerName, initialData }) {
     const [comparison, setComparison] = useState("Previous Year");
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
     const [endDate, setEndDate] = useState(formatDate(yesterday));
+    const [activeChartIndex, setActiveChartIndex] = useState(0);
 
     // Calculate daysInMonth for use in UI
     const end = new Date(endDate);
     const daysInMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
 
     if (!initialData || !initialData.daily_metrics) {
-        return <div>No data available for {customerId}</div>;
+        return <div className="p-4 text-center">No data available for {customerId}</div>;
     }
 
     const { daily_metrics } = initialData;
@@ -279,7 +281,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         ]
     };
 
-    const budgetChartOptions = {
+    const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -303,8 +305,18 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         scales: {
             x: {
                 grid: { display: false },
-                ticks: { font: { size: 10, family: "'Inter', sans-serif" }, color: "#4b5563" },
-                title: { display: true, text: "Date", font: { size: 10, family: "'Inter', sans-serif" }, color: "#4b5563" }
+                ticks: { 
+                    font: { size: 10, family: "'Inter', sans-serif" }, 
+                    color: "#4b5563",
+                    maxRotation: 45,
+                    minRotation: 45
+                },
+                title: { 
+                    display: false,
+                    text: "Date", 
+                    font: { size: 10, family: "'Inter', sans-serif" }, 
+                    color: "#4b5563" 
+                }
             },
             y: {
                 grid: { display: false },
@@ -312,12 +324,16 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                     font: { size: 10, family: "'Inter', sans-serif" },
                     color: "#4b5563",
                     callback: function (value) {
+                        if (activeChartIndex === 1 && metric === "Orders") {
+                            return value.toLocaleString("en-US");
+                        }
                         return `kr. ${value.toLocaleString("en-US")}`;
                     }
                 },
                 title: {
-                    display: true,
-                    text: "Ad Spend (kr.)",
+                    display: false,
+                    text: activeChartIndex === 0 ? "Ad Spend (kr.)" : 
+                          (metric === "Revenue" ? "kr." : "Count"),
                     font: { size: 10, family: "'Inter', sans-serif" },
                     color: "#4b5563"
                 },
@@ -326,55 +342,90 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         }
     };
 
-    const paceChartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: "top",
-                labels: {
-                    font: { size: 10, family: "'Inter', sans-serif" },
-                    color: "#4b5563",
-                    padding: 10,
-                    boxWidth: 20,
-                    usePointStyle: false
+    // Chart components for mobile carousel
+    const chartComponents = [
+        {
+            title: "Ad Spend Budget",
+            chart: <Line data={budgetChartData} options={chartOptions} />,
+            metrics: [
+                {
+                    label: "Ad Spend Budget",
+                    input: true,
+                    value: adSpendBudget,
+                    onChange: (e) => setAdSpendBudget(e.target.value),
+                    placeholder: "kr. 100,000"
+                },
+                {
+                    label: "Ad Spend",
+                    value: `kr. ${Math.round(totals.ad_spend).toLocaleString("en-US")}`
+                },
+                {
+                    label: "Pace Ratio",
+                    value: totals.ad_spend_pace_ratio.toFixed(2)
                 }
-            },
-            tooltip: {
-                backgroundColor: "#1e3a8a",
-                titleFont: { size: 10, family: "'Inter', sans-serif" },
-                bodyFont: { size: 10, family: "'Inter', sans-serif" },
-                padding: 8
-            }
+            ]
         },
-        scales: {
-            x: {
-                grid: { display: false },
-                ticks: { font: { size: 10, family: "'Inter', sans-serif" }, color: "#4b5563" },
-                title: { display: true, text: "Date", font: { size: 10, family: "'Inter', sans-serif" }, color: "#4b5563" }
-            },
-            y: {
-                grid: { display: false },
-                ticks: {
-                    font: { size: 10, family: "'Inter', sans-serif" },
-                    color: "#4b5563",
-                    callback: function (value) {
-                        return metric === "Revenue" ? `kr. ${value.toLocaleString("en-US")}` : value.toLocaleString("en-US");
-                    }
+        {
+            title: "Pace",
+            chart: <Line data={paceChartData} options={chartOptions} />,
+            metrics: [
+                {
+                    label: "Metric",
+                    select: true,
+                    value: metric,
+                    onChange: (e) => setMetric(e.target.value),
+                    options: ["Revenue", "Orders"]
                 },
-                title: {
-                    display: true,
-                    text: metric === "Revenue" ? "kr." : "Count",
-                    font: { size: 10, family: "'Inter', sans-serif" },
-                    color: "#4b5563"
+                {
+                    label: `${metric} Budget`,
+                    input: true,
+                    value: metric === "Revenue" ? revenueBudget : ordersBudget,
+                    onChange: (e) => metric === "Revenue" ? setRevenueBudget(e.target.value) : setOrdersBudget(e.target.value),
+                    placeholder: metric === "Revenue" ? "kr. 500,000" : "1000"
                 },
-                beginAtZero: true
-            }
+                {
+                    label: `Current ${metric}`,
+                    value: metric === "Revenue" 
+                        ? `kr. ${Math.round(totals.revenue).toLocaleString("en-US")}`
+                        : Math.round(totals.orders).toLocaleString("en-US")
+                },
+                {
+                    label: `${metric} Pace`,
+                    value: metric === "Revenue"
+                        ? `kr. ${Math.round(totals.revenue_pace).toLocaleString("en-US")}`
+                        : Math.round(totals.orders_pace).toLocaleString("en-US")
+                },
+                {
+                    label: "Pace Ratio",
+                    value: metric === "Revenue"
+                        ? totals.revenue_pace_ratio.toFixed(2)
+                        : totals.orders_pace_ratio.toFixed(2)
+                },
+                {
+                    label: `Daily ${metric} Gap`,
+                    value: metric === "Revenue"
+                        ? `kr. ${Math.round(totals.daily_revenue_gap).toLocaleString("en-US")}`
+                        : Math.round(totals.daily_orders_gap).toLocaleString("en-US")
+                }
+            ]
+        }
+    ];
+
+    // Navigation for chart carousel
+    const navigateChart = (direction) => {
+        if (direction === 'next') {
+            setActiveChartIndex((prev) => 
+                prev === chartComponents.length - 1 ? 0 : prev + 1
+            );
+        } else {
+            setActiveChartIndex((prev) => 
+                prev === 0 ? chartComponents.length - 1 : prev - 1
+            );
         }
     };
 
     return (
-        <div className="py-20 px-0 relative overflow">
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -386,46 +437,121 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                 />
             </div>
 
-            <div className="px-20 mx-auto z-10 relative">
-                <div className="mb-8">
+            <div className="px-0 md:px-20 mx-auto z-10 relative">
+                <div className="mb-6 md:mb-8">
                     <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
-                    <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Pace Report</h1>
-                    <p className="text-gray-600 max-w-2xl">
+                    <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-black xl:text-[44px] z-10">Pace Report</h1>
+                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                         Track budget utilization and pacing for revenue and ad spend, with projections for the current month.
                     </p>
                 </div>
 
-                <div className="flex flex-wrap gap-4 items-center mb-10 justify-end">
-                    <select
-                        value={comparison}
-                        onChange={(e) => setComparison(e.target.value)}
-                        className="border px-4 py-2 rounded text-sm bg-white"
-                    >
-                        <option>Previous Year</option>
-                        <option>Previous Period</option>
-                    </select>
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="border px-2 py-2 rounded text-sm"
-                    />
-                    <span className="text-gray-400">→</span>
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="border px-2 py-2 rounded text-sm"
-                    />
+                <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center mb-6 md:mb-10 justify-start md:justify-end">
+                    <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
+                        <select
+                            value={comparison}
+                            onChange={(e) => setComparison(e.target.value)}
+                            className="border px-4 py-2 rounded text-sm bg-white w-full md:w-auto"
+                        >
+                            <option>Previous Year</option>
+                            <option>Previous Period</option>
+                        </select>
+                        
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
+                            />
+                            <span className="text-gray-400 hidden md:inline">→</span>
+                            <span className="text-gray-400 md:hidden">to</span>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                {/* Mobile Chart Carousel */}
+                <div className="md:hidden mb-6">
+                    <div className="bg-white border border-zinc-200 rounded-lg p-4 shadow-solid-l">
+                        <div className="flex items-center justify-between mb-4">
+                            <p className="font-semibold text-sm">{chartComponents[activeChartIndex].title}</p>
+                            <div className="flex gap-1">
+                                <button 
+                                    onClick={() => navigateChart('prev')} 
+                                    className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                >
+                                    <FaChevronLeft size={12} />
+                                </button>
+                                <button 
+                                    onClick={() => navigateChart('next')} 
+                                    className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                >
+                                    <FaChevronRight size={12} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="h-[210px]">
+                            {chartComponents[activeChartIndex].chart}
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-3">
+                            {chartComponents[activeChartIndex].metrics.map((item, i) => (
+                                item.input ? (
+                                    <div key={i} className={i === 0 && activeChartIndex === 1 ? "col-span-2" : ""}>
+                                        <p className="text-xs text-gray-500 mb-1">{item.label}</p>
+                                        <input
+                                            type="text"
+                                            value={item.value}
+                                            onChange={item.onChange}
+                                            className="w-full border border-gray-300 rounded px-3 py-1 text-xs"
+                                            placeholder={item.placeholder}
+                                        />
+                                    </div>
+                                ) : item.select ? (
+                                    <div key={i} className="col-span-2">
+                                        <p className="text-xs text-gray-500 mb-1">{item.label}</p>
+                                        <select
+                                            value={item.value}
+                                            onChange={item.onChange}
+                                            className="w-full border border-gray-300 rounded px-3 py-1 text-xs"
+                                        >
+                                            {item.options.map(option => (
+                                                <option key={option}>{option}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                ) : (
+                                    <div key={i}>
+                                        <p className="text-xs text-gray-500">{item.label}</p>
+                                        <p className="text-sm font-semibold">{item.value}</p>
+                                    </div>
+                                )
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex justify-center mt-2 gap-1">
+                        {chartComponents.map((_, index) => (
+                            <span 
+                                key={index} 
+                                className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Desktop Charts Layout */}
+                <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                     <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-solid-l">
                         <div className="flex items-center justify-between mb-4">
                             <p className="font-semibold">Ad Spend Budget</p>
                         </div>
                         <div className="h-[280px]">
-                            <Line data={budgetChartData} options={budgetChartOptions} />
+                            <Line data={budgetChartData} options={chartOptions} />
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4">
                             <div className="col-span-2">
@@ -460,7 +586,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                             <p className="font-semibold">Pace</p>
                         </div>
                         <div className="h-[280px]">
-                            <Line data={paceChartData} options={paceChartOptions} />
+                            <Line data={paceChartData} options={chartOptions} />
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4">
                             <div>

@@ -5,7 +5,7 @@ import { FaExclamationTriangle } from 'react-icons/fa';
 
 const UnauthorizedAccess = ({ message = "You do not have permission to access this page." }) => {
     return (
-        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
+        <div className="container mx-auto py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image

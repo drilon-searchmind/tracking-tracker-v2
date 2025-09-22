@@ -6,20 +6,25 @@ export default withAuth(
         try {
             const path = req.nextUrl.pathname;
             const token = req.nextauth?.token;
-
-            console.log("Middleware executed for path:", path);
-            console.log("Token exists:", !!token);
             
-            if (token) {
-                console.log("Token contains:", {
-                    id: token.id,
-                    email: token.email,
-                    name: token.name,
-                    isAdmin: token.isAdmin
-                });
+            if (!token) return NextResponse.next();
+            
+            // Check for customer access - match dashboard/[customerId] pattern
+            const customerMatch = path.match(/\/dashboard\/([^\/]+)/);
+            if (customerMatch) {
+                const customerId = customerMatch[1];
                 
-                // Remove the admin path redirect - let the layout handle showing the unauthorized component
-                // Admin routes will be handled by the layout component showing UnauthorizedAccess
+                // Skip access check for admin users
+                if (!token.isAdmin) {
+                    // Check if the user has the customer in their accessible customers list
+                    const accessibleCustomers = token.accessibleCustomers || [];
+                    const hasAccess = accessibleCustomers.includes(customerId);
+                    
+                    if (!hasAccess) {
+                        console.log(`Access denied: User ${token.email} attempted to access unauthorized customer ${customerId}`);
+                        return NextResponse.redirect(new URL("/unauthorized", req.url));
+                    }
+                }
             }
 
             return NextResponse.next();

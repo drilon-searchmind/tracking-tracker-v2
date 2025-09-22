@@ -230,7 +230,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
     }, [campaigns]);
 
     return (
-        <div className="py-20 px-0 relative overflow">
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -242,61 +242,64 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                 />
             </div>
 
-            <div className="px-20 mx-auto z-10 relative">
-                <div className="mb-8 flex justify-between items-top">
-                    <span>
-                        <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
-                        <h1 className="mb-5 text-3xl font-bold text-black xl:text-[44px]">Campaign Planner</h1>
-                        <p className="text-gray-600 max-w-2xl">
-                            Plan and adjust your marketing campaigns with precise budgets and expected results.
-                        </p>
-                    </span>
+            <div className="px-0 md:px-20 mx-auto z-10 relative">
+                <div className="mb-6 md:mb-8">
+                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
+                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">Campaign Planner</h1>
+                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
+                        Plan and adjust your marketing campaigns with precise budgets and expected results.
+                    </p>
                 </div>
 
-
-
                 {/* Campaign List */}
-                <div className="mb-10">
-                    <div className="mb-2 flex justify-between items-center">
-                        <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Your Campaigns</h3>
-                        <div className="flex gap-4">
+                <div className="mb-6 md:mb-10">
+                    <div className="mb-2 md:mb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <h3 className="text-lg md:text-xl font-semibold text-black dark:text-white xl:text-2xl">Your Campaigns</h3>
+                        
+                        <div className="flex flex-col md:flex-row gap-3 md:gap-4 w-full md:w-auto">
                             <button
                                 onClick={handleOpenParentModal}
-                                className="text-center text-zinc-900 border border-zinc-700 py-2 px-4 rounded text-white hover:text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center"
+                                className="text-center text-zinc-900 border border-zinc-700 py-2 px-4 rounded text-white hover:text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center justify-center md:justify-start"
                             >
                                 <FaCirclePlus />
-                                Create New Parent Campaign
+                                <span className="whitespace-nowrap">Create Parent Campaign</span>
                             </button>
                             <button
                                 onClick={handleOpenModal}
-                                className="text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center"
+                                className="text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center justify-center md:justify-start"
                             >
                                 <FaCirclePlus />
-                                Create New Campaign
+                                <span>Create Campaign</span>
                             </button>
                         </div>
                     </div>
                     <CampaignList customerId={customerId} key={refreshList} />
                 </div>
 
-                <div className="mb-12">
-                    <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Campaign Calendar</h3>
-                    {/* TODO: Update data in CampaignCalendar when new campaign is added or edited */}
-                    <CampaignCalendar
-                        campaigns={campaigns}
-                        customerId={customerId}
-                        onViewCampaignDetails={handleViewCampaignDetails}
-                    />
+                <div className="mb-8 md:mb-12">
+                    <h3 className="text-lg md:text-xl font-semibold text-black dark:text-white xl:text-2xl mb-4 md:mb-5">Campaign Calendar</h3>
+                    <div className="overflow-x-auto">
+                        <div className="min-w-[700px]">
+                            <CampaignCalendar
+                                campaigns={campaigns}
+                                customerId={customerId}
+                                onViewCampaignDetails={handleViewCampaignDetails}
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="mb-12">
-                    <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">Campaign Timeline</h3>
-                    {/* TODO: Update data in CampaignPlannerGanttChart when new campaign is added or edited */}
-                    <CampaignPlannerGanttChart
-                        campaigns={campaigns}
-                        customerId={customerId}
-                        onViewCampaignDetails={handleViewCampaignDetails}
-                    />
+                <div className="mb-8 md:mb-12">
+                    <h3 className="text-lg md:text-xl font-semibold text-black dark:text-white xl:text-2xl mb-4 md:mb-5">Campaign Timeline</h3>
+                    <div className="overflow-x-auto">
+                        <div className="min-w-[700px]">
+                            <CampaignPlannerGanttChart
+                                campaigns={campaigns}
+                                customerId={customerId}
+                                onViewCampaignDetails={handleViewCampaignDetails}
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <CampaignPlannerModal

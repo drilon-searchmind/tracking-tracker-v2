@@ -1,50 +1,49 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { FaExclamationTriangle } from 'react-icons/fa';
 
 const UnauthorizedAccess = ({ message = "You do not have permission to access this page." }) => {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 text-center">
-                <div>
-                    <Image
-                        src="/images/searchmind/apex-icon.svg"
-                        alt="Searchmind Apex"
-                        width={80}
-                        height={80}
-                        className="mx-auto h-20 w-20 filter brightness-0 opacity-30"
-                    />
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Access Restricted
-                    </h2>
-                    <div className="mt-4 bg-red-50 border border-red-200 rounded-md p-4">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                </svg>
-                            </div>
-                            <div className="ml-3">
-                                <h3 className="text-sm font-medium text-red-800">
-                                    Unauthorized Access
-                                </h3>
-                                <div className="mt-2 text-sm text-red-700">
-                                    <p>{message}</p>
-                                </div>
-                            </div>
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
+            <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                <Image
+                    width={1920}
+                    height={1080}
+                    src="/images/shape-dotted-light.svg"
+                    alt="bg"
+                    className="w-full h-full"
+                />
+            </div>
+
+            <div className="px-0 md:px-20 mx-auto z-10 relative">
+                <div className="mb-6 md:mb-8">
+                    <h2 className="text-blue-900 font-semibold text-sm uppercase">Searchmind Apex</h2>
+                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">Access Restricted</h1>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-solid-l border border-zinc-200 mb-6 md:mb-10 max-w-2xl">
+                    <div className="flex items-start space-x-4">
+                        <div className="text-red-500 flex-shrink-0">
+                            <FaExclamationTriangle size={24} />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-lg text-zinc-900 mb-2">Unauthorized Access</h3>
+                            <p className="text-gray-600 mb-4">{message}</p>
+                            <p className="text-gray-500 text-sm">
+                                If you believe this is an error, please contact the system administrator.
+                            </p>
                         </div>
                     </div>
                 </div>
-                
-                <div className="flex flex-col space-y-4">
-                    <p className="text-sm text-gray-500">
-                        If you believe this is an error, please contact the system administrator.
-                    </p>
-                    
-                    <Link href="/home" className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[var(--color-primary-searchmind)] hover:bg-[var(--color-primary-searchmind-hover)] focus:outline-none">
-                        Return to Home Page
-                    </Link>
-                </div>
+
+                <Link 
+                    href="/home" 
+                    className="inline-flex items-center justify-center py-2 px-4 rounded text-white bg-zinc-700 hover:bg-zinc-800 gap-2 text-sm"
+                >
+                    Return to Home Page
+                </Link>
             </div>
         </div>
     );

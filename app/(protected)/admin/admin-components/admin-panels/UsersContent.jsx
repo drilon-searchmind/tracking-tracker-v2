@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/app/contexts/ToastContext';
+import AddUserModal from '@/app/components/Admin/AddUserModal';
 
 const UsersContent = () => {
     const [users, setUsers] = useState([]);
@@ -12,12 +13,53 @@ const UsersContent = () => {
     const [updatingId, setUpdatingId] = useState(null);
     const [archivingId, setArchivingId] = useState(null);
     const [activeTab, setActiveTab] = useState("internal");
+    const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
     const { showToast } = useToast();
 
     useEffect(() => {
         fetchUsers();
         fetchAllCustomerSharings();
     }, []);
+
+    const handleAddNewUser = async (userData) => {
+        try {
+            const response = await fetch('/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Error creating user: ${response.status}`);
+            }
+
+            const newUser = await response.json();
+
+            setUsers([...users, newUser]);
+
+            setEditingUsers(prev => ({
+                ...prev,
+                [newUser._id]: {
+                    name: newUser.name,
+                    email: newUser.email,
+                    isAdmin: newUser.isAdmin || false,
+                    isArchived: newUser.isArchived || false,
+                    isExternal: newUser.isExternal || false,
+                    password: ''
+                }
+            }));
+
+            showToast("User created successfully", "success");
+            return newUser;
+        } catch (error) {
+            console.error("Failed to create user:", error);
+            showToast(error.message || "Failed to create user", "error");
+            throw error;
+        }
+    };
 
     const fetchUsers = async () => {
         try {
@@ -256,7 +298,7 @@ const UsersContent = () => {
                                             {user.isArchived ? 'Archived' : 'Active'}
                                         </span>
                                     </td>
-                                    
+
                                     {/* Customer Access Column - Only for External Tab */}
                                     {activeTab === "external" && (
                                         <td className="px-4 py-3">
@@ -273,7 +315,7 @@ const UsersContent = () => {
                                             )}
                                         </td>
                                     )}
-                                    
+
                                     <td className="px-4 py-3">
                                         <input
                                             type="password"
@@ -294,14 +336,13 @@ const UsersContent = () => {
                                         <button
                                             onClick={() => toggleArchiveUser(user._id)}
                                             disabled={archivingId === user._id}
-                                            className={`py-1 px-3 rounded text-sm ${
-                                                user.isArchived 
-                                                    ? "text-green-600 hover:text-green-800" 
-                                                    : "text-red-600 hover:text-red-800"
+                                            className={`py-1 px-3 rounded text-sm ${user.isArchived
+                                                ? "text-green-600 hover:text-green-800"
+                                                : "text-red-600 hover:text-red-800"
                                                 }`}
                                         >
-                                            {archivingId === user._id ? 
-                                                "Processing..." : 
+                                            {archivingId === user._id ?
+                                                "Processing..." :
                                                 (user.isArchived ? "Unarchive" : "Archive")
                                             }
                                         </button>
@@ -330,8 +371,8 @@ const UsersContent = () => {
                     <button
                         onClick={() => setActiveTab("internal")}
                         className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "internal"
-                                ? "border-zinc-700 text-zinc-700"
-                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                            ? "border-zinc-700 text-zinc-700"
+                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                             }`}
                     >
                         Internal Users
@@ -339,8 +380,8 @@ const UsersContent = () => {
                     <button
                         onClick={() => setActiveTab("external")}
                         className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "external"
-                                ? "border-zinc-700 text-zinc-700"
-                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                            ? "border-zinc-700 text-zinc-700"
+                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                             }`}
                     >
                         External Users
@@ -358,7 +399,10 @@ const UsersContent = () => {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <button className="text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm">
+                <button
+                    onClick={() => setIsAddUserModalOpen(true)}
+                    className="text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm"
+                >
                     Add New User
                 </button>
             </div>
@@ -373,6 +417,12 @@ const UsersContent = () => {
                     {renderUserTable()}
                 </>
             )}
+
+            <AddUserModal
+                isOpen={isAddUserModalOpen}
+                onClose={() => setIsAddUserModalOpen(false)}
+                onAddUser={handleAddNewUser}
+            />
         </div>
     );
 };

@@ -64,29 +64,63 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
 
     // Calculate metrics for current period
     const metrics = useMemo(() => {
-        return filteredMetricsByDate.reduce(
-            (acc, row) => ({
-                clicks: acc.clicks + (row.clicks || 0),
-                impressions: acc.impressions + (row.impressions || 0),
-                conversions: acc.conversions + (row.conversions || 0),
-                conversion_value: acc.conversion_value + (row.conversion_value || 0),
-                cost: acc.cost + (row.cost || 0),
-                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
-                conv_rate: acc.clicks > 0 ? acc.conversions / acc.clicks : 0,
-                cpc: acc.clicks > 0 ? acc.cost / acc.clicks : 0,
-            }),
-            {
-                clicks: 0,
-                impressions: 0,
-                conversions: 0,
-                conversion_value: 0,
-                cost: 0,
-                ctr: 0,
-                conv_rate: 0,
-                cpc: 0,
-            }
-        );
-    }, [filteredMetricsByDate]);
+        if (emailType === "klaviyo") {
+            return filteredMetricsByDate.reduce(
+                (acc, row) => ({
+                    clicks: acc.clicks + (row.clicks || 0),
+                    impressions: acc.impressions + (row.impressions || 0),
+                    opens: acc.opens + (row.opens || 0),
+                    bounces: acc.bounces + (row.bounces || 0),
+                    unsubscribes: acc.unsubscribes + (row.unsubscribes || 0),
+                    conversions: acc.conversions + (row.conversions || 0),
+                    conversion_value: acc.conversion_value + (row.conversion_value || 0),
+                    cost: acc.cost + (row.cost || 0),
+                    ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                    open_rate: row.impressions > 0 ? acc.opens / acc.impressions : 0,
+                    conv_rate: acc.clicks > 0 ? acc.conversions / acc.clicks : 0,
+                    cpc: acc.clicks > 0 ? acc.cost / acc.clicks : 0,
+                }),
+                {
+                    clicks: 0,
+                    impressions: 0,
+                    opens: 0,
+                    bounces: 0,
+                    unsubscribes: 0,
+                    conversions: 0,
+                    conversion_value: 0,
+                    cost: 0,
+                    ctr: 0,
+                    open_rate: 0,
+                    conv_rate: 0,
+                    cpc: 0,
+                }
+            );
+        } else {
+            // Original ActiveCampaign metrics calculation
+            return filteredMetricsByDate.reduce(
+                (acc, row) => ({
+                    clicks: acc.clicks + (row.clicks || 0),
+                    impressions: acc.impressions + (row.impressions || 0),
+                    conversions: acc.conversions + (row.conversions || 0),
+                    conversion_value: acc.conversion_value + (row.conversion_value || 0),
+                    cost: acc.cost + (row.cost || 0),
+                    ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                    conv_rate: acc.clicks > 0 ? acc.conversions / acc.clicks : 0,
+                    cpc: acc.clicks > 0 ? acc.cost / acc.clicks : 0,
+                }),
+                {
+                    clicks: 0,
+                    impressions: 0,
+                    conversions: 0,
+                    conversion_value: 0,
+                    cost: 0,
+                    ctr: 0,
+                    conv_rate: 0,
+                    cpc: 0,
+                }
+            );
+        }
+    }, [filteredMetricsByDate, emailType]);
 
     // Calculate comparison dates
     const getComparisonDates = () => {
@@ -133,29 +167,66 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
     // Calculate metrics for comparison period
     const comparisonMetrics = useMemo(() => {
         const comparisonData = metrics_by_date?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
-        return comparisonData.reduce(
-            (acc, row) => ({
-                clicks: acc.clicks + (row.clicks || 0),
-                impressions: acc.impressions + (row.impressions || 0),
-                conversions: acc.conversions + (row.conversions || 0),
-                conversion_value: acc.conversion_value + (row.conversion_value || 0),
-                cost: acc.cost + (row.cost || 0),
-                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
-                conv_rate: acc.clicks > 0 ? acc.conversions / acc.clicks : 0,
-                cpc: acc.clicks > 0 ? acc.cost / acc.clicks : 0,
-            }),
-            {
-                clicks: 0,
-                impressions: 0,
-                conversions: 0,
-                conversion_value: 0,
-                cost: 0,
-                ctr: 0,
-                conv_rate: 0,
-                cpc: 0,
-            }
-        );
-    }, [metrics_by_date, compStart, compEnd]);
+
+        if (emailType === "klaviyo") {
+            return comparisonData.reduce(
+                (acc, row) => ({
+                    clicks: acc.clicks + (row.clicks || 0),
+                    impressions: acc.impressions + (row.impressions || 0),
+                    opens: acc.opens + (row.opens || 0),
+                    bounces: acc.bounces + (row.bounces || 0),
+                    unsubscribes: acc.unsubscribes + (row.unsubscribes || 0),
+                    conversions: acc.conversions + (row.conversions || 0),
+                    conversion_value: acc.conversion_value + (row.conversion_value || 0),
+                    cost: acc.cost + (row.cost || 0),
+                    ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                    open_rate: row.impressions > 0 ? acc.opens / acc.impressions : 0,
+                    conv_rate: acc.clicks > 0 ? acc.conversions / acc.clicks : 0,
+                    cpc: acc.clicks > 0 ? acc.cost / acc.clicks : 0,
+                }),
+                {
+                    clicks: 0,
+                    impressions: 0,
+                    opens: 0,
+                    bounces: 0,
+                    unsubscribes: 0,
+                    conversions: 0,
+                    conversion_value: 0,
+                    cost: 0,
+                    ctr: 0,
+                    open_rate: 0,
+                    conv_rate: 0,
+                    cpc: 0,
+                }
+            );
+        } else {
+            // Original ActiveCampaign metrics calculation
+            return comparisonData.reduce(
+                (acc, row) => ({
+                    // existing code...
+                    clicks: acc.clicks + (row.clicks || 0),
+                    impressions: acc.impressions + (row.impressions || 0),
+                    conversions: acc.conversions + (row.conversions || 0),
+                    conversion_value: acc.conversion_value + (row.conversion_value || 0),
+                    cost: acc.cost + (row.cost || 0),
+                    ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                    conv_rate: acc.clicks > 0 ? acc.conversions / acc.clicks : 0,
+                    cpc: acc.clicks > 0 ? acc.cost / acc.clicks : 0,
+                }),
+                {
+                    clicks: 0,
+                    impressions: 0,
+                    conversions: 0,
+                    conversion_value: 0,
+                    cost: 0,
+                    ctr: 0,
+                    conv_rate: 0,
+                    cpc: 0,
+                }
+            );
+        }
+    }, [metrics_by_date, compStart, compEnd, emailType]);
+
 
     // Calculate filtered top_campaigns
     const filteredTopCampaigns = useMemo(() => {
@@ -194,107 +265,193 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
         return `${delta > 0 ? "+" : ""}${delta.toLocaleString('en-US')}%`;
     };
 
-    const emailMetrics = [
-        {
-            label: "Total Emails Sent",
-            value: metrics.impressions ? Math.round(metrics.impressions).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.impressions, comparisonMetrics.impressions),
-            positive: metrics.impressions >= comparisonMetrics.impressions,
-        },
-        {
-            label: "Total Clicks",
-            value: metrics.clicks ? Math.round(metrics.clicks).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.clicks, comparisonMetrics.clicks),
-            positive: metrics.clicks >= comparisonMetrics.clicks,
-        },
-        {
-            label: "CTR",
-            value: metrics.ctr ? `${(metrics.ctr * 100).toFixed(2)}%` : "0.00%",
-            delta: calculateDelta(metrics.ctr, comparisonMetrics.ctr),
-            positive: metrics.ctr >= comparisonMetrics.ctr,
-        },
-        {
-            label: "Conversions",
-            value: metrics.conversions ? Math.round(metrics.conversions).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.conversions, comparisonMetrics.conversions),
-            positive: metrics.conversions >= comparisonMetrics.conversions,
-        },
-        {
-            label: "Conversion Rate",
-            value: metrics.conv_rate ? `${(metrics.conv_rate * 100).toFixed(2)}%` : "0.00%",
-            delta: calculateDelta(metrics.conv_rate, comparisonMetrics.conv_rate),
-            positive: metrics.conv_rate >= comparisonMetrics.conv_rate,
-        },
-        {
-            label: "Conversion Value",
-            value: metrics.conversion_value ? Math.round(metrics.conversion_value).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.conversion_value, comparisonMetrics.conversion_value),
-            positive: metrics.conversion_value >= comparisonMetrics.conversion_value,
-        },
-        {
-            label: "Cost",
-            value: metrics.cost ? Math.round(metrics.cost).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.cost, comparisonMetrics.cost),
-            positive: metrics.cost <= comparisonMetrics.cost,
-        },
-        {
-            label: "CPC",
-            value: metrics.cpc ? metrics.cpc.toFixed(2) : "0.00",
-            delta: calculateDelta(metrics.cpc, comparisonMetrics.cpc),
-            positive: metrics.cpc <= comparisonMetrics.cpc,
-        },
-    ];
+    const emailMetrics = useMemo(() => {
+        if (emailType === "klaviyo") {
+            return [
+                {
+                    label: "Total Emails Sent",
+                    value: metrics.impressions ? Math.round(metrics.impressions).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.impressions, comparisonMetrics.impressions),
+                    positive: metrics.impressions >= comparisonMetrics.impressions,
+                },
+                {
+                    label: "Total Opens",
+                    value: metrics.opens ? Math.round(metrics.opens).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.opens, comparisonMetrics.opens),
+                    positive: metrics.opens >= comparisonMetrics.opens,
+                },
+                {
+                    label: "Open Rate",
+                    value: metrics.open_rate ? `${(metrics.open_rate * 100).toFixed(2)}%` : "0.00%",
+                    delta: calculateDelta(metrics.open_rate, comparisonMetrics.open_rate),
+                    positive: metrics.open_rate >= comparisonMetrics.open_rate,
+                },
+                {
+                    label: "Total Clicks",
+                    value: metrics.clicks ? Math.round(metrics.clicks).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.clicks, comparisonMetrics.clicks),
+                    positive: metrics.clicks >= comparisonMetrics.clicks,
+                },
+                {
+                    label: "CTR",
+                    value: metrics.ctr ? `${(metrics.ctr * 100).toFixed(2)}%` : "0.00%",
+                    delta: calculateDelta(metrics.ctr, comparisonMetrics.ctr),
+                    positive: metrics.ctr >= comparisonMetrics.ctr,
+                },
+                {
+                    label: "Bounces",
+                    value: metrics.bounces ? Math.round(metrics.bounces).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.bounces, comparisonMetrics.bounces),
+                    positive: metrics.bounces <= comparisonMetrics.bounces,
+                },
+                {
+                    label: "Unsubscribes",
+                    value: metrics.unsubscribes ? Math.round(metrics.unsubscribes).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.unsubscribes, comparisonMetrics.unsubscribes),
+                    positive: metrics.unsubscribes <= comparisonMetrics.unsubscribes,
+                },
+                {
+                    label: "Revenue",
+                    value: metrics.conversion_value ? Math.round(metrics.conversion_value).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.conversion_value, comparisonMetrics.conversion_value),
+                    positive: metrics.conversion_value >= comparisonMetrics.conversion_value,
+                },
+            ];
+        } else {
+            // Original ActiveCampaign metrics
+            return [
+                {
+                    label: "Total Emails Sent",
+                    value: metrics.impressions ? Math.round(metrics.impressions).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.impressions, comparisonMetrics.impressions),
+                    positive: metrics.impressions >= comparisonMetrics.impressions,
+                },
+                // ... rest of your existing ActiveCampaign metrics
+                {
+                    label: "Total Clicks",
+                    value: metrics.clicks ? Math.round(metrics.clicks).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.clicks, comparisonMetrics.clicks),
+                    positive: metrics.clicks >= comparisonMetrics.clicks,
+                },
+                {
+                    label: "CTR",
+                    value: metrics.ctr ? `${(metrics.ctr * 100).toFixed(2)}%` : "0.00%",
+                    delta: calculateDelta(metrics.ctr, comparisonMetrics.ctr),
+                    positive: metrics.ctr >= comparisonMetrics.ctr,
+                },
+                {
+                    label: "Conversions",
+                    value: metrics.conversions ? Math.round(metrics.conversions).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.conversions, comparisonMetrics.conversions),
+                    positive: metrics.conversions >= comparisonMetrics.conversions,
+                },
+                {
+                    label: "Conversion Rate",
+                    value: metrics.conv_rate ? `${(metrics.conv_rate * 100).toFixed(2)}%` : "0.00%",
+                    delta: calculateDelta(metrics.conv_rate, comparisonMetrics.conv_rate),
+                    positive: metrics.conv_rate >= comparisonMetrics.conv_rate,
+                },
+                {
+                    label: "Conversion Value",
+                    value: metrics.conversion_value ? Math.round(metrics.conversion_value).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.conversion_value, comparisonMetrics.conversion_value),
+                    positive: metrics.conversion_value >= comparisonMetrics.conversion_value,
+                },
+                {
+                    label: "Cost",
+                    value: metrics.cost ? Math.round(metrics.cost).toLocaleString('en-US') : "0",
+                    delta: calculateDelta(metrics.cost, comparisonMetrics.cost),
+                    positive: metrics.cost <= comparisonMetrics.cost,
+                },
+                {
+                    label: "CPC",
+                    value: metrics.cpc ? metrics.cpc.toFixed(2) : "0.00",
+                    delta: calculateDelta(metrics.cpc, comparisonMetrics.cpc),
+                    positive: metrics.cpc <= comparisonMetrics.cpc,
+                },
+            ];
+        }
+    }, [metrics, comparisonMetrics, emailType, calculateDelta]);
 
-    const metricsChartData = {
-        labels: filteredMetricsByDate.map((row) => row.date) || [],
-        datasets: [
-            {
-                label: selectedMetric,
-                data: filteredMetricsByDate.map((row) => {
-                    switch (selectedMetric) {
-                        case "Conversions":
-                            return row.conversions || 0;
-                        case "Conversion Value":
-                            return row.conversion_value || 0;
-                        case "Clicks":
-                            return row.clicks || 0;
-                        case "CTR":
-                            return row.ctr || 0;
-                        default:
-                            return 0;
-                    }
-                }) || [],
-                borderColor: colors.primary,
-                backgroundColor: colors.primary,
+    // Update metricsChartData to conditionally include Klaviyo-specific metrics
+    const metricsChartData = useMemo(() => {
+        const metricOptions = emailType === "klaviyo"
+            ? ["Opens", "Open Rate", "Clicks", "CTR", "Bounces", "Unsubscribes", "Revenue"]
+            : ["Conversions", "Conversion Value", "Clicks", "CTR"];
+
+        if (emailType === "klaviyo" && !metricOptions.includes(selectedMetric)) {
+            setSelectedMetric("Opens");
+        }
+
+        return {
+            labels: filteredMetricsByDate.map((row) => row.date) || [],
+            datasets: [
+                {
+                    label: selectedMetric,
+                    data: filteredMetricsByDate.map((row) => {
+                        switch (selectedMetric) {
+                            case "Opens":
+                                return emailType === "klaviyo" ? row.opens || 0 : 0;
+                            case "Open Rate":
+                                return emailType === "klaviyo" ? row.open_rate || 0 : 0;
+                            case "Bounces":
+                                return emailType === "klaviyo" ? row.bounces || 0 : 0;
+                            case "Unsubscribes":
+                                return emailType === "klaviyo" ? row.unsubscribes || 0 : 0;
+                            case "Revenue":
+                                return row.conversion_value || 0;
+                            case "Conversions":
+                                return row.conversions || 0;
+                            case "Conversion Value":
+                                return row.conversion_value || 0;
+                            case "Clicks":
+                                return row.clicks || 0;
+                            case "CTR":
+                                return row.ctr || 0;
+                            default:
+                                return 0;
+                        }
+                    }) || [],
+                    borderColor: colors.primary,
+                    backgroundColor: colors.primary,
+                    borderWidth: 1,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    fill: false,
+                },
+            ],
+        };
+    }, [filteredMetricsByDate, selectedMetric, emailType, colors.primary]);
+
+    const campaignChartData = useMemo(() => {
+        return {
+            labels: [...new Set(filteredCampaignsByDate.map((row) => row.date))].sort(),
+            datasets: selectedCampaigns.map((campaign, i) => ({
+                label: campaign,
+                data: filteredCampaignsByDate
+                    .filter((row) => row.campaign_name === campaign && row.impressions > 0)
+                    .map((row) => ({
+                        x: row.date,
+                        y: emailType === "klaviyo"
+                            ? (selectedMetric === "Opens" ? row.opens || 0 :
+                                selectedMetric === "Open Rate" ? row.open_rate || 0 :
+                                    selectedMetric === "Clicks" ? row.clicks || 0 :
+                                        selectedMetric === "CTR" ? row.ctr || 0 : 0)
+                            : (selectedMetric === "Conversions" ? row.conv_rate || 0 :
+                                selectedMetric === "Conversion Value" ? row.cpc || 0 :
+                                    selectedMetric === "Clicks" ? row.clicks || 0 :
+                                        row.ctr || 0)
+                    })),
+                borderColor: colors[`hue${i % 5}`] || colors.primary,
+                backgroundColor: colors[`hue${i % 5}`] || colors.primary,
                 borderWidth: 1,
                 pointRadius: 2,
                 pointHoverRadius: 4,
                 fill: false,
-            },
-        ],
-    };
+            })),
+        };
+    }, [filteredCampaignsByDate, selectedCampaigns, selectedMetric, emailType, colors]);
 
-    const campaignChartData = {
-        labels: [...new Set(filteredCampaignsByDate.map((row) => row.date))].sort(),
-        datasets: selectedCampaigns.map((campaign, i) => ({
-            label: campaign,
-            data: filteredCampaignsByDate
-                .filter((row) => row.campaign_name === campaign && row.impressions > 0)
-                .map((row) => ({
-                    x: row.date,
-                    y: selectedMetric === "Conversions" ? row.conv_rate || 0 :
-                        selectedMetric === "Conversion Value" ? row.cpc || 0 :
-                            selectedMetric === "Clicks" ? row.clicks || 0 :
-                                row.ctr || 0
-                })),
-            borderColor: colors[`hue${i % 5}`] || colors.primary,
-            backgroundColor: colors[`hue${i % 5}`] || colors.primary,
-            borderWidth: 1,
-            pointRadius: 2,
-            pointHoverRadius: 4,
-            fill: false,
-        })),
-    };
 
     const chartOptions = {
         maintainAspectRatio: false,
@@ -417,10 +574,24 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
                             onChange={(e) => setSelectedMetric(e.target.value)}
                             className="border px-3 py-1 rounded text-sm"
                         >
-                            <option>Conversions</option>
-                            <option>Conversion Value</option>
-                            <option>Clicks</option>
-                            <option>CTR</option>
+                            {emailType === "klaviyo" ? (
+                                <>
+                                    <option>Opens</option>
+                                    <option>Open Rate</option>
+                                    <option>Clicks</option>
+                                    <option>CTR</option>
+                                    <option>Bounces</option>
+                                    <option>Unsubscribes</option>
+                                    <option>Revenue</option>
+                                </>
+                            ) : (
+                                <>
+                                    <option>Conversions</option>
+                                    <option>Conversion Value</option>
+                                    <option>Clicks</option>
+                                    <option>CTR</option>
+                                </>
+                            )}
                         </select>
                     </div>
                     <div className="w-full h-[300px]">
@@ -439,7 +610,9 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
                                     <th className="px-4 py-2">Campaign Name</th>
                                     <th className="px-4 py-2">Clicks</th>
                                     <th className="px-4 py-2">Impr</th>
+                                    {emailType === "klaviyo" && <th className="px-4 py-2">Opens</th>}
                                     <th className="px-4 py-2">CTR</th>
+                                    {emailType === "klaviyo" && <th className="px-4 py-2">Open Rate</th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -448,7 +621,13 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
                                         <td className="px-4 py-2 whitespace-nowrap">{row.campaign_name}</td>
                                         <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
                                         <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
+                                        {emailType === "klaviyo" && (
+                                            <td className="px-4 py-2">{Math.round(row.opens).toLocaleString('en-US')}</td>
+                                        )}
                                         <td className="px-4 py-2">{(row.ctr * 100).toFixed(2)}%</td>
+                                        {emailType === "klaviyo" && (
+                                            <td className="px-4 py-2">{(row.open_rate * 100).toFixed(2)}%</td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>
@@ -473,10 +652,14 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
                                     <th className="px-4 py-2">Date</th>
                                     <th className="px-4 py-2">Campaign Name</th>
                                     <th className="px-4 py-2">Emails Sent</th>
+                                    {emailType === "klaviyo" && <th className="px-4 py-2">Opens</th>}
                                     <th className="px-4 py-2">Clicks</th>
                                     <th className="px-4 py-2">CTR</th>
+                                    {emailType === "klaviyo" && <th className="px-4 py-2">Open Rate</th>}
+                                    {emailType === "klaviyo" && <th className="px-4 py-2">Bounces</th>}
+                                    {emailType === "klaviyo" && <th className="px-4 py-2">Unsubs</th>}
                                     <th className="px-4 py-2">Conversions</th>
-                                    <th className="px-4 py-2">Conv. Value</th>
+                                    <th className="px-4 py-2">{emailType === "klaviyo" ? "Revenue" : "Conv. Value"}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -485,8 +668,20 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
                                         <td className="px-4 py-2">{row.date}</td>
                                         <td className="px-4 py-2 whitespace-nowrap">{row.campaign_name}</td>
                                         <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
+                                        {emailType === "klaviyo" && (
+                                            <td className="px-4 py-2">{Math.round(row.opens).toLocaleString('en-US')}</td>
+                                        )}
                                         <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
                                         <td className="px-4 py-2">{(row.ctr * 100).toFixed(2)}%</td>
+                                        {emailType === "klaviyo" && (
+                                            <td className="px-4 py-2">{(row.open_rate * 100).toFixed(2)}%</td>
+                                        )}
+                                        {emailType === "klaviyo" && (
+                                            <td className="px-4 py-2">{Math.round(row.bounces).toLocaleString('en-US')}</td>
+                                        )}
+                                        {emailType === "klaviyo" && (
+                                            <td className="px-4 py-2">{Math.round(row.unsubscribes).toLocaleString('en-US')}</td>
+                                        )}
                                         <td className="px-4 py-2">{Math.round(row.conversions).toLocaleString('en-US')}</td>
                                         <td className="px-4 py-2">{Math.round(row.conversion_value).toLocaleString('en-US')}</td>
                                     </tr>

@@ -1,20 +1,183 @@
 import EmailDashboard from "./em-dashboard";
-import { queryBigQueryEmailActiveCampaignMetrics } from "@/lib/bigQueryConnect";
+import { queryBigQueryEmailActiveCampaignMetrics, queryBigQueryEmailKlaviyoMetrics } from "@/lib/bigQueryConnect";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
-// TODO: Make dynamic for different email providers (active campaign, klaviyo, mailchimp etc)
+// Support for different email providers (active campaign, klaviyo)
 export default async function EmailDashboardPage({ params }) {
     const resolvedParams = await params;
     const customerId = resolvedParams.customerId;
-    const emailType = "active_campaign";
+
+    // In a real scenario, this would be determined from the customer's settings
+    const emailType = "klaviyo"; // Change to "active_campaign" to test Active Campaign dashboard
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
-        const dashboardQuery = `
+        // Choose the right query based on email provider type
+        let data;
+        if (emailType === "klaviyo") {
+            const klaviyoQuery = `
+            WITH campaign_data AS (
+                SELECT
+                    k.id AS campaign_id,
+                    k.updated_at AS date,
+                    JSON_EXTRACT_SCALAR(k.attributes, '$.name') AS campaign_name,
+                    JSON_EXTRACT_SCALAR(k.attributes, '$.status') AS status,
+                    JSON_EXTRACT_SCALAR(k.attributes, '$.channel') AS channel
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.klaviyo_campaigns\` k
+                WHERE k.updated_at IS NOT NULL
+            ),
+            detailed_metrics AS (
+                SELECT
+                    cd.campaign_name,
+                    cd.date,
+                    -- Extract metrics from campaign_messages JSON array
+                    MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.sends') AS INT64)) AS impressions,
+                    MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.opens') AS INT64)) AS opens,
+                    MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.clicks') AS INT64)) AS clicks,
+                    MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.bounces') AS INT64)) AS bounces,
+                    MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.unsubscribes') AS INT64)) AS unsubscribes,
+                    MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.conversions') AS FLOAT64)) AS conversions,
+                    MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.revenue') AS FLOAT64)) AS conversion_value
+                FROM campaign_data cd
+                JOIN \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.klaviyo_campaigns_detailed\` kcd
+                ON cd.campaign_id = kcd.id
+                CROSS JOIN UNNEST(JSON_EXTRACT_ARRAY(kcd.campaign_messages, '$')) AS msg
+                GROUP BY cd.campaign_name, cd.date
+            ),
+            metrics_by_date AS (
+                SELECT
+                    CAST(date AS STRING) AS date,
+                    COALESCE(SUM(clicks), 0) AS clicks,
+                    COALESCE(SUM(impressions), 0) AS impressions,
+                    COALESCE(SUM(opens), 0) AS opens,
+                    COALESCE(SUM(bounces), 0) AS bounces,
+                    COALESCE(SUM(unsubscribes), 0) AS unsubscribes,
+                    COALESCE(SUM(conversions), 0) AS conversions,
+                    COALESCE(SUM(conversion_value), 0) AS conversion_value,
+                    0 AS cost,
+                    CASE 
+                        WHEN SUM(impressions) > 0 THEN SUM(clicks) / SUM(impressions)
+                        ELSE 0 
+                    END AS ctr,
+                    CASE 
+                        WHEN SUM(impressions) > 0 THEN SUM(opens) / SUM(impressions)
+                        ELSE 0 
+                    END AS open_rate,
+                    CASE 
+                        WHEN SUM(clicks) > 0 THEN SUM(conversions) / SUM(clicks)
+                        ELSE 0 
+                    END AS conv_rate,
+                    CASE 
+                        WHEN SUM(clicks) > 0 THEN 0 / SUM(clicks)  -- No cost data, so cost is 0
+                        ELSE 0 
+                    END AS cpc
+                FROM detailed_metrics
+                GROUP BY date
+                ORDER BY date
+            ),
+            top_campaigns AS (
+                SELECT
+                    campaign_name,
+                    COALESCE(SUM(clicks), 0) AS clicks,
+                    COALESCE(SUM(impressions), 0) AS impressions,
+                    COALESCE(SUM(opens), 0) AS opens,
+                    CASE 
+                        WHEN SUM(impressions) > 0 THEN SUM(clicks) / SUM(impressions)
+                        ELSE 0 
+                    END AS ctr,
+                    CASE 
+                        WHEN SUM(impressions) > 0 THEN SUM(opens) / SUM(impressions)
+                        ELSE 0 
+                    END AS open_rate
+                FROM detailed_metrics
+                GROUP BY campaign_name
+                ORDER BY clicks DESC
+                LIMIT 5
+            ),
+            campaigns_by_date AS (
+                SELECT
+                    CAST(d.date AS STRING) AS date,
+                    d.campaign_name,
+                    COALESCE(SUM(d.clicks), 0) AS clicks,
+                    COALESCE(SUM(d.impressions), 0) AS impressions,
+                    COALESCE(SUM(d.opens), 0) AS opens,
+                    CASE 
+                        WHEN SUM(d.impressions) > 0 THEN SUM(d.clicks) / SUM(d.impressions)
+                        ELSE 0 
+                    END AS ctr,
+                    CASE 
+                        WHEN SUM(d.impressions) > 0 THEN SUM(d.opens) / SUM(d.impressions)
+                        ELSE 0 
+                    END AS open_rate,
+                    CASE 
+                        WHEN SUM(d.clicks) > 0 THEN SUM(d.conversions) / SUM(d.clicks)
+                        ELSE 0 
+                    END AS conv_rate,
+                    0 AS cpc  -- No cost data
+                FROM detailed_metrics d
+                INNER JOIN top_campaigns t
+                    ON d.campaign_name = t.campaign_name
+                GROUP BY d.date, d.campaign_name
+                ORDER BY d.date, clicks DESC
+            ),
+            campaign_performance AS (
+                SELECT
+                    CAST(date AS STRING) AS date,
+                    campaign_name,
+                    COALESCE(SUM(impressions), 0) AS impressions,
+                    COALESCE(SUM(opens), 0) AS opens,
+                    COALESCE(SUM(clicks), 0) AS clicks,
+                    COALESCE(SUM(bounces), 0) AS bounces,
+                    COALESCE(SUM(unsubscribes), 0) AS unsubscribes,
+                    CASE 
+                        WHEN SUM(impressions) > 0 THEN SUM(clicks) / SUM(impressions)
+                        ELSE 0 
+                    END AS ctr,
+                    CASE 
+                        WHEN SUM(impressions) > 0 THEN SUM(opens) / SUM(impressions)
+                        ELSE 0 
+                    END AS open_rate,
+                    COALESCE(SUM(conversions), 0) AS conversions,
+                    COALESCE(SUM(conversion_value), 0) AS conversion_value
+                FROM detailed_metrics
+                GROUP BY date, campaign_name
+                ORDER BY date DESC, clicks DESC
+                LIMIT 30
+            )
+            SELECT
+                (SELECT ARRAY_AGG(STRUCT(
+                    date,
+                    clicks,
+                    impressions,
+                    opens,
+                    bounces,
+                    unsubscribes,
+                    conversions,
+                    conversion_value,
+                    cost,
+                    ctr,
+                    open_rate,
+                    conv_rate,
+                    cpc
+                )) FROM metrics_by_date) AS metrics_by_date,
+                (SELECT ARRAY_AGG(STRUCT(campaign_name, clicks, impressions, opens, ctr, open_rate)) FROM top_campaigns) AS top_campaigns,
+                (SELECT ARRAY_AGG(STRUCT(date, campaign_name, clicks, impressions, opens, ctr, open_rate, conv_rate, cpc)) FROM campaigns_by_date) AS campaigns_by_date,
+                (SELECT ARRAY_AGG(STRUCT(date, campaign_name, impressions, opens, clicks, bounces, unsubscribes, ctr, open_rate, conversions, conversion_value)) FROM campaign_performance) AS campaign_performance
+            `;
+
+            data = await queryBigQueryEmailKlaviyoMetrics({
+                tableId: projectId,
+                customerId: bigQueryCustomerId,
+                customQuery: klaviyoQuery,
+            });
+
+        } else {
+            // Existing Active Campaign query
+            const dashboardQuery = `
     WITH raw_data AS (
         SELECT
             segments_date AS date,
@@ -139,11 +302,12 @@ export default async function EmailDashboardPage({ params }) {
         (SELECT ARRAY_AGG(STRUCT(date, campaign_name, impressions, clicks, ctr, conversions, conversion_value)) FROM campaign_performance) AS campaign_performance
 `;
 
-        const data = await queryBigQueryEmailActiveCampaignMetrics({
-            tableId: projectId,
-            customerId: bigQueryCustomerId,
-            customQuery: dashboardQuery,
-        });
+            data = await queryBigQueryEmailActiveCampaignMetrics({
+                tableId: projectId,
+                customerId: bigQueryCustomerId,
+                customQuery: dashboardQuery,
+            });
+        }
 
         if (!data || !data[0]) {
             console.warn("No data returned from BigQuery for customerId:", customerId);
@@ -152,6 +316,7 @@ export default async function EmailDashboardPage({ params }) {
 
         const { metrics_by_date, top_campaigns, campaigns_by_date, campaign_performance } = data[0];
 
+        console.log(metrics_by_date)
         return (
             <EmailDashboard
                 customerId={customerId}

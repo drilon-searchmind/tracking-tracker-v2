@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
+import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import {
     Chart as ChartJS,
     LineElement,
@@ -45,18 +46,19 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
     const [endDate, setEndDate] = useState(formatDate(yesterday));
     const [selectedMetric, setSelectedMetric] = useState("Conversions");
     const [cpcMetric, setCpcMetric] = useState("CPC");
+    const [activeChartIndex, setActiveChartIndex] = useState(0);
+    const [expandedCampaigns, setExpandedCampaigns] = useState({});
+    const [showAllMetrics, setShowAllMetrics] = useState(false);
 
     const { metrics_by_date, top_campaigns, campaigns_by_date } = initialData || {};
 
     const filteredMetricsByDate = useMemo(() => {
         const filtered = metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
-        console.log("Filtered Metrics By Date:", filtered);
         return filtered;
     }, [metrics_by_date, startDate, endDate]);
 
     const filteredCampaignsByDate = useMemo(() => {
         const filtered = campaigns_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
-        console.log("Filtered Campaigns By Date:", filtered);
         return filtered;
     }, [campaigns_by_date, startDate, endDate]);
 
@@ -89,7 +91,6 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                 conv_rate: 0,
             }
         );
-        console.log("Calculated Metrics:", result);
         return result;
     }, [filteredMetricsByDate]);
 
@@ -164,7 +165,6 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                 conv_rate: 0,
             }
         );
-        console.log("Comparison Metrics:", result);
         return result;
     }, [metrics_by_date, compStart, compEnd]);
 
@@ -188,7 +188,6 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
             }))
             .sort((a, b) => b.clicks - a.clicks)
             .slice(0, 5);
-        console.log("Filtered Top Campaigns:", result);
         return result;
     }, [filteredCampaignsByDate]);
 
@@ -348,12 +347,17 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
 
     const chartOptions = {
         maintainAspectRatio: false,
+        responsive: true,
         scales: {
             x: {
                 type: "time",
                 time: { unit: "day" },
                 grid: { display: false },
-                ticks: { font: { size: 10 } },
+                ticks: { 
+                    font: { size: 10 },
+                    maxRotation: 45,
+                    minRotation: 45
+                },
             },
             y: {
                 beginAtZero: true,
@@ -383,12 +387,77 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
         },
     };
 
+    // Chart components for mobile carousel
+    const chartComponents = [
+        {
+            title: selectedMetric,
+            chart: <Line data={metricsChartData} options={chartOptions} />,
+            selector: (
+                <select
+                    value={selectedMetric}
+                    onChange={(e) => setSelectedMetric(e.target.value)}
+                    className="border px-2 py-1 rounded text-xs"
+                >
+                    <option>Conversions</option>
+                    <option>Ad Spend</option>
+                    <option>ROAS</option>
+                </select>
+            )
+        },
+        {
+            title: "Top Campaigns",
+            chart: <Line data={campaignChartData} options={chartOptions} />,
+            selector: null
+        },
+        {
+            title: cpcMetric,
+            chart: <Line data={cpcChartData} options={chartOptions} />,
+            selector: (
+                <select
+                    value={cpcMetric}
+                    onChange={(e) => setCpcMetric(e.target.value)}
+                    className="border px-2 py-1 rounded text-xs"
+                >
+                    <option>CPC</option>
+                    <option>CTR</option>
+                    <option>Conv. Rate</option>
+                </select>
+            )
+        }
+    ];
+
+    // Navigation for chart carousel
+    const navigateChart = (direction) => {
+        if (direction === 'next') {
+            setActiveChartIndex((prev) => 
+                prev === chartComponents.length - 1 ? 0 : prev + 1
+            );
+        } else {
+            setActiveChartIndex((prev) => 
+                prev === 0 ? chartComponents.length - 1 : prev - 1
+            );
+        }
+    };
+
+    // Toggle campaign expansion
+    const toggleCampaignExpansion = (index) => {
+        setExpandedCampaigns(prev => ({
+            ...prev,
+            [index]: !prev[index]
+        }));
+    };
+
+    // Reset expanded items when date range changes
+    useEffect(() => {
+        setExpandedCampaigns({});
+    }, [startDate, endDate]);
+
     if (!metrics_by_date || !top_campaigns || !campaigns_by_date) {
-        return <div>No data available for {customerId}</div>;
+        return <div className="p-4 text-center">No data available for {customerId}</div>;
     }
 
     return (
-        <div className="py-20 px-0 relative overflow">
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -400,40 +469,74 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                 />
             </div>
 
-            <div className="px-20 mx-auto z-10 relative">
-                <div className="mb-8">
+            <div className="px-0 md:px-20 mx-auto z-10 relative">
+                <div className="mb-6 md:mb-8">
                     <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
-                    <h1 className="mb-5 text-3xl font-bold text-black xl:text-[44px]">Paid Social Dashboard</h1>
-                    <p className="text-gray-600 max-w-2xl">
+                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">Paid Social Dashboard</h1>
+                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                         Overview of key Paid Social metrics including conversions, ad spend, and campaign performance.
                     </p>
                 </div>
 
-                <div className="flex flex-wrap gap-4 items-center mb-10 justify-end">
-                    <select
-                        value={comparison}
-                        onChange={(e) => setComparison(e.target.value)}
-                        className="border px-4 py-2 rounded text-sm bg-white"
-                    >
-                        <option>Previous Year</option>
-                        <option>Previous Period</option>
-                    </select>
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="border px-2 py-2 rounded text-sm"
-                    />
-                    <span className="text-gray-400">→</span>
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="border px-2 py-2 rounded text-sm"
-                    />
+                <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center mb-6 md:mb-10 justify-start md:justify-end">
+                    <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
+                        <select
+                            value={comparison}
+                            onChange={(e) => setComparison(e.target.value)}
+                            className="border px-4 py-2 rounded text-sm bg-white w-full md:w-auto"
+                        >
+                            <option>Previous Year</option>
+                            <option>Previous Period</option>
+                        </select>
+                        
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
+                            />
+                            <span className="text-gray-400 hidden md:inline">→</span>
+                            <span className="text-gray-400 md:hidden">to</span>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+                {/* Mobile Metrics View */}
+                <div className="md:hidden mb-6">
+                    <div className="bg-white border border-zinc-200 rounded shadow-sm">
+                        <div className="grid grid-cols-2 gap-px bg-gray-100">
+                            {ppcMetrics.slice(0, showAllMetrics ? ppcMetrics.length : 4).map((item, i) => (
+                                <div key={i} className="bg-white p-4">
+                                    <p className="text-xs text-gray-500">{item.label}</p>
+                                    <p className="text-xl font-bold text-zinc-800">{item.value}</p>
+                                    {item.delta && (
+                                        <p className={`text-xs font-medium ${item.positive ? "text-green-600" : "text-red-500"}`}>
+                                            {item.delta}
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        {ppcMetrics.length > 4 && (
+                            <button 
+                                onClick={() => setShowAllMetrics(!showAllMetrics)}
+                                className="w-full py-2 text-sm text-blue-600 border-t border-gray-100"
+                            >
+                                {showAllMetrics ? "Show Less" : `Show ${ppcMetrics.length - 4} More Metrics`}
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Desktop Metrics Grid */}
+                <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
                     {ppcMetrics.map((item, i) => (
                         <div key={i} className="bg-white border border-zinc-200 rounded p-4">
                             <p className="text-sm text-gray-500">{item.label}</p>
@@ -447,7 +550,45 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                     ))}
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded p-6 mb-10 shadow-solid-l">
+                {/* Mobile Chart Carousel */}
+                <div className="md:hidden mb-8">
+                    <div className="bg-white border border-zinc-200 rounded p-4 h-[280px]">
+                        <div className="flex items-center justify-between mb-4">
+                            <p className="font-semibold text-sm">{chartComponents[activeChartIndex].title}</p>
+                            <div className="flex items-center gap-2">
+                                {chartComponents[activeChartIndex].selector}
+                                <div className="flex gap-1">
+                                    <button 
+                                        onClick={() => navigateChart('prev')} 
+                                        className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                    >
+                                        <FaChevronLeft size={12} />
+                                    </button>
+                                    <button 
+                                        onClick={() => navigateChart('next')} 
+                                        className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                    >
+                                        <FaChevronRight size={12} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="w-full h-[210px]">
+                            {chartComponents[activeChartIndex].chart}
+                        </div>
+                    </div>
+                    <div className="flex justify-center mt-2 gap-1">
+                        {chartComponents.map((_, index) => (
+                            <span 
+                                key={index} 
+                                className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Desktop Charts - First Chart */}
+                <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 mb-10 shadow-solid-l">
                     <div className="flex justify-between items-center mb-4">
                         <p className="font-semibold">{selectedMetric}</p>
                         <select
@@ -465,7 +606,49 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                     </div>
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded p-6 mb-8 shadow-solid-l">
+                {/* Mobile Campaigns Section */}
+                <div className="md:hidden bg-white border border-zinc-200 rounded mb-6 shadow-solid-l">
+                    <div className="p-4 border-b border-gray-100">
+                        <p className="font-semibold text-sm">Top Performance Campaigns</p>
+                    </div>
+                    <div className="p-1">
+                        {filteredTopCampaigns.map((row, i) => (
+                            <div key={i} className="border-b border-gray-100 last:border-b-0">
+                                <div 
+                                    className="p-3 flex justify-between items-center"
+                                    onClick={() => toggleCampaignExpansion(i)}
+                                >
+                                    <div className="truncate pr-2 w-4/5">
+                                        <span className="font-medium text-xs">{row.campaign_name}</span>
+                                    </div>
+                                    <FaChevronRight 
+                                        className={`text-gray-400 transition-transform ${expandedCampaigns[i] ? 'rotate-90' : ''}`}
+                                        size={12}
+                                    />
+                                </div>
+                                {expandedCampaigns[i] && (
+                                    <div className="px-4 pb-3 grid grid-cols-3 gap-1 text-xs">
+                                        <div>
+                                            <span className="text-gray-500 block">Clicks</span>
+                                            <span className="font-medium">{Math.round(row.clicks).toLocaleString('en-US')}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 block">Impressions</span>
+                                            <span className="font-medium">{Math.round(row.impressions).toLocaleString('en-US')}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 block">CTR</span>
+                                            <span className="font-medium">{(row.ctr * 100).toFixed(2)}%</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Desktop Campaigns Table and Chart */}
+                <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 mb-8 shadow-solid-l">
                     <div className="flex justify-between items-center mb-4">
                         <p className="font-semibold">Top Performance Campaigns</p>
                     </div>
@@ -499,7 +682,29 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                     </div>
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded p-6 shadow-solid-l">
+                {/* Mobile CPC Chart (Part of carousel) */}
+                <div className="md:hidden bg-white border border-zinc-200 rounded mb-6 shadow-solid-l hidden">
+                    <div className="p-4 border-b border-gray-100">
+                        <div className="flex justify-between items-center">
+                            <p className="font-semibold text-sm">{cpcMetric}</p>
+                            <select
+                                value={cpcMetric}
+                                onChange={(e) => setCpcMetric(e.target.value)}
+                                className="border px-2 py-1 rounded text-xs"
+                            >
+                                <option>CPC</option>
+                                <option>CTR</option>
+                                <option>Conv. Rate</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="p-4 h-[210px]">
+                        <Line data={cpcChartData} options={chartOptions} />
+                    </div>
+                </div>
+
+                {/* Desktop CPC Chart */}
+                <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 shadow-solid-l">
                     <div className="flex justify-between items-center mb-4">
                         <p className="font-semibold">{cpcMetric}</p>
                         <select

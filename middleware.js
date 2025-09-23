@@ -43,7 +43,6 @@ export const config = {
         "/api/config-:path*", 
         "/admin/:path*",
         "/home",
-        "/my-profile/:path*",
-        "/((?!login|api/auth).)*"
+        "/my-profile/:path*"
     ],
 };

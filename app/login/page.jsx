@@ -16,8 +16,10 @@ function LoginForm() {
     const callbackUrl = searchParams.get("callbackUrl") || "/home";
 
     useEffect(() => {
-        if (status === "authenticated" && session) {
-            console.log("User already authenticated, redirecting to:", callbackUrl);
+        const isLoginPage = window.location.pathname === "/login";
+        
+        if (isLoginPage && status === "authenticated" && session) {
+            console.log("User already authenticated, redirecting from login page to:", callbackUrl);
             
             let targetPath = callbackUrl;
             

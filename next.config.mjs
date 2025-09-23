@@ -25,18 +25,6 @@ const nextConfig = {
                 destination: '/home',
                 permanent: false,
             },
-            {
-                source: '/login',
-                has: [
-                    {
-                        type: 'query',
-                        key: 'callbackUrl',
-                        value: 'https://(.*)',
-                    },
-                ],
-                destination: '/login?callbackUrl=/home',
-                permanent: false,
-            },
         ];
     },
 };

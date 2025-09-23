@@ -7,7 +7,11 @@ export default async function ProtectedLayout({ children }) {
     let session;
     try {
         session = await getServerSession(authOptions);
-        console.log("Protected layout - session exists:", !!session);
+        
+        // Only log in development
+        if (process.env.NODE_ENV !== 'production') {
+            console.log("Protected layout - session exists:", !!session);
+        }
     } catch (error) {
         console.error("Error retrieving session:", error);
         redirect("/login?error=session_error");

@@ -96,7 +96,7 @@ export default async function ConfigPage({ params }) {
 
                 <div className="mt-6 md:mt-8">
                     <h3 className="font-semibold text-base md:text-lg mb-2 text-zinc-800">Static Expenses</h3>
-                    <StaticExpenses customerId={customerId} baseUrl={baseUrl} />
+                    <StaticExpenses customerId={customerId} />
                 </div>
 
                 <div className="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 bg-white p-4 md:p-6 rounded-lg shadow-md border border-zinc-200">

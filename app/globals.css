@@ -12,18 +12,14 @@
 	--color-secondary-searchmind-hover: #c0b8a3;
 }
 
+:root { color-scheme: light; }
+html { color-scheme: light; }
+
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--font-sans: var(--font-geist-sans);
 	--font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		--background: #0a0a0a;
-		--foreground: #ededed;
-	}
 }
 
 body {

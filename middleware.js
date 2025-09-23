@@ -7,23 +7,10 @@ export default withAuth(
             const path = req.nextUrl.pathname;
             const token = req.nextauth?.token;
             
-            // Skip middleware for login and auth API routes
-            if (path.includes('/login') || path.includes('/api/auth')) {
+            if (path.includes("/dashboard") && req.nextUrl.search.includes("callbackUrl=/dashboard")) {
                 return NextResponse.next();
             }
             
-            // If no token, let NextAuth handle it
-            if (!token) return NextResponse.next();
-            
-            // Handle redirection flags
-            const searchParams = req.nextUrl.searchParams;
-            if (searchParams.has('noRedirect')) {
-                const url = new URL(req.url);
-                url.searchParams.delete('noRedirect');
-                return NextResponse.rewrite(url);
-            }
-            
-            // Check for customer access - match dashboard/[customerId] pattern
             const customerMatch = path.match(/\/dashboard\/([^\/]+)/);
             if (customerMatch) {
                 const customerId = customerMatch[1];

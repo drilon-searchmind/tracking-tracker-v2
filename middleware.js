@@ -1,16 +1,30 @@
+// filepath: c:\Users\Searchmind\Documents\DEV\INTERN\TRACKING_TRACKER_V2\tracking-tracker-v2-dbr-local_main\tracking-tracker-v2\middleware.js
+
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
+// Add proper error handling to middleware
 export default withAuth(
     function middleware(req) {
         try {
+            // Skip processing for static assets, API routes, etc.
             const path = req.nextUrl.pathname;
-            const token = req.nextauth?.token;
-            
-            if (path.includes("/dashboard") && req.nextUrl.search.includes("callbackUrl=/dashboard")) {
+            if (
+                path.startsWith('/_next') || 
+                path.startsWith('/api/auth') || 
+                path.includes('/images/')
+            ) {
                 return NextResponse.next();
             }
             
+            const token = req.nextauth?.token;
+            
+            // If no token but on protected route, NextAuth will handle redirection
+            if (!token) {
+                return NextResponse.next();
+            }
+            
+            // Customer access check logic
             const customerMatch = path.match(/\/dashboard\/([^\/]+)/);
             if (customerMatch) {
                 const customerId = customerMatch[1];
@@ -23,6 +37,7 @@ export default withAuth(
                     
                     if (!hasAccess) {
                         console.log(`Access denied: User ${token.email} attempted to access unauthorized customer ${customerId}`);
+                        // Use absolute URL format for Vercel
                         return NextResponse.redirect(new URL("/unauthorized", req.url));
                     }
                 }
@@ -41,6 +56,7 @@ export default withAuth(
     }
 );
 
+// Specify exact paths to protect
 export const config = {
     matcher: [
         "/dashboard/:path*", 

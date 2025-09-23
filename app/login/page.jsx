@@ -18,25 +18,28 @@ function LoginForm() {
     useEffect(() => {
         if (status === "authenticated" && session) {
             console.log("User already authenticated, redirecting to:", callbackUrl);
-
-            let targetUrl = callbackUrl;
-            try {
-                if (targetUrl.startsWith('http')) {
-                    const urlObj = new URL(targetUrl);
-                    targetUrl = urlObj.pathname + urlObj.search;
+            
+            let targetPath = callbackUrl;
+            
+            if (targetPath.startsWith('http')) {
+                try {
+                    const urlObj = new URL(targetPath);
+                    targetPath = urlObj.pathname + urlObj.search;
+                } catch (error) {
+                    console.error("Error parsing URL:", error);
+                    targetPath = '/home';
                 }
-
-                const redirectUrl = targetUrl.includes('?')
-                    ? `${targetUrl}&noRedirect=true`
-                    : `${targetUrl}?noRedirect=true`;
-
-                console.log("Redirecting to:", redirectUrl);
-
-                router.replace(redirectUrl);
-            } catch (error) {
-                console.error("Error parsing redirect URL:", error);
-                router.replace('/home?noRedirect=true');
             }
+            
+            if ((targetPath.includes('dashboard') && !targetPath.includes('customerId=')) || 
+                targetPath === '/login') {
+                targetPath = '/home';
+            }
+            
+            console.log("Final redirect path:", targetPath);
+            setTimeout(() => {
+                router.replace(targetPath);
+            }, 500);
         }
     }, [status, session, router, callbackUrl]);
 

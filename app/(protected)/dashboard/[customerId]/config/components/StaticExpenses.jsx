@@ -11,7 +11,7 @@ export default function StaticExpenses({ customerId }) {
     useEffect(() => {
         async function fetchStaticExpenses() {
             try {
-                const apiUrl = `/api/config-static-expenses/${customerId}`;
+                const apiUrl = `/api/config-static-expenses-v2/${customerId}`;
 
                 const response = await fetch(apiUrl);
                 const text = await response.text();
@@ -84,8 +84,8 @@ export default function StaticExpenses({ customerId }) {
     const handleSave = async () => {
         try {
             const apiUrl = baseUrl
-                ? `${baseUrl}/api/config-static-expenses/${customerId}`
-                : `/api/config-static-expenses/${customerId}`;
+                ? `${baseUrl}/api/config-static-expenses-v2/${customerId}`
+                : `/api/config-static-expenses-v2/${customerId}`;
 
             const response = await fetch(apiUrl, {
                 method: "PUT",

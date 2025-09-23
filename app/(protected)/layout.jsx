@@ -4,13 +4,22 @@ import { redirect } from "next/navigation";
 import { ModalProvider } from "../contexts/CampaignModalContext";
 
 export default async function ProtectedLayout({ children }) {
-    const session = await getServerSession(authOptions)
-
-    console.log("Protected layout - session exists:", !!session);
+    let session;
+    try {
+        session = await getServerSession(authOptions);
+        
+        // Only log in development
+        if (process.env.NODE_ENV !== 'production') {
+            console.log("Protected layout - session exists:", !!session);
+        }
+    } catch (error) {
+        console.error("Error retrieving session:", error);
+        redirect("/login?error=session_error");
+    }
 
     if (!session) {
         console.log("No session found, redirecting to login");
-        redirect("/login?redirecting=true");
+        redirect("/login");
     }
 
     return (
@@ -21,5 +30,5 @@ export default async function ProtectedLayout({ children }) {
                 </div>
             </div>
         </ModalProvider>
-    )
+    );
 }

@@ -8,28 +8,20 @@ export default withAuth(
             const token = req.nextauth?.token;
             const searchParams = req.nextUrl.searchParams;
             
+            if (path.includes('/login') || path.includes('/api/auth')) {
+                return NextResponse.next();
+            }
+            
             if (!token) return NextResponse.next();
             
             if (searchParams.has('noRedirect')) {
                 const url = new URL(req.url);
                 url.searchParams.delete('noRedirect');
-                
                 return NextResponse.rewrite(url);
             }
             
             const customerMatch = path.match(/\/dashboard\/([^\/]+)/);
             if (customerMatch) {
-                const customerId = customerMatch[1];
-                
-                if (!token.isAdmin) {
-                    const accessibleCustomers = token.accessibleCustomers || [];
-                    const hasAccess = accessibleCustomers.includes(customerId);
-                    
-                    if (!hasAccess) {
-                        console.log(`Access denied: User ${token.email} attempted to access unauthorized customer ${customerId}`);
-                        return NextResponse.redirect(new URL("/unauthorized", req.url));
-                    }
-                }
             }
 
             return NextResponse.next();
@@ -46,5 +38,11 @@ export default withAuth(
 );
 
 export const config = {
-    matcher: ["/dashboard/:path*", "/api/config-:path*", "/admin/:path*"],
+    matcher: [
+        "/dashboard/:path*", 
+        "/api/config-:path*", 
+        "/admin/:path*",
+        "/home",
+        "/my-profile/:path*"
+    ],
 };

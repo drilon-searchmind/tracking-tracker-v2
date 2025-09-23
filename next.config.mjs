@@ -20,20 +20,13 @@ const nextConfig = {
 
     async redirects() {
         return [
-          {
-            source: '/login',
-            has: [
-              {
-                type: 'query',
-                key: 'callbackUrl',
-                value: 'https://(.*)',
-              },
-            ],
-            destination: '/login?callbackUrl=/home',
-            permanent: false,
-          },
+            {
+                source: '/',
+                destination: '/home',
+                permanent: false,
+            },
         ];
-      },
+    },
 };
 
 export default nextConfig;

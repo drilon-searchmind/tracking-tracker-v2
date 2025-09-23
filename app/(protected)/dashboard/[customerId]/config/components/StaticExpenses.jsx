@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from "react";
 
-export default function StaticExpenses({ customerId, baseUrl }) {
+export default function StaticExpenses({ customerId }) {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "");
+
     const [expenses, setExpenses] = useState(null);
     const [loading, setLoading] = useState(true); 
 
     useEffect(() => {
         async function fetchStaticExpenses() {
             try {
-                const apiUrl = baseUrl
-                    ? `${baseUrl}/api/config-static-expenses/${customerId}`
-                    : `/api/config-static-expenses/${customerId}`;
+                const apiUrl = `/api/config-static-expenses/${customerId}`;
 
                 const response = await fetch(apiUrl);
                 const text = await response.text();

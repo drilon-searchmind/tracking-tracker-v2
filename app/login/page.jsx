@@ -15,46 +15,15 @@ function LoginForm() {
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get("callbackUrl") || "/home";
 
-    const isProduction = process.env.NODE_ENV === 'production';
-    const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
-
     useEffect(() => {
-        const isLoginPage = window.location.pathname === "/login";
-
-        if (isLoginPage && status === "authenticated" && session) {
-            console.log("User already authenticated, redirecting from login page to:", callbackUrl);
-
-            let targetPath = callbackUrl;
-
-            // Handle absolute URLs (especially important for Vercel production environment)
-            if (targetPath.startsWith('http')) {
-                try {
-                    const urlObj = new URL(targetPath);
-                    // Only extract pathname+search if it's the same domain
-                    const currentDomain = window.location.hostname;
-                    if (urlObj.hostname === currentDomain ||
-                        urlObj.hostname.includes('vercel.app')) {
-                        targetPath = urlObj.pathname + urlObj.search;
-                    } else {
-                        // If different domain, use safe default
-                        targetPath = '/home';
-                    }
-                } catch (error) {
-                    console.error("Error parsing URL:", error);
-                    targetPath = '/home';
-                }
-            }
-
-            // Additional safety checks
-            if ((targetPath.includes('dashboard') && !targetPath.includes('customerId=')) ||
-                targetPath === '/login') {
-                targetPath = '/home';
-            }
-
-            console.log("Final redirect path:", targetPath);
-
-            // Use router.replace instead of push to avoid history stack issues
-            router.replace(targetPath);
+        if (status === "authenticated" && session) {
+            console.log("User authenticated, preparing redirect to:", callbackUrl);
+            // Add a small delay to avoid immediate redirection loops
+            const redirectTimer = setTimeout(() => {
+                router.push(callbackUrl);
+            }, 100);
+            
+            return () => clearTimeout(redirectTimer);
         }
     }, [status, session, router, callbackUrl]);
 

@@ -9,10 +9,42 @@ export default function StaticExpenses({ customerId, baseUrl }) {
     useEffect(() => {
         async function fetchStaticExpenses() {
             try {
-                const response = await fetch(`${baseUrl}/api/config-static-expenses/${customerId}`);
-                const result = await response.json();
+                const apiUrl = baseUrl
+                    ? `${baseUrl}/api/config-static-expenses/${customerId}`
+                    : `/api/config-static-expenses/${customerId}`;
 
-                if (result.data) {
+                const response = await fetch(apiUrl);
+                const text = await response.text();
+
+                if (!text || !text.trim()) {
+                    setExpenses({
+                        cogs_percentage: 0,
+                        shipping_cost_per_order: 0,
+                        transaction_cost_percentage: 0,
+                        marketing_bureau_cost: 0,
+                        marketing_tooling_cost: 0,
+                        fixed_expenses: 0,
+                    });
+                    return;
+                }
+
+                let result = null;
+                try {
+                    result = JSON.parse(text);
+                } catch (parseErr) {
+                    console.error("Error parsing static expenses JSON:", parseErr, "raw:", text);
+                    setExpenses({
+                        cogs_percentage: 0,
+                        shipping_cost_per_order: 0,
+                        transaction_cost_percentage: 0,
+                        marketing_bureau_cost: 0,
+                        marketing_tooling_cost: 0,
+                        fixed_expenses: 0,
+                    });
+                    return;
+                }
+
+                if (result?.data) {
                     setExpenses(result.data);
                 } else {
                     setExpenses({
@@ -51,7 +83,11 @@ export default function StaticExpenses({ customerId, baseUrl }) {
 
     const handleSave = async () => {
         try {
-            const response = await fetch(`${baseUrl}/api/config-static-expenses/${customerId}`, {
+            const apiUrl = baseUrl
+                ? `${baseUrl}/api/config-static-expenses/${customerId}`
+                : `/api/config-static-expenses/${customerId}`;
+
+            const response = await fetch(apiUrl, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -62,6 +98,8 @@ export default function StaticExpenses({ customerId, baseUrl }) {
             if (response.ok) {
                 alert("Static expenses updated successfully!");
             } else {
+                const text = await response.text();
+                console.error("Failed to update static expenses:", response.status, text);
                 alert("Failed to update static expenses.");
             }
         } catch (error) {

@@ -15,17 +15,13 @@ function LoginForm() {
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get("callbackUrl") || "/home";
 
+    // Simple redirect for authenticated users - no conditional rendering
     useEffect(() => {
-        if (status === "authenticated" && session) {
-            console.log("User authenticated, preparing redirect to:", callbackUrl);
-            // Add a small delay to avoid immediate redirection loops
-            const redirectTimer = setTimeout(() => {
-                router.push(callbackUrl);
-            }, 100);
-            
-            return () => clearTimeout(redirectTimer);
+        if (status === "authenticated") {
+            // Use direct window location for most reliable redirect
+            window.location.href = "/home";
         }
-    }, [status, session, router, callbackUrl]);
+    }, [status]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -41,8 +37,9 @@ function LoginForm() {
 
             if (result?.error) {
                 setError(result.error);
-            } else if (result?.url) {
-                router.push(callbackUrl);
+            } else if (result?.ok) {
+                // Use direct window location instead of Next.js router for more reliable redirect
+                window.location.href = "/home";
             }
         } catch (error) {
             setError("An error occurred during login. Please try again.");
@@ -51,21 +48,7 @@ function LoginForm() {
         }
     };
 
-    if (status === "authenticated") {
-        return (
-            <div className="flex justify-center items-center min-h-[80vh]">
-                <div className="bg-white rounded-lg shadow-solid-l p-8 border border-zinc-200 text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary-searchmind)] mx-auto mb-4"></div>
-                    <p className="text-gray-600">Authentication successful, redirecting...</p>
-                    <p className="text-sm text-gray-500 mt-2">If you're not redirected automatically, <button
-                        onClick={() => router.replace('/home')}
-                        className="text-[var(--color-primary-searchmind)] underline"
-                    >click here</button></p>
-                </div>
-            </div>
-        );
-    }
-
+    // Important: No conditional rendering for authentication state - just show the form
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>

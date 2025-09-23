@@ -11,7 +11,8 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
         ? process.env.NEXT_PUBLIC_BASE_URL
         : process.env.NODE_ENV === "development"
             ? "http://localhost:3000"
-            : "http://localhost:3000";
+            : process.env.NEXT_PUBLIC_BASE_URL;
+            
     const [email, setEmail] = useState("");
     const [sharedWith, setSharedWith] = useState("");
     const [password, setPassword] = useState("");

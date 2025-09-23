@@ -18,16 +18,25 @@ function LoginForm() {
     useEffect(() => {
         if (status === "authenticated" && session) {
             console.log("User already authenticated, redirecting to:", callbackUrl);
-            const redirectTimer = setTimeout(() => {
-                const currentPath = window.location.pathname;
-                const targetPath = new URL(callbackUrl, window.location.origin).pathname;
-                
-                if (currentPath !== targetPath) {
-                    router.push(callbackUrl);
+
+            let targetUrl = callbackUrl;
+            try {
+                if (targetUrl.startsWith('http')) {
+                    const urlObj = new URL(targetUrl);
+                    targetUrl = urlObj.pathname + urlObj.search;
                 }
-            }, 100);
-            
-            return () => clearTimeout(redirectTimer);
+
+                const redirectUrl = targetUrl.includes('?')
+                    ? `${targetUrl}&noRedirect=true`
+                    : `${targetUrl}?noRedirect=true`;
+
+                console.log("Redirecting to:", redirectUrl);
+
+                router.replace(redirectUrl);
+            } catch (error) {
+                console.error("Error parsing redirect URL:", error);
+                router.replace('/home?noRedirect=true');
+            }
         }
     }, [status, session, router, callbackUrl]);
 
@@ -60,7 +69,11 @@ function LoginForm() {
             <div className="flex justify-center items-center min-h-[80vh]">
                 <div className="bg-white rounded-lg shadow-solid-l p-8 border border-zinc-200 text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary-searchmind)] mx-auto mb-4"></div>
-                    <p className="text-gray-600">Redirecting to dashboard...</p>
+                    <p className="text-gray-600">Authentication successful, redirecting...</p>
+                    <p className="text-sm text-gray-500 mt-2">If you're not redirected automatically, <button 
+                        onClick={() => router.replace('/home')}
+                        className="text-[var(--color-primary-searchmind)] underline"
+                    >click here</button></p>
                 </div>
             </div>
         );
@@ -78,7 +91,7 @@ function LoginForm() {
                     className="w-full h-full"
                 />
             </div>
-            
+
             <div className="max-w-md mx-auto z-10 relative">
                 <div className="mb-8 text-center">
                     <h4 className="mb-4 text-base md:text-lg font-light text-zinc-700">Searchmind Apex</h4>

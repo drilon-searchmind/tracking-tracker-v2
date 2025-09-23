@@ -6,12 +6,15 @@ export default withAuth(
         try {
             const path = req.nextUrl.pathname;
             const token = req.nextauth?.token;
+            const searchParams = req.nextUrl.searchParams;
             
             if (!token) return NextResponse.next();
             
-            const isRedirecting = req.nextUrl.searchParams.has('redirecting');
-            if (isRedirecting) {
-                return NextResponse.next();
+            if (searchParams.has('noRedirect')) {
+                const url = new URL(req.url);
+                url.searchParams.delete('noRedirect');
+                
+                return NextResponse.rewrite(url);
             }
             
             const customerMatch = path.match(/\/dashboard\/([^\/]+)/);

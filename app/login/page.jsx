@@ -13,57 +13,43 @@ function LoginForm() {
     const router = useRouter();
     const { data: session, status } = useSession();
     const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get("callbackUrl") || "/home";
-
-    // Simple redirect for authenticated users - no conditional rendering
+    
+    // Handle already authenticated users
     useEffect(() => {
-        if (status === "authenticated" && session) {
-            // Use window.location instead of router to bypass client-side routing issues
+        if (status === "authenticated") {
             window.location.href = "/home";
         }
-    }, [status, session]);
-
+    }, [status]);
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError("");
-
+        
         try {
-            // Use callbackUrl to specify where to redirect after login
             const result = await signIn("credentials", {
                 redirect: false,
                 email,
                 password,
-                callbackUrl: "/home"
             });
-
+            
             if (result?.error) {
                 setError(result.error);
+                setLoading(false);
             } else if (result?.ok) {
-                // Use window.location instead of router for more reliable redirect
+                // Use direct navigation instead of Next.js router
                 window.location.href = "/home";
             }
         } catch (error) {
-            setError("An error occurred during login. Please try again.");
-        } finally {
+            console.error("Sign in error:", error);
+            setError("An unexpected error occurred. Please try again.");
             setLoading(false);
         }
     };
 
-    // Important: No conditional rendering for authentication state - just show the form
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
-            <div className="absolute bottom-[-355px] left-0 w-full h-full z-1 pointer-events-none">
-                <Image
-                    width={1920}
-                    height={1080}
-                    src="/images/shape-dotted-light.svg"
-                    alt="bg"
-                    className="w-full h-full"
-                />
-            </div>
-
+            {/* Your existing login form JSX */}
             <div className="max-w-md mx-auto z-10 relative">
                 <div className="mb-8 text-center">
                     <h4 className="mb-4 text-base md:text-lg font-light text-zinc-700">Searchmind Apex</h4>
@@ -77,6 +63,7 @@ function LoginForm() {
 
                 <div className="bg-white rounded-lg shadow-solid-l p-8 border border-zinc-200 z-10">
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Form fields */}
                         <div>
                             <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
                                 Email address

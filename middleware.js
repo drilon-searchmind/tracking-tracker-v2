@@ -9,14 +9,16 @@ export default withAuth(
             
             if (!token) return NextResponse.next();
             
-            // Check for customer access - match dashboard/[customerId] pattern
+            const isRedirecting = req.nextUrl.searchParams.has('redirecting');
+            if (isRedirecting) {
+                return NextResponse.next();
+            }
+            
             const customerMatch = path.match(/\/dashboard\/([^\/]+)/);
             if (customerMatch) {
                 const customerId = customerMatch[1];
                 
-                // Skip access check for admin users
                 if (!token.isAdmin) {
-                    // Check if the user has the customer in their accessible customers list
                     const accessibleCustomers = token.accessibleCustomers || [];
                     const hasAccess = accessibleCustomers.includes(customerId);
                     

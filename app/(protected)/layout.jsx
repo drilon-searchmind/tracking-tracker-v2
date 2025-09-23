@@ -10,7 +10,7 @@ export default async function ProtectedLayout({ children }) {
 
     if (!session) {
         console.log("No session found, redirecting to login");
-        redirect("/login");
+        redirect("/login?redirecting=true");
     }
 
     return (

@@ -15,10 +15,36 @@ export default async function ConfigPage({ params }) {
 
     const resolvedParams = await params;
     const customerId = resolvedParams.customerId;
-    const { customerName } = await fetchCustomerDetails(customerId);
+    let customerName = "Customer";
 
-    const responseRevenueBudget = await fetch(`${baseUrl}/api/config-revenue-budget/${customerId}`);
-    const revenueBudget = await responseRevenueBudget.json();
+    try {
+        const details = await fetchCustomerDetails(customerId);
+        customerName = details?.customerName ?? "Customer";
+    } catch (err) {
+        console.error("Failed fetching customer details:", err);
+        customerName = "Customer";
+    }
+
+    let revenueBudget = { configs: [] };
+    try {
+        const apiUrl = baseUrl ? `${baseUrl}/api/config-revenue-budget/${customerId}` : `/api/config-revenue-budget/${customerId}`;
+        const responseRevenueBudget = await fetch(apiUrl);
+
+        if (responseRevenueBudget.ok) {
+            revenueBudget = await responseRevenueBudget.json();
+        } else if (responseRevenueBudget.status === 404) {
+            // No revenue/budget config exists for this customer — treat as empty
+            console.warn(`No revenue budget found for customer ${customerId} (404). Returning empty configs.`);
+            revenueBudget = { configs: [] };
+        } else {
+            const text = await responseRevenueBudget.text();
+            console.error("Failed fetching revenue budget:", responseRevenueBudget.status, text);
+            revenueBudget = { configs: [] };
+        }
+    } catch (err) {
+        console.error("Error fetching revenue budget:", err);
+        revenueBudget = { configs: [] };
+    }
 
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">

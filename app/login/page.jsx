@@ -18,7 +18,16 @@ function LoginForm() {
     useEffect(() => {
         if (status === "authenticated" && session) {
             console.log("User already authenticated, redirecting to:", callbackUrl);
-            router.push(callbackUrl);
+            const redirectTimer = setTimeout(() => {
+                const currentPath = window.location.pathname;
+                const targetPath = new URL(callbackUrl, window.location.origin).pathname;
+                
+                if (currentPath !== targetPath) {
+                    router.push(callbackUrl);
+                }
+            }, 100);
+            
+            return () => clearTimeout(redirectTimer);
         }
     }, [status, session, router, callbackUrl]);
 

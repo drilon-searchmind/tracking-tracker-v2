@@ -11,7 +11,7 @@ export default async function KampagneplannerPage({ params }) {
         ? process.env.NEXT_PUBLIC_BASE_URL
         : process.env.NODE_ENV === "development"
             ? "http://localhost:3000"
-            : "http://localhost:3000";
+            : process.env.NEXT_PUBLIC_BASE_URL;
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);

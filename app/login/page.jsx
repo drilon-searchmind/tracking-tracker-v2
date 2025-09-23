@@ -17,11 +17,11 @@ function LoginForm() {
 
     // Simple redirect for authenticated users - no conditional rendering
     useEffect(() => {
-        if (status === "authenticated") {
-            // Use direct window location for most reliable redirect
+        if (status === "authenticated" && session) {
+            // Use window.location instead of router to bypass client-side routing issues
             window.location.href = "/home";
         }
-    }, [status]);
+    }, [status, session]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,16 +29,18 @@ function LoginForm() {
         setError("");
 
         try {
+            // Use callbackUrl to specify where to redirect after login
             const result = await signIn("credentials", {
                 redirect: false,
                 email,
                 password,
+                callbackUrl: "/home"
             });
 
             if (result?.error) {
                 setError(result.error);
             } else if (result?.ok) {
-                // Use direct window location instead of Next.js router for more reliable redirect
+                // Use window.location instead of router for more reliable redirect
                 window.location.href = "/home";
             }
         } catch (error) {

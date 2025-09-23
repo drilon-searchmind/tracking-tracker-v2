@@ -11,13 +11,16 @@ const nextConfig = {
                 headers: [
                     {
                         key: 'Set-Cookie',
-                        value: 'SameSite=Lax; Secure',
-                    },
+                        value: process.env.NODE_ENV === 'production' 
+                            ? 'SameSite=Lax; Secure; Path=/' 
+                            : 'SameSite=Lax; Path=/'
+                    }
                 ],
             },
         ];
     },
 
+    // Keep redirects simple
     async redirects() {
         return [
             {

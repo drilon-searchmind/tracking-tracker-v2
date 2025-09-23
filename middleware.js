@@ -10,8 +10,10 @@ export default withAuth(
             // Skip processing for static assets, API routes, etc.
             const path = req.nextUrl.pathname;
             if (
-                path.startsWith('/_next') || 
-                path.startsWith('/api/auth') || 
+                path.startsWith('/_next') ||
+                path.startsWith('/api') ||           // <- skip all API routes
+                path.startsWith('/api/auth') ||
+                path.startsWith('/favicon.ico') ||
                 path.includes('/images/')
             ) {
                 return NextResponse.next();
@@ -60,7 +62,6 @@ export default withAuth(
 export const config = {
     matcher: [
         "/dashboard/:path*", 
-        "/api/config-:path*", 
         "/admin/:path*",
         "/home",
         "/my-profile/:path*"

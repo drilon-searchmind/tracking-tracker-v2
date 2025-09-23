@@ -1,3 +1,6 @@
+export const runtime = "nodejs"; // ensure Node runtime so mongoose works
+
+import { NextResponse } from "next/server";
 import StaticExpenses from "@/models/StaticExpenses";
 import { dbConnect } from "@/lib/dbConnect";
 
@@ -11,13 +14,13 @@ export async function GET(req, { params }) {
         const staticExpenses = await StaticExpenses.findOne({ customer: customerId });
 
         if (!staticExpenses) {
-            return new Response(JSON.stringify({ message: "No static expenses found", data: null }), { status: 200 });
+            return NextResponse.json({ message: "No static expenses found", data: null }, { status: 200 });
         }
 
-        return new Response(JSON.stringify({ data: staticExpenses }), { status: 200 });
+        return NextResponse.json({ data: staticExpenses }, { status: 200 });
     } catch (error) {
         console.error("Error fetching static expenses:", error);
-        return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });
+        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
     }
 }
 
@@ -35,9 +38,9 @@ export async function PUT(req, { params }) {
             { new: true, upsert: true }
         );
 
-        return new Response(JSON.stringify({ data: updatedExpenses }), { status: 200 });
+        return NextResponse.json({ data: updatedExpenses }, { status: 200 });
     } catch (error) {
         console.error("Error updating static expenses:", error);
-        return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });
+        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
     }
 }

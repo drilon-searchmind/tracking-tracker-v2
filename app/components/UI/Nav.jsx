@@ -7,15 +7,19 @@ import CustomerModal from "@/app/components/Dashboard/CustomerModal.jsx";
 import { FaMoon, FaHome, FaChartLine, FaUserCog, FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
 import LogoutButton from "../Auth/LogoutButton";
 import LoginButton from "../Auth/LoginButton";
+import { useRouter } from "next/navigation";
 
 export default function Nav() {
     const { data: session } = useSession()
     const [showModal, setShowModal] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
-        console.log({ session })
-    }, session)
+        if (session?.user) {
+            console.log({ session })
+        }
+    }, [session, router]);
 
     return (
         <section id="componentNav">

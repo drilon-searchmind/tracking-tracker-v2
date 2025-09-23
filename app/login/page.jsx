@@ -15,33 +15,46 @@ function LoginForm() {
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get("callbackUrl") || "/home";
 
+    const isProduction = process.env.NODE_ENV === 'production';
+    const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+
     useEffect(() => {
         const isLoginPage = window.location.pathname === "/login";
-        
+
         if (isLoginPage && status === "authenticated" && session) {
             console.log("User already authenticated, redirecting from login page to:", callbackUrl);
-            
+
             let targetPath = callbackUrl;
-            
+
+            // Handle absolute URLs (especially important for Vercel production environment)
             if (targetPath.startsWith('http')) {
                 try {
                     const urlObj = new URL(targetPath);
-                    targetPath = urlObj.pathname + urlObj.search;
+                    // Only extract pathname+search if it's the same domain
+                    const currentDomain = window.location.hostname;
+                    if (urlObj.hostname === currentDomain ||
+                        urlObj.hostname.includes('vercel.app')) {
+                        targetPath = urlObj.pathname + urlObj.search;
+                    } else {
+                        // If different domain, use safe default
+                        targetPath = '/home';
+                    }
                 } catch (error) {
                     console.error("Error parsing URL:", error);
                     targetPath = '/home';
                 }
             }
-            
-            if ((targetPath.includes('dashboard') && !targetPath.includes('customerId=')) || 
+
+            // Additional safety checks
+            if ((targetPath.includes('dashboard') && !targetPath.includes('customerId=')) ||
                 targetPath === '/login') {
                 targetPath = '/home';
             }
-            
+
             console.log("Final redirect path:", targetPath);
-            setTimeout(() => {
-                router.replace(targetPath);
-            }, 500);
+
+            // Use router.replace instead of push to avoid history stack issues
+            router.replace(targetPath);
         }
     }, [status, session, router, callbackUrl]);
 
@@ -75,7 +88,7 @@ function LoginForm() {
                 <div className="bg-white rounded-lg shadow-solid-l p-8 border border-zinc-200 text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary-searchmind)] mx-auto mb-4"></div>
                     <p className="text-gray-600">Authentication successful, redirecting...</p>
-                    <p className="text-sm text-gray-500 mt-2">If you're not redirected automatically, <button 
+                    <p className="text-sm text-gray-500 mt-2">If you're not redirected automatically, <button
                         onClick={() => router.replace('/home')}
                         className="text-[var(--color-primary-searchmind)] underline"
                     >click here</button></p>

@@ -3,6 +3,7 @@ import Nav from "./components/UI/Nav";
 import SessionProvider from './providers/SessionProvider';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { GoogleTagManager } from '@next/third-parties/google';
 
 import { Geist, Geist_Mono } from "next/font/google";
 import { Fustat } from "next/font/google";
@@ -21,7 +22,6 @@ export default async function RootLayout({ children }) {
     return (
         <html lang="en">
             <head>
-                {/* Add a meta tag to help with caching issues */}
                 <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
                 <meta httpEquiv="Pragma" content="no-cache" />
                 <meta httpEquiv="Expires" content="0" />
@@ -35,6 +35,9 @@ export default async function RootLayout({ children }) {
                         {children}
                     </ToastProvider>
                 </SessionProvider>
+                <GoogleTagManager
+                    gtmId="MWM37VKJ"
+                />
             </body>
         </html>
     );

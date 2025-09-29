@@ -23,6 +23,15 @@ const nextConfig = {
                     }
                 ],
             },
+            {
+                source: '/(.*)\\.(js|mjs)$',
+                headers: [
+                    {
+                        key: 'Content-Type',
+                        value: 'application/javascript; charset=utf-8'
+                    }
+                ],
+            }
         ];
     },
 

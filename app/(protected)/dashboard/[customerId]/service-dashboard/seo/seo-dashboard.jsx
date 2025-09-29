@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
-import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
+import { FaChevronRight, FaChevronLeft, FaSearch } from "react-icons/fa";
 import {
     Chart as ChartJS,
     LineElement,
@@ -29,7 +29,6 @@ ChartJS.register(
 );
 
 export default function SEODashboard({ customerId, customerName, initialData }) {
-    // Initialize date picker to first day of current month to yesterday
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -52,9 +51,12 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     const [expandedKeywords, setExpandedKeywords] = useState({});
     const [expandedUrls, setExpandedUrls] = useState({});
 
+    // New state for search functionality
+    const [keywordSearch, setKeywordSearch] = useState("");
+    const [urlSearch, setUrlSearch] = useState("");
+
     const { impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = initialData || {};
 
-    // Filter data based on date range
     const filteredImpressionsData = useMemo(() => {
         return impressions_data?.filter((row) => row.date >= dateStart && row.date <= dateEnd) || [];
     }, [impressions_data, dateStart, dateEnd]);
@@ -67,7 +69,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         return keywords_by_date?.filter((row) => row.date >= dateStart && row.date <= dateEnd) || [];
     }, [keywords_by_date, dateStart, dateEnd]);
 
-    // Calculate metrics for current period
     const metrics = useMemo(() => {
         return filteredImpressionsData.reduce(
             (acc, row) => ({
@@ -81,7 +82,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         );
     }, [filteredImpressionsData]);
 
-    // Calculate comparison dates
     const getComparisonDates = () => {
         try {
             const end = new Date(dateEnd);
@@ -123,7 +123,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
 
     const { compStart, compEnd } = getComparisonDates();
 
-    // Calculate metrics for comparison period
     const comparisonMetrics = useMemo(() => {
         const comparisonData = impressions_data?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
         return comparisonData.reduce(
@@ -138,8 +137,8 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         );
     }, [impressions_data, compStart, compEnd]);
 
-    // Calculate filtered top_keywords and top_urls
-    const filteredTopKeywords = useMemo(() => {
+    // Updated to gather and process all keywords, not just top 10
+    const allKeywords = useMemo(() => {
         const keywordMap = filteredKeywordsByDate.reduce((acc, row) => {
             acc[row.keyword] = {
                 clicks: (acc[row.keyword]?.clicks || 0) + (row.clicks || 0),
@@ -156,16 +155,27 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                 impressions: data.impressions,
                 position: data.count > 0 ? data.position / data.count : 0,
             }))
-            .sort((a, b) => b.clicks - a.clicks)
-            .slice(0, 5);
+            .sort((a, b) => b.clicks - a.clicks);
     }, [filteredKeywordsByDate]);
 
-    const filteredTopUrls = useMemo(() => {
+    // Filter keywords by search term if provided
+    const filteredTopKeywords = useMemo(() => {
+        return allKeywords
+            .filter(item =>
+                keywordSearch ?
+                    item.keyword.toLowerCase().includes(keywordSearch.toLowerCase()) :
+                    true
+            )
+            .slice(0, keywordSearch ? undefined : 10); // Show all matching results when searching
+    }, [allKeywords, keywordSearch]);
+
+    // Similar approach for URLs - gather all and filter by search
+    const allUrls = useMemo(() => {
         const urlMap = filteredUrlsByDate.reduce((acc, row) => {
             acc[row.url] = {
                 clicks: (acc[row.url]?.clicks || 0) + (row.clicks || 0),
                 impressions: (acc[row.url]?.impressions || 0) + (row.impressions || 0),
-                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                ctr: row.impressions > 0 ? (acc[row.url]?.clicks || 0) / (acc[row.url]?.impressions || 1) : 0,
             };
             return acc;
         }, {});
@@ -174,14 +184,29 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                 url,
                 clicks: data.clicks,
                 impressions: data.impressions,
-                ctr: data.ctr,
+                ctr: data.impressions > 0 ? data.clicks / data.impressions : 0,
             }))
-            .sort((a, b) => b.clicks - a.clicks)
-            .slice(0, 20);
+            .sort((a, b) => b.clicks - a.clicks);
     }, [filteredUrlsByDate]);
 
-    const selectedUrls = filteredTopUrls.slice(0, 5).map((item) => item.url);
-    const selectedKeywords = filteredTopKeywords.slice(0, 5).map((item) => item.keyword);
+    const filteredTopUrls = useMemo(() => {
+        return allUrls
+            .filter(item =>
+                urlSearch ?
+                    item.url.toLowerCase().includes(urlSearch.toLowerCase()) :
+                    true
+            )
+            .slice(0, urlSearch ? undefined : 20);
+    }, [allUrls, urlSearch]);
+
+    // Select top items for charts
+    const selectedUrls = useMemo(() => {
+        return filteredTopUrls.slice(0, 5).map(item => item.url);
+    }, [filteredTopUrls]);
+
+    const selectedKeywords = useMemo(() => {
+        return filteredTopKeywords.slice(0, 5).map(item => item.keyword);
+    }, [filteredTopKeywords]);
 
     const colors = {
         primary: "#1C398E",
@@ -252,7 +277,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                 type: "time",
                 time: { unit: "day" },
                 grid: { display: false },
-                ticks: { 
+                ticks: {
                     font: { size: 10 },
                     maxRotation: 45,
                     minRotation: 45
@@ -318,7 +343,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         })),
     };
 
-    // Mobile chart carousel
     const chartComponents = [
         {
             title: "Impressions",
@@ -334,20 +358,18 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         }
     ];
 
-    // Navigation for chart carousel
     const navigateChart = (direction) => {
         if (direction === 'next') {
-            setActiveChartIndex((prev) => 
+            setActiveChartIndex((prev) =>
                 prev === chartComponents.length - 1 ? 0 : prev + 1
             );
         } else {
-            setActiveChartIndex((prev) => 
+            setActiveChartIndex((prev) =>
                 prev === 0 ? chartComponents.length - 1 : prev - 1
             );
         }
     };
 
-    // Toggle keyword expansion
     const toggleKeywordExpansion = (index) => {
         setExpandedKeywords(prev => ({
             ...prev,
@@ -355,7 +377,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         }));
     };
 
-    // Toggle URL expansion
     const toggleUrlExpansion = (index) => {
         setExpandedUrls(prev => ({
             ...prev,
@@ -363,7 +384,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         }));
     };
 
-    // Reset expanded items when date range changes
     useEffect(() => {
         setExpandedKeywords({});
         setExpandedUrls({});
@@ -405,7 +425,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                             <option>Previous Year</option>
                             <option>Previous Period</option>
                         </select>
-                        
+
                         <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
                             <input
                                 type="date"
@@ -425,7 +445,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     </div>
                 </div>
 
-                {/* Metrics Grid - Responsive */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 md:mb-10">
                     {seoMetrics.map((item, i) => (
                         <div key={i} className="bg-white border border-zinc-200 rounded p-4">
@@ -440,7 +459,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     ))}
                 </div>
 
-                {/* Desktop Chart Section - Hidden on mobile */}
                 <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 mb-10">
                     <div className="flex justify-between items-center mb-4">
                         <p className="font-semibold">Impressions</p>
@@ -459,7 +477,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     </div>
                 </div>
 
-                {/* Mobile Chart Carousel */}
                 <div className="md:hidden mb-8">
                     <div className="bg-white border border-zinc-200 rounded p-4 h-[280px]">
                         <div className="flex items-center justify-between mb-4">
@@ -475,14 +492,14 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                     <option>CTR</option>
                                 </select>
                                 <div className="flex gap-1">
-                                    <button 
-                                        onClick={() => navigateChart('prev')} 
+                                    <button
+                                        onClick={() => navigateChart('prev')}
                                         className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
                                     >
                                         <FaChevronLeft size={12} />
                                     </button>
-                                    <button 
-                                        onClick={() => navigateChart('next')} 
+                                    <button
+                                        onClick={() => navigateChart('next')}
                                         className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
                                     >
                                         <FaChevronRight size={12} />
@@ -496,58 +513,81 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     </div>
                     <div className="flex justify-center mt-2 gap-1">
                         {chartComponents.map((_, index) => (
-                            <span 
-                                key={index} 
+                            <span
+                                key={index}
                                 className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
                             />
                         ))}
                     </div>
                 </div>
 
-                {/* Keywords Section - Desktop */}
-                <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 mb-8 shadow-solid-l">
-                    <div className="flex justify-between items-center mb-4">
-                        <p className="font-semibold">Top Performance Keyword</p>
-                        <select
-                            value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
-                            className="border px-3 py-1 rounded text-sm"
-                        >
-                            <option>Med brand</option>
-                            <option>Uden brand</option>
-                        </select>
-                    </div>
+                {/* Updated Keywords Section - Desktop */}
+                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-zinc-200 rounded p-6 mb-8 shadow-solid-l">
                     <div className="overflow-auto">
-                        <table className="min-w-full text-sm">
-                            <thead className="bg-gray-50 border-b text-zinc-600 text-left">
-                                <tr>
-                                    <th className="px-4 py-2">#</th>
-                                    <th className="px-4 py-2">Keyword</th>
-                                    <th className="px-4 py-2">Click</th>
-                                    <th className="px-4 py-2">Impr</th>
-                                    <th className="px-4 py-2">Position</th>
-                                    <th className="px-4 py-2 text-center hidden">Select</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredTopKeywords.map((row, i) => (
-                                    <tr key={i} className="border-b">
-                                        <td className="px-4 py-2">{i + 1}</td>
-                                        <td className="px-4 py-2">{row.keyword}</td>
-                                        <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
-                                        <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
-                                        <td className="px-4 py-2">{row.position.toFixed(0)}</td>
-                                        <td className="px-4 py-2 text-center hidden">
-                                            <input type="checkbox" className="rounded border-zinc-300" />
-                                        </td>
+                        <div className="flex justify-between items-center mb-4">
+                            <p className="font-semibold">Top Performance Keywords</p>
+                            <div className="flex items-center gap-2">
+                                <div className="relative">
+                                    {/* New search input for keywords */}
+                                    <input
+                                        type="text"
+                                        placeholder="Search keywords..."
+                                        value={keywordSearch}
+                                        onChange={(e) => setKeywordSearch(e.target.value)}
+                                        className="border px-3 py-1 rounded text-sm pr-8"
+                                    />
+                                    <FaSearch className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                                </div>
+                                <select
+                                    value={filter}
+                                    onChange={(e) => setFilter(e.target.value)}
+                                    className="border px-3 py-1 rounded text-sm"
+                                >
+                                    <option>Med brand</option>
+                                    <option>Uden brand</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="max-h-[500px] overflow-y-auto">
+                            <table className="min-w-full text-sm">
+                                <thead className="bg-gray-50 border-b text-zinc-600 text-left">
+                                    <tr>
+                                        <th className="px-4 py-2">#</th>
+                                        <th className="px-4 py-2">Keyword</th>
+                                        <th className="px-4 py-2">Click</th>
+                                        <th className="px-4 py-2">Impr</th>
+                                        <th className="px-4 py-2">Position</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {filteredTopKeywords.map((row, i) => (
+                                        <tr key={i} className="border-b">
+                                            <td className="px-4 py-2">{i + 1}</td>
+                                            <td className="px-4 py-2">{row.keyword}</td>
+                                            <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-2">{row.position.toFixed(0)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div className="mt-6">
-                        <p className="font-semibold mb-4">Top Keywords Impressions Over Time</p>
-                        <div className="w-full h-[300px]">
+
+                    <div className="flex flex-col h-full">
+                        <div className="flex justify-between items-center mb-2">
+                            <p className="font-semibold">Keywords Over Time</p>
+                            <select
+                                className="border px-3 py-1 rounded text-sm"
+                                value={metric}
+                                onChange={(e) => setMetric(e.target.value)}
+                            >
+                                <option>Clicks</option>
+                                <option>Impressions</option>
+                                <option>CTR</option>
+                            </select>
+                        </div>
+                        <div className="flex-1 w-full h-[calc(100%-2rem)] min-h-[300px] max-h-[500px] overflow-y-auto">
                             <Line data={keywordChartData} options={chartOptions} />
                         </div>
                     </div>
@@ -566,10 +606,22 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                             <option>Uden brand</option>
                         </select>
                     </div>
+                    <div className="p-4 border-b">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search keywords..."
+                                value={keywordSearch}
+                                onChange={(e) => setKeywordSearch(e.target.value)}
+                                className="border w-full px-3 py-2 rounded text-sm pr-8"
+                            />
+                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                        </div>
+                    </div>
                     <div className="p-1">
                         {filteredTopKeywords.map((row, i) => (
                             <div key={i} className="border-b border-gray-100 last:border-b-0">
-                                <div 
+                                <div
                                     className="p-3 flex justify-between items-center"
                                     onClick={() => toggleKeywordExpansion(i)}
                                 >
@@ -577,7 +629,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                         <span className="text-xs text-gray-500 w-5">{i + 1}.</span>
                                         <span className="font-medium text-sm">{row.keyword}</span>
                                     </div>
-                                    <FaChevronRight 
+                                    <FaChevronRight
                                         className={`text-gray-400 transition-transform ${expandedKeywords[i] ? 'rotate-90' : ''}`}
                                         size={12}
                                     />
@@ -603,34 +655,49 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     </div>
                 </div>
 
-                {/* Desktop URLs Section */}
+                {/* Desktop URLs Section - With search functionality */}
                 <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-zinc-200 rounded p-6 mt-10 shadow-solid-10">
                     <div className="overflow-auto">
-                        <p className="font-semibold mb-4">Top Performance URLs</p>
-                        <table className="min-w-full text-sm">
-                            <thead className="bg-gray-50 border-b text-zinc-600 text-left">
-                                <tr>
-                                    <th className="px-4 py-2">URL</th>
-                                    <th className="px-4 py-2">Click</th>
-                                    <th className="px-4 py-2">Impr</th>
-                                    <th className="px-4 py-2">CTR</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredTopUrls.map((row, i) => (
-                                    <tr key={i} className="border-b">
-                                        <td className="px-4 py-2 whitespace-nowrap">{row.url}</td>
-                                        <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
-                                        <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
-                                        <td className="px-4 py-2">{(row.ctr * 100).toFixed(2)}%</td>
+                        <div className="flex justify-between items-center mb-4">
+                            <p className="font-semibold">Top Performance URLs</p>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search URLs..."
+                                    value={urlSearch}
+                                    onChange={(e) => setUrlSearch(e.target.value)}
+                                    className="border px-3 py-1 rounded text-sm pr-8"
+                                />
+                                <FaSearch className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                            </div>
+                        </div>
+                        <div className="max-h-[500px] overflow-y-auto">
+                            <table className="min-w-full text-sm">
+                                <thead className="bg-gray-50 border-b text-zinc-600 text-left">
+                                    <tr>
+                                        <th className="px-4 py-2">URL</th>
+                                        <th className="px-4 py-2">Click</th>
+                                        <th className="px-4 py-2">Impr</th>
+                                        <th className="px-4 py-2">CTR</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {filteredTopUrls.map((row, i) => (
+                                        <tr key={i} className="border-b">
+                                            <td className="px-4 py-2 whitespace-nowrap">{row.url}</td>
+                                            <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-2">{(row.ctr * 100).toFixed(2)}%</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <div className="flex flex-col h-full">
-                        <div className="flex justify-end mb-2">
+                        <div className="flex justify-between items-center mb-2">
+                            <p className="font-semibold">URLs Over Time</p>
                             <select
                                 className="border px-3 py-1 rounded text-sm"
                                 value={metric}
@@ -641,34 +708,46 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                 <option>CTR</option>
                             </select>
                         </div>
-                        <div className="flex-1 w-full h-[calc(100%-2rem)] min-h-[300px]">
+                        <div className="flex-1 w-full h-[calc(100%-2rem)] min-h-[300px] max-h-[500px] overflow-y-auto">
                             <Line data={urlChartData} options={chartOptions} />
                         </div>
                     </div>
                 </div>
 
-                {/* Mobile URLs Section */}
+                {/* Mobile URLs Section - With search functionality */}
                 <div className="md:hidden bg-white border border-zinc-200 rounded mt-6 shadow-solid-10">
                     <div className="flex justify-between items-center p-4 border-b">
                         <p className="font-semibold text-sm">Top Performance URLs</p>
-                        <button 
+                        <button
                             onClick={() => setShowMobileUrlDetails(!showMobileUrlDetails)}
                             className="text-xs bg-gray-100 px-2 py-1 rounded"
                         >
                             {showMobileUrlDetails ? 'Show Less' : 'View All'}
                         </button>
                     </div>
+                    <div className="p-4 border-b">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search URLs..."
+                                value={urlSearch}
+                                onChange={(e) => setUrlSearch(e.target.value)}
+                                className="border w-full px-3 py-2 rounded text-sm pr-8"
+                            />
+                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                        </div>
+                    </div>
                     <div className="p-1">
                         {(showMobileUrlDetails ? filteredTopUrls : filteredTopUrls.slice(0, 5)).map((row, i) => (
                             <div key={i} className="border-b border-gray-100 last:border-b-0">
-                                <div 
+                                <div
                                     className="p-3 flex justify-between items-center"
                                     onClick={() => toggleUrlExpansion(i)}
                                 >
                                     <div className="truncate pr-2 w-4/5">
                                         <span className="font-medium text-xs">{row.url}</span>
                                     </div>
-                                    <FaChevronRight 
+                                    <FaChevronRight
                                         className={`text-gray-400 transition-transform ${expandedUrls[i] ? 'rotate-90' : ''}`}
                                         size={12}
                                     />
@@ -692,9 +771,9 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                             </div>
                         ))}
                     </div>
-                    {filteredTopUrls.length > 5 && !showMobileUrlDetails && (
+                    {filteredTopUrls.length > 5 && !showMobileUrlDetails && !urlSearch && (
                         <div className="p-3 border-t border-gray-100 text-center">
-                            <button 
+                            <button
                                 onClick={() => setShowMobileUrlDetails(true)}
                                 className="text-blue-600 text-xs font-medium"
                             >

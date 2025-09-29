@@ -50,7 +50,7 @@ export default async function SEODashboardPage({ params }) {
                 FROM raw_data
                 GROUP BY query
                 ORDER BY clicks DESC
-                LIMIT 5
+                LIMIT 1000
             ),
             top_urls AS (
                 SELECT
@@ -66,7 +66,7 @@ export default async function SEODashboardPage({ params }) {
                 FROM raw_data
                 GROUP BY page
                 ORDER BY clicks DESC
-                LIMIT 20
+                LIMIT 1000
             ),
             urls_by_date AS (
                 SELECT

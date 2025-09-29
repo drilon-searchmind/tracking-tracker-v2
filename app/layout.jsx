@@ -18,6 +18,7 @@ const fustat = Fustat({
 
 export default async function RootLayout({ children }) {
     const session = await getServerSession(authOptions);
+    const gtmId = "GTM-MWM37VKJ"
 
     return (
         <html lang="en">
@@ -36,7 +37,7 @@ export default async function RootLayout({ children }) {
                     </ToastProvider>
                 </SessionProvider>
                 <GoogleTagManager
-                    gtmId="MWM37VKJ"
+                    gtmId={gtmId}
                 />
             </body>
         </html>

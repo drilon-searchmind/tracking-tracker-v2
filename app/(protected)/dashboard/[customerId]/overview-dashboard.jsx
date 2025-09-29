@@ -27,6 +27,22 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         }
     }, [initialData]);
 
+    useEffect(() => {
+        const fetchMetricPreference = async () => {
+            try {
+                const response = await fetch(`/api/customer-settings/${customerId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setMetricView(data.metricPreference || "ROAS/POAS");
+                }
+            } catch (error) {
+                console.error("Error fetching metric preference:", error);
+            }
+        }
+
+        fetchMetricPreference()
+    }, [customerId])
+
     const toggleRowExpansion = (index) => {
         setExpandedRows(prev => ({
             ...prev,
@@ -332,7 +348,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                 />
                             </div>
 
-                            <div className="flex rounded overflow-hidden w-full md:w-auto">
+                            <div className="flex rounded overflow-hidden w-full md:w-auto hidden">
                                 <button
                                     onClick={() => setMetricView("roas")}
                                     className={`text-center py-2 px-4 text-sm flex-1 md:flex-none ${metricView === "roas"

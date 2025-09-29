@@ -5,6 +5,7 @@ import ConfigTable from "./components/ConfigTable";
 import StaticExpenses from "./components/StaticExpenses";
 import ConfigCustomerInfo from "./components/ConfigCustomerInfo";
 import ConfigCustomerSharings from "./components/ConfigCustomerSharings";
+import ConfigCustomerSettings from "./components/ConfigCustomerSettings";
 
 export default async function ConfigPage({ params }) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
@@ -111,6 +112,10 @@ export default async function ConfigPage({ params }) {
                     <div className="col-span-1">
                         <h3 className="font-semibold text-base md:text-lg mb-2 text-zinc-800">Customer Sharings</h3>
                         <ConfigCustomerSharings customerId={customerId} baseUrl={baseUrl} />
+                    </div>
+
+                    <div className="col-span-1 md:col-span-2">
+                        <ConfigCustomerSettings customerId={customerId} baseUrl={baseUrl} />
                     </div>
                 </div>
             </div>

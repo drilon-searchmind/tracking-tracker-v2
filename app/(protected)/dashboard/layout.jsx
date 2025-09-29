@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }) {
     };
 
     const isServiceActive = pathname.startsWith(`/dashboard/${customerId}/service-dashboard`);
-    const isToolsActive = pathname.startsWith(`/dashboard/${customerId}/tools`);
+    const isToolsActive = pathname.startsWith(`/dashboard/${customerId}/tools`) && !pathname.includes("kampagneplan");
     const isConfigActive = pathname.startsWith(`/dashboard/${customerId}/config`);
 
     // Close mobile menu when path changes
@@ -62,7 +62,7 @@ export default function DashboardLayout({ children }) {
                 style={{ zIndex: isAnyModalOpen ? 1 : 50 }}
             >
                 {/* Mobile Menu Button */}
-                <button 
+                <button
                     className="md:hidden text-gray-700 text-xl flex items-center"
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 >
@@ -86,6 +86,15 @@ export default function DashboardLayout({ children }) {
                             className={`hover:text-blue-500 text-sm ${isActive(`/dashboard/${customerId}/performance-dashboard`) ? "text-black font-bold" : ""}`}
                         >
                             Performance Dashboard
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href={`/dashboard/${customerId}/tools/kampagneplan`}
+                            className={`hover:text-blue-500 text-sm ${isActive(`/dashboard/${customerId}/tools/kampagneplan`) ? "text-black font-bold" : ""}`}
+                        >
+                            Campaign Planner
                         </a>
                     </li>
 
@@ -120,16 +129,15 @@ export default function DashboardLayout({ children }) {
                             {[
                                 { slug: "pnl", label: "P&L" },
                                 { slug: "pace-report", label: "Pace Report" },
-                                { slug: "kampagneplan", label: "Campaign Planner" },
                                 { slug: "aarshjul", label: "Year Wheel" },
                                 { slug: "share-of-search", label: "Share of Search" },
                             ].map(({ slug, label }) => (
                                 <li key={slug}>
                                     <a
                                         href={`/dashboard/${customerId}/tools/${slug}`}
-                                        className={`block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 ${pathname === `/dashboard/${customerId}/tools/${slug}`
-                                            ? "text-black font-bold bg-blue-50"
-                                            : "text-gray-700"
+                                        className={`block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 ${pathname === `/dashboard/${customerId}/tools/${slug}` && !pathname.includes("kampagneplan")
+                                                ? "text-black font-bold bg-blue-50"
+                                                : "text-gray-700"
                                             }`}
                                     >
                                         {label}
@@ -219,7 +227,10 @@ export default function DashboardLayout({ children }) {
                                 <li key={slug} className="py-2">
                                     <a
                                         href={`/dashboard/${customerId}/tools/${slug}`}
-                                        className={`block text-sm ${pathname === `/dashboard/${customerId}/tools/${slug}` ? "text-blue-600 font-bold" : "text-gray-600"}`}
+                                        className={`block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 ${pathname === `/dashboard/${customerId}/tools/${slug}` && !pathname.includes("kampagneplan")
+                                                ? "text-black font-bold bg-blue-50"
+                                                : "text-gray-700"
+                                            }`}
                                     >
                                         {label}
                                     </a>
@@ -237,7 +248,7 @@ export default function DashboardLayout({ children }) {
                     </li>
                 </ul>
             </div>
-            
+
             {children}
 
             {showModalShare && <ShareCustomerModal customerId={customerId} closeModal={() => setShowModalShare(false)} />}

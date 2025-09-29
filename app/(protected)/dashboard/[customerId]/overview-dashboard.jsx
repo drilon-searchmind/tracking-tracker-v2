@@ -27,6 +27,22 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         }
     }, [initialData]);
 
+    useEffect(() => {
+        const fetchMetricPreference = async () => {
+            try {
+                const response = await fetch(`/api/customer-settings/${customerId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setMetricView(data.metricPreference || "ROAS/POAS");
+                }
+            } catch (error) {
+                console.error("Error fetching metric preference:", error);
+            }
+        }
+
+        fetchMetricPreference()
+    }, [customerId])
+
     const toggleRowExpansion = (index) => {
         setExpandedRows(prev => ({
             ...prev,
@@ -332,7 +348,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                 />
                             </div>
 
-                            <div className="flex rounded overflow-hidden w-full md:w-auto">
+                            <div className="flex rounded overflow-hidden w-full md:w-auto hidden">
                                 <button
                                     onClick={() => setMetricView("roas")}
                                     className={`text-center py-2 px-4 text-sm flex-1 md:flex-none ${metricView === "roas"
@@ -364,50 +380,50 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                         <>
                             {/* Desktop Table - Hidden on mobile */}
                             <div className="hidden md:block overflow-x-auto">
-                                <table className="min-w-full text-sm text-left">
+                                <table className="min-w-full text-xs text-left compact-table">
                                     <thead className="bg-gray-50 border-b border-gray-200">
-                                        <tr className="text-gray-600 uppercase text-xs">
-                                            <th className="px-4 py-3 font-medium">Date</th>
-                                            <th className="px-4 py-3 font-medium">Orders</th>
-                                            <th className="px-4 py-3 font-medium">Revenue</th>
-                                            <th className="px-4 py-3 font-medium">Revenue Ex Tax</th>
-                                            <th className="px-4 py-3 font-medium">PPC Cost</th>
-                                            <th className="px-4 py-3 font-medium">PS Cost</th>
-                                            <th className="px-4 py-3 font-medium">{metricView === "roas" ? "ROAS" : "Spendshare"}</th>
-                                            <th className="px-4 py-3 font-medium">{metricView === "roas" ? "POAS" : "Spendshare inc. DB"}</th>
-                                            <th className="px-4 py-3 font-medium">GP</th>
-                                            <th className="px-4 py-3 font-medium">AOV</th>
+                                        <tr className="text-gray-600 uppercase">
+                                            <th className="px-2 py-2 font-medium">Date</th> {/* Reduced padding */}
+                                            <th className="px-2 py-2 font-medium">Orders</th>
+                                            <th className="px-2 py-2 font-medium">Revenue</th>
+                                            <th className="px-2 py-2 font-medium">Revenue Ex Tax</th>
+                                            <th className="px-2 py-2 font-medium">PPC Cost</th>
+                                            <th className="px-2 py-2 font-medium">PS Cost</th>
+                                            <th className="px-2 py-2 font-medium">{metricView === "roas" ? "ROAS" : "Spendshare"}</th>
+                                            <th className="px-2 py-2 font-medium">{metricView === "roas" ? "POAS" : "Spendshare inc. DB"}</th>
+                                            <th className="px-2 py-2 font-medium">GP</th>
+                                            <th className="px-2 py-2 font-medium">AOV</th>
                                         </tr>
                                     </thead>
                                     <tbody className="text-gray-800">
                                         {filteredMetrics.map((row, i) => (
                                             <tr key={i} className="border-b last:border-0">
-                                                <td className="px-4 py-3">{row.date}</td>
-                                                <td className="px-4 py-3" style={getHeatmapStyle(row.orders, 'orders')}>
+                                                <td className="px-2 py-2">{row.date}</td> {/* Reduced padding */}
+                                                <td className="px-2 py-2" style={getHeatmapStyle(row.orders, 'orders')}>
                                                     {Math.round(row.orders).toLocaleString()}
                                                 </td>
-                                                <td className="px-4 py-3" style={getHeatmapStyle(row.revenue, 'revenue')}>
+                                                <td className="px-2 py-2" style={getHeatmapStyle(row.revenue, 'revenue')}>
                                                     kr. {Math.round(row.revenue).toLocaleString()}
                                                 </td>
-                                                <td className="px-4 py-3" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax')}>
+                                                <td className="px-2 py-2" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax')}>
                                                     kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
                                                 </td>
-                                                <td className="px-4 py-3" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost')}>
+                                                <td className="px-2 py-2" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost')}>
                                                     kr. {Math.round(row.ppc_cost).toLocaleString()}
                                                 </td>
-                                                <td className="px-4 py-3" style={getHeatmapStyle(row.ps_cost, 'ps_cost')}>
+                                                <td className="px-2 py-2" style={getHeatmapStyle(row.ps_cost, 'ps_cost')}>
                                                     kr. {Math.round(row.ps_cost).toLocaleString()}
                                                 </td>
-                                                <td className="px-4 py-3" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare')}>
+                                                <td className="px-2 py-2" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare')}>
                                                     {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
                                                 </td>
-                                                <td className="px-4 py-3" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db')}>
+                                                <td className="px-2 py-2" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db')}>
                                                     {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
                                                 </td>
-                                                <td className="px-4 py-3" style={getHeatmapStyle(row.gp, 'gp')}>
+                                                <td className="px-2 py-2" style={getHeatmapStyle(row.gp, 'gp')}>
                                                     kr. {Math.round(row.gp).toLocaleString()}
                                                 </td>
-                                                <td className="px-4 py-3" style={getHeatmapStyle(row.aov, 'aov')}>
+                                                <td className="px-2 py-2" style={getHeatmapStyle(row.aov, 'aov')}>
                                                     kr. {Math.round(row.aov).toLocaleString()}
                                                 </td>
                                             </tr>
@@ -588,62 +604,62 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
 
                     {/* Desktop Table - Hidden on mobile */}
                     <div className="hidden md:block overflow-x-auto">
-                        <table className="min-w-full text-sm text-left">
+                        <table className="min-w-full text-xs text-left compact-table">
                             <thead className="bg-gray-50 border-b border-gray-200">
                                 <tr className="text-gray-600 uppercase text-xs">
-                                    <th className="px-4 py-3 font-medium">Date</th>
-                                    <th className="px-4 py-3 font-medium">Orders</th>
-                                    <th className="px-4 py-3 font-medium">Revenue</th>
-                                    <th className="px-4 py-3 font-medium">Revenue Ex Tax</th>
-                                    <th className="px-4 py-3 font-medium">PPC Cost</th>
-                                    <th className="px-4 py-3 font-medium">PS Cost</th>
-                                    <th className="px-4 py-3 font-medium">{metricView === "roas" ? "ROAS" : "Spendshare"}</th>
-                                    <th className="px-4 py-3 font-medium">{metricView === "roas" ? "POAS" : "Spendshare inc. DB"}</th>
-                                    <th className="px-4 py-3 font-medium">GP</th>
-                                    <th className="px-4 py-3 font-medium">AOV</th>
+                                    <th className="px-2 py-2 font-medium">Date</th>
+                                    <th className="px-2 py-2 font-medium">Orders</th>
+                                    <th className="px-2 py-2 font-medium">Revenue</th>
+                                    <th className="px-2 py-2 font-medium">Revenue Ex Tax</th>
+                                    <th className="px-2 py-2 font-medium">PPC Cost</th>
+                                    <th className="px-2 py-2 font-medium">PS Cost</th>
+                                    <th className="px-2 py-2 font-medium">{metricView === "roas" ? "ROAS" : "Spendshare"}</th>
+                                    <th className="px-2 py-2 font-medium">{metricView === "roas" ? "POAS" : "Spendshare inc. DB"}</th>
+                                    <th className="px-2 py-2 font-medium">GP</th>
+                                    <th className="px-2 py-2 font-medium">AOV</th>
                                 </tr>
                             </thead>
                             <tbody className="text-gray-800">
                                 <tr className="bg-gray-200 font-semibold text-sm">
-                                    <td className="px-4 py-3">Total</td>
-                                    <td className="px-4 py-3">{Math.round(filteredLastYearTotals.orders).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
-                                    <td className="px-4 py-3">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</td>
-                                    <td className="px-4 py-3">{(metricView === "roas" ? filteredLastYearTotals.poas : filteredLastYearTotals.spendshare_db).toFixed(2)}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</td>
-                                    <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
+                                    <td className="px-2 py-2">Total</td>
+                                    <td className="px-2 py-2">{Math.round(filteredLastYearTotals.orders).toLocaleString()}</td>
+                                    <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</td>
+                                    <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
+                                    <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
+                                    <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
+                                    <td className="px-2 py-2">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</td>
+                                    <td className="px-2 py-2">{(metricView === "roas" ? filteredLastYearTotals.poas : filteredLastYearTotals.spendshare_db).toFixed(2)}</td>
+                                    <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</td>
+                                    <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
                                 </tr>
                                 {lastYearMetrics.map((row, i) => (
                                     <tr key={i} className="border-b last:border-0">
-                                        <td className="px-4 py-3">{row.date}</td>
-                                        <td className="px-4 py-3" style={getHeatmapStyle(row.orders, 'orders', true)}>
+                                        <td className="px-2 py-2">{row.date}</td>
+                                        <td className="px-2 py-2" style={getHeatmapStyle(row.orders, 'orders', true)}>
                                             {Math.round(row.orders).toLocaleString()}
                                         </td>
-                                        <td className="px-4 py-3" style={getHeatmapStyle(row.revenue, 'revenue', true)}>
+                                        <td className="px-2 py-2" style={getHeatmapStyle(row.revenue, 'revenue', true)}>
                                             kr. {Math.round(row.revenue).toLocaleString()}
                                         </td>
-                                        <td className="px-4 py-3" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax', true)}>
+                                        <td className="px-2 py-2" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax', true)}>
                                             kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
                                         </td>
-                                        <td className="px-4 py-3" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost', true)}>
+                                        <td className="px-2 py-2" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost', true)}>
                                             kr. {Math.round(row.ppc_cost).toLocaleString()}
                                         </td>
-                                        <td className="px-4 py-3" style={getHeatmapStyle(row.ps_cost, 'ps_cost', true)}>
+                                        <td className="px-2 py-2" style={getHeatmapStyle(row.ps_cost, 'ps_cost', true)}>
                                             kr. {Math.round(row.ps_cost).toLocaleString()}
                                         </td>
-                                        <td className="px-4 py-3" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare', true)}>
+                                        <td className="px-2 py-2" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare', true)}>
                                             {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
                                         </td>
-                                        <td className="px-4 py-3" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db', true)}>
+                                        <td className="px-2 py-2" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db', true)}>
                                             {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
                                         </td>
-                                        <td className="px-4 py-3" style={getHeatmapStyle(row.gp, 'gp', true)}>
+                                        <td className="px-2 py-2" style={getHeatmapStyle(row.gp, 'gp', true)}>
                                             kr. {Math.round(row.gp).toLocaleString()}
                                         </td>
-                                        <td className="px-4 py-3" style={getHeatmapStyle(row.aov, 'aov', true)}>
+                                        <td className="px-2 py-2" style={getHeatmapStyle(row.aov, 'aov', true)}>
                                             kr. {Math.round(row.aov).toLocaleString()}
                                         </td>
                                     </tr>

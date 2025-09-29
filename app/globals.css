@@ -258,3 +258,18 @@ a {
 #campaignListTable tr th {
 	font-size: 0.65rem;
 }
+
+.compact-table th, .compact-table td {
+    padding: 4px 8px; /* Reduce padding */
+    font-size: 12px; /* Reduce font size */
+    line-height: 1.2; /* Adjust line height */
+}
+
+.compact-table th {
+    font-weight: 600;
+}
+
+.compact-table {
+    border-spacing: 0; /* Remove extra spacing */
+}
+

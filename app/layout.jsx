@@ -1,4 +1,5 @@
 import { ToastProvider } from "./contexts/ToastContext";
+import { ThemeProvider } from "./contexts/ThemeContext"; // Add this import
 import Nav from "./components/UI/Nav";
 import SessionProvider from './providers/SessionProvider';
 import { getServerSession } from "next-auth/next";
@@ -31,10 +32,12 @@ export default async function RootLayout({ children }) {
                 className={`${fustat.variable} ${fustat.variable} antialiased`}
             >
                 <SessionProvider session={session}>
-                    <ToastProvider>
-                        <Nav />
-                        {children}
-                    </ToastProvider>
+                    <ThemeProvider>
+                        <ToastProvider>
+                            <Nav />
+                            {children}
+                        </ToastProvider>
+                    </ThemeProvider>
                 </SessionProvider>
                 <GoogleTagManager
                     gtmId={gtmId}

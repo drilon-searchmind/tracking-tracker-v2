@@ -1,9 +1,9 @@
 module.exports = {
-    darkMode: false,
+    darkMode: 'class', // changed from 'false' to 'class'
     content: [
-        "./app/**/*.{js,jsx,ts,tsx}",        // Include all files in the `app` directory
-        "./components/**/*.{js,jsx,ts,tsx}", // Include all files in the `components` directory
-        "./lib/**/*.{js,jsx,ts,tsx}",        // Include utility files if Tailwind classes are used
+        "./app/**/*.{js,jsx,ts,tsx}",
+        "./components/**/*.{js,jsx,ts,tsx}",
+        "./lib/**/*.{js,jsx,ts,tsx}",
     ],
     theme: { extend: {} },
     // plugins: [require("daisyui")],

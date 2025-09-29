@@ -12,8 +12,15 @@
 	--color-secondary-searchmind-hover: #c0b8a3;
 }
 
+.dark {
+    --background: #121212;
+    --foreground: #ffffff;
+    color-scheme: dark;
+}
+
 :root { color-scheme: light; }
 html { color-scheme: light; }
+html.dark { color-scheme: dark; }
 
 @theme inline {
 	--color-background: var(--background);

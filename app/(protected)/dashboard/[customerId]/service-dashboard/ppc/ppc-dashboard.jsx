@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
-import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
+import { FaChevronRight, FaChevronLeft, FaSearch } from "react-icons/fa";
 import {
     Chart as ChartJS,
     LineElement,
@@ -49,45 +49,9 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [expandedCampaigns, setExpandedCampaigns] = useState({});
     const [showAllMetrics, setShowAllMetrics] = useState(false);
+    const [campaignSearch, setCampaignSearch] = useState("");
 
     const { metrics_by_date, top_campaigns, campaigns_by_date } = initialData || {};
-
-    const filteredMetricsByDate = useMemo(() => {
-        return metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
-    }, [metrics_by_date, startDate, endDate]);
-
-    const filteredCampaignsByDate = useMemo(() => {
-        return campaigns_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
-    }, [campaigns_by_date, startDate, endDate]);
-
-    const metrics = useMemo(() => {
-        return filteredMetricsByDate.reduce(
-            (acc, row) => ({
-                clicks: acc.clicks + (row.clicks || 0),
-                impressions: acc.impressions + (row.impressions || 0),
-                conversions: acc.conversions + (row.conversions || 0),
-                conversions_value: acc.conversions_value + (row.conversions_value || 0),
-                ad_spend: acc.ad_spend + (row.ad_spend || 0),
-                roas: row.ad_spend > 0 ? acc.conversions_value / acc.ad_spend : 0,
-                aov: acc.conversions > 0 ? acc.conversions_value / acc.conversions : 0,
-                ctr: acc.impressions > 0 ? acc.clicks / acc.impressions : 0,
-                cpc: acc.clicks > 0 ? acc.ad_spend / acc.clicks : 0,
-                conv_rate: acc.clicks > 0 ? acc.conversions / acc.clicks : 0,
-            }),
-            {
-                clicks: 0,
-                impressions: 0,
-                conversions: 0,
-                conversions_value: 0,
-                ad_spend: 0,
-                roas: 0,
-                aov: 0,
-                ctr: 0,
-                cpc: 0,
-                conv_rate: 0,
-            }
-        );
-    }, [filteredMetricsByDate]);
 
     const getComparisonDates = () => {
         try {
@@ -130,6 +94,90 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
 
     const { compStart, compEnd } = getComparisonDates();
 
+    const filteredComparisonMetricsByDate = useMemo(() => {
+        return metrics_by_date?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
+    }, [metrics_by_date, compStart, compEnd]);
+
+    const filteredMetricsByDate = useMemo(() => {
+        return metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
+    }, [metrics_by_date, startDate, endDate]);
+
+    const filteredCampaignsByDate = useMemo(() => {
+        return campaigns_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
+    }, [campaigns_by_date, startDate, endDate]);
+
+    const allCampaigns = useMemo(() => {
+        const campaignMap = filteredCampaignsByDate.reduce((acc, row) => {
+            acc[row.campaign_name] = {
+                clicks: (acc[row.campaign_name]?.clicks || 0) + (row.clicks || 0),
+                impressions: (acc[row.campaign_name]?.impressions || 0) + (row.impressions || 0),
+                ctr: row.impressions > 0 ? (acc[row.campaign_name]?.clicks || 0) / (acc[row.campaign_name]?.impressions || 1) : 0,
+            };
+            return acc;
+        }, {});
+        return Object.entries(campaignMap)
+            .map(([campaign_name, data]) => ({
+                campaign_name,
+                clicks: data.clicks,
+                impressions: data.impressions,
+                ctr: data.impressions > 0 ? data.clicks / data.impressions : 0,
+            }))
+            .sort((a, b) => b.clicks - a.clicks);
+    }, [filteredCampaignsByDate]);
+
+    const getComparisonMetricValue = (currentDate, metricName) => {
+        const currentStartDateTime = new Date(startDate).getTime();
+        const currentDateTime = new Date(currentDate).getTime();
+        const daysSinceStart = Math.floor((currentDateTime - currentStartDateTime) / (86400000));
+
+        const compStartDateTime = new Date(compStart).getTime();
+        const targetCompDateTime = new Date(compStartDateTime + (daysSinceStart * 86400000));
+        const targetCompDate = formatDate(targetCompDateTime);
+
+        const compData = filteredComparisonMetricsByDate.find(row => row.date === targetCompDate);
+
+        if (!compData) return null;
+
+        switch (metricName) {
+            case "Conversions": return compData.conversions || 0;
+            case "Ad Spend": return compData.ad_spend || 0;
+            case "ROAS": return compData.roas || 0;
+            case "CPC": return compData.cpc || 0;
+            case "CTR": return compData.ctr || 0;
+            case "Conv. Rate": return compData.conv_rate || 0;
+            default: return 0;
+        }
+    };
+
+    const metrics = useMemo(() => {
+        return filteredMetricsByDate.reduce(
+            (acc, row) => ({
+                clicks: acc.clicks + (row.clicks || 0),
+                impressions: acc.impressions + (row.impressions || 0),
+                conversions: acc.conversions + (row.conversions || 0),
+                conversions_value: acc.conversions_value + (row.conversions_value || 0),
+                ad_spend: acc.ad_spend + (row.ad_spend || 0),
+                roas: row.ad_spend > 0 ? acc.conversions_value / acc.ad_spend : 0,
+                aov: acc.conversions > 0 ? acc.conversions_value / acc.conversions : 0,
+                ctr: acc.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                cpc: acc.clicks > 0 ? acc.ad_spend / acc.clicks : 0,
+                conv_rate: acc.clicks > 0 ? acc.conversions / acc.clicks : 0,
+            }),
+            {
+                clicks: 0,
+                impressions: 0,
+                conversions: 0,
+                conversions_value: 0,
+                ad_spend: 0,
+                roas: 0,
+                aov: 0,
+                ctr: 0,
+                cpc: 0,
+                conv_rate: 0,
+            }
+        );
+    }, [filteredMetricsByDate]);
+
     const comparisonMetrics = useMemo(() => {
         const comparisonData = metrics_by_date?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
         return comparisonData.reduce(
@@ -161,26 +209,18 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
     }, [metrics_by_date, compStart, compEnd]);
 
     const filteredTopCampaigns = useMemo(() => {
-        const campaignMap = filteredCampaignsByDate.reduce((acc, row) => {
-            acc[row.campaign_name] = {
-                clicks: (acc[row.campaign_name]?.clicks || 0) + (row.clicks || 0),
-                impressions: (acc[row.campaign_name]?.impressions || 0) + (row.impressions || 0),
-                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
-            };
-            return acc;
-        }, {});
-        return Object.entries(campaignMap)
-            .map(([campaign_name, data]) => ({
-                campaign_name,
-                clicks: data.clicks,
-                impressions: data.impressions,
-                ctr: data.ctr,
-            }))
-            .sort((a, b) => b.clicks - a.clicks)
-            .slice(0, 5);
-    }, [filteredCampaignsByDate]);
+        return allCampaigns
+            .filter(item =>
+                campaignSearch ?
+                    item.campaign_name.toLowerCase().includes(campaignSearch.toLowerCase()) :
+                    true
+            )
+            .slice(0, campaignSearch ? undefined : 10); // Show all matching results when searching
+    }, [allCampaigns, campaignSearch]);
 
-    const selectedCampaigns = filteredTopCampaigns.map((item) => item.campaign_name);
+    const selectedCampaigns = useMemo(() => {
+        return filteredTopCampaigns.slice(0, 5).map(item => item.campaign_name);
+    }, [filteredTopCampaigns]);
 
     const colors = {
         primary: "#1C398E",
@@ -283,6 +323,17 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                 pointHoverRadius: 4,
                 fill: false,
             },
+            {
+                label: `${selectedMetric} (${comparison})`,
+                data: filteredMetricsByDate.map(row => getComparisonMetricValue(row.date, selectedMetric)),
+                borderColor: colors.hue3,
+                backgroundColor: colors.hue3,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+                borderDash: [5, 5],
+            }
         ],
     };
 
@@ -310,6 +361,17 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                 pointHoverRadius: 4,
                 fill: false,
             },
+            {
+                label: `${cpcMetric} (${comparison})`,
+                data: filteredMetricsByDate.map(row => getComparisonMetricValue(row.date, cpcMetric)),
+                borderColor: colors.hue3,
+                backgroundColor: colors.hue3,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+                borderDash: [5, 5],
+            }
         ],
     };
 
@@ -342,7 +404,7 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                 type: "time",
                 time: { unit: "day" },
                 grid: { display: false },
-                ticks: { 
+                ticks: {
                     font: { size: 10 },
                     maxRotation: 45,
                     minRotation: 45
@@ -351,14 +413,21 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
             y: {
                 beginAtZero: true,
                 grid: { color: "rgba(0, 0, 0, 0.05)" },
-                ticks: { 
+                ticks: {
                     font: { size: 10 },
-                    callback: (value) => value.toLocaleString('en-US') 
+                    callback: (value) => value.toLocaleString('en-US')
                 },
             },
         },
         plugins: {
-            legend: { display: false },
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    boxWidth: 12,
+                    font: { size: 10 }
+                }
+            },
             tooltip: {
                 backgroundColor: "rgba(0, 0, 0, 0.7)",
                 titleFont: { size: 12 },
@@ -418,11 +487,11 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
     // Navigation for chart carousel
     const navigateChart = (direction) => {
         if (direction === 'next') {
-            setActiveChartIndex((prev) => 
+            setActiveChartIndex((prev) =>
                 prev === chartComponents.length - 1 ? 0 : prev + 1
             );
         } else {
-            setActiveChartIndex((prev) => 
+            setActiveChartIndex((prev) =>
                 prev === 0 ? chartComponents.length - 1 : prev - 1
             );
         }
@@ -477,7 +546,7 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                             <option>Previous Year</option>
                             <option>Previous Period</option>
                         </select>
-                        
+
                         <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
                             <input
                                 type="date"
@@ -514,7 +583,7 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                             ))}
                         </div>
                         {ppcMetrics.length > 4 && (
-                            <button 
+                            <button
                                 onClick={() => setShowAllMetrics(!showAllMetrics)}
                                 className="w-full py-2 text-sm text-blue-600 border-t border-gray-100"
                             >
@@ -547,14 +616,14 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                             <div className="flex items-center gap-2">
                                 {chartComponents[activeChartIndex].selector}
                                 <div className="flex gap-1">
-                                    <button 
-                                        onClick={() => navigateChart('prev')} 
+                                    <button
+                                        onClick={() => navigateChart('prev')}
                                         className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
                                     >
                                         <FaChevronLeft size={12} />
                                     </button>
-                                    <button 
-                                        onClick={() => navigateChart('next')} 
+                                    <button
+                                        onClick={() => navigateChart('next')}
                                         className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
                                     >
                                         <FaChevronRight size={12} />
@@ -568,8 +637,8 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                     </div>
                     <div className="flex justify-center mt-2 gap-1">
                         {chartComponents.map((_, index) => (
-                            <span 
-                                key={index} 
+                            <span
+                                key={index}
                                 className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
                             />
                         ))}
@@ -596,35 +665,59 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* Desktop Campaigns Table and Chart */}
-                <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 mb-8 shadow-solid-l">
-                    <div className="flex justify-between items-center mb-4">
-                        <p className="font-semibold">Top Performance Campaigns</p>
-                    </div>
+                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-zinc-200 rounded p-6 mb-8 shadow-solid-l">
                     <div className="overflow-auto">
-                        <table className="min-w-full text-sm">
-                            <thead className="bg-gray-50 border-b text-zinc-600 text-left">
-                                <tr>
-                                    <th className="px-4 py-2">Campaign Name</th>
-                                    <th className="px-4 py-2">Clicks</th>
-                                    <th className="px-4 py-2">Impr</th>
-                                    <th className="px-4 py-2">CTR</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredTopCampaigns.map((row, i) => (
-                                    <tr key={i} className="border-b">
-                                        <td className="px-4 py-2 whitespace-nowrap">{row.campaign_name}</td>
-                                        <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
-                                        <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
-                                        <td className="px-4 py-2">{(row.ctr * 100).toFixed(2)}%</td>
+                        <div className="flex justify-between items-center mb-10">
+                            <p className="font-semibold">Top Performance Campaigns</p>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search campaigns..."
+                                    value={campaignSearch}
+                                    onChange={(e) => setCampaignSearch(e.target.value)}
+                                    className="border px-3 py-1 rounded text-sm pr-8"
+                                />
+                                <FaSearch className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                            </div>
+                        </div>
+                        <div className="max-h-[500px] overflow-y-auto">
+                            <table className="min-w-full text-sm">
+                                <thead className="bg-gray-50 border-b text-zinc-600 text-left">
+                                    <tr>
+                                        <th className="px-4 py-2">Campaign Name</th>
+                                        <th className="px-4 py-2">Clicks</th>
+                                        <th className="px-4 py-2">Impr</th>
+                                        <th className="px-4 py-2">CTR</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {filteredTopCampaigns.map((row, i) => (
+                                        <tr key={i} className="border-b">
+                                            <td className="px-4 py-2 whitespace-nowrap">{row.campaign_name}</td>
+                                            <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-2">{(row.ctr * 100).toFixed(2)}%</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div className="mt-6">
-                        <p className="font-semibold mb-4">Top Campaigns Impressions Over Time</p>
-                        <div className="w-full h-[300px]">
+
+                    <div className="flex flex-col h-full">
+                        <div className="flex justify-between items-center mb-10">
+                            <p className="font-semibold">Campaigns Over Time</p>
+                            <select
+                                className="border px-3 py-1 rounded text-sm"
+                                value={selectedMetric}
+                                onChange={(e) => setSelectedMetric(e.target.value)}
+                            >
+                                <option>Conversions</option>
+                                <option>Ad Spend</option>
+                                <option>ROAS</option>
+                            </select>
+                        </div>
+                        <div className="flex-1 w-full h-[calc(100%-2rem)] min-h-[300px] max-h-[500px] overflow-y-auto">
                             <Line data={campaignChartData} options={chartOptions} />
                         </div>
                     </div>
@@ -635,17 +728,29 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                     <div className="p-4 border-b border-gray-100">
                         <p className="font-semibold text-sm">Top Performance Campaigns</p>
                     </div>
+                    <div className="p-4 border-b">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search campaigns..."
+                                value={campaignSearch}
+                                onChange={(e) => setCampaignSearch(e.target.value)}
+                                className="border w-full px-3 py-2 rounded text-sm pr-8"
+                            />
+                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                        </div>
+                    </div>
                     <div className="p-1">
                         {filteredTopCampaigns.map((row, i) => (
                             <div key={i} className="border-b border-gray-100 last:border-b-0">
-                                <div 
+                                <div
                                     className="p-3 flex justify-between items-center"
                                     onClick={() => toggleCampaignExpansion(i)}
                                 >
                                     <div className="truncate pr-2 w-4/5">
                                         <span className="font-medium text-xs">{row.campaign_name}</span>
                                     </div>
-                                    <FaChevronRight 
+                                    <FaChevronRight
                                         className={`text-gray-400 transition-transform ${expandedCampaigns[i] ? 'rotate-90' : ''}`}
                                         size={12}
                                     />

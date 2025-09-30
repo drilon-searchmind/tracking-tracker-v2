@@ -214,7 +214,6 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
     };
 
     const handleCampaignUpdated = () => {
-        fetchCampaigns();
     };
 
     useEffect(() => {

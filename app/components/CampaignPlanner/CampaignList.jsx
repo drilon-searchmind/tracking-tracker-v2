@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/app/contexts/ToastContext";
 import CampaignDetailsModal from "./CampaignDetailsModal";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
-import { format, isWithinInterval, parseISO, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 
 import { FaMeta } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import { SiGoogleads } from "react-icons/si";
 import { FaMagnifyingGlassChart } from "react-icons/fa6";
 import { MdOutlinePending } from "react-icons/md";
+import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 
 export default function CampaignList({ customerId }) {
     const { showToast } = useToast();
@@ -26,6 +28,15 @@ export default function CampaignList({ customerId }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [commentCounts, setCommentCounts] = useState({});
     const [parentCampaignMap, setParentCampaignMap] = useState({});
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [fetchId, setFetchId] = useState(0); // Used to track fetch operations
+
+    // Track expanded parent campaigns
+    const [expandedParents, setExpandedParents] = useState({});
+    // Organize campaigns by parent
+    const [organizedCampaigns, setOrganizedCampaigns] = useState({});
+    // Store filtered campaigns separately
+    const [filteredCampaigns, setFilteredCampaigns] = useState([]);
 
     const [modalUpdateTriggered, setModalUpdateTriggered] = useState(false);
 
@@ -33,7 +44,7 @@ export default function CampaignList({ customerId }) {
         campaign => campaign.status === "Pending Customer Approval"
     ).length;
 
-    const fetchCommentCounts = async (campaignIds) => {
+    const fetchCommentCounts = useCallback(async (campaignIds) => {
         try {
             const counts = {};
 
@@ -49,9 +60,17 @@ export default function CampaignList({ customerId }) {
         } catch (error) {
             console.error("Error fetching comment counts:", error);
         }
-    };
+    }, []);
 
-    const getAvailableMonths = () => {
+    // Toggle expansion of parent campaign
+    const toggleParentExpansion = useCallback((parentId) => {
+        setExpandedParents(prev => ({
+            ...prev,
+            [parentId]: !prev[parentId]
+        }));
+    }, []);
+
+    const getAvailableMonths = useCallback(() => {
         const months = [];
         const uniqueMonthsSet = new Set();
 
@@ -91,79 +110,142 @@ export default function CampaignList({ customerId }) {
         });
 
         return months;
-    };
+    }, [campaigns]);
+
+    // Organize campaigns by parent - memoized with useCallback to prevent recreating on every render
+    const organizeCampaigns = useCallback(() => {
+        const organized = {
+            'no-parent': {
+                id: 'no-parent',
+                name: 'No Parent',
+                campaigns: []
+            }
+        };
+
+        filteredCampaigns.forEach(campaign => {
+            if (campaign.parentCampaignId && parentCampaignMap[campaign.parentCampaignId]) {
+                const parentId = campaign.parentCampaignId;
+
+                if (!organized[parentId]) {
+                    organized[parentId] = {
+                        id: parentId,
+                        name: parentCampaignMap[parentId],
+                        campaigns: []
+                    };
+                }
+
+                organized[parentId].campaigns.push(campaign);
+            } else {
+                organized['no-parent'].campaigns.push(campaign);
+            }
+        });
+
+        return organized;
+    }, [filteredCampaigns, parentCampaignMap]);
 
     const availableMonths = getAvailableMonths();
 
-    const handleViewDetails = (campaign) => {
+    const handleViewDetails = useCallback((campaign) => {
         setSelectedCampaign(campaign);
         setShowDetailsModal(true);
         setIsDetailsModalOpen(true);
-    };
+    }, [setIsDetailsModalOpen]);
 
-    const handleCloseDetailsModal = () => {
+    const handleCloseDetailsModal = useCallback(() => {
         setShowDetailsModal(false);
         setIsDetailsModalOpen(false);
-    };
+    }, [setIsDetailsModalOpen]);
 
-    const refreshCampaigns = async () => {
+    // IMPORTANT: This is the single centralized fetch function
+    // In your fetchCampaigns function:
+    const fetchCampaigns = useCallback(async (isRefreshOperation = false) => {
+        // Prevent multiple simultaneous refreshes
+        if (isRefreshing) return;
+
+        const currentFetchId = fetchId + 1;
+        setFetchId(currentFetchId);
+
         try {
+            setIsRefreshing(true);
             setLoading(true);
+
+            // Log only once at the beginning of the fetch
+            console.log("Fetching campaigns for customer ID:", customerId);
+            console.log("Current fetch ID:", currentFetchId);
+
             const response = await fetch(`/api/campaigns/${customerId}`);
             if (!response.ok) {
                 throw new Error("Failed to fetch campaigns");
             }
+
             const data = await response.json();
+
+            console.log("Fetch complete. Current/Latest fetch ID:", currentFetchId, fetchId);
+
+            // Always set the data regardless of fetch ID
             setCampaigns(data);
 
             if (data.length > 0) {
                 fetchCommentCounts(data.map(campaign => campaign._id));
             }
 
-            if (selectedCampaign && modalUpdateTriggered) {
+            if (selectedCampaign && isRefreshOperation) {
                 const updatedSelectedCampaign = data.find(c => c._id === selectedCampaign._id);
                 if (updatedSelectedCampaign) {
                     setSelectedCampaign(updatedSelectedCampaign);
                 }
+            }
+
+            // Always turn off loading after successful fetch
+            setLoading(false);
+
+            // Use setTimeout to avoid race conditions
+            setTimeout(() => {
+                setIsRefreshing(false);
+            }, 300);
+
+            if (isRefreshOperation) {
                 setModalUpdateTriggered(false);
             }
         } catch (error) {
             console.error("Error fetching campaigns:", error);
-            showToast("Error refreshing campaign list", "error");
-        } finally {
+            showToast(isRefreshOperation ? "Error refreshing campaign list" : "Error fetching campaigns", "error");
+
+            // Always turn off loading on error
             setLoading(false);
+            setTimeout(() => {
+                setIsRefreshing(false);
+            }, 300);
         }
-    };
+    }, [customerId, fetchCommentCounts, showToast, selectedCampaign, fetchId, isRefreshing]);
 
-    const handleCampaignUpdated = () => {
+    const handleCampaignUpdated = useCallback(() => {
+        // Just set the modal update trigger - no need to refresh campaigns immediately
         setModalUpdateTriggered(true);
-        refreshCampaigns();
-    };
+    }, []);
 
+    // Initial fetch on component mount
     useEffect(() => {
-        const fetchCampaigns = async () => {
-            try {
-                const response = await fetch(`/api/campaigns/${customerId}`);
-                if (!response.ok) {
-                    throw new Error("Failed to fetch campaigns");
-                }
-                const data = await response.json();
-                setCampaigns(data);
-
-                if (data.length > 0) {
-                    fetchCommentCounts(data.map(campaign => campaign._id));
-                }
-            } catch (error) {
-                console.error("Error fetching campaigns:", error);
-                showToast("Error fetching campaigns", "error");
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchCampaigns();
-    }, [customerId, showToast]);
+    }, [customerId]); // Only depend on customerId
 
+    // Handle modalUpdateTriggered changes
+    useEffect(() => {
+        let refreshTimer;
+        if (modalUpdateTriggered) {
+            // Debounce the refresh operation to prevent multiple calls
+            clearTimeout(refreshTimer);
+            refreshTimer = setTimeout(() => {
+                fetchCampaigns(true); // true = isRefreshOperation
+            }, 200); // Increased debounce time to avoid race conditions
+        }
+
+        return () => {
+            clearTimeout(refreshTimer);
+        };
+    }, [modalUpdateTriggered, fetchCampaigns]);
+
+    // Fetch parent campaigns only when campaigns change
     useEffect(() => {
         const fetchParentCampaigns = async () => {
             if (campaigns.length === 0) return;
@@ -184,76 +266,62 @@ export default function CampaignList({ customerId }) {
         };
 
         fetchParentCampaigns();
-    }, [campaigns, customerId]);
+    }, [campaigns.length, customerId]);
 
-    const filteredCampaigns = campaigns.filter(campaign => {
-        // Service filter logic
-        let passesServiceFilter = true;
-        if (activeFilter === "Social") passesServiceFilter = campaign.service === "Paid Social";
-        else if (activeFilter === "Email") passesServiceFilter = campaign.service === "Email Marketing";
-        else if (activeFilter === "Paid Search") passesServiceFilter = campaign.service === "Paid Search";
-        else if (activeFilter === "SEO") passesServiceFilter = campaign.service === "SEO";
-        else if (activeFilter === "Pending Customer Approval") passesServiceFilter = campaign.status === "Pending Customer Approval";
+    // Filter campaigns whenever the dependencies change
+    useEffect(() => {
+        const filtered = campaigns.filter(campaign => {
+            // Service filter logic
+            let passesServiceFilter = true;
+            if (activeFilter === "Social") passesServiceFilter = campaign.service === "Paid Social";
+            else if (activeFilter === "Email") passesServiceFilter = campaign.service === "Email Marketing";
+            else if (activeFilter === "Paid Search") passesServiceFilter = campaign.service === "Paid Search";
+            else if (activeFilter === "SEO") passesServiceFilter = campaign.service === "SEO";
+            else if (activeFilter === "Pending Customer Approval") passesServiceFilter = campaign.status === "Pending Customer Approval";
 
-        // Month filter logic
-        let passesMonthFilter = true;
-        if (selectedMonth !== "All") {
-            if (campaign.campaignType === "Always On") {
-                passesMonthFilter = true; // Always include "Always On" campaigns
-            } else {
-                const [year, month] = selectedMonth.split('-').map(num => parseInt(num, 10));
-                const filterStartDate = startOfMonth(new Date(year, month - 1));
-                const filterEndDate = endOfMonth(filterStartDate);
-
-                if (campaign.startDate && campaign.endDate) {
-                    const campaignStartDate = new Date(campaign.startDate);
-                    const campaignEndDate = new Date(campaign.endDate);
-
-                    passesMonthFilter = (
-                        (campaignStartDate >= filterStartDate && campaignStartDate <= filterEndDate) ||
-                        (campaignEndDate >= filterStartDate && campaignEndDate <= filterEndDate) ||
-                        (campaignStartDate <= filterStartDate && campaignEndDate >= filterEndDate)
-                    );
+            // Month filter logic
+            let passesMonthFilter = true;
+            if (selectedMonth !== "All") {
+                if (campaign.campaignType === "Always On") {
+                    passesMonthFilter = true; // Always include "Always On" campaigns
                 } else {
-                    passesMonthFilter = false; // If no dates, don't show in month filter
+                    const [year, month] = selectedMonth.split('-').map(num => parseInt(num, 10));
+                    const filterStartDate = startOfMonth(new Date(year, month - 1));
+                    const filterEndDate = endOfMonth(filterStartDate);
+
+                    if (campaign.startDate && campaign.endDate) {
+                        const campaignStartDate = new Date(campaign.startDate);
+                        const campaignEndDate = new Date(campaign.endDate);
+
+                        passesMonthFilter = (
+                            (campaignStartDate >= filterStartDate && campaignStartDate <= filterEndDate) ||
+                            (campaignEndDate >= filterStartDate && campaignEndDate <= filterEndDate) ||
+                            (campaignStartDate <= filterStartDate && campaignEndDate >= filterEndDate)
+                        );
+                    } else {
+                        passesMonthFilter = false; // If no dates, don't show in month filter
+                    }
                 }
             }
-        }
 
-        // Search query filter logic
-        let passesSearchFilter = true;
-        if (searchQuery.trim() !== "") {
-            passesSearchFilter = campaign.campaignName.toLowerCase().includes(searchQuery.toLowerCase());
-        }
-
-        return passesServiceFilter && passesMonthFilter && passesSearchFilter;
-    });
-
-    const handleReadyForApprovalChange = async (id, value) => {
-        try {
-            const response = await fetch(`/api/campaigns/${customerId}?id=${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ readyForApproval: value }),
-            });
-
-            if (response.ok) {
-                setCampaigns(campaigns.map(campaign =>
-                    campaign._id === id ? { ...campaign, readyForApproval: value } : campaign
-                ));
-                showToast("Campaign updated", "success");
-            } else {
-                throw new Error("Failed to update campaign");
+            // Search query filter logic
+            let passesSearchFilter = true;
+            if (searchQuery.trim() !== "") {
+                passesSearchFilter = campaign.campaignName.toLowerCase().includes(searchQuery.toLowerCase());
             }
-        } catch (error) {
-            console.error("Error updating campaign:", error);
-            showToast("Error updating campaign", "error");
-        }
-    };
 
-    const handleStatusChange = async (id, value) => {
+            return passesServiceFilter && passesMonthFilter && passesSearchFilter;
+        });
+
+        setFilteredCampaigns(filtered);
+    }, [campaigns, activeFilter, selectedMonth, searchQuery]);
+
+    // Update organized campaigns when filtered campaigns or parent campaign map changes
+    useEffect(() => {
+        setOrganizedCampaigns(organizeCampaigns());
+    }, [filteredCampaigns, parentCampaignMap, organizeCampaigns]);
+
+    const handleStatusChange = useCallback(async (id, value) => {
         try {
             const response = await fetch(`/api/campaigns/${customerId}?id=${id}`, {
                 method: "PUT",
@@ -264,9 +332,11 @@ export default function CampaignList({ customerId }) {
             });
 
             if (response.ok) {
-                setCampaigns(campaigns.map(campaign =>
-                    campaign._id === id ? { ...campaign, status: value } : campaign
-                ));
+                setCampaigns(prevCampaigns =>
+                    prevCampaigns.map(campaign =>
+                        campaign._id === id ? { ...campaign, status: value } : campaign
+                    )
+                );
                 showToast("Campaign status updated", "success");
             } else {
                 throw new Error("Failed to update campaign status");
@@ -275,35 +345,11 @@ export default function CampaignList({ customerId }) {
             console.error("Error updating campaign status:", error);
             showToast("Error updating campaign status", "error");
         }
-    };
-
-    const handleCommentChange = async (id, value) => {
-        try {
-            const response = await fetch(`/api/campaigns/${customerId}?id=${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ commentToCustomer: value }),
-            });
-
-            if (response.ok) {
-                setCampaigns(campaigns.map(campaign =>
-                    campaign._id === id ? { ...campaign, commentToCustomer: value } : campaign
-                ));
-                showToast("Comment updated", "success");
-            } else {
-                throw new Error("Failed to update comment");
-            }
-        } catch (error) {
-            console.error("Error updating comment:", error);
-            showToast("Error updating comment", "error");
-        }
-    };
+    }, [customerId, showToast]);
 
     const [copyingCampaignId, setCopyingCampaignId] = useState(null);
 
-    const handleCopyCampaign = async (id) => {
+    const handleCopyCampaign = useCallback(async (id) => {
         try {
             setCopyingCampaignId(id);
 
@@ -314,9 +360,7 @@ export default function CampaignList({ customerId }) {
 
             const newCampaign = { ...campaignToCopy };
             delete newCampaign._id;
-
             delete newCampaign.createdAt;
-
             newCampaign.campaignName = `${newCampaign.campaignName} (Copy)`;
 
             const response = await fetch(`/api/campaigns/${customerId}`, {
@@ -327,7 +371,7 @@ export default function CampaignList({ customerId }) {
 
             if (response.ok) {
                 showToast("Campaign copied successfully", "success");
-                refreshCampaigns();
+                setModalUpdateTriggered(true); // Use modalUpdateTriggered instead of directly calling fetchCampaigns
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData.error || "Failed to copy campaign");
@@ -338,9 +382,9 @@ export default function CampaignList({ customerId }) {
         } finally {
             setCopyingCampaignId(null);
         }
-    };
+    }, [campaigns, customerId, showToast]);
 
-    const handleDeleteCampaign = async (id) => {
+    const handleDeleteCampaign = useCallback(async (id) => {
         if (!confirm("Are you sure you want to delete this campaign?")) {
             return;
         }
@@ -353,7 +397,6 @@ export default function CampaignList({ customerId }) {
             if (response.ok) {
                 setCampaigns(campaigns.filter(campaign => campaign._id !== id));
                 showToast("Campaign deleted", "success");
-
             } else {
                 throw new Error("Failed to delete campaign");
             }
@@ -361,7 +404,7 @@ export default function CampaignList({ customerId }) {
             console.error("Error deleting campaign:", error);
             showToast("Error deleting campaign", "error");
         }
-    };
+    }, [campaigns, customerId, showToast]);
 
     if (loading) {
         return (
@@ -370,6 +413,91 @@ export default function CampaignList({ customerId }) {
             </div>
         );
     }
+
+    const renderCampaignRow = (campaign) => (
+        <tr key={campaign._id} className="hover:bg-gray-50">
+            <td className="px-3 py-4 whitespace-nowrap text-center">
+                <div className="flex justify-center">
+                    <div
+                        className={`w-3 h-3 rounded-full ${campaign.status === "Live" ? "bg-green-500" :
+                            campaign.status === "Pending" || campaign.status === "Pending Customer Approval" ? "bg-amber-500" :
+                                campaign.status === "Ended" ? "bg-red-500" :
+                                    campaign.status === "Approved" ? "bg-blue-500" : "bg-gray-300"
+                            }`}
+                        title={campaign.status}
+                    ></div>
+                </div>
+            </td>
+            <td
+                onClick={() => handleViewDetails(campaign)}
+                className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1C398E] hover:underline cursor-pointer pl-10">
+                {campaign.campaignName}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <select
+                    value={campaign.status || "Pending"}
+                    onChange={(e) => handleStatusChange(campaign._id, e.target.value)}
+                    className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
+                >
+                    <option value="Pending">Pending</option>
+                    <option value="Pending Customer Approval">Pending Customer Approval</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Live">Live</option>
+                    <option value="Ended">Ended</option>
+                </select>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {campaign.campaignType === "Always On" ? (
+                    <span className="text-gray-800 font-medium">Always On</span>
+                ) : (
+                    <>
+                        {campaign.startDate && campaign.endDate ? (
+                            `${new Date(campaign.startDate).toLocaleDateString()} - ${new Date(campaign.endDate).toLocaleDateString()}`
+                        ) : (
+                            <span className="text-gray-400">No dates specified</span>
+                        )}
+                    </>
+                )}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {campaign.budget.toLocaleString()} DKK
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <div className="flex space-x-2">
+                    <button
+                        onClick={() => handleViewDetails(campaign)}
+                        className="border py-1 text-xs text-center px-2 text-[var(--color-primary-searchmind)] hover:text-[#2E4CA8] font-medium flex items-center rounded-md"
+                    >
+                        <span className="">View</span>
+                    </button>
+                    <button
+                        onClick={() => handleCopyCampaign(campaign._id)}
+                        disabled={copyingCampaignId === campaign._id}
+                        className="border py-1 text-xs text-center px-2 text-blue-600 hover:text-blue-800 font-medium flex items-center rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span className="">
+                            {copyingCampaignId === campaign._id ? "Copying..." : "Copy"}
+                        </span>
+                    </button>
+                    <button
+                        onClick={() => handleDeleteCampaign(campaign._id)}
+                        className="border py-1 text-xs text-center px-2 text-red-600 hover:text-red-800 font-medium flex items-center rounded-md"
+                    >
+                        <span className="">Delete</span>
+                    </button>
+                </div>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {commentCounts[campaign._id] > 0 ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {commentCounts[campaign._id]}
+                    </span>
+                ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100">0</span>
+                )}
+            </td>
+        </tr>
+    );
 
     return (
         <div className="bg-white border border-zinc-200 rounded-lg shadow-solid-9 overflow-hidden">
@@ -487,22 +615,9 @@ export default function CampaignList({ customerId }) {
                     <thead className="bg-gray-50">
                         <tr>
                             <th scope="col" className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '40px' }}>
-
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Campaign Name
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Parent Campaign
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Service
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Media
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Format
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
@@ -522,134 +637,32 @@ export default function CampaignList({ customerId }) {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredCampaigns.length > 0 ? (
-                            filteredCampaigns.map((campaign) => (
-                                <tr key={campaign._id} className="hover:bg-gray-50">
-                                    <td className="px-3 py-4 whitespace-nowrap text-center">
-                                        <div className="flex justify-center">
-                                            <div
-                                                className={`w-3 h-3 rounded-full ${campaign.status === "Live" ? "bg-green-500" :
-                                                    campaign.status === "Pending" || campaign.status === "Pending Customer Approval" ? "bg-amber-500" :
-                                                        campaign.status === "Ended" ? "bg-red-500" :
-                                                            campaign.status === "Approved" ? "bg-blue-500" : "bg-gray-300"
-                                                    }`}
-                                                title={campaign.status}
-                                            ></div>
-                                        </div>
-                                    </td>
-                                    <td
-                                        onClick={() => handleViewDetails(campaign)}
-                                        className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1C398E]hover:cursor-pointer hover:underline cursor-pointer">
-                                        {campaign.campaignName}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {campaign.parentCampaignId ? (
-                                            <span className="text-gray-800">
-                                                {parentCampaignMap[campaign.parentCampaignId] || "Unknown Parent"}
-                                            </span>
-                                        ) : (
-                                            <span className="text-gray-400">No parent</span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {campaign.service === "Paid Social" ? (
-                                            <div className="flex items-center gap-2">
-                                                <FaMeta className="text-lg" />
-                                                <span>{campaign.service}</span>
-                                            </div>
-                                        ) : campaign.service === "Email Marketing" ? (
-                                            <div className="flex items-center gap-2">
-                                                <MdEmail className="text-lg" />
-                                                <span>{campaign.service}</span>
-                                            </div>
-                                        ) : campaign.service === "Paid Search" ? (
-                                            <div className="flex items-center gap-2">
-                                                <SiGoogleads className="text-lg" />
-                                                <span>{campaign.service}</span>
-                                            </div>
-                                        ) : campaign.service === "SEO" ? (
-                                            <div className="flex items-center gap-2">
-                                                <FaMagnifyingGlassChart className="text-lg" />
-                                                <span>{campaign.service}</span>
-                                            </div>
-                                        ) : (
-                                            <span>{campaign.service}</span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {campaign.media}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {campaign.campaignFormat}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <select
-                                            value={campaign.status || "Pending"}
-                                            onChange={(e) => handleStatusChange(campaign._id, e.target.value)}
-                                            className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
-                                        >
-                                            <option value="Pending">Pending</option>
-                                            <option value="Pending Customer Approval">Pending Customer Approval</option>
-                                            <option value="Approved">Approved</option>
-                                            <option value="Live">Live</option>
-                                            <option value="Ended">Ended</option>
-                                        </select>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {campaign.campaignType === "Always On" ? (
-                                            <span className="text-gray-800 font-medium">Always On</span>
-                                        ) : (
-                                            <>
-                                                {campaign.startDate && campaign.endDate ? (
-                                                    `${new Date(campaign.startDate).toLocaleDateString()} - ${new Date(campaign.endDate).toLocaleDateString()}`
-                                                ) : (
-                                                    <span className="text-gray-400">No dates specified</span>
-                                                )}
-                                            </>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {campaign.budget.toLocaleString()} DKK
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <div className="flex space-x-2">
-                                            <button
-                                                onClick={() => handleViewDetails(campaign)}
-                                                className="border py-1 text-xs text-center px-2 text-[var(--color-primary-searchmind)] hover:text-[#2E4CA8] font-medium flex items-center rounded-md"
-                                            >
-                                                <span className="">View</span>
-                                            </button>
-                                            <button
-                                                onClick={() => handleCopyCampaign(campaign._id)}
-                                                disabled={copyingCampaignId === campaign._id}
-                                                className="border py-1 text-xs text-center px-2 text-blue-600 hover:text-blue-800 font-medium flex items-center rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                <span className="">
-                                                    {copyingCampaignId === campaign._id ? "Copying..." : "Copy"}
-                                                </span>
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteCampaign(campaign._id)}
-                                                className="border py-1 text-xs text-center px-2 text-red-600 hover:text-red-800 font-medium flex items-center rounded-md"
-                                            >
-                                                <span className="">Delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {commentCounts[campaign._id] > 0 ? (
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                {commentCounts[campaign._id]}
-                                            </span>
-                                        ) : (
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100">0</span>
-                                        )}
-                                    </td>
-                                </tr>
+                        {Object.keys(organizedCampaigns).length > 0 ? (
+                            Object.values(organizedCampaigns).map((parentGroup) => (
+                                <React.Fragment key={parentGroup.id}>
+                                    <tr
+                                        className="bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                                        onClick={() => toggleParentExpansion(parentGroup.id)}
+                                    >
+                                        <td className="px-3 py-3 whitespace-nowrap text-center">
+                                            {expandedParents[parentGroup.id] ?
+                                                <FaChevronDown className="text-gray-500" /> :
+                                                <FaChevronRight className="text-gray-500" />
+                                            }
+                                        </td>
+                                        <td colSpan="6" className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {parentGroup.name} ({parentGroup.campaigns.length})
+                                        </td>
+                                    </tr>
+
+                                    {expandedParents[parentGroup.id] &&
+                                        parentGroup.campaigns.map(campaign => renderCampaignRow(campaign))
+                                    }
+                                </React.Fragment>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="9" className="px-6 py-10 text-center text-gray-500">
+                                <td colSpan="7" className="px-6 py-10 text-center text-gray-500">
                                     No campaigns found for the selected filter
                                 </td>
                             </tr>

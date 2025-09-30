@@ -26,10 +26,10 @@ export default function DashboardCharts({
     const revenueChartData = useMemo(() => {
         const sourceData = revenueViewMode === "YTD" ? monthlyYTDData : validChartData;
         const compData = revenueViewMode === "YTD" ? monthlyYTDComparisonData : comparisonData;
-        
+
         // Format labels based on view mode
         const labels = sourceData.map((row) => revenueViewMode === "YTD" ? formatMonthLabel(row.date) : row.date);
-        
+
         return {
             labels,
             datasets: [
@@ -45,33 +45,27 @@ export default function DashboardCharts({
                 },
                 {
                     label: `Revenue (${comparison})${revenueViewMode === "YTD" ? " (YTD)" : ""}`,
-                    data: revenueViewMode === "YTD" 
-                        ? compData.map(row => row.revenue || 0) 
-                        : compData.map((row) => {
-                            const formattedDate = formatComparisonDate(row.date);
-                            if (!formattedDate) return null;
-                            return { x: formattedDate, y: row.revenue || 0 };
-                        }).filter(item => item !== null),
+                    data: compData.map((row) => row.revenue || 0),
                     borderColor: colors.hue3,
                     backgroundColor: colors.hue3,
                     borderWidth: 1,
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
-                    borderDash: [5, 5],
+                    borderDash: [5, 5], // Dashed line for comparison
                 },
             ],
         };
-    }, [revenueViewMode, monthlyYTDData, monthlyYTDComparisonData, validChartData, comparisonData, colors, comparison, formatMonthLabel, formatComparisonDate]);
+    }, [revenueViewMode, monthlyYTDData, validChartData, monthlyYTDComparisonData, comparisonData, colors, formatMonthLabel, comparison]);
 
     // AOV chart data setup - Toggle between YTD and Period
     const aovChartData = useMemo(() => {
         const sourceData = aovViewMode === "YTD" ? monthlyYTDData : validChartData;
         const compData = aovViewMode === "YTD" ? monthlyYTDComparisonData : comparisonData;
-        
+
         // Format labels based on view mode
         const labels = sourceData.map((row) => aovViewMode === "YTD" ? formatMonthLabel(row.date) : row.date);
-        
+
         return {
             labels,
             datasets: [
@@ -88,10 +82,10 @@ export default function DashboardCharts({
                 {
                     label: `AOV (${comparison})${aovViewMode === "YTD" ? " (YTD)" : ""}`,
                     data: aovViewMode === "YTD"
-                        ? compData.map(row => row.aov || 0)
+                        ? compData.map((row) => row.aov || 0)
                         : compData.map((row) => ({
                             x: formatComparisonDate(row.date),
-                            y: row.aov || 0
+                            y: row.aov || 0,
                         })),
                     borderColor: colors.hue3,
                     backgroundColor: colors.hue3,
@@ -99,7 +93,7 @@ export default function DashboardCharts({
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
-                    borderDash: [5, 5],
+                    borderDash: [5, 5], // Dashed line for comparison
                 },
             ],
         };
@@ -124,7 +118,7 @@ export default function DashboardCharts({
         // Sort entries by session count (descending)
         const entries = Object.entries(currentMetrics.channel_sessions || {})
             .sort((a, b) => b[1] - a[1]);
-            
+
         return {
             labels: entries.map(([channel]) => channel),
             datasets: [
@@ -133,9 +127,9 @@ export default function DashboardCharts({
                     data: entries.map(([_, sessions]) => sessions),
                     backgroundColor: [
                         colors.primary,
-                        colors.hue1, 
-                        colors.hue2, 
-                        colors.hue3, 
+                        colors.hue1,
+                        colors.hue2,
+                        colors.hue3,
                         colors.hue4,
                         "#4963BE",
                         "#9BABE1",
@@ -154,10 +148,11 @@ export default function DashboardCharts({
     // Spend allocation line chart - Toggle between YTD and Period
     const spendAllocationLineChartData = useMemo(() => {
         const sourceData = spendViewMode === "YTD" ? monthlyYTDData : validChartData;
-        
+        const compData = spendViewMode === "YTD" ? monthlyYTDComparisonData : comparisonData;
+
         // Format labels based on view mode
         const labels = sourceData.map((row) => spendViewMode === "YTD" ? formatMonthLabel(row.date) : row.date);
-        
+
         return {
             labels,
             datasets: [
@@ -181,9 +176,31 @@ export default function DashboardCharts({
                     pointHoverRadius: 4,
                     fill: false,
                 },
+                {
+                    label: `Google Ads (${comparison})${spendViewMode === "YTD" ? " (YTD)" : ""}`,
+                    data: compData.map((row) => row.google_ads_cost || 0),
+                    borderColor: colors.hue2,
+                    backgroundColor: colors.hue2,
+                    borderWidth: 1,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    fill: false,
+                    borderDash: [5, 5], // Dashed line for comparison
+                },
+                {
+                    label: `Meta (${comparison})${spendViewMode === "YTD" ? " (YTD)" : ""}`,
+                    data: compData.map((row) => row.meta_spend || 0),
+                    borderColor: colors.hue3,
+                    backgroundColor: colors.hue3,
+                    borderWidth: 1,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    fill: false,
+                    borderDash: [5, 5], // Dashed line for comparison
+                },
             ],
         };
-    }, [spendViewMode, monthlyYTDData, validChartData, colors, formatMonthLabel]);
+    }, [spendViewMode, monthlyYTDData, validChartData, monthlyYTDComparisonData, comparisonData, colors, formatMonthLabel, comparison]);
 
     // Chart options
     const getChartOptions = (viewMode) => {
@@ -269,7 +286,7 @@ export default function DashboardCharts({
             x: {
                 beginAtZero: true,
                 grid: { color: "rgba(0, 0, 0, 0.05)" },
-                ticks: { 
+                ticks: {
                     font: { size: 10 },
                     callback: (value) => value.toLocaleString('en-US')
                 },
@@ -308,7 +325,7 @@ export default function DashboardCharts({
                 formatter: (value) => value.toLocaleString('en-US'),
                 anchor: "end",
                 align: "start",
-                display: function(context) {
+                display: function (context) {
                     return context.dataset.data[context.dataIndex] > 500; // Only show labels for values > 500
                 },
             },
@@ -424,7 +441,7 @@ export default function DashboardCharts({
                     <div className="flex items-center justify-between mb-4">
                         <p className="font-semibold">{chartComponents[activeChartIndex].title}</p>
                         <div className="flex gap-2 items-center">
-                            <ViewModeToggle 
+                            <ViewModeToggle
                                 viewMode={chartComponents[activeChartIndex].viewMode}
                                 setViewMode={chartComponents[activeChartIndex].setViewMode}
                             />

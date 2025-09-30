@@ -81,7 +81,7 @@ export default async function GoogleAdsDashboardPage({ params }) {
         FROM raw_data
         GROUP BY campaign_name
         ORDER BY clicks DESC
-        LIMIT 5
+        LIMIT 1000
     ),
     campaigns_by_date AS (
         SELECT

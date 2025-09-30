@@ -98,14 +98,14 @@ export default function CampaignPlannerModal({
 
     const handleUserChange = (selectedOptions) => {
         console.log("Selected options:", selectedOptions); // Debug log
-        
+
         const syntheticEvent = {
             target: {
                 name: 'assignedUsers',
                 value: selectedOptions ? selectedOptions.map(option => option.value) : []
             }
         };
-        
+
         console.log("New assigned users:", syntheticEvent.target.value); // Debug log
         onInputChange(syntheticEvent);
     };
@@ -242,19 +242,24 @@ export default function CampaignPlannerModal({
                         </select>
                     </div>
 
-                    {formData.campaignType !== "Always On" && (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                                <input
-                                    type="date"
-                                    name="startDate"
-                                    value={formData.startDate}
-                                    onChange={onInputChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded"
-                                    required={formData.campaignType !== "Always On"}
-                                />
-                            </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Always show Start Date, but make it optional for Always On */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Start Date {formData.campaignType === "Always On" && "(Optional)"}
+                            </label>
+                            <input
+                                type="date"
+                                name="startDate"
+                                value={formData.startDate}
+                                onChange={onInputChange}
+                                className="w-full px-4 py-2 border border-gray-300 rounded"
+                                required={formData.campaignType !== "Always On"}
+                            />
+                        </div>
+
+                        {/* Only show End Date for non-Always On campaigns */}
+                        {formData.campaignType !== "Always On" && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                                 <input
@@ -263,11 +268,11 @@ export default function CampaignPlannerModal({
                                     value={formData.endDate}
                                     onChange={onInputChange}
                                     className="w-full px-4 py-2 border border-gray-300 rounded"
-                                    required={formData.campaignType !== "Always On"}
+                                    required={true}
                                 />
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Name</label>

@@ -197,6 +197,7 @@ export default function CampaignDetailsModal({
     };
 
     // Update handleSave to also update assigned users
+    // In the handleSave function:
     const handleSave = async () => {
         try {
             setIsSaving(true);
@@ -216,9 +217,11 @@ export default function CampaignDetailsModal({
 
                 showToast("Campaign updated successfully!", "success");
 
-                if (onUpdate) onUpdate();
-
-                handleClose();
+                // Important: Delay the onUpdate call slightly
+                setTimeout(() => {
+                    if (onUpdate) onUpdate();
+                    handleClose();
+                }, 50);
             } else {
                 const errorData = await response.json();
                 showToast(`Failed to update campaign: ${errorData.error}`, "error");

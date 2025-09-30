@@ -11,7 +11,6 @@ export async function GET(req, { params }) {
         await dbConnect();
 
         const campaigns = await Campaign.find({ customerId });
-
         return new Response(JSON.stringify(campaigns), { status: 200 });
     } catch (error) {
         console.error("::: Error fetching campaigns:", error);

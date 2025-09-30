@@ -1,18 +1,34 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import currencyData from "@/lib/static-data/commonCurrency.json";
 
 export default function ConfigCustomerSettings({ customerId, baseUrl }) {
     const [metricPreference, setMetricPreference] = useState("ROAS/POAS");
+    const [customerValuta, setCustomerValuta] = useState("DKK");
     const [loading, setLoading] = useState(false);
+    const [currencyLoading, setCurrencyLoading] = useState(false);
+
+    // Convert currency data object to sorted array for dropdown
+    const currencies = Object.entries(currencyData)
+        .map(([code, data]) => ({ code, ...data }))
+        .sort((a, b) => a.code.localeCompare(b.code));
 
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const response = await fetch(`/api/customer-settings/${customerId}`);
-                if (response.ok) {
-                    const data = await response.json();
+                // Fetch metric preference
+                const settingsResponse = await fetch(`/api/customer-settings/${customerId}`);
+                if (settingsResponse.ok) {
+                    const data = await settingsResponse.json();
                     setMetricPreference(data.metricPreference || "ROAS/POAS");
+                }
+
+                // Fetch currency separately from the dedicated endpoint
+                const currencyResponse = await fetch(`/api/customer-settings/${customerId}/customerValuta`);
+                if (currencyResponse.ok) {
+                    const data = await currencyResponse.json();
+                    setCustomerValuta(data.customerValuta || "DKK");
                 }
             } catch (error) {
                 console.error("Error fetching customer settings:", error);
@@ -43,6 +59,40 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
         }
     };
 
+    const handleCurrencyChange = async (e) => {
+        const currencyCode = e.target.value;
+        const selectedCurrency = currencyData[currencyCode];
+
+        if (!selectedCurrency) return;
+
+        setCurrencyLoading(true);
+        try {
+            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}/customerValuta`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ customerValuta: selectedCurrency.symbol_native }),
+            });
+
+            if (response.ok) {
+                setCustomerValuta(selectedCurrency.symbol_native);
+            } else {
+                console.error("Failed to update currency");
+            }
+        } catch (error) {
+            console.error("Error updating currency:", error);
+        } finally {
+            setCurrencyLoading(false);
+        }
+    };
+
+    // Find current currency code by its native symbol
+    const getCurrentCurrencyCode = () => {
+        const found = Object.entries(currencyData).find(
+            ([_, data]) => data.symbol_native === customerValuta
+        );
+        return found ? found[0] : "DKK";
+    };
+
     return (
         <div className="mt-6">
             <h3 className="font-semibold text-lg mb-4 text-zinc-800">General Settings</h3>
@@ -67,8 +117,8 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                                         onClick={() => handleToggle("ROAS/POAS")}
                                         disabled={loading || metricPreference === "ROAS/POAS"}
                                         className={`py-1 px-3 rounded text-sm ${metricPreference === "ROAS/POAS"
-                                                ? "bg-zinc-700 text-white"
-                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                            ? "bg-zinc-700 text-white"
+                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                             }`}
                                     >
                                         ROAS/POAS
@@ -77,12 +127,35 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                                         onClick={() => handleToggle("Spendshare")}
                                         disabled={loading || metricPreference === "Spendshare"}
                                         className={`py-1 px-3 rounded text-sm ${metricPreference === "Spendshare"
-                                                ? "bg-zinc-700 text-white"
-                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                            ? "bg-zinc-700 text-white"
+                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                             }`}
                                     >
                                         Spendshare
                                     </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr className="border-b border-zinc-100">
+                            <td className="px-4 py-3">Currency</td>
+                            <td className="px-4 py-3">
+                                {customerValuta} ({getCurrentCurrencyCode()})
+                            </td>
+                            <td className="px-4 py-3">
+                                <div className="flex gap-2">
+                                    <select
+                                        value={getCurrentCurrencyCode()}
+                                        onChange={handleCurrencyChange}
+                                        disabled={currencyLoading}
+                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                    >
+                                        {currencies.map(currency => (
+                                            <option key={currency.code} value={currency.code}>
+                                                {currency.code} - {currency.name} ({currency.symbol_native})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {currencyLoading && <span className="text-xs italic">Updating...</span>}
                                 </div>
                             </td>
                         </tr>

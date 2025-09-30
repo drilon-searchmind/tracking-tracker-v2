@@ -1,18 +1,22 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import UserSettingsContent from './my-profile-panels/UserSettingsContent';
 import IntegrationsContent from './my-profile-panels/IntegrationsContent';
 import UserCampaignsContent from './my-profile-panels/UserCampaignsContent';
 
-export default function ProfileAccordionTab() {
+export default function ProfileAccordionTab({ defaultActiveTab = 'settings' }) {
     const [activeTab, setActiveTab] = useState("settings");
 
     const tabs = [
         { id: "settings", label: "User Settings" },
         { id: "integrations", label: "Integrations (WIP)" },
-        { id: "campaignplanner", label: "My Campaigns" },
+        { id: "campaigns", label: "My Campaigns" },
     ];
+
+    useEffect(() => {
+        setActiveTab(defaultActiveTab);
+    }, [defaultActiveTab]);
 
     const renderContent = () => {
         switch (activeTab) {
@@ -20,7 +24,7 @@ export default function ProfileAccordionTab() {
                 return <UserSettingsContent />;
             case "integrations":
                 return <IntegrationsContent />;
-            case "campaignplanner":
+            case "campaigns":
                 return <UserCampaignsContent />;
             default:
                 return <UserSettingsContent />;

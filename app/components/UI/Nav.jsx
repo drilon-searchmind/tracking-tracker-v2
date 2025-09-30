@@ -4,7 +4,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import CustomerModal from "@/app/components/Dashboard/CustomerModal.jsx";
-import { FaMoon, FaSun, FaHome, FaChartLine, FaUserCog, FaUserCircle, FaBars, FaTimes, FaBell } from "react-icons/fa";
+import { FaMoon, FaSun, FaHome, FaChartLine, FaUserCog, FaUserCircle, FaBars, FaTimes, FaBell, FaChartBar } from "react-icons/fa";
 import LogoutButton from "../Auth/LogoutButton";
 import LoginButton from "../Auth/LoginButton";
 import { useRouter } from "next/navigation";
@@ -74,6 +74,10 @@ export default function Nav() {
                             <a href="/my-profile" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
                                 <FaUserCircle /> My Profile
                             </a>
+                            <a href="/my-profile?tab=campaigns" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
+                                <FaChartBar /> My Campaigns
+                            </a>
+
                             <a href="/whats-new" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
                                 <FaBell /> What's New
                             </a>
@@ -113,6 +117,10 @@ export default function Nav() {
                             <a href="/my-profile" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 py-4 border-b border-gray-100">
                                 <FaUserCircle /> My Profile
                             </a>
+                            <a href="/my-profile?tab=campaigns" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
+                                <FaChartBar /> My Campaigns
+                            </a>
+
                             <a href="/whats-new" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 py-4 border-b border-gray-100">
                                 <FaBell /> What's New
                             </a>

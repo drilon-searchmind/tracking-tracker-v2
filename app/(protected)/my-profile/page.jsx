@@ -3,10 +3,13 @@
 import Image from "next/image";
 import ProfileAccordionTab from "./my-profile-components/ProfileAccordionTab";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
 export default function MyProfile() {
     const { data: session } = useSession();
-    
+    const searchParams = useSearchParams();
+    const activeTab = searchParams.get('tab') || 'settings';
+
     return (
         <section id="pageMyProfile" className="">
             <div className="py-20 px-0 relative overflow">
@@ -33,7 +36,7 @@ export default function MyProfile() {
                     </div>
 
                     <div>
-                        <ProfileAccordionTab />
+                        <ProfileAccordionTab defaultActiveTab={activeTab} />
                     </div>
                 </div>
             </div>

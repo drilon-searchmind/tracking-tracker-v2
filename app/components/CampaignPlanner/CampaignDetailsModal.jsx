@@ -1,22 +1,26 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import { useToast } from "@/app/contexts/ToastContext";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
-import { useEffect, useState } from "react";
+import { useClickUpUsers } from "@/app/contexts/ClickUpUsersContext";
+import Select from "react-select";
+import countryCodes from '@/lib/static-data/countryCodes.json';
 import { IoMdClose } from "react-icons/io";
 import CommentSection from "./CommentSection";
-import Select from 'react-select';
-import countryCodes from '@/lib/static-data/countryCodes.json';
 
 export default function CampaignDetailsModal({
     isOpen,
     onClose,
     campaign,
     customerId,
-    onUpdate,
+    onUpdate
 }) {
     const { showToast } = useToast();
     const { setIsDetailsModalOpen } = useModalContext();
+    const { clickupUsers, isClickupUsersLoaded } = useClickUpUsers();
+
     const [isEditing, setIsEditing] = useState(false);
     const [editedCampaign, setEditedCampaign] = useState(null);
     const [displayedCampaign, setDisplayedCampaign] = useState(null);
@@ -26,6 +30,7 @@ export default function CampaignDetailsModal({
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
     const [users, setUsers] = useState([]);
     const [assignedUsers, setAssignedUsers] = useState([]);
+    const [serviceUser, setServiceUser] = useState(null);
 
     const countryOptions = countryCodes.map(country => ({
         value: country.code,
@@ -46,7 +51,6 @@ export default function CampaignDetailsModal({
         option.value === editedCampaign?.countryCode
     ) || null;
 
-    // Add the selector for user options
     const selectedUserOptions = assignedUsers.length > 0
         ? users.filter(user => {
             return assignedUsers.some(id =>
@@ -65,12 +69,10 @@ export default function CampaignDetailsModal({
         handleInputChange(syntheticEvent);
     };
 
-    // Add handler for user selection changes
     const handleUserChange = (selectedOptions) => {
         const newAssignedUsers = selectedOptions ? selectedOptions.map(option => option.value) : [];
         setAssignedUsers(newAssignedUsers);
 
-        // Also update the edited campaign object to include this data when saved
         setEditedCampaign(prev => ({
             ...prev,
             assignedUsers: newAssignedUsers
@@ -87,22 +89,68 @@ export default function CampaignDetailsModal({
             setEditedCampaign(formattedCampaign);
             setDisplayedCampaign(campaign);
 
-            // Fetch assigned users when campaign loads
             fetchAssignedUsers(campaign._id);
         }
     }, [campaign]);
 
-    // Add function to fetch assigned users
+    useEffect(() => {
+        if (campaign && campaign.service) {
+            console.log("Campaign service:", campaign.service);
+            console.log("Available clickup users (from context):", clickupUsers);
+
+            let serviceKey = "";
+
+            switch (campaign.service) {
+                case "SEO":
+                    serviceKey = "SEO";
+                    break;
+                case "Paid Search":
+                    serviceKey = "PPC";
+                    break;
+                case "Paid Social":
+                    serviceKey = "PS";
+                    break;
+                case "Email Marketing":
+                    serviceKey = "EM";
+                    break;
+                default:
+                    for (const key in clickupUsers) {
+                        if (key.toLowerCase().includes(campaign.service.toLowerCase()) ||
+                            campaign.service.toLowerCase().includes(key.toLowerCase())) {
+                            serviceKey = key;
+                            break;
+                        }
+                    }
+                    break;
+            }
+
+            console.log(`Mapped service "${campaign.service}" to key "${serviceKey}"`);
+
+            if (serviceKey && clickupUsers && clickupUsers[serviceKey] && clickupUsers[serviceKey].length > 0) {
+                console.log(`Found user for ${serviceKey}:`, clickupUsers[serviceKey][0]);
+                setServiceUser(clickupUsers[serviceKey][0]);
+            } else {
+                console.log(`No users found for service key "${serviceKey}"`);
+                setServiceUser(null);
+            }
+        } else {
+            console.log("Missing data for service user mapping:", {
+                hasService: Boolean(campaign?.service),
+                serviceValue: campaign?.service,
+                hasClickupUsers: clickupUsers && Object.keys(clickupUsers).length > 0
+            });
+            setServiceUser(null);
+        }
+    }, [campaign, clickupUsers]);
+
     const fetchAssignedUsers = async (campaignId) => {
         try {
             const response = await fetch(`/api/assigned-campaign-users?campaignId=${campaignId}`);
             if (response.ok) {
                 const data = await response.json();
-                // Extract just the user IDs
                 const userIds = data.map(assignment => assignment.assignedUserId);
                 setAssignedUsers(userIds);
 
-                // Update editedCampaign with assigned users
                 setEditedCampaign(prev => ({
                     ...prev,
                     assignedUsers: userIds
@@ -113,7 +161,6 @@ export default function CampaignDetailsModal({
         }
     };
 
-    // Add effect to fetch available users
     useEffect(() => {
         const fetchUsers = async () => {
             if (isOpen) {
@@ -196,13 +243,10 @@ export default function CampaignDetailsModal({
         }
     };
 
-    // Update handleSave to also update assigned users
-    // In the handleSave function:
     const handleSave = async () => {
         try {
             setIsSaving(true);
 
-            // Update the campaign details
             const response = await fetch(`/api/campaigns/${customerId}?id=${campaign._id}`, {
                 method: "PUT",
                 headers: {
@@ -212,12 +256,10 @@ export default function CampaignDetailsModal({
             });
 
             if (response.ok) {
-                // Now update the assigned users
                 await updateAssignedUsers(campaign._id, assignedUsers);
 
                 showToast("Campaign updated successfully!", "success");
 
-                // Important: Delay the onUpdate call slightly
                 setTimeout(() => {
                     if (onUpdate) onUpdate();
                     handleClose();
@@ -234,10 +276,8 @@ export default function CampaignDetailsModal({
         }
     };
 
-    // Add function to update assigned users
     const updateAssignedUsers = async (campaignId, newUserIds) => {
         try {
-            // First get current assignments to determine what needs to change
             const response = await fetch(`/api/assigned-campaign-users?campaignId=${campaignId}`);
             if (!response.ok) {
                 throw new Error("Failed to fetch current user assignments");
@@ -246,13 +286,10 @@ export default function CampaignDetailsModal({
             const currentAssignments = await response.json();
             const currentUserIds = currentAssignments.map(a => a.assignedUserId);
 
-            // Users to add (in new list but not in current list)
             const usersToAdd = newUserIds.filter(id => !currentUserIds.includes(id));
 
-            // Users to remove (in current list but not in new list)
             const usersToRemove = currentUserIds.filter(id => !newUserIds.includes(id));
 
-            // Add new assignments
             const addPromises = usersToAdd.map(userId =>
                 fetch('/api/assigned-campaign-users', {
                     method: 'POST',
@@ -264,7 +301,6 @@ export default function CampaignDetailsModal({
                 })
             );
 
-            // Remove old assignments
             const removePromises = usersToRemove.map(userId =>
                 fetch(`/api/assigned-campaign-users?campaignId=${campaignId}&userId=${userId}`, {
                     method: 'DELETE'
@@ -307,44 +343,87 @@ export default function CampaignDetailsModal({
     return (
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-[99999999]">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-3xl relative max-h-[80vh] overflow-y-auto">
-                <span className="flex justify-between items-center mb-5">
-                    <h4 className="text-xl font-semibold">
-                        {isEditing ? "Edit Campaign" : "Campaign Details"}
-                    </h4>
+                <span className="flex justify-between items-start mb-5">
+                    <span>
+                        <div>
+                            <div className="">
+                                {!isClickupUsersLoaded ? (
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-4 h-4 border-2 border-gray-300 border-t-zinc-700 rounded-full animate-spin"></div>
+                                        <span className="text-sm text-gray-500">Loading team data...</span>
+                                    </div>
+                                ) : serviceUser ? (
+                                    <div className="flex items-center gap-3">
+                                        {serviceUser.profilePicture ? (
+                                            <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+                                                <Image
+                                                    src={serviceUser.profilePicture}
+                                                    alt={serviceUser.username}
+                                                    width={40}
+                                                    height={40}
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-600 rounded-full font-medium">
+                                                {serviceUser.initials || serviceUser.username?.charAt(0)}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <p className="font-medium">{serviceUser.username}</p>
+                                            <p className="text-sm text-gray-500">{serviceUser.email}</p>
+                                            <div className="mt-1 text-xs inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                                                {serviceUser.service}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500">No team member assigned for {displayedCampaign.service}</p>
+                                )}
+                            </div>
+                        </div>
+                    </span>
                     <button onClick={handleClose} className="text-gray-500 hover:text-gray-700 text-lg">
                         <IoMdClose className="text-2xl" />
                     </button>
                 </span>
 
-                <div className="flex justify-end gap-2 mb-6">
-                    {isEditing ? (
-                        <>
-                            <button
-                                onClick={() => setIsEditing(false)}
-                                className="px-4 py-2 border border-zinc-700 text-zinc-700 rounded hover:bg-zinc-50 text-sm"
-                                disabled={isSaving}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-800 text-sm"
-                                disabled={isSaving}
-                            >
-                                {isSaving ? "Saving..." : "Save Changes"}
-                            </button>
-                        </>
-                    ) : (
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-800 text-sm"
-                        >
-                            Edit Campaign
-                        </button>
-                    )}
-                </div>
+                <hr className="mb-5 border-[0.1rem] border-gray-100 border-w-" />
 
-                <div className="grid grid-cols-2 gap-6">
+                <span className="flex justify-between items-end mb-5">
+                    <h4 className="text-xl font-semibold">
+                        {isEditing ? "Edit Campaign" : "Campaign Details"}
+                    </h4>
+                    <div className="flex justify-end gap-2 mb-0">
+                        {isEditing ? (
+                            <>
+                                <button
+                                    onClick={() => setIsEditing(false)}
+                                    className="px-4 py-2 border border-zinc-700 text-zinc-700 rounded hover:bg-zinc-50 text-sm"
+                                    disabled={isSaving}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-800 text-sm"
+                                    disabled={isSaving}
+                                >
+                                    {isSaving ? "Saving..." : "Save Changes"}
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-800 text-sm"
+                            >
+                                Edit Campaign
+                            </button>
+                        )}
+                    </div>
+                </span>
+
+                <div className="grid grid-cols-2 gap-6 mb-6">
                     <div>
                         <h4 className="font-medium text-lg mb-4 text-gray-700">Basic Information</h4>
                         <div className="space-y-4">
@@ -388,7 +467,7 @@ export default function CampaignDetailsModal({
                             </div>
 
                             {/* Add Assigned Users Field */}
-                            <div>
+                            <div className="hidden">
                                 <label className="text-sm text-gray-600 block mb-1">Assigned Users</label>
                                 {isLoadingUsers ? (
                                     <p className="text-base text-gray-500">Loading users...</p>

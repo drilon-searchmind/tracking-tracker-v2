@@ -1,5 +1,5 @@
 import { ToastProvider } from "./contexts/ToastContext";
-import { ThemeProvider } from "./contexts/ThemeContext"; // Add this import
+import { ThemeProvider } from "./contexts/ThemeContext";
 import Nav from "./components/UI/Nav";
 import SessionProvider from './providers/SessionProvider';
 import { getServerSession } from "next-auth/next";
@@ -9,6 +9,7 @@ import { GoogleTagManager } from '@next/third-parties/google';
 import { Geist, Geist_Mono } from "next/font/google";
 import { Fustat } from "next/font/google";
 import "./globals.css"
+import { ClickUpUsersProvider } from "./contexts/ClickUpUsersContext";
 
 const fustat = Fustat({
     weight: ['200', '300', '400', '500', '600', '700', '800'],
@@ -35,7 +36,10 @@ export default async function RootLayout({ children }) {
                     <ThemeProvider>
                         <ToastProvider>
                             <Nav />
-                            {children}
+
+                            <ClickUpUsersProvider>
+                                {children}
+                            </ClickUpUsersProvider>
                         </ToastProvider>
                     </ThemeProvider>
                 </SessionProvider>

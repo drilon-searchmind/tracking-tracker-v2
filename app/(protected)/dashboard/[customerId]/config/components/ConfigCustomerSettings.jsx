@@ -8,6 +8,9 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
     const [customerValuta, setCustomerValuta] = useState("DKK");
     const [loading, setLoading] = useState(false);
     const [currencyLoading, setCurrencyLoading] = useState(false);
+    const [clickupId, setClickupId] = useState("");
+    const [clickupLoading, setClickupLoading] = useState(false);
+    const [tempClickupId, setTempClickupId] = useState("");
 
     // Convert currency data object to sorted array for dropdown
     const currencies = Object.entries(currencyData)
@@ -22,6 +25,8 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                 if (settingsResponse.ok) {
                     const data = await settingsResponse.json();
                     setMetricPreference(data.metricPreference || "ROAS/POAS");
+                    setClickupId(data.customerClickupID || "");
+                    setTempClickupId(data.customerClickupID || "");
                 }
 
                 // Fetch currency separately from the dedicated endpoint
@@ -82,6 +87,35 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
             console.error("Error updating currency:", error);
         } finally {
             setCurrencyLoading(false);
+        }
+    };
+
+    const handleClickupIdChange = (e) => {
+        setTempClickupId(e.target.value);
+    };
+
+    const handleClickupIdUpdate = async () => {
+        if (tempClickupId === clickupId) return;
+
+        setClickupLoading(true);
+        try {
+            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}/clickupId`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ customerClickupID: tempClickupId }),
+            });
+
+            if (response.ok) {
+                setClickupId(tempClickupId);
+            } else {
+                console.error("Failed to update Clickup ID");
+                setTempClickupId(clickupId); // Reset to original value on failure
+            }
+        } catch (error) {
+            console.error("Error updating Clickup ID:", error);
+            setTempClickupId(clickupId); // Reset to original value on failure
+        } finally {
+            setClickupLoading(false);
         }
     };
 
@@ -156,6 +190,30 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                                         ))}
                                     </select>
                                     {currencyLoading && <span className="text-xs italic">Updating...</span>}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr className="border-b border-zinc-100">
+                            <td className="px-4 py-3">Clickup ID</td>
+                            <td className="px-4 py-3">
+                                {clickupId || "Not set"}
+                            </td>
+                            <td className="px-4 py-3">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={tempClickupId}
+                                        onChange={handleClickupIdChange}
+                                        placeholder="Enter Clickup ID"
+                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                    />
+                                    <button
+                                        onClick={handleClickupIdUpdate}
+                                        disabled={clickupLoading || tempClickupId === clickupId}
+                                        className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
+                                    >
+                                        {clickupLoading ? "Updating..." : "Update"}
+                                    </button>
                                 </div>
                             </td>
                         </tr>

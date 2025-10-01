@@ -1,0 +1,830 @@
+[
+  {
+    "number": 44,
+    "title": "Dbr/local main",
+    "body": null,
+    "merged_at": "2025-09-30T13:10:24Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: Update PPC Dashboard to enhance campaign data display with search functionality and increase campaign limit to 1000",
+        "sha": "ddbf80412b0de3530b2cb17eb39267348ce19c88"
+      },
+      {
+        "message": ":hammer: add currency selection and update functionality in customer settings",
+        "sha": "806adef171586613c50200996ed6f1482a117337"
+      },
+      {
+        "message": ":recycle: campaign fetching and updating logic in CampaignList component; enhance organization and filtering of campaigns",
+        "sha": "28cd3dc72bfb84416fb5244abde665ede1fd9806"
+      },
+      {
+        "message": ":hammer: Update ProfileAccordionTab to accept default active tab from URL",
+        "sha": "f5b40fdf3768800021e9a4d99ac2135d50a5965f"
+      },
+      {
+        "message": ":recycke: campaign date handling in CampaignPlannerModal; make start date optional for \"Always On\" campaigns and ensure end date is always required",
+        "sha": "48c990b43a163353e80b5bb4768e3fb39917c7a4"
+      },
+      {
+        "message": ":hammer: refactor DashboardCharts component; streamline chart data setup and enhance comparison data handling for revenue, AOV, and spend allocation charts",
+        "sha": "96393973d76ceec6522c2a12f8faf686977e7ba8"
+      }
+    ]
+  },
+  {
+    "number": 43,
+    "title": ":construction: Enhance SEO Dashboard with search functionality for ke…",
+    "body": "…ywords and URLs, and update release notes layout",
+    "merged_at": "2025-09-29T12:53:31Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: Enhance SEO Dashboard with search functionality for keywords and URLs, and update release notes layout",
+        "sha": "8269c75db22dcd1e9f093cc84ddf7865bf621daf"
+      }
+    ]
+  },
+  {
+    "number": 42,
+    "title": "Dbr/local main",
+    "body": null,
+    "merged_at": "2025-09-29T12:10:42Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: implement customer settings management with metric preference updates and API integration",
+        "sha": "b5a73a52bb2e9ea6c19730c3da7b6016071e92bd"
+      },
+      {
+        "message": ":hammer: enhance table styling for OverviewDashboard with reduced padding and font size",
+        "sha": "2fdc0d4cb86e71b01f10d57d550190a7da89d646"
+      },
+      {
+        "message": ":recycle: Add and refactor performance dashboard components for metrics and charts + updated charts with YTD option",
+        "sha": "df7d50761eb550e27ac3ce77c1d3ec7cc149f4c8"
+      },
+      {
+        "message": ":construction: wip darkmode",
+        "sha": "88a32438123884fc61b3b9722fd01df9fbae19c2"
+      }
+    ]
+  },
+  {
+    "number": 41,
+    "title": ":bug: small gtm init error",
+    "body": null,
+    "merged_at": "2025-09-29T08:43:14Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: small gtm init error",
+        "sha": "997216c49f9d575a99a3a1fa6b4e2dac343289c1"
+      }
+    ]
+  },
+  {
+    "number": 40,
+    "title": ":hammer: add Google Tag Manager integration and update package depend…",
+    "body": "…encies",
+    "merged_at": "2025-09-29T08:20:51Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: add Google Tag Manager integration and update package dependencies",
+        "sha": "b215a6f691d1f060ab0f758c96cc3b0b21879b89"
+      }
+    ]
+  },
+  {
+    "number": 39,
+    "title": ":bug: refine middleware to skip additional API routes and remove unne…",
+    "body": "…cessary matcher path",
+    "merged_at": "2025-09-23T17:54:36Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: refine middleware to skip additional API routes and remove unnecessary matcher path",
+        "sha": "fbea30277a4d130f386fa91c5af0ceebe153e9cf"
+      }
+    ]
+  },
+  {
+    "number": 38,
+    "title": ":bug: update API endpoints in StaticExpenses component to use version…",
+    "body": "…ed routes for fetching and saving static expenses",
+    "merged_at": "2025-09-23T17:43:41Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: update API endpoints in StaticExpenses component to use versioned routes for fetching and saving static expenses",
+        "sha": "9f098df60d318b59a7620f127ed0eceb636d7a53"
+      }
+    ]
+  },
+  {
+    "number": 37,
+    "title": ":bug: replace NextResponse with Response for consistent JSON handling…",
+    "body": "… in static expenses API",
+    "merged_at": "2025-09-23T17:23:39Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: replace NextResponse with Response for consistent JSON handling in static expenses API",
+        "sha": "a4f35d6fb7f64483ddf9cb20f6b2d67525d97882"
+      }
+    ]
+  },
+  {
+    "number": 36,
+    "title": ":bug: standardize response handling in static expenses API with NextR…",
+    "body": "…esponse",
+    "merged_at": "2025-09-23T17:04:40Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: standardize response handling in static expenses API with NextResponse",
+        "sha": "01547a0d24b854fb9155259f14a47c8c08a0f4a8"
+      }
+    ]
+  },
+  {
+    "number": 35,
+    "title": ":bug: refactor StaticExpenses component to remove baseUrl prop and st…",
+    "body": "…reamline API URL construction\r\n\r\n:art: update global styles for light color scheme support",
+    "merged_at": "2025-09-23T16:43:13Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: refactor StaticExpenses component to remove baseUrl prop and streamline API URL construction\n\n:art: update global styles for light color scheme support",
+        "sha": "08da9a793e4d3ebcb20c599098aca04e1bedd425"
+      }
+    ]
+  },
+  {
+    "number": 34,
+    "title": ":bug: enhance static expenses fetching and error handling in StaticEx…",
+    "body": "…penses component",
+    "merged_at": "2025-09-23T16:15:38Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: enhance static expenses fetching and error handling in StaticExpenses component",
+        "sha": "9a4d0e384c281766a6bbf86806d350ec8a97f2a7"
+      }
+    ]
+  },
+  {
+    "number": 33,
+    "title": ":bug: enhance error handling and logging for customer details and rev…",
+    "body": "…enue budget fetching",
+    "merged_at": "2025-09-23T16:03:40Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: enhance error handling and logging for customer details and revenue budget fetching",
+        "sha": "2aeb8d313591c7f5a868ae2de29b519a181cfba8"
+      }
+    ]
+  },
+  {
+    "number": 32,
+    "title": ":bug: fix base URL assignment to use NEXT_PUBLIC_BASE_URL consistentl…",
+    "body": "…y across components",
+    "merged_at": "2025-09-23T14:31:54Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: fix base URL assignment to use NEXT_PUBLIC_BASE_URL consistently across components",
+        "sha": "14084ff3db368b970e1730b948d4308494125e12"
+      }
+    ]
+  },
+  {
+    "number": 31,
+    "title": ":fire: remove GA4 properties page and related components",
+    "body": null,
+    "merged_at": "2025-09-23T13:23:29Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":fire: remove GA4 properties page and related components",
+        "sha": "1c1ac5cbbe5820adb2446ba481c03e92314f5bc7"
+      }
+    ]
+  },
+  {
+    "number": 30,
+    "title": ":bug: improve error handling and validation in campaign comments API",
+    "body": null,
+    "merged_at": "2025-09-23T13:10:28Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: improve error handling and validation in campaign comments API",
+        "sha": "dc6777359eb9775577a4f328b38b6949aa1c66df"
+      }
+    ]
+  },
+  {
+    "number": 29,
+    "title": ":construction: wip redirect error [1420]",
+    "body": null,
+    "merged_at": "2025-09-23T12:22:01Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: wip redirect error [1420]",
+        "sha": "5d08ecd95217e98429cd0d2b8a0864857308b182"
+      }
+    ]
+  },
+  {
+    "number": 28,
+    "title": ":construction: wip redirect error [1412]",
+    "body": null,
+    "merged_at": "2025-09-23T12:12:48Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: wip redirect error [1412]",
+        "sha": "c171ea05e78cd047e38165f95f923d677c8e74eb"
+      }
+    ]
+  },
+  {
+    "number": 27,
+    "title": ":construction: wip redirect error [1340]",
+    "body": null,
+    "merged_at": "2025-09-23T11:54:44Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: wip redirect error [1340]",
+        "sha": "dac189e1f59487055c77503afd148448b8b9307e"
+      }
+    ]
+  },
+  {
+    "number": 26,
+    "title": ":construction: wip redirect error",
+    "body": null,
+    "merged_at": "2025-09-23T10:55:35Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: wip redirect error",
+        "sha": "cfffe0db1d9ab116f81f9aa875a7d183216750b7"
+      }
+    ]
+  },
+  {
+    "number": 25,
+    "title": ":construction: wip redirect error",
+    "body": null,
+    "merged_at": "2025-09-23T10:40:51Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: wip redirect error",
+        "sha": "e064dbc7abecef7f864449d59ca54b1983d50812"
+      }
+    ]
+  },
+  {
+    "number": 24,
+    "title": ":construction: wip redirect error",
+    "body": null,
+    "merged_at": "2025-09-23T10:33:57Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: wip redirect error",
+        "sha": "934e0dd5325a9aa4ff87f5b546eb26ca87153b9b"
+      }
+    ]
+  },
+  {
+    "number": 23,
+    "title": ":construction: wip redirect error",
+    "body": null,
+    "merged_at": "2025-09-23T09:50:07Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: wip redirect error",
+        "sha": "193bc2e851140f780e5687d2009e468612f8d0a0"
+      }
+    ]
+  },
+  {
+    "number": 22,
+    "title": "Dbr/local main",
+    "body": null,
+    "merged_at": "2025-09-23T08:33:54Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: enhance session management and error handling in ProtectedLayout",
+        "sha": "6de4a9f97b958282d39203be30a7a77d9517afea"
+      },
+      {
+        "message": ":construction: wip redirect error",
+        "sha": "36b7662fa6076c37728ccba3ea8dcbd559b7fa7a"
+      }
+    ]
+  },
+  {
+    "number": 21,
+    "title": ":hammer: enhanced login flow with improved redirect handling and erro…",
+    "body": "…r management",
+    "merged_at": "2025-09-23T08:08:26Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: enhanced login flow with improved redirect handling and error management",
+        "sha": "6849fd3b385fe18efdd8d81c1618a87a5cce64db"
+      }
+    ]
+  },
+  {
+    "number": 20,
+    "title": ":hammer: added session maxAge configuration and secure cookie headers…",
+    "body": "… in auth and next config",
+    "merged_at": "2025-09-23T07:50:59Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: added session maxAge configuration and secure cookie headers in auth and next config",
+        "sha": "2b33cf5b52411d0fc0d06223f4933764a8df9ae7"
+      }
+    ]
+  },
+  {
+    "number": 19,
+    "title": ":hammer: enhance redirect logic for login and middleware to handle se…",
+    "body": "…ssion state more effectively",
+    "merged_at": "2025-09-23T07:44:02Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: enhance redirect logic for login and middleware to handle session state more effectively",
+        "sha": "b9d12f7a23f62815c6ccbe20500acfa263f853a9"
+      }
+    ]
+  },
+  {
+    "number": 18,
+    "title": ":construction: wip page loaders",
+    "body": null,
+    "merged_at": "2025-09-22T13:21:48Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: wip page loaders",
+        "sha": "f0a4989caca5399c364b902d2261be2d5d32a842"
+      }
+    ]
+  },
+  {
+    "number": 17,
+    "title": ":hammer: add user creation functionality with modal and validation",
+    "body": null,
+    "merged_at": "2025-09-22T12:05:46Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: add user creation functionality with modal and validation",
+        "sha": "eb7dd2272331c3d6d00c66b94f7078ac074e8b05"
+      }
+    ]
+  },
+  {
+    "number": 16,
+    "title": "Dbr/local main",
+    "body": null,
+    "merged_at": "2025-09-22T11:42:54Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: enhance customer sharing functionality with user validation and error handling",
+        "sha": "c34e21b0b21e83e8ac30c21f0a364fef00335256"
+      },
+      {
+        "message": ":recycle: replace Geist font with Fustat and update layout styling",
+        "sha": "e58afe2970f9b0599f7679ababbbcbc7e05ee96a"
+      }
+    ]
+  },
+  {
+    "number": 15,
+    "title": "Dbr/local main",
+    "body": null,
+    "merged_at": "2025-09-22T10:54:20Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: implemented security for unauth customer access",
+        "sha": "5834f824935a284914a2f29a62e79e0e98c81ac8"
+      },
+      {
+        "message": ":iphone: wip responsive layout on all pages",
+        "sha": "1199526cc783f228651ce20bdaed810c2ebbc608"
+      },
+      {
+        "message": ":lipstick: updated the UI of access restricted component",
+        "sha": "fc22d82b152a93dcf31bf4276f99f95bf6bb1b2b"
+      }
+    ]
+  },
+  {
+    "number": 14,
+    "title": ":hammer: add customer sharing retrieval API and enhance user manageme…",
+    "body": "…nt with external user support",
+    "merged_at": "2025-09-17T10:37:17Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: add customer sharing retrieval API and enhance user management with external user support",
+        "sha": "656f76af548dac1d029781d109d43afad47cf885"
+      }
+    ]
+  },
+  {
+    "number": 13,
+    "title": ":recycle: replace API call with direct database query for static expe…",
+    "body": "…nses",
+    "merged_at": "2025-09-17T09:03:16Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":recycle: replace API call with direct database query for static expenses",
+        "sha": "503f27603c7b3d792c61a94ac0a2b2c8a6b016f3"
+      }
+    ]
+  },
+  {
+    "number": 12,
+    "title": ":hammer: enhance error handling and connection pooling in MongoDB con…",
+    "body": "…nection [test]",
+    "merged_at": "2025-09-17T08:48:30Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: enhance error handling and connection pooling in MongoDB connection [test]",
+        "sha": "9843bb3879f20718c979538e33ba6bfd512cc9ae"
+      }
+    ]
+  },
+  {
+    "number": 11,
+    "title": ":bug: re-rolled back to old db connection",
+    "body": null,
+    "merged_at": "2025-09-17T07:53:44Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: re-rolled back to old db connection",
+        "sha": "a9e1fd6c255acd098b47f8fc9cad22d1d7d6589e"
+      }
+    ]
+  },
+  {
+    "number": 10,
+    "title": ":hammer: enhanced mongodb connection handling with retry logic and ca…",
+    "body": "…ching",
+    "merged_at": "2025-09-17T07:27:08Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: enhanced mongodb connection handling with retry logic and caching",
+        "sha": "c4b0c161fa5b42f91c4945203652d2a144816f05"
+      }
+    ]
+  },
+  {
+    "number": 9,
+    "title": "Dbr/local main",
+    "body": null,
+    "merged_at": "2025-09-16T13:33:48Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: updated campaign model properties",
+        "sha": "50f99f593d56ad15e2a744c15d58493edb15a638"
+      },
+      {
+        "message": ":hammer: update campaign handling for \"Always On\" type; adjust required fields and date handling",
+        "sha": "4d2ed19e3dff65aae37eb1a79d1f9d58f40be686"
+      },
+      {
+        "message": ":recycle: update campaign status options and default values across components",
+        "sha": "983f0d0b5d189f1cbc9b0f9e87ecda6ed0e757c9"
+      },
+      {
+        "message": ":hammer: campaign planner implemented searchable country selection dropdown",
+        "sha": "081345a7982d4c9a06e118573919fd016d1a48e6"
+      },
+      {
+        "message": ":hammer: add campaign copy functionality with UI integration",
+        "sha": "49775697338c54cd63e1d76d5e081067835bd52d"
+      },
+      {
+        "message": ":lipstick: implement UI for user profile management with settings and integrations",
+        "sha": "9cf3bf82cb93c109a845ec7e14a850dd37a702a1"
+      },
+      {
+        "message": ":lipstick: enhance navigation UI with additional icons for improved user experience",
+        "sha": "58da0ebc86c3b8a15e319e23a2bcff890eaf2516"
+      },
+      {
+        "message": ":construction: WIP implement user campaigns management UI with filtering and loading states",
+        "sha": "a5aca4b4d826633e3a553fd0f7557cdf4fb73e3a"
+      },
+      {
+        "message": ":hammer: implement user profile update functionality",
+        "sha": "be15697183bcf9c15dabed551959b4aa4d2acfb5"
+      },
+      {
+        "message": ":hammer: implement user assignment functionality for campaigns",
+        "sha": "ba42be5372864d9249e91e2edc1c6f219e3ba9c4"
+      }
+    ]
+  },
+  {
+    "number": 8,
+    "title": ":hammer: parent campaign functionality",
+    "body": null,
+    "merged_at": "2025-09-15T13:44:57Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer: parent campaign functionality",
+        "sha": "04452ed2d38abbdeae921ec7d85fa2bac82f9942"
+      }
+    ]
+  },
+  {
+    "number": 7,
+    "title": ":hammer admin unauth component",
+    "body": null,
+    "merged_at": "2025-09-15T13:03:56Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":hammer admin unauth component",
+        "sha": "c910ae26974ebcb2f43549357a6b32ab4d85d94e"
+      }
+    ]
+  },
+  {
+    "number": 6,
+    "title": ":bug: vercel connection & middleware issues",
+    "body": null,
+    "merged_at": "2025-09-15T10:50:59Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: vercel connection & middleware issues",
+        "sha": "b74ac744791df9e42e2a0e767c40a3418917e43a"
+      }
+    ]
+  },
+  {
+    "number": 5,
+    "title": ":bug: vercel connection & middleware issues",
+    "body": null,
+    "merged_at": "2025-09-15T10:47:34Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: vercel connection & middleware issues",
+        "sha": "305cef910e0562c46e65731008edff01ee948342"
+      }
+    ]
+  },
+  {
+    "number": 4,
+    "title": ":bug: vercel connection & middleware issues",
+    "body": null,
+    "merged_at": "2025-09-15T10:33:07Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: vercel connection & middleware issues",
+        "sha": "905b9e6a9392bde3e0b405b391f75fd9c91bb2ea"
+      }
+    ]
+  },
+  {
+    "number": 3,
+    "title": ":bug: vercel connection & middleware issues",
+    "body": null,
+    "merged_at": "2025-09-15T10:26:39Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: vercel connection & middleware issues",
+        "sha": "08ca7ac44ee36e72b4b75519912a9b3829638094"
+      }
+    ]
+  },
+  {
+    "number": 2,
+    "title": "Dbr/local main",
+    "body": null,
+    "merged_at": "2025-09-15T10:15:57Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":construction: wip data flow chart",
+        "sha": "60c48e5292ec6636c7ee8341f85ccebddd679e41"
+      },
+      {
+        "message": ":construction: wip homepageflowchart component",
+        "sha": "a1e643df6598bd26dc35719b5c13ee4bf2832280"
+      },
+      {
+        "message": ":bug: fixed shopify_transactions where condition",
+        "sha": "810a762ee5f3a93662d5a28eaf3081d3e558eb9a"
+      },
+      {
+        "message": ":construction: fixed p&l calcs",
+        "sha": "ad7726f8e4d6bed4148974244579fc3613b61fc9"
+      },
+      {
+        "message": ":construction: wip new admin user and auth update",
+        "sha": "d1538718b65329ea1069dd177178f26066eb9692"
+      },
+      {
+        "message": ":construction: wip admin dashboard and updated middleware",
+        "sha": "6d49cb66592b7a36ed76040ae907b9586e5e7061"
+      },
+      {
+        "message": ":construction: admin users functionality",
+        "sha": "78fa1bdfdf2c643a9573f443bcf19944792b4a10"
+      },
+      {
+        "message": ":construction: admin users functionality",
+        "sha": "33a3e284559303b6fcf5ce34b5452ff22c5ada31"
+      },
+      {
+        "message": ":hammer: admin customer functionality",
+        "sha": "f1dbbe3fe1b70280a0855073ded9363a09c5f299"
+      },
+      {
+        "message": ":lipstick: nav ui",
+        "sha": "237ac7217ce0ece76da52594c96bf7d7d250c235"
+      },
+      {
+        "message": ":construction: wip ga4 analytics apex",
+        "sha": "507daa23d8bae08ab2210ac29ec2189ba3d6f4c6"
+      }
+    ]
+  },
+  {
+    "number": 1,
+    "title": ":bug: fixed customerId params error",
+    "body": null,
+    "merged_at": "2025-09-11T10:42:29Z",
+    "base_branch": "main",
+    "head_branch": "dbr/local_main",
+    "author": "drilon-searchmind",
+    "labels": [],
+    "commits": [
+      {
+        "message": ":bug: fixed customerId params error",
+        "sha": "0c4794dd7b615a4208c39ce1f5f75b26bef946f4"
+      }
+    ]
+  }
+]

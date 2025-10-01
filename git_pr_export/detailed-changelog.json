@@ -1,0 +1,514 @@
+[
+  {
+    "week": "September 28, 2025 - October 4, 2025",
+    "version": "2.0.0",
+    "changes": {
+      "feature": [
+        {
+          "title": "Update PPC Dashboard to enhance campaign data display with search functionality and increase campaign limit to 1000",
+          "description": "Update PPC Dashboard to enhance campaign data display with search functionality and increase campaign limit to 1000.",
+          "sha": "ddbf8041",
+          "prNumber": 44
+        },
+        {
+          "title": "Add currency selection and update functionality in customer settings",
+          "description": "Add currency selection and update functionality in customer settings.",
+          "sha": "806adef1",
+          "prNumber": 44
+        },
+        {
+          "title": "Update ProfileAccordionTab to accept default active tab from URL",
+          "description": "Added Update ProfileAccordionTab to accept default active tab from URL.",
+          "sha": "f5b40fdf",
+          "prNumber": 44
+        },
+        {
+          "title": "Refactor DashboardCharts component",
+          "description": "Added refactor DashboardCharts component; streamline chart data setup and enhance comparison data handling for revenue, AOV, and spend allocation charts.",
+          "sha": "96393973",
+          "prNumber": 44
+        },
+        {
+          "title": "Implement customer settings management with metric preference updates and API integration",
+          "description": "Added implement customer settings management with metric preference updates and API integration.",
+          "sha": "b5a73a52",
+          "prNumber": 42
+        },
+        {
+          "title": "Enhance table styling for OverviewDashboard with reduced padding and font size",
+          "description": "Added enhance table styling for OverviewDashboard with reduced padding and font size.",
+          "sha": "2fdc0d4c",
+          "prNumber": 42
+        },
+        {
+          "title": "Add Google Tag Manager integration and update package dependencies",
+          "description": "Added add Google Tag Manager integration and update package dependencies.",
+          "sha": "b215a6f6",
+          "prNumber": 40
+        }
+      ],
+      "refactor": [
+        {
+          "title": "Campaign fetching and updating logic in CampaignList component",
+          "description": "Refactored campaign fetching and updating logic in CampaignList component; enhance organization and filtering of campaigns for improved performance and maintainability.",
+          "sha": "28cd3dc7",
+          "prNumber": 44
+        },
+        {
+          "title": "Add and refactor performance dashboard components for metrics and charts + updated charts with YTD option",
+          "description": "Add and refactor performance dashboard components for metrics and charts + updated charts with YTD option.",
+          "sha": "df7d5076",
+          "prNumber": 42
+        }
+      ],
+      "other": [
+        {
+          "title": "Campaign date handling in CampaignPlannerModal",
+          "description": "Campaign date handling in CampaignPlannerModal; make start date optional for \"Always On\" campaigns and ensure end date is always required.",
+          "sha": "48c990b4",
+          "prNumber": 44
+        }
+      ],
+      "wip": [
+        {
+          "title": "Enhance SEO Dashboard with search functionality for keywords and URLs, and update release notes layout",
+          "description": "Enhance SEO Dashboard with search functionality for keywords and URLs, and update release notes layout.",
+          "sha": "8269c75d",
+          "prNumber": 43
+        },
+        {
+          "title": "Wip darkmode",
+          "description": "Wip darkmode.",
+          "sha": "88a32438",
+          "prNumber": 42
+        }
+      ],
+      "bugfix": [
+        {
+          "title": "Small gtm init error",
+          "description": "Fixed an issue where small gtm init error.",
+          "sha": "997216c4",
+          "prNumber": 41
+        }
+      ]
+    }
+  },
+  {
+    "week": "September 21, 2025 - September 27, 2025",
+    "version": "2.1.0",
+    "changes": {
+      "bugfix": [
+        {
+          "title": "Refine middleware to skip additional API routes and remove unnecessary matcher path",
+          "description": "Fixed an issue where refine middleware to skip additional API routes and remove unnecessary matcher path.",
+          "sha": "fbea3027",
+          "prNumber": 39
+        },
+        {
+          "title": "Update API endpoints in StaticExpenses component to use versioned routes for fetching and saving static expenses",
+          "description": "Fixed an issue where update API endpoints in StaticExpenses component to use versioned routes for fetching and saving static expenses.",
+          "sha": "9f098df6",
+          "prNumber": 38
+        },
+        {
+          "title": "Replace NextResponse with Response for consistent JSON handling in static expenses API",
+          "description": "Fixed an issue where replace NextResponse with Response for consistent JSON handling in static expenses API.",
+          "sha": "a4f35d6f",
+          "prNumber": 37
+        },
+        {
+          "title": "Standardize response handling in static expenses API with NextResponse",
+          "description": "Fixed an issue where standardize response handling in static expenses API with NextResponse.",
+          "sha": "01547a0d",
+          "prNumber": 36
+        },
+        {
+          "title": "Refactor StaticExpenses component to remove baseUrl prop and streamline API URL construction",
+          "description": "Fixed an issue where refactor StaticExpenses component to remove baseUrl prop and streamline API URL construction\n\n:art: update global styles for light color scheme support.",
+          "sha": "08da9a79",
+          "prNumber": 35
+        },
+        {
+          "title": "Enhance static expenses fetching and error handling in StaticExpenses component",
+          "description": "Fixed an issue where enhance static expenses fetching and error handling in StaticExpenses component.",
+          "sha": "9a4d0e38",
+          "prNumber": 34
+        },
+        {
+          "title": "Enhance error handling and logging for customer details and revenue budget fetching",
+          "description": "Fixed an issue where enhance error handling and logging for customer details and revenue budget fetching.",
+          "sha": "2aeb8d31",
+          "prNumber": 33
+        },
+        {
+          "title": "Fix base URL assignment to use NEXT_PUBLIC_BASE_URL consistently across components",
+          "description": "Fix base URL assignment to use NEXT_PUBLIC_BASE_URL consistently across components.",
+          "sha": "14084ff3",
+          "prNumber": 32
+        },
+        {
+          "title": "Improve error handling and validation in campaign comments API",
+          "description": "Fixed an issue where improve error handling and validation in campaign comments API.",
+          "sha": "dc677735",
+          "prNumber": 30
+        }
+      ],
+      "removal": [
+        {
+          "title": "Remove GA4 properties page and related components",
+          "description": "Remove GA4 properties page and related components.",
+          "sha": "1c1ac5cb",
+          "prNumber": 31
+        }
+      ],
+      "wip": [
+        {
+          "title": "Wip redirect error [1420]",
+          "description": "Wip redirect error [1420].",
+          "sha": "5d08ecd9",
+          "prNumber": 29
+        },
+        {
+          "title": "Wip redirect error [1412]",
+          "description": "Wip redirect error [1412].",
+          "sha": "c171ea05",
+          "prNumber": 28
+        },
+        {
+          "title": "Wip redirect error [1340]",
+          "description": "Wip redirect error [1340].",
+          "sha": "dac189e1",
+          "prNumber": 27
+        },
+        {
+          "title": "Wip redirect error",
+          "description": "Wip redirect error.",
+          "sha": "cfffe0db",
+          "prNumber": 26
+        },
+        {
+          "title": "Wip redirect error",
+          "description": "Wip redirect error.",
+          "sha": "e064dbc7",
+          "prNumber": 25
+        },
+        {
+          "title": "Wip redirect error",
+          "description": "Wip redirect error.",
+          "sha": "934e0dd5",
+          "prNumber": 24
+        },
+        {
+          "title": "Wip redirect error",
+          "description": "Wip redirect error.",
+          "sha": "193bc2e8",
+          "prNumber": 23
+        },
+        {
+          "title": "Enhance session management and error handling in ProtectedLayout",
+          "description": "Enhance session management and error handling in ProtectedLayout.",
+          "sha": "6de4a9f9",
+          "prNumber": 22
+        },
+        {
+          "title": "Wip redirect error",
+          "description": "Wip redirect error.",
+          "sha": "36b7662f",
+          "prNumber": 22
+        },
+        {
+          "title": "Wip page loaders",
+          "description": "Wip page loaders.",
+          "sha": "f0a4989c",
+          "prNumber": 18
+        }
+      ],
+      "feature": [
+        {
+          "title": "Enhanced login flow with improved redirect handling and error management",
+          "description": "Added enhanced login flow with improved redirect handling and error management.",
+          "sha": "6849fd3b",
+          "prNumber": 21
+        },
+        {
+          "title": "Added session maxAge configuration and secure cookie headers in auth and next config",
+          "description": "Added added session maxAge configuration and secure cookie headers in auth and next config.",
+          "sha": "2b33cf5b",
+          "prNumber": 20
+        },
+        {
+          "title": "Enhance redirect logic for login and middleware to handle session state more effectively",
+          "description": "Added enhance redirect logic for login and middleware to handle session state more effectively.",
+          "sha": "b9d12f7a",
+          "prNumber": 19
+        },
+        {
+          "title": "Add user creation functionality with modal and validation",
+          "description": "Add user creation functionality with modal and validation.",
+          "sha": "eb7dd227",
+          "prNumber": 17
+        },
+        {
+          "title": "Enhance customer sharing functionality with user validation and error handling",
+          "description": "Enhance customer sharing functionality with user validation and error handling.",
+          "sha": "c34e21b0",
+          "prNumber": 16
+        },
+        {
+          "title": "Implemented security for unauth customer access",
+          "description": "Added implemented security for unauth customer access.",
+          "sha": "5834f824",
+          "prNumber": 15
+        }
+      ],
+      "refactor": [
+        {
+          "title": "Replace Geist font with Fustat and update layout styling",
+          "description": "Refactored replace Geist font with Fustat and update layout styling for improved performance and maintainability.",
+          "sha": "e58afe29",
+          "prNumber": 16
+        }
+      ],
+      "responsive": [
+        {
+          "title": "Wip responsive layout on all pages",
+          "description": "Wip responsive layout on all pages.",
+          "sha": "1199526c",
+          "prNumber": 15
+        }
+      ],
+      "ui": [
+        {
+          "title": "Updated the UI of access restricted component",
+          "description": "Updated the UI of access restricted component.",
+          "sha": "fc22d82b",
+          "prNumber": 15
+        }
+      ]
+    }
+  },
+  {
+    "week": "September 14, 2025 - September 20, 2025",
+    "version": "2.2.0",
+    "changes": {
+      "feature": [
+        {
+          "title": "Add customer sharing retrieval API and enhance user management with external user support",
+          "description": "Added add customer sharing retrieval API and enhance user management with external user support.",
+          "sha": "656f76af",
+          "prNumber": 14
+        },
+        {
+          "title": "Enhance error handling and connection pooling in MongoDB connection [test]",
+          "description": "Added enhance error handling and connection pooling in MongoDB connection [test].",
+          "sha": "9843bb38",
+          "prNumber": 12
+        },
+        {
+          "title": "Enhanced mongodb connection handling with retry logic and caching",
+          "description": "Added enhanced mongodb connection handling with retry logic and caching.",
+          "sha": "c4b0c161",
+          "prNumber": 10
+        },
+        {
+          "title": "Updated campaign model properties",
+          "description": "Added updated campaign model properties.",
+          "sha": "50f99f59",
+          "prNumber": 9
+        },
+        {
+          "title": "Update campaign handling for \"Always On\" type",
+          "description": "Added update campaign handling for \"Always On\" type; adjust required fields and date handling.",
+          "sha": "4d2ed19e",
+          "prNumber": 9
+        },
+        {
+          "title": "Campaign planner implemented searchable country selection dropdown",
+          "description": "Added campaign planner implemented searchable country selection dropdown.",
+          "sha": "081345a7",
+          "prNumber": 9
+        },
+        {
+          "title": "Add campaign copy functionality with UI integration",
+          "description": "Add campaign copy functionality with UI integration.",
+          "sha": "49775697",
+          "prNumber": 9
+        },
+        {
+          "title": "Implement user profile update functionality",
+          "description": "Implement user profile update functionality.",
+          "sha": "be156971",
+          "prNumber": 9
+        },
+        {
+          "title": "Implement user assignment functionality for campaigns",
+          "description": "Implement user assignment functionality for campaigns.",
+          "sha": "ba42be53",
+          "prNumber": 9
+        },
+        {
+          "title": "Parent campaign functionality",
+          "description": "Parent campaign functionality.",
+          "sha": "04452ed2",
+          "prNumber": 8
+        },
+        {
+          "title": "Admin customer functionality",
+          "description": "Admin customer functionality.",
+          "sha": "f1dbbe3f",
+          "prNumber": 2
+        }
+      ],
+      "refactor": [
+        {
+          "title": "Replace API call with direct database query for static expenses",
+          "description": "Refactored replace API call with direct database query for static expenses for improved performance and maintainability.",
+          "sha": "503f2760",
+          "prNumber": 13
+        },
+        {
+          "title": "Update campaign status options and default values across components",
+          "description": "Refactored update campaign status options and default values across components for improved performance and maintainability.",
+          "sha": "983f0d0b",
+          "prNumber": 9
+        }
+      ],
+      "bugfix": [
+        {
+          "title": "Re-rolled back to old db connection",
+          "description": "Fixed an issue where re-rolled back to old db connection.",
+          "sha": "a9e1fd6c",
+          "prNumber": 11
+        },
+        {
+          "title": "Vercel connection & middleware issues",
+          "description": "Fixed an issue where vercel connection & middleware issues.",
+          "sha": "b74ac744",
+          "prNumber": 6
+        },
+        {
+          "title": "Vercel connection & middleware issues",
+          "description": "Fixed an issue where vercel connection & middleware issues.",
+          "sha": "305cef91",
+          "prNumber": 5
+        },
+        {
+          "title": "Vercel connection & middleware issues",
+          "description": "Fixed an issue where vercel connection & middleware issues.",
+          "sha": "905b9e6a",
+          "prNumber": 4
+        },
+        {
+          "title": "Vercel connection & middleware issues",
+          "description": "Fixed an issue where vercel connection & middleware issues.",
+          "sha": "08ca7ac4",
+          "prNumber": 3
+        },
+        {
+          "title": "Fixed shopify_transactions where condition",
+          "description": "Fixed shopify_transactions where condition.",
+          "sha": "810a762e",
+          "prNumber": 2
+        }
+      ],
+      "ui": [
+        {
+          "title": "Implement UI for user profile management with settings and integrations",
+          "description": "Implement UI for user profile management with settings and integrations.",
+          "sha": "9cf3bf82",
+          "prNumber": 9
+        },
+        {
+          "title": "Enhance navigation UI with additional icons for improved user experience",
+          "description": "Enhance navigation UI with additional icons for improved user experience.",
+          "sha": "58da0ebc",
+          "prNumber": 9
+        },
+        {
+          "title": "Nav ui",
+          "description": "Enhanced user interface with nav ui.",
+          "sha": "237ac721",
+          "prNumber": 2
+        }
+      ],
+      "wip": [
+        {
+          "title": "WIP implement user campaigns management UI with filtering and loading states",
+          "description": "WIP implement user campaigns management UI with filtering and loading states.",
+          "sha": "a5aca4b4",
+          "prNumber": 9
+        },
+        {
+          "title": "Wip data flow chart",
+          "description": "Wip data flow chart.",
+          "sha": "60c48e52",
+          "prNumber": 2
+        },
+        {
+          "title": "Wip homepageflowchart component",
+          "description": "Wip homepageflowchart component.",
+          "sha": "a1e643df",
+          "prNumber": 2
+        },
+        {
+          "title": "Fixed p&l calcs",
+          "description": "Fixed p&l calcs.",
+          "sha": "ad7726f8",
+          "prNumber": 2
+        },
+        {
+          "title": "Wip new admin user and auth update",
+          "description": "Wip new admin user and auth update.",
+          "sha": "d1538718",
+          "prNumber": 2
+        },
+        {
+          "title": "Wip admin dashboard and updated middleware",
+          "description": "Wip admin dashboard and updated middleware.",
+          "sha": "6d49cb66",
+          "prNumber": 2
+        },
+        {
+          "title": "Admin users functionality",
+          "description": "Admin users functionality.",
+          "sha": "78fa1bdf",
+          "prNumber": 2
+        },
+        {
+          "title": "Admin users functionality",
+          "description": "Admin users functionality.",
+          "sha": "33a3e284",
+          "prNumber": 2
+        },
+        {
+          "title": "Wip ga4 analytics apex",
+          "description": "Wip ga4 analytics apex.",
+          "sha": "507daa23",
+          "prNumber": 2
+        }
+      ],
+      "other": [
+        {
+          "title": "",
+          "description": ":hammer admin unauth component.",
+          "sha": "c910ae26",
+          "prNumber": 7
+        }
+      ]
+    }
+  },
+  {
+    "week": "September 7, 2025 - September 13, 2025",
+    "version": "2.3.0",
+    "changes": {
+      "bugfix": [
+        {
+          "title": "Fixed customerId params error",
+          "description": "Fixed customerId params error.",
+          "sha": "0c4794dd",
+          "prNumber": 1
+        }
+      ]
+    }
+  }
+]

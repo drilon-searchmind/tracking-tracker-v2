@@ -2,81 +2,16 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import releases from "@/app/data/releases";
 
 export default function WhatsNewPage() {
     const [activeFilter, setActiveFilter] = useState("all");
     const [activeRelease, setActiveRelease] = useState(null);
 
-    const releases = [
-        {
-            id: "v2.0.0",
-            version: "2.0.0",
-            date: "September 25, 2025",
-            type: "major",
-            title: "SEO Dashboard Launch",
-            description: "Introducing our new SEO Dashboard with comprehensive keyword and URL performance analytics.",
-            features: [
-                {
-                    title: "Search Keywords & URLs",
-                    description: "Powerful search functionality for exploring all your keywords and URLs beyond top performers."
-                },
-                {
-                    title: "Performance Trends",
-                    description: "Track impressions, clicks, and position changes over time with interactive charts."
-                },
-                {
-                    title: "Top Performance Tables",
-                    description: "View your top-performing keywords and URLs with detailed metrics."
-                }
-            ]
-        },
-        {
-            id: "v1.9.0",
-            version: "1.9.0",
-            date: "August 12, 2025",
-            type: "feature",
-            title: "Campaign Planner Enhancements",
-            description: "New improvements to the Campaign Planner for better campaign management.",
-            features: [
-                {
-                    title: "Campaign Calendar",
-                    description: "Visual calendar interface for planning and viewing campaigns by date."
-                },
-                {
-                    title: "User Assignment",
-                    description: "Assign team members to specific campaigns and track responsibilities."
-                }
-            ]
-        },
-        {
-            id: "v1.8.0",
-            version: "1.8.0",
-            date: "July 3, 2025",
-            type: "feature",
-            title: "Dashboard Improvements",
-            description: "Enhanced performance dashboard with new visualization options.",
-            features: [
-                {
-                    title: "YTD Data Comparison",
-                    description: "Compare Year-to-Date metrics against previous periods."
-                },
-                {
-                    title: "Advanced Configuration",
-                    description: "More granular control over dashboard settings and preferences."
-                },
-                {
-                    title: "Performance Tools",
-                    description: "New tools for deeper analysis of performance data."
-                }
-            ]
-        }
-    ];
-
     const filteredReleases = activeFilter === "all"
         ? releases
         : releases.filter(release => release.type === activeFilter);
 
-    // Set the first release as active if none is selected
     if (!activeRelease && filteredReleases.length > 0) {
         setActiveRelease(filteredReleases[0].id);
     }

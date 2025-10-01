@@ -113,6 +113,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
 
     const handleParentCampaignSuccess = () => {
         setRefreshParentList(prev => !prev);
+        setRefreshList(prev => !prev);
     };
 
     const handleSubmit = async (e) => {
@@ -176,7 +177,6 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                     campaignTextToCreativeTranslation: "",
                     assignedUsers: [],
                 });
-                // Trigger a refresh of the campaign list
                 setRefreshList(prev => !prev);
             } else {
                 const errorData = await response.json();
@@ -264,7 +264,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                             </button>
                             <button
                                 onClick={handleOpenModal}
-                                className="text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center justify-center md:justify-start"
+                                className="hidden text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center justify-center md:justify-start"
                             >
                                 <FaCirclePlus />
                                 <span>Create Campaign</span>

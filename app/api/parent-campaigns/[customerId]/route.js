@@ -1,5 +1,6 @@
 import { dbConnect } from "@/lib/dbConnect";
 import ParentCampaign from "@/models/ParentCampaign";
+import Campaign from "@/models/Campaign";
 
 export async function GET(req, { params }) {
     const resolvedParams = await params;
@@ -37,19 +38,74 @@ export async function POST(req, { params }) {
             );
         }
 
+        if (body.startDate) {
+            body.startDate = new Date(body.startDate);
+        }
+        if (body.endDate) {
+            body.endDate = new Date(body.endDate);
+        }
+
         const parentCampaign = new ParentCampaign({
             customerId,
             parentCampaignName: body.parentCampaignName,
+            service: body.service || [],
+            countryCode: body.countryCode || "",
+            campaignText: body.campaignText || "",
+            campaignMessage: body.campaignMessage || "",
+            campaignBrief: body.campaignBrief || "",
+            startDate: body.startDate || null,
+            endDate: body.endDate || null,
+            b2bOrB2c: body.b2bOrB2c || "",
+            budget: body.budget ? parseFloat(body.budget) : undefined,
+            materialFromCustomer: body.materialFromCustomer || "",
             materialLinks: body.materialLinks || "",
-            childCampaigns: body.childCampaigns || []
+            childCampaigns: []
         });
 
         await parentCampaign.save();
 
+        const childCampaignIds = [];
+        if (body.service && body.service.length > 0) {
+            const childCampaignPromises = body.service.map(async (service) => {
+                const childCampaign = new Campaign({
+                    customerId,
+                    service: service,
+                    media: "Other", // Default value, can be updated later
+                    campaignFormat: "Collection", // Default value, can be updated later
+                    countryCode: body.countryCode || "",
+                    startDate: body.startDate || null,
+                    endDate: body.endDate || null,
+                    campaignName: `${body.parentCampaignName}: ${service}`,
+                    messageBrief: body.campaignBrief || "",
+                    b2bOrB2c: body.b2bOrB2c || "B2B", // Default if not specified
+                    budget: body.budget ? parseFloat(body.budget) / body.service.length : 0,
+                    materialFromCustomer: body.materialFromCustomer || "",
+                    parentCampaignId: parentCampaign._id,
+                    campaignType: (!body.startDate && !body.endDate) ? "Always On" : "Conversion",
+                    status: "Pending"
+                });
+                
+                await childCampaign.save();
+                
+                childCampaignIds.push(childCampaign._id);
+                
+                return childCampaign;
+            });
+            
+            const childCampaigns = await Promise.all(childCampaignPromises);
+            
+            await ParentCampaign.findByIdAndUpdate(
+                parentCampaign._id,
+                { $set: { childCampaigns: childCampaignIds } }
+            );
+        }
+
         return new Response(
             JSON.stringify({
                 message: "Parent campaign created successfully",
-                parentCampaign
+                parentCampaign,
+                childCampaignCount: childCampaignIds.length,
+                childCampaignIds
             }),
             { status: 201 }
         );
@@ -73,10 +129,18 @@ export async function PUT(req, { params }) {
 
         const body = await req.json();
 
+        if (body.startDate) {
+            body.startDate = new Date(body.startDate);
+        }
+        if (body.endDate) {
+            body.endDate = new Date(body.endDate);
+        }
+
         const parentCampaign = await ParentCampaign.findOneAndUpdate(
             { _id: parentCampaignId, customerId },
             {
                 ...body,
+                budget: body.budget ? parseFloat(body.budget) : undefined,
                 updatedAt: new Date()
             },
             { new: true }
@@ -114,7 +178,7 @@ export async function DELETE(req, { params }) {
     try {
         await dbConnect();
 
-        const parentCampaign = await ParentCampaign.findOneAndDelete({
+        const parentCampaign = await ParentCampaign.findOne({
             _id: parentCampaignId,
             customerId
         });
@@ -126,8 +190,18 @@ export async function DELETE(req, { params }) {
             );
         }
 
+        if (parentCampaign.childCampaigns && parentCampaign.childCampaigns.length > 0) {
+            await Campaign.deleteMany({
+                _id: { $in: parentCampaign.childCampaigns }
+            });
+        }
+
+        await ParentCampaign.deleteOne({ _id: parentCampaignId });
+
         return new Response(
-            JSON.stringify({ message: "Parent campaign deleted successfully" }),
+            JSON.stringify({ 
+                message: "Parent campaign and associated child campaigns deleted successfully" 
+            }),
             { status: 200 }
         );
     } catch (error) {

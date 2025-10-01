@@ -10,6 +10,39 @@ const ParentCampaignSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    service: [{
+        type: String,
+        enum: ["Paid Social", "Paid Search", "Email Marketing", "SEO"],
+    }],
+    countryCode: {
+        type: String,
+    },
+    campaignText: {
+        type: String,
+    },
+    campaignMessage: {
+        type: String,
+    },
+    campaignBrief: {
+        type: String,
+    },
+    startDate: {
+        type: Date,
+    },
+    endDate: {
+        type: Date,
+    },
+    b2bOrB2c: {
+        type: String,
+        enum: ["B2B", "B2C"],
+    },
+    budget: {
+        type: Number,
+        min: 0,
+    },
+    materialFromCustomer: {
+        type: String,
+    },
     materialLinks: {
         type: String,
     },

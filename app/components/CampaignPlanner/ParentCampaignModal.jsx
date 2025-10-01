@@ -4,6 +4,8 @@ import { useToast } from "@/app/contexts/ToastContext";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 import { useEffect, useState } from "react";
 import { IoMdClose } from "react-icons/io";
+import Select from 'react-select';
+import countryCodes from "@/lib/static-data/countryCodes.json";
 
 export default function ParentCampaignModal({
     isOpen,
@@ -16,10 +18,50 @@ export default function ParentCampaignModal({
 
     const [formData, setFormData] = useState({
         parentCampaignName: "",
+        service: [],
+        countryCode: "",
+        campaignText: "",
+        campaignMessage: "",
+        campaignBrief: "",
+        startDate: "",
+        endDate: "",
+        b2bOrB2c: "",
+        budget: "",
+        materialFromCustomer: "",
         materialLinks: ""
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedServices, setSelectedServices] = useState([]);
+
+    // Country selection options
+    const countryOptions = countryCodes.map(country => ({
+        value: country.code,
+        label: `${country.name} (${country.code})`,
+    }));
+
+    const frequentCountries = [
+        { value: "DK", label: "Denmark (DK)" },
+        { value: "DE", label: "Germany (DE)" },
+        { value: "NL", label: "Netherlands (NL)" },
+        { value: "NO", label: "Norway (NO)" },
+        { value: "FR", label: "France (FR)" },
+        { value: "", label: "───────────────" }, // Divider
+    ];
+
+    const allCountryOptions = [...frequentCountries, ...countryOptions];
+
+    const selectedCountryOption = allCountryOptions.find(option =>
+        option.value === formData.countryCode
+    ) || null;
+
+    // Service selection options
+    const serviceOptions = [
+        { value: "Paid Social", label: "Paid Social" },
+        { value: "Paid Search", label: "Paid Search" },
+        { value: "Email Marketing", label: "Email Marketing" },
+        { value: "SEO", label: "SEO" },
+    ];
 
     useEffect(() => {
         setIsParentCampaignModalOpen?.(isOpen);
@@ -38,6 +80,21 @@ export default function ParentCampaignModal({
         setFormData((prev) => ({
             ...prev,
             [name]: value,
+        }));
+    };
+
+    const handleCountryChange = (selectedOption) => {
+        setFormData((prev) => ({
+            ...prev,
+            countryCode: selectedOption ? selectedOption.value : '',
+        }));
+    };
+
+    const handleServiceChange = (selectedOptions) => {
+        setSelectedServices(selectedOptions);
+        setFormData((prev) => ({
+            ...prev,
+            service: selectedOptions ? selectedOptions.map(option => option.value) : [],
         }));
     };
 
@@ -62,8 +119,19 @@ export default function ParentCampaignModal({
                 showToast("Parent campaign created successfully!", "success");
                 setFormData({
                     parentCampaignName: "",
+                    service: [],
+                    countryCode: "",
+                    campaignText: "",
+                    campaignMessage: "",
+                    campaignBrief: "",
+                    startDate: "",
+                    endDate: "",
+                    b2bOrB2c: "",
+                    budget: "",
+                    materialFromCustomer: "",
                     materialLinks: ""
                 });
+                setSelectedServices([]);
                 onSuccess?.();
                 onClose();
             } else {
@@ -82,7 +150,7 @@ export default function ParentCampaignModal({
 
     return (
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-[99999999]">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md relative">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
                 <span className="flex justify-between mb-5">
                     <h4 className="text-xl font-semibold">Create Parent Campaign</h4>
                     <button onClick={handleClose} className="text-gray-500 hover:text-gray-700 text-lg">
@@ -100,6 +168,128 @@ export default function ParentCampaignModal({
                             onChange={handleInputChange}
                             className="w-full px-4 py-2 border border-gray-300 rounded"
                             required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Service (Multiple)</label>
+                        <Select
+                            name="service"
+                            value={selectedServices}
+                            onChange={handleServiceChange}
+                            options={serviceOptions}
+                            className="w-full"
+                            placeholder="Select services..."
+                            isMulti
+                            isClearable
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Country Code</label>
+                        <Select
+                            name="countryCode"
+                            value={selectedCountryOption}
+                            onChange={handleCountryChange}
+                            options={allCountryOptions}
+                            className="w-full"
+                            placeholder="Search for a country..."
+                            isClearable
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <input
+                                type="date"
+                                name="startDate"
+                                value={formData.startDate}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 border border-gray-300 rounded"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                            <input
+                                type="date"
+                                name="endDate"
+                                value={formData.endDate}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 border border-gray-300 rounded"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Market</label>
+                            <select
+                                name="b2bOrB2c"
+                                value={formData.b2bOrB2c}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 border border-gray-300 rounded"
+                            >
+                                <option value="">Select</option>
+                                <option value="B2B">B2B</option>
+                                <option value="B2C">B2C</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Budget (Optional)</label>
+                            <input
+                                type="number"
+                                name="budget"
+                                value={formData.budget}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 border border-gray-300 rounded"
+                                min="0"
+                                step="0.01"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Text</label>
+                        <input
+                            type="text"
+                            name="campaignText"
+                            value={formData.campaignText}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Message</label>
+                        <textarea
+                            name="campaignMessage"
+                            value={formData.campaignMessage}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            rows="3"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Brief</label>
+                        <textarea
+                            name="campaignBrief"
+                            value={formData.campaignBrief}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            rows="3"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Material from Customer</label>
+                        <textarea
+                            name="materialFromCustomer"
+                            value={formData.materialFromCustomer}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            rows="3"
                         />
                     </div>
 

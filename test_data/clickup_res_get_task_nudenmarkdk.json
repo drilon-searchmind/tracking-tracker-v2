@@ -1,0 +1,4447 @@
+{
+    "id": "8699m8d8y",
+    "custom_id": null,
+    "custom_item_id": 0,
+    "name": "nu-denmark.dk",
+    "text_content": "",
+    "description": "",
+    "status": {
+        "id": "subcat210313781_subcat193100629_subcat163311947_subcat49304097_subcat36940364_subcat25019803_subcat43266278_subcat43264547_sc13740925_QTMA3IoZ",
+        "status": "Open",
+        "color": "#656f7d",
+        "orderindex": 0,
+        "type": "open"
+    },
+    "orderindex": "120426727.00000000000000000000000000000000",
+    "date_created": "1751375374616",
+    "date_updated": "1758187754601",
+    "date_closed": null,
+    "date_done": null,
+    "archived": false,
+    "creator": {
+        "id": 32492350,
+        "username": "Christian Grøtner",
+        "color": "#5d4037",
+        "email": "christian@searchmind.dk",
+        "profilePicture": "https://attachments.clickup.com/profilePictures/32492350_fvc.jpg"
+    },
+    "assignees": [],
+    "group_assignees": [],
+    "watchers": [
+        {
+            "id": 32492350,
+            "username": "Christian Grøtner",
+            "color": "#5d4037",
+            "initials": "CG",
+            "email": "christian@searchmind.dk",
+            "profilePicture": "https://attachments.clickup.com/profilePictures/32492350_fvc.jpg"
+        }
+    ],
+    "checklists": [],
+    "tags": [],
+    "parent": null,
+    "top_level_parent": null,
+    "priority": null,
+    "due_date": null,
+    "start_date": null,
+    "points": null,
+    "time_estimate": null,
+    "time_spent": 0,
+    "custom_fields": [
+        {
+            "id": "e402b0ba-ed90-4275-bf4a-7cdc1d57e7a7",
+            "name": "⭐ ️ Client",
+            "type": "drop_down",
+            "type_config": {
+                "sorting": "manual",
+                "new_drop_down": true,
+                "options": [
+                    {
+                        "id": "aedc4eed-f142-4024-9156-5e2f42eaff46",
+                        "name": "exsnordic.com",
+                        "color": null,
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "532c55a5-d6fb-4b38-a0d8-b43b222de4a0",
+                        "name": "noord.dk (DK, DE, SE, UK)",
+                        "color": null,
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "beae25ec-8fb2-4d23-a5dc-a44df835444f",
+                        "name": "linenbykrebs.dk",
+                        "color": null,
+                        "orderindex": 2
+                    },
+                    {
+                        "id": "fcdd16de-2894-4e71-954f-1da822b9de1a",
+                        "name": "byskagen.com / skagenliving.com",
+                        "color": null,
+                        "orderindex": 3
+                    },
+                    {
+                        "id": "d20698f7-d961-4160-8358-d3f84e8a57cc",
+                        "name": "Hobbycentret.dk",
+                        "color": null,
+                        "orderindex": 4
+                    },
+                    {
+                        "id": "3657bc14-3cac-4f67-873d-2641fd4d70b7",
+                        "name": "Garderobenmors.dk",
+                        "color": null,
+                        "orderindex": 5
+                    },
+                    {
+                        "id": "3e6ad897-7df5-4f80-a039-37647f2a201e",
+                        "name": "Frusoed.dk",
+                        "color": null,
+                        "orderindex": 6
+                    },
+                    {
+                        "id": "9b56dca3-ef76-4c66-ad14-cab5451ce363",
+                        "name": "madetofit.dk",
+                        "color": null,
+                        "orderindex": 7
+                    },
+                    {
+                        "id": "1a199609-47cc-424d-9fb8-cd084f5693c4",
+                        "name": "denlillegarnbiks.dk",
+                        "color": null,
+                        "orderindex": 8
+                    },
+                    {
+                        "id": "b5bae121-3c61-4313-a743-67612723cfcd",
+                        "name": "Efterskoleforeningen Syddanmark",
+                        "color": null,
+                        "orderindex": 9
+                    },
+                    {
+                        "id": "c5ab0323-7f8f-4996-9560-b3e6d1fbfbb7",
+                        "name": "vangsgaardtreat.dk",
+                        "color": null,
+                        "orderindex": 10
+                    },
+                    {
+                        "id": "d4068963-c1b3-4f73-9aa7-aa3337834139",
+                        "name": "Nordic-in.dk",
+                        "color": null,
+                        "orderindex": 11
+                    },
+                    {
+                        "id": "06f17ec2-d06d-4c71-a704-1842e33e0bff",
+                        "name": "curved.dk",
+                        "color": null,
+                        "orderindex": 12
+                    },
+                    {
+                        "id": "6c5c8b4c-65de-48c2-a594-7e60eb9cef03",
+                        "name": "home.dk (Galten/Skovby)",
+                        "color": null,
+                        "orderindex": 13
+                    },
+                    {
+                        "id": "be250b08-8ac2-4c7e-bb55-82f9684b5f48",
+                        "name": "vibholm.se",
+                        "color": null,
+                        "orderindex": 14
+                    },
+                    {
+                        "id": "a90c0797-524e-45f4-ba17-99ee4c9ccf6c",
+                        "name": "Interglas.dk",
+                        "color": null,
+                        "orderindex": 15
+                    },
+                    {
+                        "id": "0634d8f1-0e8c-4a73-a6b2-4fb3e5f1df49",
+                        "name": "dunvilleapparel.com",
+                        "color": null,
+                        "orderindex": 16
+                    },
+                    {
+                        "id": "d49beaf2-f26b-412c-8a86-081a74398c69",
+                        "name": "People-fashion.dk",
+                        "color": null,
+                        "orderindex": 17
+                    },
+                    {
+                        "id": "fbd7026a-b2aa-4ff4-9b41-eff5ab9c175c",
+                        "name": "Hjemmeproduktion.dk",
+                        "color": null,
+                        "orderindex": 18
+                    },
+                    {
+                        "id": "fb494953-4896-4014-9a2f-dc77c169a318",
+                        "name": "Birkinterior.dk",
+                        "color": null,
+                        "orderindex": 19
+                    },
+                    {
+                        "id": "3f0a4486-5a75-4794-bbed-da907b008567",
+                        "name": "fadandel.dk",
+                        "color": null,
+                        "orderindex": 20
+                    },
+                    {
+                        "id": "01ed8c17-e6d6-4a8a-9d76-72c6a1a4c528",
+                        "name": "Dinlokaleoutlet.dk",
+                        "color": null,
+                        "orderindex": 21
+                    },
+                    {
+                        "id": "c73e51ae-e88c-40ed-a72b-48f747fb424b",
+                        "name": "Bachgruppen.dk",
+                        "color": null,
+                        "orderindex": 22
+                    },
+                    {
+                        "id": "3c3daeaf-4f38-4ca7-9492-56a32b79f08e",
+                        "name": "stigus.dk",
+                        "color": null,
+                        "orderindex": 23
+                    },
+                    {
+                        "id": "4247458c-1906-4e81-be16-0a8994faaa91",
+                        "name": "Padellife.dk",
+                        "color": null,
+                        "orderindex": 24
+                    },
+                    {
+                        "id": "968bc09d-bc75-4067-aa98-f1d856a61bc1",
+                        "name": "blackcolour.dk",
+                        "color": null,
+                        "orderindex": 25
+                    },
+                    {
+                        "id": "2359e217-0348-490f-970b-813d2511eb01",
+                        "name": "takenow.dk",
+                        "color": null,
+                        "orderindex": 26
+                    },
+                    {
+                        "id": "bad82431-1b61-46f0-bde9-a3679fea2869",
+                        "name": "mevino.dk",
+                        "color": null,
+                        "orderindex": 27
+                    },
+                    {
+                        "id": "53a9514d-6f58-4a86-a142-1ba4314ee4b1",
+                        "name": "Uldgalleriet.dk",
+                        "color": null,
+                        "orderindex": 28
+                    },
+                    {
+                        "id": "efa97302-93af-4113-b0be-26b59e052e3a",
+                        "name": "Wedovintage.dk",
+                        "color": null,
+                        "orderindex": 29
+                    },
+                    {
+                        "id": "a01de725-aee8-4ac4-95e1-be04dba528a6",
+                        "name": "feriemedformaal.dk",
+                        "color": null,
+                        "orderindex": 30
+                    },
+                    {
+                        "id": "b40b4b04-e799-4259-a759-15f4662054e8",
+                        "name": "cykelgruppen.dk",
+                        "color": null,
+                        "orderindex": 31
+                    },
+                    {
+                        "id": "8f6a098e-69b4-45f8-b6d2-b7db5eac9638",
+                        "name": "kbhmaterieludlejning.dk",
+                        "color": null,
+                        "orderindex": 32
+                    },
+                    {
+                        "id": "da39b257-5770-474b-ae7b-fdbc00356989",
+                        "name": "junget.com",
+                        "color": null,
+                        "orderindex": 33
+                    },
+                    {
+                        "id": "52300215-2453-48b6-8ba3-47a22fa1849f",
+                        "name": "Langsamt.com",
+                        "color": null,
+                        "orderindex": 34
+                    },
+                    {
+                        "id": "f54c1f6a-9bac-4f39-992e-67316127a8b8",
+                        "name": "Bareen.dk",
+                        "color": null,
+                        "orderindex": 35
+                    },
+                    {
+                        "id": "29ec68fb-0fd2-4cd9-aa27-ec192f1b81e6",
+                        "name": "grundled.dk",
+                        "color": null,
+                        "orderindex": 36
+                    },
+                    {
+                        "id": "1a5217af-3028-47f1-9423-422a713889a9",
+                        "name": "1-2-traefaeldning.dk",
+                        "color": null,
+                        "orderindex": 37
+                    },
+                    {
+                        "id": "0d96361a-be9b-49ff-81b2-32d8ccbc18dd",
+                        "name": "inpro.dk",
+                        "color": null,
+                        "orderindex": 38
+                    },
+                    {
+                        "id": "147054b8-e6dc-4c78-89c8-8d8b119a1de1",
+                        "name": "norinorishop.com",
+                        "color": null,
+                        "orderindex": 39
+                    },
+                    {
+                        "id": "c48f2639-e958-408e-9c71-c4a769beee73",
+                        "name": "wakuwaku.dk",
+                        "color": null,
+                        "orderindex": 40
+                    },
+                    {
+                        "id": "cd2e90f9-937e-4a30-b336-6ef44d77ad69",
+                        "name": "carite.dk",
+                        "color": null,
+                        "orderindex": 41
+                    },
+                    {
+                        "id": "e8787e81-477b-41e6-b20d-07e106a6d484",
+                        "name": "Mellowstudio.dk",
+                        "color": null,
+                        "orderindex": 42
+                    },
+                    {
+                        "id": "ccf8c41c-f077-441e-8011-aa6fd6b6577a",
+                        "name": "kdelite.dk",
+                        "color": null,
+                        "orderindex": 43
+                    },
+                    {
+                        "id": "ab5d8cb6-e50e-4e63-9ef4-8c9f8ef29083",
+                        "name": "rabat-vvs.dk",
+                        "color": null,
+                        "orderindex": 44
+                    },
+                    {
+                        "id": "9cac2d62-3026-4923-ac4b-60b715075b80",
+                        "name": "plantsbyflowr.dk",
+                        "color": null,
+                        "orderindex": 45
+                    },
+                    {
+                        "id": "b03fcbfb-6429-411e-bd2e-cdfc1a86986e",
+                        "name": "Encoded.dk",
+                        "color": null,
+                        "orderindex": 46
+                    },
+                    {
+                        "id": "e6315ce4-a87d-44bf-9319-9572c8ef99b9",
+                        "name": "billigsikring.dk",
+                        "color": null,
+                        "orderindex": 47
+                    },
+                    {
+                        "id": "ad1028ff-be2f-426b-95fd-65e0bbb2e50b",
+                        "name": "anlaglas.com",
+                        "color": null,
+                        "orderindex": 48
+                    },
+                    {
+                        "id": "9079f9f9-8341-444f-8eb4-c7faf5bc8ed8",
+                        "name": "lasselarsenhuse.dk",
+                        "color": null,
+                        "orderindex": 49
+                    },
+                    {
+                        "id": "f72c8cac-8550-4ed1-932b-6966c30a1776",
+                        "name": "lysmesteren.dk",
+                        "color": null,
+                        "orderindex": 50
+                    },
+                    {
+                        "id": "a7722d66-c46d-41ab-aa38-7998e22668bd",
+                        "name": "sylan.dk",
+                        "color": null,
+                        "orderindex": 51
+                    },
+                    {
+                        "id": "5f8f083c-8c5a-4d2e-abc6-2d7ccede4880",
+                        "name": "samm-sall.dk / legepladsbutikken.dk",
+                        "color": null,
+                        "orderindex": 52
+                    },
+                    {
+                        "id": "c606c9ce-2a9c-4e30-b866-b296b6aaf75d",
+                        "name": "islandsrejser.dk",
+                        "color": null,
+                        "orderindex": 53
+                    },
+                    {
+                        "id": "85c38774-ad66-43e8-90f3-5560e4867da5",
+                        "name": "studiominishop.dk",
+                        "color": null,
+                        "orderindex": 54
+                    },
+                    {
+                        "id": "fb24dbaf-659f-4e14-9e86-8ed42efe8516",
+                        "name": "beadhouse.dk",
+                        "color": null,
+                        "orderindex": 55
+                    },
+                    {
+                        "id": "581ecfe6-f99b-40bf-bf4c-c0860ce82b93",
+                        "name": "bilka.dk",
+                        "color": null,
+                        "orderindex": 56
+                    },
+                    {
+                        "id": "cb93de03-9a3b-47b7-966a-d53986305d11",
+                        "name": "Lavinordic.dk",
+                        "color": null,
+                        "orderindex": 57
+                    },
+                    {
+                        "id": "9ca77760-8f6a-4685-89d1-cd054b14e25b",
+                        "name": "genbrug-bmw.dk",
+                        "color": null,
+                        "orderindex": 58
+                    },
+                    {
+                        "id": "24b2bc19-30ef-4bb3-921a-56957a6584e5",
+                        "name": "jagparts.dk",
+                        "color": null,
+                        "orderindex": 59
+                    },
+                    {
+                        "id": "ad29d3fa-8feb-465f-9b8c-43cd942ec3c5",
+                        "name": "actec.dk",
+                        "color": null,
+                        "orderindex": 60
+                    },
+                    {
+                        "id": "c1e4f644-468a-4012-9113-f2ef25285050",
+                        "name": "jamesay.dk / jamesay.com",
+                        "color": null,
+                        "orderindex": 61
+                    },
+                    {
+                        "id": "13c24880-d78c-4c2b-af6b-f43cd53b4983",
+                        "name": "makenordic.com",
+                        "color": null,
+                        "orderindex": 62
+                    },
+                    {
+                        "id": "0b709172-b50c-4e5d-9188-98a2e34e5449",
+                        "name": "rains.com",
+                        "color": null,
+                        "orderindex": 63
+                    },
+                    {
+                        "id": "ee4a03f4-3c0a-453a-a6a7-b57db362ff2a",
+                        "name": "filibabba.com",
+                        "color": null,
+                        "orderindex": 64
+                    },
+                    {
+                        "id": "a068f2eb-a1e0-4776-aa33-3273bea59082",
+                        "name": "koedbmw.com/no-no",
+                        "color": null,
+                        "orderindex": 65
+                    },
+                    {
+                        "id": "6f72b394-e439-4cf8-a753-7e654f317049",
+                        "name": "pilebyg.dk",
+                        "color": null,
+                        "orderindex": 66
+                    },
+                    {
+                        "id": "02bd579d-5165-4daf-9d87-8f42eff29940",
+                        "name": "gaveproff.dk / cowparade-shop.dk / tassen-products.dk / wt-shop.dk / eventyrfigur.dk",
+                        "color": null,
+                        "orderindex": 67
+                    },
+                    {
+                        "id": "424e85dd-d8ba-4790-a271-e8ea83a09f21",
+                        "name": "det-gode-liv.com",
+                        "color": null,
+                        "orderindex": 68
+                    },
+                    {
+                        "id": "26f29e38-0fb7-4214-a605-55e99d8a723f",
+                        "name": "Dyberglarsen.dk",
+                        "color": null,
+                        "orderindex": 69
+                    },
+                    {
+                        "id": "7377490a-d046-415d-afd4-4cb8b1ef8c6c",
+                        "name": "nordiskperlite.dk",
+                        "color": null,
+                        "orderindex": 70
+                    },
+                    {
+                        "id": "768f282e-b218-456f-82fd-3a425ef62d55",
+                        "name": "kukuk.dk",
+                        "color": null,
+                        "orderindex": 71
+                    },
+                    {
+                        "id": "d39e0ae0-6641-43a3-afd4-ee696b68f095",
+                        "name": "inmobile.com",
+                        "color": null,
+                        "orderindex": 72
+                    },
+                    {
+                        "id": "2d3c705c-b907-4592-a30c-393e2fb78e73",
+                        "name": "bjergkaeden.dk",
+                        "color": null,
+                        "orderindex": 73
+                    },
+                    {
+                        "id": "deffefc5-27c2-4315-be1e-7782ed003410",
+                        "name": "Scandidact.dk",
+                        "color": null,
+                        "orderindex": 74
+                    },
+                    {
+                        "id": "b2dedac7-8ec4-46e9-a4ee-d82ba61511b8",
+                        "name": "toftjessen.dk",
+                        "color": null,
+                        "orderindex": 75
+                    },
+                    {
+                        "id": "f0877d12-c358-488f-ad6c-fe78a58810b2",
+                        "name": "phuset.dk",
+                        "color": null,
+                        "orderindex": 76
+                    },
+                    {
+                        "id": "72a7ddc5-f6e6-4feb-a879-785d42848344",
+                        "name": "koedbmw.com",
+                        "color": null,
+                        "orderindex": 77
+                    },
+                    {
+                        "id": "1f980080-1a26-4c0b-88d6-66ea759cadf7",
+                        "name": "oyoylivingdesign.com // oyoylivingdesign.dk",
+                        "color": null,
+                        "orderindex": 78
+                    },
+                    {
+                        "id": "b9c95387-4767-46f8-8a7e-c5211dcbd9a4",
+                        "name": "privatgrossisten.dk",
+                        "color": null,
+                        "orderindex": 79
+                    },
+                    {
+                        "id": "8cc9d4be-c279-4b83-a411-6ddb375e98f7",
+                        "name": "gaihede.dk",
+                        "color": null,
+                        "orderindex": 80
+                    },
+                    {
+                        "id": "58246b4e-a370-430e-9938-c6a1ebac7775",
+                        "name": "prip-inventar.dk",
+                        "color": null,
+                        "orderindex": 81
+                    },
+                    {
+                        "id": "a1558685-065e-4892-8f60-b13ffdebda1a",
+                        "name": "denform.dk",
+                        "color": null,
+                        "orderindex": 82
+                    },
+                    {
+                        "id": "fcb6354a-7e76-4262-8c81-da811c23a923",
+                        "name": "Sandjensen.dk",
+                        "color": null,
+                        "orderindex": 83
+                    },
+                    {
+                        "id": "8ae2f6cd-9deb-4e56-bdb3-3512daab7800",
+                        "name": "brogaarden.eu / Brogaarden.se",
+                        "color": null,
+                        "orderindex": 84
+                    },
+                    {
+                        "id": "974952c2-4683-4da9-98b6-f8004986111c",
+                        "name": "glasse.dk",
+                        "color": null,
+                        "orderindex": 85
+                    },
+                    {
+                        "id": "65613803-9511-4a21-bd70-68bdcf344983",
+                        "name": "japebo.se",
+                        "color": null,
+                        "orderindex": 86
+                    },
+                    {
+                        "id": "a8c371e1-a54b-4c12-835f-9b64796900d9",
+                        "name": "home.dk (Aarhus V, Åbyhøj, Brabrand, Tilst, Sabro)",
+                        "color": null,
+                        "orderindex": 87
+                    },
+                    {
+                        "id": "ece5161c-0da8-4aa9-a88a-f88492d84ed6",
+                        "name": "notredame.dk",
+                        "color": null,
+                        "orderindex": 88
+                    },
+                    {
+                        "id": "458517f9-5b6e-46e7-8e9b-3aaabb401bd1",
+                        "name": "Angulus.dk",
+                        "color": null,
+                        "orderindex": 89
+                    },
+                    {
+                        "id": "e8ffe3ff-2489-4d1e-8dd6-6887de735d7b",
+                        "name": "Kontorlige.nu",
+                        "color": null,
+                        "orderindex": 90
+                    },
+                    {
+                        "id": "8a374ec5-55cb-487c-a29b-dd8808bd20ce",
+                        "name": "mygarage.dk",
+                        "color": null,
+                        "orderindex": 91
+                    },
+                    {
+                        "id": "179f886a-88ad-4dbb-bc1a-297d44bb1bb9",
+                        "name": "japebo.dk",
+                        "color": null,
+                        "orderindex": 92
+                    },
+                    {
+                        "id": "66c31daf-52b9-4169-8cee-a79026ea7f4b",
+                        "name": "nordiskcampingudstyr.dk / nordiskcampingutstyr.no /campingcomfort.fi",
+                        "color": null,
+                        "orderindex": 93
+                    },
+                    {
+                        "id": "bd088a75-452e-4c5c-ac65-166f814d7049",
+                        "name": "Flowr.dk",
+                        "color": null,
+                        "orderindex": 94
+                    },
+                    {
+                        "id": "cf82c5b9-2d61-482f-b8f4-12b49c186352",
+                        "name": "borchselmer.dk",
+                        "color": null,
+                        "orderindex": 95
+                    },
+                    {
+                        "id": "4ebb1957-8802-427a-8cf5-da51110d5050",
+                        "name": "pooloasen.dk",
+                        "color": null,
+                        "orderindex": 96
+                    },
+                    {
+                        "id": "252587e7-2f33-428b-9793-ae48f6245d8d",
+                        "name": "svoemmespecialisten.dk",
+                        "color": null,
+                        "orderindex": 97
+                    },
+                    {
+                        "id": "6b4c4ae4-0127-4d2b-b692-88c4b1c5476c",
+                        "name": "Parykhuset.dk",
+                        "color": null,
+                        "orderindex": 98
+                    },
+                    {
+                        "id": "9dcff869-6173-4ad9-a4fa-966dc3a7f34b",
+                        "name": "relatel.dk",
+                        "color": null,
+                        "orderindex": 99
+                    },
+                    {
+                        "id": "36195c33-d146-4029-b668-170848c5d5a4",
+                        "name": "intimo.no",
+                        "color": null,
+                        "orderindex": 100
+                    },
+                    {
+                        "id": "662e92b7-21a5-4782-ace2-a21d05d95ce4",
+                        "name": "boatlab.dk (DK, SE, NL, FI, DE, NO, FR)",
+                        "color": null,
+                        "orderindex": 101
+                    },
+                    {
+                        "id": "29959b38-ffa4-4eb7-b193-0578bbb58c67",
+                        "name": "petrowsky.dk",
+                        "color": null,
+                        "orderindex": 102
+                    },
+                    {
+                        "id": "176f8f20-d33b-4b4b-be6f-d8f56845ea1c",
+                        "name": "jyskegolfbolde.dk",
+                        "color": null,
+                        "orderindex": 103
+                    },
+                    {
+                        "id": "f49c304a-7d13-45ef-a26d-a80391b796e6",
+                        "name": "packyard.dk / packyard.com",
+                        "color": null,
+                        "orderindex": 104
+                    },
+                    {
+                        "id": "cb9b7593-eaee-4319-941d-8c9078a3a37b",
+                        "name": "coolnordic.dk",
+                        "color": null,
+                        "orderindex": 105
+                    },
+                    {
+                        "id": "05c4a808-2fbe-495e-9bae-3787ba538169",
+                        "name": "elsalg.dk",
+                        "color": null,
+                        "orderindex": 106
+                    },
+                    {
+                        "id": "006c5934-8ca3-4bec-94b4-a007663c385b",
+                        "name": "vinmedmere.dk",
+                        "color": null,
+                        "orderindex": 107
+                    },
+                    {
+                        "id": "1402dd72-ac53-4fed-8792-a65e09af41f4",
+                        "name": "pompdelux.com (DK, NO, SE, FIN, DE, NL, CH)",
+                        "color": null,
+                        "orderindex": 108
+                    },
+                    {
+                        "id": "3eb60348-d149-4619-b804-37b6dfcc4cad",
+                        "name": "Immodenmark.dk",
+                        "color": null,
+                        "orderindex": 109
+                    },
+                    {
+                        "id": "8047bdf3-5937-4988-900b-7607d4c57110",
+                        "name": "stifinder.com",
+                        "color": null,
+                        "orderindex": 110
+                    },
+                    {
+                        "id": "b697ad3b-0e0e-48ff-9f5d-ac1536d1f8cb",
+                        "name": "birgittedamjensen.dk / bevardigselv.dk",
+                        "color": null,
+                        "orderindex": 111
+                    },
+                    {
+                        "id": "6fbfd483-813f-436b-8a10-c03b74b00b83",
+                        "name": "traeningsstudiet.dk",
+                        "color": null,
+                        "orderindex": 112
+                    },
+                    {
+                        "id": "0b3a0b9e-b96b-4a33-b7b5-396fc7923cfd",
+                        "name": "hjarbaek.dk",
+                        "color": null,
+                        "orderindex": 113
+                    },
+                    {
+                        "id": "93de08b2-0360-4ee4-b9a3-d554e17ce4bc",
+                        "name": "ladelundefterskole.dk",
+                        "color": null,
+                        "orderindex": 114
+                    },
+                    {
+                        "id": "7466fdd5-b253-41ca-92bd-28509b8606bf",
+                        "name": "netcentret.dk",
+                        "color": null,
+                        "orderindex": 115
+                    },
+                    {
+                        "id": "484f3650-bbcf-4a29-8f59-3ec5dc16c2cb",
+                        "name": "primusdanmark.dk",
+                        "color": null,
+                        "orderindex": 116
+                    },
+                    {
+                        "id": "2015f135-e2c8-48f1-ab54-fe81e1f9c495",
+                        "name": "classicgolf.dk",
+                        "color": null,
+                        "orderindex": 117
+                    },
+                    {
+                        "id": "59b2e5d5-a832-4331-a9c3-d05208e04893",
+                        "name": "dyrecenter.dk",
+                        "color": null,
+                        "orderindex": 118
+                    },
+                    {
+                        "id": "3c05c47c-75cd-4ce0-a6c1-c059477343ab",
+                        "name": "Kgh.dk",
+                        "color": null,
+                        "orderindex": 119
+                    },
+                    {
+                        "id": "8e865bf8-0597-411f-8f1d-4375cb0de02e",
+                        "name": "ajengros.dk",
+                        "color": null,
+                        "orderindex": 120
+                    },
+                    {
+                        "id": "26c0ad6b-4140-4c27-8979-ab3c2dc093c9",
+                        "name": "bach-promotion.dk / bach-firmagaver.dk",
+                        "color": null,
+                        "orderindex": 121
+                    },
+                    {
+                        "id": "36659fb9-4098-4f33-ad57-af026a19a4eb",
+                        "name": "Sound-tek.dk",
+                        "color": null,
+                        "orderindex": 122
+                    },
+                    {
+                        "id": "74cc7922-2c1b-4662-86a4-b213da0a580d",
+                        "name": "Partyinabox.dk",
+                        "color": null,
+                        "orderindex": 123
+                    },
+                    {
+                        "id": "123d9734-1ca6-4157-ab5b-123a404df63c",
+                        "name": "Oese.dk",
+                        "color": null,
+                        "orderindex": 124
+                    },
+                    {
+                        "id": "7f232fe0-4528-42bb-b823-7c96b45250f2",
+                        "name": "frederiksdalklatrebane.dk",
+                        "color": null,
+                        "orderindex": 125
+                    },
+                    {
+                        "id": "d1380d77-8928-4684-9341-d7f69318c530",
+                        "name": "magicalweddings.eu",
+                        "color": null,
+                        "orderindex": 126
+                    },
+                    {
+                        "id": "d74b42cf-0b9f-4405-9d00-0b47980d060e",
+                        "name": "Carlab.dk / carlab.se / carlab.de",
+                        "color": null,
+                        "orderindex": 127
+                    },
+                    {
+                        "id": "b4ec1c6b-1ef2-4efb-85db-aa84a2b67e31",
+                        "name": "Bge.dk",
+                        "color": null,
+                        "orderindex": 128
+                    },
+                    {
+                        "id": "69337d39-545b-49f7-9c87-ccc63aedddd3",
+                        "name": "Ergopartner.dk (DK, NO, SE)",
+                        "color": null,
+                        "orderindex": 129
+                    },
+                    {
+                        "id": "4bd8472b-b727-4ef1-a68d-e221cfe0de31",
+                        "name": "Intimo.dk",
+                        "color": null,
+                        "orderindex": 130
+                    },
+                    {
+                        "id": "30b6354c-ea37-4900-8aae-a9066f73045e",
+                        "name": "Vejlefjord.dk",
+                        "color": null,
+                        "orderindex": 131
+                    },
+                    {
+                        "id": "a52fb4dd-5735-4a74-b25d-bac06892da04",
+                        "name": "shoechapter.com",
+                        "color": null,
+                        "orderindex": 132
+                    },
+                    {
+                        "id": "80c28f13-4f6a-454b-9ab6-01ea65ef65f1",
+                        "name": "rosborgshop.dk",
+                        "color": null,
+                        "orderindex": 133
+                    },
+                    {
+                        "id": "eb7a8046-9803-4950-bca4-7d7f9a436f7f",
+                        "name": "Jt-sport.dk",
+                        "color": null,
+                        "orderindex": 134
+                    },
+                    {
+                        "id": "bee3c259-8485-4082-bb1b-392e73dd82b8",
+                        "name": "tojtiltrolde.dk",
+                        "color": null,
+                        "orderindex": 135
+                    },
+                    {
+                        "id": "0d916cc6-d3bb-49a5-9b14-6f6b4d686d57",
+                        "name": "1stfloor.dk",
+                        "color": null,
+                        "orderindex": 136
+                    },
+                    {
+                        "id": "01176048-f651-43ed-ab76-1ab333f01246",
+                        "name": "Polarcykler.dk",
+                        "color": null,
+                        "orderindex": 137
+                    },
+                    {
+                        "id": "7b0f1140-22e4-4f65-8800-f7649dfc4582",
+                        "name": "Sjtekstilogkunst.dk",
+                        "color": null,
+                        "orderindex": 138
+                    },
+                    {
+                        "id": "6eb2f96f-fc24-4cb1-8767-9cb339cbf004",
+                        "name": "searchmind.dk",
+                        "color": null,
+                        "orderindex": 139
+                    },
+                    {
+                        "id": "9317ea42-232a-4712-bdc3-502c848c79ed",
+                        "name": "green-comfort.com",
+                        "color": null,
+                        "orderindex": 140
+                    },
+                    {
+                        "id": "7fe5acc9-9822-4a9c-a989-eb1f726773dc",
+                        "name": "newwaveprofile.dk",
+                        "color": null,
+                        "orderindex": 141
+                    },
+                    {
+                        "id": "d24fe604-2cbc-449f-8ad7-56930debf777",
+                        "name": "noord.dk (DK. DE. SE. UK)",
+                        "color": null,
+                        "orderindex": 142
+                    },
+                    {
+                        "id": "c099853f-02b5-4adb-ac30-750108a1458a",
+                        "name": "home.dk (Aarhus V. Åbyhøj. Brabrand. Tilst. Sabro)",
+                        "color": null,
+                        "orderindex": 143
+                    },
+                    {
+                        "id": "64bf7bd0-97ff-46ba-ae3a-76735c32fd8e",
+                        "name": "Qvalitet.dk (DK. NO)",
+                        "color": null,
+                        "orderindex": 144
+                    },
+                    {
+                        "id": "a8b8bd96-67f2-405a-81cd-963cebbf8764",
+                        "name": "boatlab.dk (DK. SE. NL. FI. DE. NO. FR)",
+                        "color": null,
+                        "orderindex": 145
+                    },
+                    {
+                        "id": "6ffe0cc7-0d88-407a-9a14-69e151bd5fa5",
+                        "name": "aarhus.konservative.dk",
+                        "color": null,
+                        "orderindex": 146
+                    },
+                    {
+                        "id": "0e044f71-ec0d-49f4-a46a-268e4edb2bfe",
+                        "name": "organicbasics.com",
+                        "color": null,
+                        "orderindex": 147
+                    },
+                    {
+                        "id": "f7c0f2f1-2988-4332-a56c-281f97da974f",
+                        "name": "clubcollection.com",
+                        "color": null,
+                        "orderindex": 148
+                    },
+                    {
+                        "id": "53b4d011-3cf3-443e-996b-476ea6062bd6",
+                        "name": "kalundborg-skov-park-have.dk",
+                        "color": null,
+                        "orderindex": 149
+                    },
+                    {
+                        "id": "c85990a8-a990-406f-8194-a952847522d6",
+                        "name": "luxbyjakobsen.dk",
+                        "color": null,
+                        "orderindex": 150
+                    },
+                    {
+                        "id": "45053fd1-43b0-4752-afb5-2523ac001c1f",
+                        "name": "zzgames.dk",
+                        "color": null,
+                        "orderindex": 151
+                    },
+                    {
+                        "id": "0e6234d3-c30b-43d3-9a7c-1fe23871b70f",
+                        "name": "Klemcoservice.com",
+                        "color": null,
+                        "orderindex": 152
+                    },
+                    {
+                        "id": "82e8cd2e-b355-4628-980a-e6a32542a5d5",
+                        "name": "s196.dk",
+                        "color": null,
+                        "orderindex": 153
+                    },
+                    {
+                        "id": "6238cf66-8ab9-46e6-8112-778677658fc7",
+                        "name": "Zigzign.dk",
+                        "color": null,
+                        "orderindex": 154
+                    },
+                    {
+                        "id": "9498f566-5bd4-408d-aa34-e4cbdd6bb52e",
+                        "name": "Gastrolux.dk",
+                        "color": null,
+                        "orderindex": 155
+                    },
+                    {
+                        "id": "351cf019-94c0-4b5e-b0d0-f078e28d37ca",
+                        "name": "aboutvintage.com",
+                        "color": null,
+                        "orderindex": 156
+                    },
+                    {
+                        "id": "ca69e1e8-14b3-4917-8784-17ec65cdb9d3",
+                        "name": "pieces.com",
+                        "color": null,
+                        "orderindex": 157
+                    },
+                    {
+                        "id": "4aa58212-d2d0-476e-8b5e-8e78b7021e6f",
+                        "name": "y-a-s.com",
+                        "color": null,
+                        "orderindex": 158
+                    },
+                    {
+                        "id": "043e723d-b625-40ce-9093-77209b450d74",
+                        "name": "filament23d.dk",
+                        "color": null,
+                        "orderindex": 159
+                    },
+                    {
+                        "id": "a2350871-803e-4bd2-bb55-09bdaa7da5ce",
+                        "name": "englegarn.dk",
+                        "color": null,
+                        "orderindex": 160
+                    },
+                    {
+                        "id": "e0f1543a-4742-462d-b4dc-e112b249a500",
+                        "name": "Munthe.com / en.munthe.com",
+                        "color": null,
+                        "orderindex": 161
+                    },
+                    {
+                        "id": "a04d5569-87c3-459e-ae5d-f07dc3b5f736",
+                        "name": "objectci.com",
+                        "color": null,
+                        "orderindex": 162
+                    },
+                    {
+                        "id": "8b433984-975c-4261-bbdd-37838652dd9c",
+                        "name": "hairoutlet.dk",
+                        "color": null,
+                        "orderindex": 163
+                    },
+                    {
+                        "id": "c3b91ee1-81a5-4244-a5b7-6c3e4bc7ef2c",
+                        "name": "amamiko.dk",
+                        "color": null,
+                        "orderindex": 164
+                    },
+                    {
+                        "id": "2e47025f-10ab-42ca-b657-8977040f5472",
+                        "name": "stofstedet.dk",
+                        "color": null,
+                        "orderindex": 165
+                    },
+                    {
+                        "id": "8de71697-25c6-4617-8954-c127e05fd9c4",
+                        "name": "Barons.dk",
+                        "color": null,
+                        "orderindex": 166
+                    },
+                    {
+                        "id": "aaa75461-3fa1-4310-80e4-618c16f360c9",
+                        "name": "elministeren.dk",
+                        "color": null,
+                        "orderindex": 167
+                    },
+                    {
+                        "id": "30a9f258-f988-4b4d-bd3d-d37eed4df1d8",
+                        "name": "Hosjytte.dk",
+                        "color": null,
+                        "orderindex": 168
+                    },
+                    {
+                        "id": "aec78520-6620-40ce-b39c-d318be2e91ac",
+                        "name": "Bedz.dk",
+                        "color": null,
+                        "orderindex": 169
+                    },
+                    {
+                        "id": "874c498d-a96e-4073-91c9-aacf7c64a910",
+                        "name": "Designerlys.dk",
+                        "color": null,
+                        "orderindex": 170
+                    },
+                    {
+                        "id": "481dd809-eeb1-461a-a707-2ba91b1f819b",
+                        "name": "Bikes4sale.dk",
+                        "color": null,
+                        "orderindex": 171
+                    },
+                    {
+                        "id": "6175d130-a217-4c1e-87aa-d092e2bd60cd",
+                        "name": "tendensshop.dk",
+                        "color": null,
+                        "orderindex": 172
+                    },
+                    {
+                        "id": "a2babd92-96e3-4126-ac10-096fd2b7f910",
+                        "name": "cuera.dk",
+                        "color": null,
+                        "orderindex": 173
+                    },
+                    {
+                        "id": "90fc8ee7-92e7-450c-b24e-b328079d8469",
+                        "name": "cigge.se",
+                        "color": null,
+                        "orderindex": 174
+                    },
+                    {
+                        "id": "ebd2101c-075e-426a-b054-c21f32b0632e",
+                        "name": "totallaase.dk",
+                        "color": null,
+                        "orderindex": 175
+                    },
+                    {
+                        "id": "6284b7c2-f7eb-4373-90da-83e7070e8d66",
+                        "name": "andrupvin.dk",
+                        "color": null,
+                        "orderindex": 176
+                    },
+                    {
+                        "id": "c5a55946-2b91-4ef0-8b80-814f14919a8c",
+                        "name": "ph-outdoor.dk",
+                        "color": null,
+                        "orderindex": 177
+                    },
+                    {
+                        "id": "6199a477-d100-4b9b-8786-795e493c155a",
+                        "name": "selandia-trailers.dk",
+                        "color": null,
+                        "orderindex": 178
+                    },
+                    {
+                        "id": "dcbbdb67-9f75-4f06-93f0-14903f153fd1",
+                        "name": "tufra.dk",
+                        "color": null,
+                        "orderindex": 179
+                    },
+                    {
+                        "id": "cf03d5cc-c117-4bad-9543-830c305bd911",
+                        "name": "aarhusbadogfliser.dk",
+                        "color": null,
+                        "orderindex": 180
+                    },
+                    {
+                        "id": "f48b3d3f-3a9c-4e09-a52c-772bf3bab2b1",
+                        "name": "aabenlyst.dk (lible.dk)",
+                        "color": null,
+                        "orderindex": 181
+                    },
+                    {
+                        "id": "306fe96a-4044-4bf8-b740-d984ca89e93e",
+                        "name": "fruenshus.dk",
+                        "color": null,
+                        "orderindex": 182
+                    },
+                    {
+                        "id": "585b00c3-dd8c-4489-9ec7-e53d88a37575",
+                        "name": "tattoo96.dk",
+                        "color": null,
+                        "orderindex": 183
+                    },
+                    {
+                        "id": "52a6cee3-1ebb-4346-8558-92e058c34e6f",
+                        "name": "trendbazaar.dk",
+                        "color": null,
+                        "orderindex": 184
+                    },
+                    {
+                        "id": "f7de3418-b944-447b-b711-6a55bd7d982d",
+                        "name": "blanchecph.dk",
+                        "color": null,
+                        "orderindex": 185
+                    },
+                    {
+                        "id": "a7ee5f92-f0ce-4e30-b449-8e9a40f9a386",
+                        "name": "kystfisken.dk",
+                        "color": null,
+                        "orderindex": 186
+                    },
+                    {
+                        "id": "28efaaec-3346-4a56-b905-7c98c7bc1c09",
+                        "name": "kalle-boernetoej.com",
+                        "color": null,
+                        "orderindex": 187
+                    },
+                    {
+                        "id": "e4f03766-9987-455a-8e00-2660477aa193",
+                        "name": "Haveacoffee.dk",
+                        "color": null,
+                        "orderindex": 188
+                    },
+                    {
+                        "id": "f91916ad-bb4f-4e03-9f11-dafa79cd3a15",
+                        "name": "Kleineskarussell.de",
+                        "color": null,
+                        "orderindex": 189
+                    },
+                    {
+                        "id": "38c56129-4258-456c-ba02-b40954abf498",
+                        "name": "bruunmunch.com",
+                        "color": null,
+                        "orderindex": 190
+                    },
+                    {
+                        "id": "eb0e6d4f-0c63-4077-bbff-6624cf709986",
+                        "name": "designa.dk / designa.no",
+                        "color": null,
+                        "orderindex": 191
+                    },
+                    {
+                        "id": "09511701-9299-4ca8-b677-22a5bdcf90be",
+                        "name": "grunbag.eu",
+                        "color": null,
+                        "orderindex": 192
+                    },
+                    {
+                        "id": "7a0513c9-bbaa-4ede-98f9-1224887621ed",
+                        "name": "poulstigbriller.dk",
+                        "color": null,
+                        "orderindex": 193
+                    },
+                    {
+                        "id": "eb0e3e50-9e93-448f-9a3e-96f3e54a1d2c",
+                        "name": "kikkertland.dk",
+                        "color": null,
+                        "orderindex": 194
+                    },
+                    {
+                        "id": "fa8585c5-27ef-4a94-92bd-6cd078666e43",
+                        "name": "decadentcopenhagen.dk",
+                        "color": null,
+                        "orderindex": 195
+                    },
+                    {
+                        "id": "fab5b719-8150-4caa-a799-4b1d323162bc",
+                        "name": "jvk.dk",
+                        "color": null,
+                        "orderindex": 196
+                    },
+                    {
+                        "id": "ce98fb48-c188-42c4-8ce6-7ad98279fc62",
+                        "name": "idealkaffe.dk",
+                        "color": null,
+                        "orderindex": 197
+                    },
+                    {
+                        "id": "ae1d2f3d-76e9-45d9-9456-5dfec525a60d",
+                        "name": "ruebirch.dk",
+                        "color": null,
+                        "orderindex": 198
+                    },
+                    {
+                        "id": "9866f8ea-eaff-4ad0-b3d1-8347f1face83",
+                        "name": "luxboks.dk / god-soevn.dk",
+                        "color": null,
+                        "orderindex": 199
+                    },
+                    {
+                        "id": "9900b816-9706-48bf-a24f-77929a0dcee7",
+                        "name": "LRP.dk",
+                        "color": null,
+                        "orderindex": 200
+                    },
+                    {
+                        "id": "0f16e859-dbab-43e6-a048-83cff5039234",
+                        "name": "lagersport.dk",
+                        "color": null,
+                        "orderindex": 201
+                    },
+                    {
+                        "id": "d1011d95-3544-4245-b803-aabd1563a0cc",
+                        "name": "buch-holm.dk / buch-holm.se",
+                        "color": null,
+                        "orderindex": 202
+                    },
+                    {
+                        "id": "effc4f22-5ee5-483d-aacc-b425cac53508",
+                        "name": "lindberghfashion.com/de-de",
+                        "color": null,
+                        "orderindex": 203
+                    },
+                    {
+                        "id": "dcdc4c52-12e2-4d04-8af0-0aa13726e2fa",
+                        "name": "seamlessbasic.dk ",
+                        "color": null,
+                        "orderindex": 204
+                    },
+                    {
+                        "id": "ac311b6f-5048-4365-8282-b7b7331ee393",
+                        "name": "sinnerup.dk",
+                        "color": null,
+                        "orderindex": 205
+                    },
+                    {
+                        "id": "60d1b73a-b92b-4dbe-8d3b-83429c69dd9b",
+                        "name": "energinet.dk",
+                        "color": null,
+                        "orderindex": 206
+                    },
+                    {
+                        "id": "852366b6-eaca-4c8e-9b75-d49c78c8a77a",
+                        "name": "ateliercph.dk",
+                        "color": null,
+                        "orderindex": 207
+                    },
+                    {
+                        "id": "468fda57-3d1a-4493-acfa-a1508b2d8ec7",
+                        "name": "carcarefreaks.eu",
+                        "color": null,
+                        "orderindex": 208
+                    },
+                    {
+                        "id": "b30e8ae6-2899-4c97-8ebd-780c5013b7df",
+                        "name": "billigventilation.dk",
+                        "color": null,
+                        "orderindex": 209
+                    },
+                    {
+                        "id": "ab241407-00ba-49d3-8016-58b8dc6341f7",
+                        "name": "boconcept.com",
+                        "color": null,
+                        "orderindex": 210
+                    },
+                    {
+                        "id": "fcf543b5-fb32-498e-ab61-34a3601acc11",
+                        "name": "bmw-service-koed.dk",
+                        "color": null,
+                        "orderindex": 211
+                    },
+                    {
+                        "id": "8de9e0bf-3b3f-481a-b7d0-3ea5e633095b",
+                        "name": "nordicwoods.dk",
+                        "color": null,
+                        "orderindex": 212
+                    },
+                    {
+                        "id": "36cce788-5377-4691-9c93-b34d13617f29",
+                        "name": "lindholmbiler.dk",
+                        "color": null,
+                        "orderindex": 213
+                    },
+                    {
+                        "id": "265b28e9-54a2-4abb-bb45-99e92965513e",
+                        "name": "basicandmore.dk",
+                        "color": null,
+                        "orderindex": 214
+                    },
+                    {
+                        "id": "52c75bfa-baf4-4d92-b920-2375cbb096fe",
+                        "name": "grapedesign.dk",
+                        "color": null,
+                        "orderindex": 215
+                    },
+                    {
+                        "id": "1d35da5a-a9a7-4189-b30f-97687caf78c8",
+                        "name": "hugo-p.dk",
+                        "color": null,
+                        "orderindex": 216
+                    },
+                    {
+                        "id": "8a882778-de11-40f5-bf3f-efdfc69cbc97",
+                        "name": "new-feet.se",
+                        "color": null,
+                        "orderindex": 217
+                    },
+                    {
+                        "id": "cbeb4fb6-6264-4fa6-9004-a72e19d10aee",
+                        "name": "grusogaffald.dk",
+                        "color": null,
+                        "orderindex": 218
+                    },
+                    {
+                        "id": "978d2e34-0cc1-4df6-9ee5-4ea806ac6487",
+                        "name": "wauw-design.dk",
+                        "color": null,
+                        "orderindex": 219
+                    },
+                    {
+                        "id": "c44fd498-3dbc-4620-b0ec-5f9c6c9951eb",
+                        "name": "krenkerupbryggeri.dk",
+                        "color": null,
+                        "orderindex": 220
+                    },
+                    {
+                        "id": "b60386f9-d689-45ed-8ab1-28327b773760",
+                        "name": "sie-hunting.com",
+                        "color": null,
+                        "orderindex": 221
+                    },
+                    {
+                        "id": "2f144a05-58e1-4cdb-8119-8fdf7252a79e",
+                        "name": "befro.dk",
+                        "color": null,
+                        "orderindex": 222
+                    },
+                    {
+                        "id": "46552a32-5282-4019-9e95-eeec3dbae854",
+                        "name": "billigstubfræsning.dk / billigrodfræsning.dk / danskstubfræsning.dk / jyskstubfræsning.dk / totaltraefaeldning.dk",
+                        "color": null,
+                        "orderindex": 223
+                    },
+                    {
+                        "id": "912cbec4-ce4a-4939-96db-2faf37801ef8",
+                        "name": "Safeshoppen.dk",
+                        "color": null,
+                        "orderindex": 224
+                    },
+                    {
+                        "id": "07c9ae82-eb08-4709-b4bb-58beb722705b",
+                        "name": "dorchdanola.dk",
+                        "color": null,
+                        "orderindex": 225
+                    },
+                    {
+                        "id": "2f46feb7-3c28-4bab-800f-8be863e31b9d",
+                        "name": "bysofiesoenderby.dk",
+                        "color": null,
+                        "orderindex": 226
+                    },
+                    {
+                        "id": "0183a81c-e381-4b88-9451-eeb6d617159b",
+                        "name": "qnts.dk",
+                        "color": null,
+                        "orderindex": 227
+                    },
+                    {
+                        "id": "af6151d8-5ccc-40b1-bf58-85c6c1fedb12",
+                        "name": "vesterhavsmost.dk",
+                        "color": null,
+                        "orderindex": 228
+                    },
+                    {
+                        "id": "64e345a7-2489-43c3-8c2f-acddc5bd8522",
+                        "name": "saniture.dk",
+                        "color": null,
+                        "orderindex": 229
+                    },
+                    {
+                        "id": "3a478f55-56e1-4d61-b9a3-8983386b68cb",
+                        "name": "Toejeksperten.dk",
+                        "color": null,
+                        "orderindex": 230
+                    },
+                    {
+                        "id": "4e2e677c-4769-41e1-a028-ec67b826a2bb",
+                        "name": "fodmagasinet.dk",
+                        "color": null,
+                        "orderindex": 231
+                    },
+                    {
+                        "id": "d30681e7-4a6c-4a16-be5d-f17467c3443e",
+                        "name": "gelblast.dk",
+                        "color": null,
+                        "orderindex": 232
+                    },
+                    {
+                        "id": "999931ed-cb33-4b30-b0fd-5122ba991143",
+                        "name": "Sisicph.dk",
+                        "color": null,
+                        "orderindex": 233
+                    },
+                    {
+                        "id": "45e74e8e-b838-4833-babc-2eb40980c709",
+                        "name": "frk-himmelblaa.dk",
+                        "color": null,
+                        "orderindex": 234
+                    },
+                    {
+                        "id": "e87acf6e-9d21-4f28-9ed3-912e222de8a3",
+                        "name": "auto-glanz.co.uk",
+                        "color": null,
+                        "orderindex": 235
+                    },
+                    {
+                        "id": "c7e59e36-0126-4dfb-91f0-218da137bc0f",
+                        "name": "slikposen.dk",
+                        "color": null,
+                        "orderindex": 236
+                    },
+                    {
+                        "id": "6040827c-d3ed-46c2-a89b-a35109bd792c",
+                        "name": "multitek.dk",
+                        "color": null,
+                        "orderindex": 237
+                    },
+                    {
+                        "id": "07a057bf-697f-4f07-a190-d7090d472f43",
+                        "name": "mandalay.dk",
+                        "color": null,
+                        "orderindex": 238
+                    },
+                    {
+                        "id": "bbe3fdcc-4462-49eb-be2c-21a04c97023f",
+                        "name": "heaven4kids.dk",
+                        "color": null,
+                        "orderindex": 239
+                    },
+                    {
+                        "id": "849ce91e-ed14-4d7a-91c0-c2f13c55a781",
+                        "name": "kosmetika.dk",
+                        "color": null,
+                        "orderindex": 240
+                    },
+                    {
+                        "id": "6b46f7f7-f45b-4906-a770-403933495634",
+                        "name": "cilo.dk",
+                        "color": null,
+                        "orderindex": 241
+                    },
+                    {
+                        "id": "543ffac6-620e-43c7-bb94-c803ea8c0dc1",
+                        "name": "defendo.dk",
+                        "color": null,
+                        "orderindex": 242
+                    },
+                    {
+                        "id": "0e6d94bd-e845-4848-a365-b80f1715e3f6",
+                        "name": "severinkursuscenter.dk",
+                        "color": null,
+                        "orderindex": 243
+                    },
+                    {
+                        "id": "b39c9bd3-9b28-419a-9029-b165546ebbcd",
+                        "name": "skitema.dk / skatetema.dk",
+                        "color": null,
+                        "orderindex": 244
+                    },
+                    {
+                        "id": "a943d7e3-e61f-47a1-bc96-593c23daccf6",
+                        "name": "skitema.com / skatetema.com",
+                        "color": null,
+                        "orderindex": 245
+                    },
+                    {
+                        "id": "10746a11-293f-4b0d-af3e-34d35c4f8ba2",
+                        "name": "skitema.com  skatetema.com",
+                        "color": null,
+                        "orderindex": 246
+                    },
+                    {
+                        "id": "fb8e23b5-b8b5-470a-ad3d-f71dcc39bdd6",
+                        "name": "Scocykler.dk",
+                        "color": null,
+                        "orderindex": 247
+                    },
+                    {
+                        "id": "96b8ad17-be18-4621-90b7-bcd662b3df4d",
+                        "name": "Playstation og Elgiganten Gaming",
+                        "color": null,
+                        "orderindex": 248
+                    },
+                    {
+                        "id": "46444275-7c69-4df3-85d6-44f90bd90356",
+                        "name": "lindberghfashion.com (DE og SE)",
+                        "color": null,
+                        "orderindex": 249
+                    },
+                    {
+                        "id": "7373ba66-a358-4cf8-be14-d69d44776248",
+                        "name": "vih.dk",
+                        "color": null,
+                        "orderindex": 250
+                    },
+                    {
+                        "id": "86c31b86-9b85-4502-9014-cc560e75b4b8",
+                        "name": "ndbeslag.dk",
+                        "color": null,
+                        "orderindex": 251
+                    },
+                    {
+                        "id": "aa4ed7d8-5ac0-47f1-b219-6212cbd5b54e",
+                        "name": "carlhansen.com",
+                        "color": null,
+                        "orderindex": 252
+                    },
+                    {
+                        "id": "4cd76993-0a65-48b3-be0b-b9ce70e8273b",
+                        "name": "energidrift.dk",
+                        "color": null,
+                        "orderindex": 253
+                    },
+                    {
+                        "id": "f4a3de95-1b82-43bf-a983-67c117cb8f3b",
+                        "name": "bute.dk",
+                        "color": null,
+                        "orderindex": 254
+                    },
+                    {
+                        "id": "8d521b24-5426-4bbb-9670-7bd9d1a72af5",
+                        "name": "kaffeexpressen.dk",
+                        "color": null,
+                        "orderindex": 255
+                    },
+                    {
+                        "id": "7ef9f9ca-bd23-4773-baa5-c45ad4524cbf",
+                        "name": "zjoos-kolding.dk",
+                        "color": null,
+                        "orderindex": 256
+                    },
+                    {
+                        "id": "d149d174-dffb-40a7-bc9b-5d899d07b317",
+                        "name": "carterstore.dk",
+                        "color": null,
+                        "orderindex": 257
+                    },
+                    {
+                        "id": "d5b847e9-3583-4773-a7c9-0b343cb92501",
+                        "name": "snedkervaerktoj.dk",
+                        "color": null,
+                        "orderindex": 258
+                    },
+                    {
+                        "id": "fc990943-3e22-4763-8a84-6d9d142b81de",
+                        "name": "winemage.com",
+                        "color": null,
+                        "orderindex": 259
+                    },
+                    {
+                        "id": "9608ff08-4ef5-4546-af36-cf7074ad1da2",
+                        "name": "allergica.dk / foreningen-alma.dk",
+                        "color": null,
+                        "orderindex": 260
+                    },
+                    {
+                        "id": "52e0d37f-0746-4edb-967f-e7b2cf6cf692",
+                        "name": "billibi.com",
+                        "color": null,
+                        "orderindex": 261
+                    },
+                    {
+                        "id": "487ff95f-1435-4964-8f12-c276aa5d7eed",
+                        "name": "no1retail.net",
+                        "color": null,
+                        "orderindex": 262
+                    },
+                    {
+                        "id": "cf6e5cfd-e681-4f8a-a586-adb2c8aea38d",
+                        "name": "Boutiquedorthe.dk",
+                        "color": null,
+                        "orderindex": 263
+                    },
+                    {
+                        "id": "f5c458e0-911a-48c6-b964-a5c52dab0423",
+                        "name": "bloom-objects.com",
+                        "color": null,
+                        "orderindex": 264
+                    },
+                    {
+                        "id": "6b828c66-bf72-4f1c-8044-5d47bfe03121",
+                        "name": "idekort.dk",
+                        "color": null,
+                        "orderindex": 265
+                    },
+                    {
+                        "id": "e471e0d0-d043-4d47-925b-faeba7f61b52",
+                        "name": "nordichomeliving.dk",
+                        "color": null,
+                        "orderindex": 266
+                    },
+                    {
+                        "id": "5864cba7-0968-42c0-9f5c-3c9ffcabe7e9",
+                        "name": "jydsk-planteservice.dk",
+                        "color": null,
+                        "orderindex": 267
+                    },
+                    {
+                        "id": "10043d74-b4e8-4f38-9da4-2384b6be08fc",
+                        "name": "chemometec.com",
+                        "color": null,
+                        "orderindex": 268
+                    },
+                    {
+                        "id": "1d012fb6-ad6a-4b7e-8adb-ebed219675b7",
+                        "name": "soemodvine.dk",
+                        "color": null,
+                        "orderindex": 269
+                    },
+                    {
+                        "id": "7298b7cf-c714-4144-8f65-a99610fb5169",
+                        "name": "basicdenmark.dk",
+                        "color": null,
+                        "orderindex": 270
+                    },
+                    {
+                        "id": "e72001bd-7ef0-49a4-a9d9-a19e3f6ff802",
+                        "name": "sisterspoint.com / loveanddivine.com",
+                        "color": null,
+                        "orderindex": 271
+                    },
+                    {
+                        "id": "ce72283b-97dc-41e8-9686-c46289ce3107",
+                        "name": "kvali.dk",
+                        "color": null,
+                        "orderindex": 272
+                    },
+                    {
+                        "id": "9e31d5bb-0913-4186-9fd6-ed59c439e3eb",
+                        "name": "tinso.dk",
+                        "color": null,
+                        "orderindex": 273
+                    },
+                    {
+                        "id": "e820eb8d-afa7-4ec1-875f-8db5eb6788be",
+                        "name": "laudrup.dk",
+                        "color": null,
+                        "orderindex": 274
+                    },
+                    {
+                        "id": "e566b533-7a98-499a-9426-eba08962b4c6",
+                        "name": "prevas.dk",
+                        "color": null,
+                        "orderindex": 275
+                    },
+                    {
+                        "id": "2cc36b54-2462-4b6f-8766-8ce72d91342a",
+                        "name": "mannol.dk",
+                        "color": null,
+                        "orderindex": 276
+                    },
+                    {
+                        "id": "94050ba8-0ba2-4851-b676-fd0d816281d4",
+                        "name": "selektro.dk",
+                        "color": null,
+                        "orderindex": 277
+                    },
+                    {
+                        "id": "74733756-6801-47d1-a141-59633c76955f",
+                        "name": "slotauto.dk",
+                        "color": null,
+                        "orderindex": 278
+                    },
+                    {
+                        "id": "1b86830f-ae50-4750-b92d-23f871d7693e",
+                        "name": "VIES.dk",
+                        "color": null,
+                        "orderindex": 279
+                    },
+                    {
+                        "id": "46d824fc-3da6-4d9c-a9b7-b7ace5f98dd1",
+                        "name": "danskkoel.dk",
+                        "color": null,
+                        "orderindex": 280
+                    },
+                    {
+                        "id": "0c1001a7-ac1b-4b6d-a612-1a7c8a91f4bb",
+                        "name": "a-view.dk",
+                        "color": null,
+                        "orderindex": 281
+                    },
+                    {
+                        "id": "4d8a5307-3f2a-447a-bd51-a5dcb5badafc",
+                        "name": "stoffnagel.com",
+                        "color": null,
+                        "orderindex": 282
+                    },
+                    {
+                        "id": "c886edcc-de1b-4fae-a297-38983c103db0",
+                        "name": "maanesten.dk",
+                        "color": null,
+                        "orderindex": 283
+                    },
+                    {
+                        "id": "a6efb96e-1b9b-4d15-b7bc-8e145d4cadce",
+                        "name": "medicotrust.com",
+                        "color": null,
+                        "orderindex": 284
+                    },
+                    {
+                        "id": "77bad318-bd52-4b1c-b11b-5b46fe0a4588",
+                        "name": "onjtractors.com",
+                        "color": null,
+                        "orderindex": 285
+                    },
+                    {
+                        "id": "85dcacf4-d961-4f69-828f-d0cb0bebb589",
+                        "name": "bicasolutions.dk",
+                        "color": null,
+                        "orderindex": 286
+                    },
+                    {
+                        "id": "28425bd5-e0bd-4804-8e82-985f551e1896",
+                        "name": "aura.dk",
+                        "color": null,
+                        "orderindex": 287
+                    },
+                    {
+                        "id": "8d01899f-f862-4c15-8e81-b1f4c24bc317",
+                        "name": "brdr-simonsen.dk",
+                        "color": null,
+                        "orderindex": 288
+                    },
+                    {
+                        "id": "31c9a91e-ce00-4c5c-aaaa-a91555eae23a",
+                        "name": "apair.dk",
+                        "color": null,
+                        "orderindex": 289
+                    },
+                    {
+                        "id": "66a05076-4dae-4426-821c-8b82aa223d1a",
+                        "name": "fusion.dk (nl.fusionworld.com)",
+                        "color": null,
+                        "orderindex": 290
+                    },
+                    {
+                        "id": "bf3ce649-08a6-4da5-800d-a0c6a6111df0",
+                        "name": "buy2sell.dk",
+                        "color": null,
+                        "orderindex": 291
+                    },
+                    {
+                        "id": "829651e7-c7cf-4bcd-9c19-ecbaebe350b1",
+                        "name": "wingman-aircharter.com",
+                        "color": null,
+                        "orderindex": 292
+                    },
+                    {
+                        "id": "3978d058-cafc-4d83-a890-f2b7e34bd12c",
+                        "name": "isokvik.dk",
+                        "color": null,
+                        "orderindex": 293
+                    },
+                    {
+                        "id": "468e6d70-ecd4-4a1f-bb63-0017038721ad",
+                        "name": "eleanorlighting.com",
+                        "color": null,
+                        "orderindex": 294
+                    },
+                    {
+                        "id": "fb9f7b57-b815-4e7d-afdf-831a23ee9cc3",
+                        "name": "helkropsmr.dk",
+                        "color": null,
+                        "orderindex": 295
+                    },
+                    {
+                        "id": "d10b2793-bb6e-40dc-8858-040f194adc62",
+                        "name": "olavdelinde.dk",
+                        "color": null,
+                        "orderindex": 296
+                    },
+                    {
+                        "id": "3d5d68df-5286-4a65-9410-37032457a0cd",
+                        "name": "birkenfeldtdesign.com",
+                        "color": null,
+                        "orderindex": 297
+                    },
+                    {
+                        "id": "60183d90-5651-4b78-a3c0-7163d543467f",
+                        "name": "lenevisholm.dk",
+                        "color": null,
+                        "orderindex": 298
+                    },
+                    {
+                        "id": "83ccb884-2250-4c56-b06c-925d7f0c9d20",
+                        "name": "simntonic.com",
+                        "color": null,
+                        "orderindex": 299
+                    },
+                    {
+                        "id": "778d7e89-b53d-41fc-b3d6-09f815645f86",
+                        "name": "jyskmobelfabrik.dk",
+                        "color": null,
+                        "orderindex": 300
+                    },
+                    {
+                        "id": "a3599b8e-b045-4d6b-bc9d-5403d542a971",
+                        "name": "hhinstruments.dk",
+                        "color": null,
+                        "orderindex": 301
+                    },
+                    {
+                        "id": "8873b6aa-ac6a-43ba-b3b1-1f8e9cfc0f53",
+                        "name": "sika-design.de",
+                        "color": null,
+                        "orderindex": 302
+                    },
+                    {
+                        "id": "53f47694-3ccd-4023-8a3e-e14bd9ad7b53",
+                        "name": "dailywatch.co",
+                        "color": null,
+                        "orderindex": 303
+                    },
+                    {
+                        "id": "688d16fe-8ee3-4a08-8376-c617f0b303f1",
+                        "name": "relocation.as",
+                        "color": null,
+                        "orderindex": 304
+                    },
+                    {
+                        "id": "973a1db2-55ec-4fac-a905-26a3ad232514",
+                        "name": "awilco.dk",
+                        "color": null,
+                        "orderindex": 305
+                    },
+                    {
+                        "id": "7c3fce19-f6eb-45f7-b500-26eec5a3a4b9",
+                        "name": "inp.dk",
+                        "color": null,
+                        "orderindex": 306
+                    },
+                    {
+                        "id": "5919b25f-b874-4fef-9055-06b3079423d4",
+                        "name": "recollection.dk",
+                        "color": null,
+                        "orderindex": 307
+                    },
+                    {
+                        "id": "bb450c80-0d24-4dac-ab8b-aa9f876145c8",
+                        "name": "maribojagtognatur.dk",
+                        "color": null,
+                        "orderindex": 308
+                    },
+                    {
+                        "id": "72c0cb29-8caa-4c67-8bc1-3d04029e44e8",
+                        "name": "workadvice.dk",
+                        "color": null,
+                        "orderindex": 309
+                    },
+                    {
+                        "id": "63442663-5a87-4cc7-8712-54b41d9faaaf",
+                        "name": "humdakin.dk",
+                        "color": null,
+                        "orderindex": 310
+                    },
+                    {
+                        "id": "1ce91a52-ff2a-4898-b7f8-575c499196f1",
+                        "name": "plusbog.dk",
+                        "color": null,
+                        "orderindex": 311
+                    },
+                    {
+                        "id": "95377c67-3e7b-4e68-9464-5b24980d3fd8",
+                        "name": "coverbox.dk",
+                        "color": null,
+                        "orderindex": 312
+                    },
+                    {
+                        "id": "38b238b8-1448-45b1-a953-97dce83e998a",
+                        "name": "razskincare.com",
+                        "color": null,
+                        "orderindex": 313
+                    },
+                    {
+                        "id": "aaa1093c-9599-4824-aaa0-212184fd1c5b",
+                        "name": "sandbysmeden.dk",
+                        "color": null,
+                        "orderindex": 314
+                    },
+                    {
+                        "id": "406d1d4f-440c-4f65-b3a2-004f7a62d93a",
+                        "name": "stubbe.dk",
+                        "color": null,
+                        "orderindex": 315
+                    },
+                    {
+                        "id": "69cb06e1-45f9-41f0-9b87-1712554b7258",
+                        "name": "fairpris.dk",
+                        "color": null,
+                        "orderindex": 316
+                    },
+                    {
+                        "id": "d6e96370-48c9-42ea-8d29-837321ae6afe",
+                        "name": "europeanaircraftsales.com",
+                        "color": null,
+                        "orderindex": 317
+                    },
+                    {
+                        "id": "08730b31-d10a-4d6c-a020-40a19475232f",
+                        "name": "palaeet.dk",
+                        "color": null,
+                        "orderindex": 318
+                    },
+                    {
+                        "id": "a1950709-cb69-41d5-9600-79df35c0b755",
+                        "name": "retail-fabrikken.com",
+                        "color": null,
+                        "orderindex": 319
+                    },
+                    {
+                        "id": "38a2b1ed-b7de-427e-b1f0-98d8f4d05781",
+                        "name": "mindcph.dk",
+                        "color": null,
+                        "orderindex": 320
+                    },
+                    {
+                        "id": "16bb92e8-2267-482d-8760-f2ee23810874",
+                        "name": "sandshoppen.dk",
+                        "color": null,
+                        "orderindex": 321
+                    },
+                    {
+                        "id": "0d369fcc-8fa3-43ea-af4c-ce2b857e36b4",
+                        "name": "two-socks.dk",
+                        "color": null,
+                        "orderindex": 322
+                    },
+                    {
+                        "id": "d3d17b22-20ed-4816-83e8-5d4dea9938af",
+                        "name": "lykkebo.dk",
+                        "color": null,
+                        "orderindex": 323
+                    },
+                    {
+                        "id": "d5ead74c-0aca-4a33-b111-9699fd0ee103",
+                        "name": "buddies-headshop.dk",
+                        "color": null,
+                        "orderindex": 324
+                    },
+                    {
+                        "id": "ee1918fe-f1c3-48b8-99d0-217504a3ef29",
+                        "name": "jkfunivserse.com",
+                        "color": null,
+                        "orderindex": 325
+                    },
+                    {
+                        "id": "a9d3216c-9d4c-4282-a22c-100f23514f43",
+                        "name": "wihlborgs.dk",
+                        "color": null,
+                        "orderindex": 326
+                    },
+                    {
+                        "id": "bba3ebcc-e1d8-4d5e-8c9b-c4e8baad73f4",
+                        "name": "mindmover.dk",
+                        "color": null,
+                        "orderindex": 327
+                    },
+                    {
+                        "id": "e8e40c4a-9480-45d2-82af-4ae23b5ff1f0",
+                        "name": "pro-railing.dk",
+                        "color": null,
+                        "orderindex": 328
+                    },
+                    {
+                        "id": "a1d04fc4-142c-4c36-800b-b9d3ea7e0c5d",
+                        "name": "no78.dk",
+                        "color": null,
+                        "orderindex": 329
+                    },
+                    {
+                        "id": "97926d5e-6151-4c16-992a-abf809bed483",
+                        "name": "avfusion.dk",
+                        "color": null,
+                        "orderindex": 330
+                    },
+                    {
+                        "id": "c9f4fd39-cfcb-4380-94aa-99051c3c19c1",
+                        "name": "buhlfashion.dk",
+                        "color": null,
+                        "orderindex": 331
+                    },
+                    {
+                        "id": "0d68a952-c096-4a05-ae5d-069a0bb7d49b",
+                        "name": "ollimako.dk",
+                        "color": null,
+                        "orderindex": 332
+                    },
+                    {
+                        "id": "b649094c-fd1b-4bc7-b09f-2e1b5f1e65b4",
+                        "name": "serendipity-organics.dk",
+                        "color": null,
+                        "orderindex": 333
+                    },
+                    {
+                        "id": "0cd37f90-7342-4da7-ac74-3985ea7a65f8",
+                        "name": "Kreavaerket.dk & Nordiccraft.se",
+                        "color": null,
+                        "orderindex": 334
+                    },
+                    {
+                        "id": "02fcf176-8dbf-4a20-9c3a-fdb78fb3fcee",
+                        "name": "heinstudio.com",
+                        "color": null,
+                        "orderindex": 335
+                    },
+                    {
+                        "id": "11c93d6e-e97f-4d61-978f-6dc68f537826",
+                        "name": "fremco.dk",
+                        "color": null,
+                        "orderindex": 336
+                    },
+                    {
+                        "id": "00d88d92-255a-4be2-9e1c-58ff5e75a853",
+                        "name": "miltonhuse.dk",
+                        "color": null,
+                        "orderindex": 337
+                    },
+                    {
+                        "id": "3f3cbf7c-0276-4fca-a3b6-4f3b6b29e092",
+                        "name": "sellmerklinik.dk",
+                        "color": null,
+                        "orderindex": 338
+                    },
+                    {
+                        "id": "80f55aac-007a-4899-8c5a-a57ee10fdd85",
+                        "name": "applaus.nu",
+                        "color": null,
+                        "orderindex": 339
+                    },
+                    {
+                        "id": "c111f7af-c911-4204-8038-bb70e3a35731",
+                        "name": "capellalounge.dk",
+                        "color": null,
+                        "orderindex": 340
+                    },
+                    {
+                        "id": "fd984064-3eb4-4518-98e9-bfd298e17cb2",
+                        "name": "lawaro.dk",
+                        "color": null,
+                        "orderindex": 341
+                    },
+                    {
+                        "id": "d1f15a2a-336a-4fd0-a315-156db21f61ac",
+                        "name": "idemcopenhagen.com",
+                        "color": null,
+                        "orderindex": 342
+                    },
+                    {
+                        "id": "650b58ee-2ccd-4620-93ff-3b372cf74d9e",
+                        "name": "escaperoom-riddlehouse.dk",
+                        "color": null,
+                        "orderindex": 343
+                    },
+                    {
+                        "id": "c0fdb4ed-a87f-4bdb-919b-a1be30a46886",
+                        "name": "Gameboxfestival.dk",
+                        "color": null,
+                        "orderindex": 344
+                    },
+                    {
+                        "id": "8c8cda4d-4bf7-47af-9c86-23021f719563",
+                        "name": "slagterlampe.dk",
+                        "color": null,
+                        "orderindex": 345
+                    },
+                    {
+                        "id": "4944bec2-1258-4d65-a343-676161f3701a",
+                        "name": "Transportmessen.dk",
+                        "color": null,
+                        "orderindex": 346
+                    },
+                    {
+                        "id": "b4989d62-ce4b-40ef-989c-b4f6ecc5a62c",
+                        "name": "bentax.dk",
+                        "color": null,
+                        "orderindex": 347
+                    },
+                    {
+                        "id": "6934e721-bf5d-4df2-be06-25515c7123ec",
+                        "name": "Synvital.dk",
+                        "color": null,
+                        "orderindex": 348
+                    },
+                    {
+                        "id": "712725c9-6e06-4b82-b413-81f51dd7cd94",
+                        "name": "Solarvice.dk",
+                        "color": null,
+                        "orderindex": 349
+                    },
+                    {
+                        "id": "e3f475ae-0bd2-4c73-bb5a-ed138192efbf",
+                        "name": "vitamediagroup.com",
+                        "color": null,
+                        "orderindex": 350
+                    },
+                    {
+                        "id": "a4abd823-eb43-4b0a-92c8-594f3c36e095",
+                        "name": "pegani.dk",
+                        "color": null,
+                        "orderindex": 351
+                    },
+                    {
+                        "id": "de9878eb-2aea-492b-af98-e13b4f0f7334",
+                        "name": "pwt-group.com ",
+                        "color": null,
+                        "orderindex": 352
+                    },
+                    {
+                        "id": "ddd1986f-b1ef-4706-85c2-7e389ab50b69",
+                        "name": "Lydspecialisten.dk",
+                        "color": null,
+                        "orderindex": 353
+                    },
+                    {
+                        "id": "8ae77460-0a1e-4f2a-8664-85660991f6e8",
+                        "name": "benthansen.net/da",
+                        "color": null,
+                        "orderindex": 354
+                    },
+                    {
+                        "id": "96225d44-c0f2-411b-b68e-db49d697ab1d",
+                        "name": "Lyngsjagtvaaben.dk",
+                        "color": null,
+                        "orderindex": 355
+                    },
+                    {
+                        "id": "19a8688f-cbe9-47e1-9ee3-b1d6bd1e438a",
+                        "name": "dk.dilling.com",
+                        "color": null,
+                        "orderindex": 356
+                    },
+                    {
+                        "id": "54d8dd9b-937f-49f7-9b0f-0afdff54001b",
+                        "name": "Homemate.dk",
+                        "color": null,
+                        "orderindex": 357
+                    },
+                    {
+                        "id": "125ea0ea-ad28-4c08-b9b2-41c731184efe",
+                        "name": "oversizedliftingclub.com",
+                        "color": null,
+                        "orderindex": 358
+                    },
+                    {
+                        "id": "60731de1-1d43-440d-8f5d-2af7facf5fb3",
+                        "name": "nordgreen.dk",
+                        "color": null,
+                        "orderindex": 359
+                    },
+                    {
+                        "id": "0312e8e1-0e17-4c2b-a359-2cf7f538f210",
+                        "name": "engdigegaard.dk",
+                        "color": null,
+                        "orderindex": 360
+                    },
+                    {
+                        "id": "4dea4f89-4eba-432a-b586-b1ad3becab0f",
+                        "name": "terrassevarmer.dk",
+                        "color": null,
+                        "orderindex": 361
+                    },
+                    {
+                        "id": "9feeeb96-8356-479c-8a86-8effbf192866",
+                        "name": "bolig-art.dk",
+                        "color": null,
+                        "orderindex": 362
+                    },
+                    {
+                        "id": "e19a0cb1-415d-4809-8f82-689c0b46b8a4",
+                        "name": "nomadcph.dk",
+                        "color": null,
+                        "orderindex": 363
+                    },
+                    {
+                        "id": "7ea1d116-6202-4db7-9b58-98f234f187a8",
+                        "name": "denperfektefest.dk",
+                        "color": null,
+                        "orderindex": 364
+                    },
+                    {
+                        "id": "2a41efb2-2a87-4f28-a858-1a6bfac41015",
+                        "name": "Zancasonne.dk",
+                        "color": null,
+                        "orderindex": 365
+                    },
+                    {
+                        "id": "ba7c2d77-8758-4d1c-95da-6134d57f3ff1",
+                        "name": "din-laasesmed.dk",
+                        "color": null,
+                        "orderindex": 366
+                    },
+                    {
+                        "id": "43f06c70-d3ca-4062-b036-c9888d199362",
+                        "name": "klosterfrk.dk",
+                        "color": null,
+                        "orderindex": 367
+                    },
+                    {
+                        "id": "9d3f44e0-e15c-41d9-9e8a-0ae35a7dcbce",
+                        "name": "linolie.dk",
+                        "color": null,
+                        "orderindex": 368
+                    },
+                    {
+                        "id": "02c6ed12-ea10-4762-afea-2c85af4b61bc",
+                        "name": "lineolie.dk",
+                        "color": null,
+                        "orderindex": 369
+                    },
+                    {
+                        "id": "f08ae4fc-86fe-4e7f-93b5-1a9bdcd68171",
+                        "name": "dimsstudio.dk",
+                        "color": null,
+                        "orderindex": 370
+                    },
+                    {
+                        "id": "e6e961d4-986f-47ad-8b80-e0fef6fdc331",
+                        "name": "hwl.dk",
+                        "color": null,
+                        "orderindex": 371
+                    },
+                    {
+                        "id": "fe6e49e1-68dd-4877-b07b-86ed67a849c6",
+                        "name": "bilkatogo.dk",
+                        "color": null,
+                        "orderindex": 372
+                    },
+                    {
+                        "id": "96002e2d-af08-4d11-892d-57e25c454a3a",
+                        "name": "nu-denmark.dk",
+                        "color": null,
+                        "orderindex": 373
+                    },
+                    {
+                        "id": "37540b2d-bf2b-47aa-9aa0-5733b38ec9ec",
+                        "name": "cocoon-company.se",
+                        "color": null,
+                        "orderindex": 374
+                    },
+                    {
+                        "id": "5676a7c3-7209-499c-842a-08d3cc93fc01",
+                        "name": "baychristensen.dk",
+                        "color": null,
+                        "orderindex": 375
+                    },
+                    {
+                        "id": "135bb7db-1e76-4c81-86f3-de9737a8a607",
+                        "name": "philipsonwine.com",
+                        "color": null,
+                        "orderindex": 376
+                    },
+                    {
+                        "id": "7b479511-44ae-406c-8832-2b1f5607d88c",
+                        "name": "musclehouse.dk",
+                        "color": null,
+                        "orderindex": 377
+                    },
+                    {
+                        "id": "40fa7c46-876c-4701-b459-26b327c65bd8",
+                        "name": "maileg.com",
+                        "color": null,
+                        "orderindex": 378
+                    },
+                    {
+                        "id": "f3c565ec-28cb-420c-8224-1e8a8bef6d7e",
+                        "name": "kaereboern.dk",
+                        "color": null,
+                        "orderindex": 379
+                    },
+                    {
+                        "id": "722c8f79-1436-4129-9cde-bee0bffe321d",
+                        "name": "matterscph.com",
+                        "color": null,
+                        "orderindex": 380
+                    },
+                    {
+                        "id": "f111ece3-550b-42c0-b675-c7325256ba4c",
+                        "name": "gabba.com",
+                        "color": null,
+                        "orderindex": 381
+                    },
+                    {
+                        "id": "232f6d2d-2d2f-425b-b187-17227a8c6c39",
+                        "name": "profilsport.dk",
+                        "color": null,
+                        "orderindex": 382
+                    },
+                    {
+                        "id": "a164c413-046e-4220-8d94-2491ec12f494",
+                        "name": "takeoffcph.dk",
+                        "color": null,
+                        "orderindex": 383
+                    }
+                ]
+            },
+            "date_created": "1661759562211",
+            "hide_from_guests": true,
+            "required": false
+        },
+        {
+            "id": "9a49e6ba-07aa-4fc5-8a2e-623c9028875d",
+            "name": "⭐️ Budget Month",
+            "type": "drop_down",
+            "type_config": {
+                "sorting": "name_desc",
+                "new_drop_down": true,
+                "options": [
+                    {
+                        "id": "de1d88ab-4d94-4ce4-8182-eb96e25dbba2",
+                        "name": "2025_12",
+                        "color": "#1bbc9c",
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "a01c946c-d957-4601-a45c-9cc20e749498",
+                        "name": "2025_11",
+                        "color": "#1bbc9c",
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "aa8050e9-5783-4f7e-885d-4079e044c6de",
+                        "name": "2025_10",
+                        "color": "#1bbc9c",
+                        "orderindex": 2
+                    },
+                    {
+                        "id": "6bf9d3c8-1450-405c-a9b0-f1718a3852d3",
+                        "name": "2025_09",
+                        "color": "#1bbc9c",
+                        "orderindex": 3
+                    },
+                    {
+                        "id": "32991ef0-2f5f-455c-8f38-633e9a71a21c",
+                        "name": "2025_08",
+                        "color": "#1bbc9c",
+                        "orderindex": 4
+                    },
+                    {
+                        "id": "56193aea-06d1-489f-9ef0-81f8fb5da6d5",
+                        "name": "2025_07",
+                        "color": "#1bbc9c",
+                        "orderindex": 5
+                    },
+                    {
+                        "id": "cf1f802a-1407-4ca1-bb51-bb2e19cc5ef5",
+                        "name": "2025_06",
+                        "color": "#1bbc9c",
+                        "orderindex": 6
+                    },
+                    {
+                        "id": "0c9b0a89-90c7-4ac7-89ee-49868a8e14b8",
+                        "name": "2025_05",
+                        "color": "#1bbc9c",
+                        "orderindex": 7
+                    },
+                    {
+                        "id": "1fc10993-ce55-4228-87ef-cfa717e49565",
+                        "name": "2025_04",
+                        "color": "#1bbc9c",
+                        "orderindex": 8
+                    },
+                    {
+                        "id": "bec6716d-b7bd-4329-89d1-167bfdc7d6c3",
+                        "name": "2025_03",
+                        "color": "#1bbc9c",
+                        "orderindex": 9
+                    },
+                    {
+                        "id": "2c5dc947-bda4-45f9-8330-290e03375620",
+                        "name": "2025_02",
+                        "color": "#1bbc9c",
+                        "orderindex": 10
+                    },
+                    {
+                        "id": "49dc5b5a-6c10-48a3-85e4-73492372ea87",
+                        "name": "2025_01",
+                        "color": "#1bbc9c",
+                        "orderindex": 11
+                    },
+                    {
+                        "id": "a45bbab2-a533-4d3b-b491-ea1d45b18658",
+                        "name": "2024_12",
+                        "color": "#02BCD4",
+                        "orderindex": 12
+                    },
+                    {
+                        "id": "6f959bbe-12bf-439a-b36f-5ae105bc6a3c",
+                        "name": "2024_11",
+                        "color": "#02BCD4",
+                        "orderindex": 13
+                    },
+                    {
+                        "id": "01c756bc-3f0a-4cad-8939-4fe4427d8a39",
+                        "name": "2024_10",
+                        "color": "#02BCD4",
+                        "orderindex": 14
+                    },
+                    {
+                        "id": "605705cc-5880-4ea2-bb9a-ea6db3f55771",
+                        "name": "2024_09",
+                        "color": "#02BCD4",
+                        "orderindex": 15
+                    },
+                    {
+                        "id": "10d40c9c-20a8-407d-b1e5-b416ba2eceb6",
+                        "name": "2024_08",
+                        "color": "#02BCD4",
+                        "orderindex": 16
+                    },
+                    {
+                        "id": "c5c8cdd3-b50f-4cf4-8540-f858ae98106c",
+                        "name": "2024_07",
+                        "color": "#02BCD4",
+                        "orderindex": 17
+                    },
+                    {
+                        "id": "fe22f267-b561-463e-bcb0-7c4ab10bac00",
+                        "name": "2024_06",
+                        "color": "#02BCD4",
+                        "orderindex": 18
+                    },
+                    {
+                        "id": "7c2c4c2f-791f-4595-986e-ce684c4eb7ac",
+                        "name": "2024_05",
+                        "color": "#02BCD4",
+                        "orderindex": 19
+                    },
+                    {
+                        "id": "80b8dca5-d930-4986-8c3f-6ec0f9ef8098",
+                        "name": "2024_04",
+                        "color": "#02BCD4",
+                        "orderindex": 20
+                    },
+                    {
+                        "id": "2ab73918-3d05-4546-90c8-c2c367ee518c",
+                        "name": "2024_03",
+                        "color": "#02BCD4",
+                        "orderindex": 21
+                    },
+                    {
+                        "id": "1f1ed9c0-7b2f-4e06-b08e-89911340d733",
+                        "name": "2024_02",
+                        "color": "#02BCD4",
+                        "orderindex": 22
+                    },
+                    {
+                        "id": "0c9fce13-ecde-4af2-8487-927a3aed017b",
+                        "name": "2024_01",
+                        "color": "#02BCD4",
+                        "orderindex": 23
+                    },
+                    {
+                        "id": "03086aa4-99ab-4fc3-9cd6-32891612b961",
+                        "name": "2023_12",
+                        "color": "#ff7800",
+                        "orderindex": 24
+                    },
+                    {
+                        "id": "3a22b1d9-608b-44cf-a0c7-6a6bfcfcbc50",
+                        "name": "2023_11",
+                        "color": "#ff7800",
+                        "orderindex": 25
+                    },
+                    {
+                        "id": "e79199f1-f506-4502-9b57-a7181c8f0691",
+                        "name": "2023_10",
+                        "color": "#ff7800",
+                        "orderindex": 26
+                    },
+                    {
+                        "id": "ccfe87a4-70fe-45bc-9b62-0d9587585353",
+                        "name": "2023_09",
+                        "color": "#ff7800",
+                        "orderindex": 27
+                    },
+                    {
+                        "id": "557ae8de-197e-4d81-a434-05fcc41077c3",
+                        "name": "2023_08",
+                        "color": "#ff7800",
+                        "orderindex": 28
+                    },
+                    {
+                        "id": "11f80778-653d-427b-b9da-ba6998e0fc0f",
+                        "name": "2023_07",
+                        "color": "#ff7800",
+                        "orderindex": 29
+                    },
+                    {
+                        "id": "790498c4-2660-4559-a20f-aaf2888d629b",
+                        "name": "2023_06",
+                        "color": "#ff7800",
+                        "orderindex": 30
+                    },
+                    {
+                        "id": "82dc0de4-b940-4105-b527-1b6b0dfcfee5",
+                        "name": "2023_05",
+                        "color": "#ff7800",
+                        "orderindex": 31
+                    },
+                    {
+                        "id": "292ca0ed-b86c-46b7-a438-ae2305537272",
+                        "name": "2023_04",
+                        "color": "#ff7800",
+                        "orderindex": 32
+                    },
+                    {
+                        "id": "4bab9b5a-4240-4bed-911d-b5e0d1e90d7c",
+                        "name": "2023_03",
+                        "color": "#ff7800",
+                        "orderindex": 33
+                    },
+                    {
+                        "id": "63175f70-3cba-4a2d-9b39-50cfef1a91db",
+                        "name": "2023_02",
+                        "color": "#ff7800",
+                        "orderindex": 34
+                    },
+                    {
+                        "id": "9238664d-443b-453d-ab19-5e44cb861696",
+                        "name": "2023_01",
+                        "color": "#ff7800",
+                        "orderindex": 35
+                    },
+                    {
+                        "id": "0177545b-59be-4df7-92f3-8f176cdd21e6",
+                        "name": "2022_12",
+                        "color": "#3082B7",
+                        "orderindex": 36
+                    },
+                    {
+                        "id": "3473356f-a833-4aee-ad28-a7fe6ba9ebc3",
+                        "name": "2022_11",
+                        "color": "#3082B7",
+                        "orderindex": 37
+                    },
+                    {
+                        "id": "143baf5f-ba26-4840-bf4d-0cb543e93dff",
+                        "name": "2022_10",
+                        "color": "#3082B7",
+                        "orderindex": 38
+                    },
+                    {
+                        "id": "984b3454-6b20-4bac-b6f3-ebfe14b7e46b",
+                        "name": "2022_09",
+                        "color": "#3082B7",
+                        "orderindex": 39
+                    },
+                    {
+                        "id": "5b1c0f24-86dd-47ad-9950-c1818012745a",
+                        "name": "2022_08",
+                        "color": "#3082B7",
+                        "orderindex": 40
+                    },
+                    {
+                        "id": "13b5d8a5-13c7-40f1-b25a-25a88bb69418",
+                        "name": "2022_07",
+                        "color": "#3082B7",
+                        "orderindex": 41
+                    },
+                    {
+                        "id": "433f27e0-f5b6-4991-8849-8f2711701455",
+                        "name": "2022_06",
+                        "color": "#3082B7",
+                        "orderindex": 42
+                    },
+                    {
+                        "id": "b75e2015-b824-43e8-988f-3f4f32152bc3",
+                        "name": "2022_05",
+                        "color": "#3082B7",
+                        "orderindex": 43
+                    },
+                    {
+                        "id": "de28b2ed-e1bd-4b8e-80f1-d257d0318d69",
+                        "name": "2022_04",
+                        "color": "#3082B7",
+                        "orderindex": 44
+                    },
+                    {
+                        "id": "2299cacb-e870-405b-b088-ff8f38e5dc74",
+                        "name": "2022_03",
+                        "color": "#3082B7",
+                        "orderindex": 45
+                    },
+                    {
+                        "id": "9248e296-2529-461d-8b98-9f6f23c0ea69",
+                        "name": "2022_02",
+                        "color": "#3082B7",
+                        "orderindex": 46
+                    },
+                    {
+                        "id": "ce0e5fa7-c772-40d9-91b1-f7b4e2c32fb9",
+                        "name": "2022_01",
+                        "color": "#3082B7",
+                        "orderindex": 47
+                    },
+                    {
+                        "id": "366775c0-5ec5-49ea-8007-0568a9a929ee",
+                        "name": "2021_12",
+                        "color": "#667684",
+                        "orderindex": 48
+                    },
+                    {
+                        "id": "19e7d4b7-c81f-47db-a45b-b96d7fb45873",
+                        "name": "2021_11",
+                        "color": "#667684",
+                        "orderindex": 49
+                    },
+                    {
+                        "id": "7a1b3fb7-6df9-498e-adc5-3670543bbeaf",
+                        "name": "2021_10",
+                        "color": "#667684",
+                        "orderindex": 50
+                    },
+                    {
+                        "id": "dee24345-4e76-4430-ac0f-7f0c339c9901",
+                        "name": "2021_09",
+                        "color": "#667684",
+                        "orderindex": 51
+                    },
+                    {
+                        "id": "6a86be2f-a18d-41b2-bd2c-1ada09013a8d",
+                        "name": "2021_08",
+                        "color": "#667684",
+                        "orderindex": 52
+                    },
+                    {
+                        "id": "85a71d43-b83e-470a-939d-3659a98fe151",
+                        "name": "2021_07",
+                        "color": "#667684",
+                        "orderindex": 53
+                    },
+                    {
+                        "id": "9fc42b4a-309d-4520-95ca-45a89a2581b5",
+                        "name": "2021_06",
+                        "color": "#667684",
+                        "orderindex": 54
+                    },
+                    {
+                        "id": "a7b6e186-3bfc-4896-864e-ba405f9848b7",
+                        "name": "2021_05",
+                        "color": "#667684",
+                        "orderindex": 55
+                    },
+                    {
+                        "id": "c88bda94-c427-4db2-83dd-6575aa12b5f6",
+                        "name": "2021_04",
+                        "color": "#667684",
+                        "orderindex": 56
+                    },
+                    {
+                        "id": "c41fc4c9-43d6-4ed4-a93d-2acfd67df876",
+                        "name": "2021_03",
+                        "color": "#667684",
+                        "orderindex": 57
+                    },
+                    {
+                        "id": "5f4366a3-9080-43f0-bb9f-071fee7971f1",
+                        "name": "2021_02",
+                        "color": "#667684",
+                        "orderindex": 58
+                    },
+                    {
+                        "id": "326e69e2-e1fe-4f3d-b1a6-332178479028",
+                        "name": "2021_01",
+                        "color": "#667684",
+                        "orderindex": 59
+                    }
+                ]
+            },
+            "date_created": "1661759562211",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "bf118bd1-90bf-4e8b-af6a-a4ef137fcb65",
+            "name": "⭐️ Progress",
+            "type": "automatic_progress",
+            "type_config": {
+                "tracking": {
+                    "subtasks": true,
+                    "checklists": true,
+                    "assigned_comments": true
+                },
+                "complete_on": 3,
+                "subtask_rollup": false
+            },
+            "date_created": "1661759857457",
+            "hide_from_guests": false,
+            "value": {
+                "percent_complete": 0
+            },
+            "required": null
+        },
+        {
+            "id": "0e7f32d0-91e9-4e5b-89d1-31ef2bd0265c",
+            "name": "Files",
+            "type": "attachment",
+            "type_config": {},
+            "date_created": "1665987979435",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "29191222-377a-4443-8b2c-0cc8d189e5c7",
+            "name": "🤝 Slutdato",
+            "type": "date",
+            "type_config": {},
+            "date_created": "1661759559113",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "799ec7c6-e81e-4691-a5bd-7bf09475b815",
+            "name": "🤝 Service(s)",
+            "type": "labels",
+            "type_config": {
+                "sorting": "manual",
+                "options": [
+                    {
+                        "id": "0bdef233-9a4f-414a-8b35-b7c4bab0c13b",
+                        "label": "EM",
+                        "color": "#3397dd",
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "e1e6850e-3aec-42db-84d1-5e0d29df2ead",
+                        "label": "SEO",
+                        "color": "#ff7800",
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "5ba9c5f7-72ac-4538-ac09-af88da2950b5",
+                        "label": "PS",
+                        "color": "#0231E8",
+                        "orderindex": 2
+                    },
+                    {
+                        "id": "11ce14ac-2324-4f56-83c9-c480c86a3a39",
+                        "label": "PPC",
+                        "color": "#f9d900",
+                        "orderindex": 3
+                    },
+                    {
+                        "id": "6988af3e-9261-48df-bd44-e2bba60bddea",
+                        "label": "MarTech",
+                        "color": "#61658d",
+                        "orderindex": 4
+                    },
+                    {
+                        "id": "d53b9e0b-f380-4156-8e21-117cf4115a25",
+                        "label": "Content",
+                        "color": "#AF7E2E",
+                        "orderindex": 5
+                    },
+                    {
+                        "id": "f6061e25-62b0-4fde-85a4-2ef251394edf",
+                        "label": "CRO",
+                        "color": "#2ecd6f",
+                        "orderindex": 6
+                    },
+                    {
+                        "id": "8970d714-92af-46da-864b-3867dfb76e39",
+                        "label": "Affiliate",
+                        "color": "#1bbc9c",
+                        "orderindex": 7
+                    },
+                    {
+                        "id": "50a1fc14-b182-4c80-ad6e-65b7f5f25580",
+                        "label": "Linkbuilding",
+                        "color": "#bf55ec",
+                        "orderindex": 8
+                    },
+                    {
+                        "id": "760b9c31-350c-4560-9e9a-a30ba75fd32b",
+                        "label": "Creative",
+                        "color": "#1bbc9c",
+                        "orderindex": 9
+                    },
+                    {
+                        "id": "e98c6b3a-0df2-433a-928e-bbe1e283dcfd",
+                        "label": " CSS",
+                        "color": null,
+                        "orderindex": 10
+                    },
+                    {
+                        "id": "bd2845d8-4fc1-4b8a-9b1a-406721ff26ab",
+                        "label": " Shopping",
+                        "color": null,
+                        "orderindex": 11
+                    },
+                    {
+                        "id": "bb28a047-687f-4bed-bfab-7af4962c3021",
+                        "label": " Bing",
+                        "color": null,
+                        "orderindex": 12
+                    },
+                    {
+                        "id": "f34a4174-4f4d-4811-be3b-87e8bc472d99",
+                        "label": "Client Strategy",
+                        "color": "#AF7E2E",
+                        "orderindex": 13
+                    },
+                    {
+                        "id": "e6db202f-2b5a-42c2-aff6-b9993a34513f",
+                        "label": "Web",
+                        "color": "#667684",
+                        "orderindex": 14
+                    }
+                ]
+            },
+            "date_created": "1661759559113",
+            "hide_from_guests": false,
+            "value": [
+                "0bdef233-9a4f-414a-8b35-b7c4bab0c13b",
+                "11ce14ac-2324-4f56-83c9-c480c86a3a39",
+                "5ba9c5f7-72ac-4538-ac09-af88da2950b5",
+                "e1e6850e-3aec-42db-84d1-5e0d29df2ead"
+            ],
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "0bd3f9ef-d7a3-46c8-bac2-230e47dd8ed5",
+            "name": "🤝 Aftale type",
+            "type": "drop_down",
+            "type_config": {
+                "default": 0,
+                "placeholder": null,
+                "new_drop_down": true,
+                "options": [
+                    {
+                        "id": "cb0b1f4d-2eba-41b6-b858-b9d7addbecc7",
+                        "name": "Løbende",
+                        "color": "#02BCD4",
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "9af0b85d-6e71-4660-a4fb-e4e896dd36d5",
+                        "name": "Engangs",
+                        "color": "#E65100",
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "129c23f8-1c04-430a-9141-6774864ff2f7",
+                        "name": "Tidsbegrænset",
+                        "color": "#f9d900",
+                        "orderindex": 2
+                    }
+                ]
+            },
+            "date_created": "1666003899281",
+            "hide_from_guests": false,
+            "value": 0,
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "a0b954e3-39f6-4fa3-bf8d-a875fa3245de",
+            "name": "🤝 Opsigelsesdato",
+            "type": "date",
+            "type_config": {},
+            "date_created": "1661759559113",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "91658659-8fcc-4712-a96f-7b65925b17c7",
+            "name": "🤝 Opsigelsesgrund",
+            "type": "labels",
+            "type_config": {
+                "options": [
+                    {
+                        "id": "0b2287c7-b3e6-4873-8aa7-a4fb51b638d0",
+                        "label": "Manglende resultater",
+                        "color": "#2ecd6f",
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "d9f08c21-4474-4ea7-a40d-1cec31348242",
+                        "label": "Økonomi",
+                        "color": "#0231E8",
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "0efcd9f7-2998-4598-91b9-4dbbf438dc8c",
+                        "label": "Inhouse",
+                        "color": "#E65100",
+                        "orderindex": 2
+                    },
+                    {
+                        "id": "1e2a3755-c30a-49ca-ac26-fe21f6825760",
+                        "label": "Searchmind har opsagt",
+                        "color": "#f9d900",
+                        "orderindex": 3
+                    },
+                    {
+                        "id": "d4a09bb3-1813-489e-adb8-f8b12b8d9dc7",
+                        "label": "Skifter bureau",
+                        "color": "#f900ea",
+                        "orderindex": 4
+                    },
+                    {
+                        "id": "e5995c18-8d13-4990-be1d-0f5d242be52d",
+                        "label": "Andet",
+                        "color": "#81B1FF",
+                        "orderindex": 5
+                    },
+                    {
+                        "id": "39f44ec0-491d-4880-a839-6a50a551ac79",
+                        "label": "Manglede proaktivitet",
+                        "color": "#FF4081",
+                        "orderindex": 6
+                    }
+                ]
+            },
+            "date_created": "1668522215279",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "77f465da-0a12-42db-a824-31b78ca63ced",
+            "name": "🤝 Opsigelsesgrund - Uddybning ",
+            "type": "text",
+            "type_config": {},
+            "date_created": "1665659277902",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "91b50c4a-912f-47b9-9be9-82e4d4574b87",
+            "name": "💸 Opsalg",
+            "type": "list_relationship",
+            "type_config": {
+                "fields": [
+                    {
+                        "field": "cf_8a2ff474-ae5b-4ede-8bbc-746aab1684e4",
+                        "width": 100,
+                        "hidden": false
+                    },
+                    {
+                        "field": "cf_ae941597-a822-43dc-ba31-a2ceca31e456",
+                        "width": 100,
+                        "hidden": false
+                    },
+                    {
+                        "field": "cf_c6e25deb-ab9c-4456-a506-ebf10c4d7699",
+                        "width": 100,
+                        "hidden": false
+                    }
+                ],
+                "linked_subcategory_access": true,
+                "subcategory_inverted_name": "💸 Opsalg",
+                "subcategory_id": "211550445"
+            },
+            "date_created": "1664955257755",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "fa9684fc-ddeb-4b5e-b2d1-a453f30bb629",
+            "name": "🗃 Google Drive",
+            "type": "url",
+            "type_config": {},
+            "date_created": "1664181101078",
+            "hide_from_guests": false,
+            "value": "https://drive.google.com/drive/folders/1ZdjtyfWhLq6L9SvUxtmofYHg4JU9IrG1",
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "46e307a7-0c1b-4f6a-947c-ad74cd876dbc",
+            "name": "💻 CMS",
+            "type": "list_relationship",
+            "type_config": {
+                "fields": [],
+                "subcategory_inverted_name": "💻 CMS",
+                "subcategory_id": "380854455",
+                "linked_subcategory_access": true
+            },
+            "date_created": "1663840727113",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "f462c2b2-79fa-472d-b4a0-09d5d42ac0a1",
+            "name": "📃 Abonnement (AHLE)",
+            "type": "drop_down",
+            "type_config": {
+                "default": 0,
+                "sorting": "manual",
+                "placeholder": null,
+                "new_drop_down": true,
+                "options": [
+                    {
+                        "id": "6cdbb095-ba4a-4062-892b-4bf882d2d73d",
+                        "name": "Aktiv",
+                        "color": "#2ecd6f",
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "2e14e529-59ee-4e6c-8bc0-d339a5f2db96",
+                        "name": "Inaktiv",
+                        "color": "#e50000",
+                        "orderindex": 1
+                    }
+                ]
+            },
+            "date_created": "1663839325254",
+            "hide_from_guests": false,
+            "value": 0,
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "0652e439-5998-43c0-9000-fcbc0ed811e9",
+            "name": "📃 Abonnement Web (AHLE)",
+            "type": "drop_down",
+            "type_config": {
+                "sorting": "manual",
+                "new_drop_down": true,
+                "options": [
+                    {
+                        "id": "fbedc189-d22b-402d-a1bc-5a5528d9c547",
+                        "name": "Aktiv",
+                        "color": "#2ecd6f",
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "b2e1df59-667c-413f-bcf2-f8e8fe828f69",
+                        "name": "Inaktiv",
+                        "color": "#e50000",
+                        "orderindex": 1
+                    }
+                ]
+            },
+            "date_created": "1751399510406",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "4dfd92a0-9485-4fe1-b091-a82093ed3d3c",
+            "name": "👥 Kontaktperson",
+            "type": "list_relationship",
+            "type_config": {
+                "fields": [
+                    {
+                        "field": "cf_7d198356-158d-48a7-81ae-a2d4ff8c112f",
+                        "width": 100,
+                        "hidden": false
+                    },
+                    {
+                        "field": "cf_2694f438-407b-40b0-b84c-aa120a610df0",
+                        "width": 100,
+                        "hidden": false
+                    },
+                    {
+                        "field": "cf_12b20f31-c20d-4eff-832e-a4e1e76f5a75",
+                        "width": 100,
+                        "hidden": false,
+                        "relationship": "4dfd92a0-9485-4fe1-b091-a82093ed3d3c"
+                    }
+                ],
+                "linked_subcategory_access": true,
+                "subcategory_inverted_name": "👥 Kontaktperson",
+                "subcategory_id": "210313767"
+            },
+            "date_created": "1665496956965",
+            "hide_from_guests": false,
+            "value": [
+                {
+                    "id": "8699m8d3h",
+                    "name": "Christina Husk",
+                    "status": "Open",
+                    "color": "#656f7d",
+                    "custom_type": null,
+                    "team_id": "20450769",
+                    "deleted": false,
+                    "url": "https://app.clickup.com/t/8699m8d3h",
+                    "access": true
+                }
+            ],
+            "required": false
+        },
+        {
+            "id": "16bfe7cf-ad42-4314-bf61-1e0b8d3254f9",
+            "name": "🤝 Virksomhedstype",
+            "type": "labels",
+            "type_config": {
+                "options": [
+                    {
+                        "id": "432753fb-bc8e-428a-b383-95119b83020a",
+                        "label": "B2C",
+                        "color": "#2ecd6f",
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "ff8b4aa9-8f94-4b66-bd82-0105fafab807",
+                        "label": "B2B",
+                        "color": "#0231E8",
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "a173f0a6-7d4b-4d15-850a-0cf5b802c97d",
+                        "label": "Leadgen",
+                        "color": "#7C4DFF",
+                        "orderindex": 2
+                    },
+                    {
+                        "id": "b0a064f2-a6ba-4e95-8586-c0b4f802173e",
+                        "label": "Ecommerce",
+                        "color": "#AF7E2E",
+                        "orderindex": 3
+                    }
+                ]
+            },
+            "date_created": "1667908473422",
+            "hide_from_guests": false,
+            "value": [
+                "b0a064f2-a6ba-4e95-8586-c0b4f802173e"
+            ],
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "34969aea-0fb2-413e-8eb0-0c79fe9825ab",
+            "name": "🤝 Levetid (Mdr)",
+            "type": "formula",
+            "type_config": {
+                "simple": false,
+                "formula": "12 * (YEAR(IF(CUSTOM_FIELD_29191222_377a_4443_8b2c_0cc8d189e5c7, CUSTOM_FIELD_29191222_377a_4443_8b2c_0cc8d189e5c7, TODAY())) - YEAR(CUSTOM_FIELD_effb6ddb_c24c_447e_aa2c_b0abfdf21fc4))+ (MONTH(IF(CUSTOM_FIELD_29191222_377a_4443_8b2c_0cc8d189e5c7, CUSTOM_FIELD_29191222_377a_4443_8b2c_0cc8d189e5c7, TODAY())) - MONTH(CUSTOM_FIELD_effb6ddb_c24c_447e_aa2c_b0abfdf21fc4))+ 1",
+                "version": "1.12",
+                "reset_at": 1758887826617,
+                "is_dynamic": true,
+                "return_types": [
+                    "number",
+                    "null"
+                ],
+                "calculation_state": "ready"
+            },
+            "date_created": "1661759559113",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "5c9a58fc-7709-4b9b-964e-d55c671ab18b",
+            "name": "🤝Lead Source",
+            "type": "drop_down",
+            "type_config": {
+                "default": 0,
+                "placeholder": null,
+                "new_drop_down": true,
+                "options": [
+                    {
+                        "id": "b408ceb7-0fcb-442b-9de0-005af6744077",
+                        "name": "Canvas",
+                        "color": null,
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "e8f87e9d-1fb6-49f9-a3e2-3c636183b83a",
+                        "name": "Organic Search",
+                        "color": null,
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "d140e79f-782d-4565-a971-c5800b929308",
+                        "name": "Paid Search",
+                        "color": null,
+                        "orderindex": 2
+                    },
+                    {
+                        "id": "b3ae1ab3-df4b-4188-93fc-aa13429c10e7",
+                        "name": "Email Marketing",
+                        "color": null,
+                        "orderindex": 3
+                    },
+                    {
+                        "id": "9ca1e2f5-4867-4946-8e2a-13dea2df8d1c",
+                        "name": "Social Media",
+                        "color": null,
+                        "orderindex": 4
+                    },
+                    {
+                        "id": "b27ad350-9695-481f-b6c4-a8282d89a590",
+                        "name": "Referrals",
+                        "color": null,
+                        "orderindex": 5
+                    },
+                    {
+                        "id": "24d56812-3819-4bcd-8294-e3dcf77998ff",
+                        "name": "Other Campaigns",
+                        "color": null,
+                        "orderindex": 6
+                    },
+                    {
+                        "id": "29c84e0b-1b83-44be-b9b2-a825909d0f49",
+                        "name": "Direct Traffic",
+                        "color": null,
+                        "orderindex": 7
+                    },
+                    {
+                        "id": "cf70af49-f4fb-4aa1-a58a-fb3ae13298c3",
+                        "name": "Offline Sources",
+                        "color": null,
+                        "orderindex": 8
+                    },
+                    {
+                        "id": "8b747dc7-21e7-40ef-a458-4a9ad349e491",
+                        "name": "Paid Social",
+                        "color": null,
+                        "orderindex": 9
+                    }
+                ]
+            },
+            "date_created": "1661759559113",
+            "hide_from_guests": false,
+            "value": 0,
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "7d1d7438-a11d-41a7-9807-daf9bc682044",
+            "name": "📝 Kontrakt",
+            "type": "list_relationship",
+            "type_config": {
+                "fields": [
+                    {
+                        "field": "cf_4b522da4-46ae-4757-bd54-0776491a531b",
+                        "width": 100,
+                        "hidden": false,
+                        "relationship": "7d1d7438-a11d-41a7-9807-daf9bc682044"
+                    }
+                ],
+                "subcategory_id": "210313797",
+                "linked_subcategory_access": true,
+                "subcategory_inverted_name": "✒️ Contracts"
+            },
+            "date_created": "1663839784957",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "17676314-46be-42d1-9c3d-576b28ca0b91",
+            "name": "🤝 1.CP - Ansvarlig",
+            "type": "users",
+            "type_config": {
+                "single_user": false,
+                "include_groups": null,
+                "include_guests": false,
+                "include_team_members": false
+            },
+            "date_created": "1666691962997",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "51ed563e-4a2c-489b-9506-be385c49a354",
+            "name": "🤝 2.SEO - Ansvarlig",
+            "type": "users",
+            "type_config": {
+                "single_user": true,
+                "include_groups": null,
+                "include_guests": false,
+                "include_team_members": false
+            },
+            "date_created": "1665658137852",
+            "hide_from_guests": false,
+            "value": [
+                {
+                    "id": 49518010,
+                    "username": "Anders Kunnerup",
+                    "email": "ak@searchmind.dk",
+                    "color": "#aa2fff",
+                    "initials": "AK",
+                    "profilePicture": "https://attachments.clickup.com/profilePictures/49518010_jJT.jpg"
+                }
+            ],
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "bee4b7c5-c9d0-4808-8a4f-b00ee6df311e",
+            "name": "🤝 3.PPC - Ansvarlig",
+            "type": "users",
+            "type_config": {
+                "single_user": true,
+                "include_groups": null,
+                "include_guests": false,
+                "include_team_members": false
+            },
+            "date_created": "1665658122438",
+            "hide_from_guests": false,
+            "value": [
+                {
+                    "id": 55798746,
+                    "username": "Jacob Struve",
+                    "email": "jst@searchmind.dk",
+                    "color": "#7b68ee",
+                    "initials": "JS",
+                    "profilePicture": "https://attachments.clickup.com/profilePictures/55798746_cD3.jpg"
+                }
+            ],
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "77e13fb5-b151-402a-8658-997ccb5f2201",
+            "name": "🤝 PPC - Support",
+            "type": "users",
+            "type_config": {
+                "single_user": true,
+                "include_groups": null,
+                "include_guests": false,
+                "include_team_members": false
+            },
+            "date_created": "1667894600421",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "2df85265-d5eb-4e86-a111-5d55623851fa",
+            "name": "🤝 4.PS - Ansvarlig",
+            "type": "users",
+            "type_config": {
+                "single_user": true,
+                "include_groups": null,
+                "include_guests": false,
+                "include_team_members": false
+            },
+            "date_created": "1665658149063",
+            "hide_from_guests": false,
+            "value": [
+                {
+                    "id": 81710311,
+                    "username": "Asger Kallehauge",
+                    "email": "akal@searchmind.dk",
+                    "color": "#4466ff",
+                    "initials": "AK",
+                    "profilePicture": "https://attachments.clickup.com/profilePictures/81710311_kYQ.jpg"
+                }
+            ],
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "d17ef78a-00ce-4cf3-922e-60a59d6c4465",
+            "name": "🤝 PS - Support",
+            "type": "users",
+            "type_config": {
+                "single_user": true,
+                "include_groups": false,
+                "include_guests": false,
+                "include_team_members": false
+            },
+            "date_created": "1667894588015",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "f72c7efc-a4e0-4465-997d-8d50bbf3de0c",
+            "name": "🤝 5.Content - Ansvarlig",
+            "type": "users",
+            "type_config": {
+                "single_user": false,
+                "include_groups": null,
+                "include_guests": false,
+                "include_team_members": false
+            },
+            "date_created": "1665658159798",
+            "hide_from_guests": false,
+            "value": [
+                {
+                    "id": 43792062,
+                    "username": "Annesofie Bjørnstad",
+                    "email": "anbj@searchmind.dk",
+                    "color": "#3e2724",
+                    "initials": "AB",
+                    "profilePicture": "https://attachments.clickup.com/profilePictures/43792062_WIB.jpg"
+                }
+            ],
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "9000efbc-99d0-47fb-a909-0d32cabe29dd",
+            "name": "🤝 5.Copywriter",
+            "type": "drop_down",
+            "type_config": {
+                "sorting": "manual",
+                "new_drop_down": true,
+                "options": [
+                    {
+                        "id": "1cfc50c3-f4a1-4b5f-9ccd-031edf10e3ac",
+                        "name": "Annesofie Bjørnstad",
+                        "color": "#E65100",
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "b554770a-0233-430b-9b5c-3c5faf873da6",
+                        "name": "Linnea (Freelancer)",
+                        "color": "#9b59b6",
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "3b49fd06-e46a-409d-bf9f-ef3059fdbf1c",
+                        "name": "Maja Gammelgaard Poulsen",
+                        "color": "#77E4AE",
+                        "orderindex": 2
+                    },
+                    {
+                        "id": "fa0b89de-df0f-4573-8610-b3dd4f943479",
+                        "name": "Ida Boraghi",
+                        "color": "#C89679",
+                        "orderindex": 3
+                    }
+                ]
+            },
+            "date_created": "1669296443247",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "59292b69-bbe0-4ba1-95da-22fbd60558c8",
+            "name": "🤝 6.Creative - Ansvarlig",
+            "type": "users",
+            "type_config": {
+                "single_user": false,
+                "include_groups": null,
+                "include_guests": false,
+                "include_team_members": false
+            },
+            "date_created": "1665658173084",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "55b3e92d-5972-4246-8160-73d7ba04401a",
+            "name": "🤝 7.EM - Ansvarlig",
+            "type": "users",
+            "type_config": {
+                "single_user": false,
+                "include_groups": null,
+                "include_guests": false,
+                "include_team_members": false
+            },
+            "date_created": "1665658182799",
+            "hide_from_guests": false,
+            "value": [
+                {
+                    "id": 55798762,
+                    "username": "Maria Østergaard",
+                    "email": "moe@searchmind.dk",
+                    "color": "#622aea",
+                    "initials": "MØ",
+                    "profilePicture": "https://attachments.clickup.com/profilePictures/55798762_H3W.jpg"
+                }
+            ],
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "ea6f029e-e1f3-4253-aa84-e545e4249a19",
+            "name": "🤝 8. MarTech - Ansvarlig",
+            "type": "users",
+            "type_config": {
+                "single_user": true,
+                "include_groups": false,
+                "include_guests": true,
+                "include_team_members": false
+            },
+            "date_created": "1738076245669",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "43a2824b-a988-45ad-b226-0050bcd8fc91",
+            "name": "🤝 9. Web - Ansvarlig",
+            "type": "users",
+            "type_config": {
+                "single_user": true,
+                "include_groups": false,
+                "include_guests": true,
+                "include_team_members": false
+            },
+            "date_created": "1738076293060",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "b4ba7e92-7293-487d-a7e3-3f6d7ac01135",
+            "name": "🤝 Sælger",
+            "type": "drop_down",
+            "type_config": {
+                "sorting": "manual",
+                "new_drop_down": true,
+                "options": [
+                    {
+                        "id": "8a89f3be-ac63-4be4-a113-e3a17d5af719",
+                        "name": "Nicholai Bach",
+                        "color": null,
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "ebe365c8-341c-442f-943b-d973696700d1",
+                        "name": "Jan Kehlet Schou",
+                        "color": "#fff",
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "a9f741d7-4bd8-4ca1-a0d8-b79536df2003",
+                        "name": "Brian Ahle",
+                        "color": null,
+                        "orderindex": 2
+                    },
+                    {
+                        "id": "50cebb44-6ba8-46f7-a2dd-948e3d29deed",
+                        "name": "Amalie Adelgaard",
+                        "color": null,
+                        "orderindex": 3
+                    },
+                    {
+                        "id": "5b32fca2-712d-4eac-99ff-c9503d8a7dbd",
+                        "name": "Aske Warming",
+                        "color": null,
+                        "orderindex": 4
+                    },
+                    {
+                        "id": "ad5d2dbe-9ea1-4099-8685-ac13adc901f0",
+                        "name": "Younes Diab",
+                        "color": null,
+                        "orderindex": 5
+                    },
+                    {
+                        "id": "00d1d8aa-6f98-4863-8286-4d900b83e3da",
+                        "name": "Frederikke Knudsen",
+                        "color": null,
+                        "orderindex": 6
+                    },
+                    {
+                        "id": "fc17422f-946e-44e4-917f-dafb2c082837",
+                        "name": "Cejanah Vijayakanthan",
+                        "color": null,
+                        "orderindex": 7
+                    },
+                    {
+                        "id": "ce9b0fd3-d85a-4463-a121-21fbdfbfab3c",
+                        "name": "Simon Pagh Kristensen",
+                        "color": null,
+                        "orderindex": 8
+                    },
+                    {
+                        "id": "42bb7b7e-ea86-4243-8d75-a192fbed3cb9",
+                        "name": "Nicolai Damgaard",
+                        "color": null,
+                        "orderindex": 9
+                    },
+                    {
+                        "id": "aaf7e8c7-9ef6-4ada-ac52-73d0205aa0d0",
+                        "name": "Nanna Gøbel",
+                        "color": null,
+                        "orderindex": 10
+                    },
+                    {
+                        "id": "68d6ff28-fc85-40ff-9138-35085786bbaf",
+                        "name": "Sofia Pari Færk",
+                        "color": null,
+                        "orderindex": 11
+                    },
+                    {
+                        "id": "392ccbbe-e3c9-44f2-97b5-2f48f3128fc3",
+                        "name": "Anders Bjerre",
+                        "color": null,
+                        "orderindex": 12
+                    },
+                    {
+                        "id": "cd8a4f60-1660-4de1-babf-f88a71dfc588",
+                        "name": "Line Bork Nielsen",
+                        "color": null,
+                        "orderindex": 13
+                    },
+                    {
+                        "id": "80669081-47ec-4ff3-b0b3-825ad4184607",
+                        "name": "Benjamin Yazdandoust",
+                        "color": null,
+                        "orderindex": 14
+                    },
+                    {
+                        "id": "95c824d6-8421-487d-919d-cec439670b11",
+                        "name": "Anders Fabricius Thomsen",
+                        "color": null,
+                        "orderindex": 15
+                    },
+                    {
+                        "id": "79f706ed-ec3d-4628-8f4b-2d395a2d4eba",
+                        "name": "Cæcilie Salomonsen",
+                        "color": null,
+                        "orderindex": 16
+                    },
+                    {
+                        "id": "0b37a80a-8277-4dd5-81a8-389a0cd314b8",
+                        "name": "Kasper Olesen",
+                        "color": null,
+                        "orderindex": 17
+                    },
+                    {
+                        "id": "84ad551f-d808-4bde-b680-f6327e2c7d42",
+                        "name": "Martin Hansen",
+                        "color": null,
+                        "orderindex": 18
+                    },
+                    {
+                        "id": "5324eee3-3e11-4d93-a1fd-8f059bbba990",
+                        "name": "Kasper Mathiesen",
+                        "color": null,
+                        "orderindex": 19
+                    },
+                    {
+                        "id": "ce186340-be9c-4472-ad8b-e9b0111bd2d3",
+                        "name": "Martin Mogensen",
+                        "color": null,
+                        "orderindex": 20
+                    },
+                    {
+                        "id": "739109a8-fd3e-47ea-978c-6d1439f2f0f8",
+                        "name": "Birthe Skov Andersen",
+                        "color": null,
+                        "orderindex": 21
+                    },
+                    {
+                        "id": "58fb1e91-bd99-4c2f-81f4-ff734c7a8d3d",
+                        "name": "Steffan Lykke Holm",
+                        "color": null,
+                        "orderindex": 22
+                    },
+                    {
+                        "id": "ad832a8b-f0b6-47ba-b81b-7ea4154d5dbc",
+                        "name": "Thomas Høy",
+                        "color": null,
+                        "orderindex": 23
+                    },
+                    {
+                        "id": "d46ef9f7-23f4-4750-b04a-21fe91c3e14d",
+                        "name": "Jonas Sandbjerg Hansen",
+                        "color": "#fff",
+                        "orderindex": 24
+                    },
+                    {
+                        "id": "f93f69c3-63a5-4566-bb18-d5eefbd60053",
+                        "name": "Teameffort",
+                        "color": "#C619FC",
+                        "orderindex": 25
+                    },
+                    {
+                        "id": "139f93c8-c898-42fa-99c6-c6b932afc87b",
+                        "name": "Josephine Manthai",
+                        "color": null,
+                        "orderindex": 26
+                    },
+                    {
+                        "id": "80ea9cd0-fc5b-4a5a-8f69-6420f55bbd71",
+                        "name": "Christian Skov Astrup",
+                        "color": null,
+                        "orderindex": 27
+                    },
+                    {
+                        "id": "6dc56b9b-89f2-46d1-a792-60ef9a2bd998",
+                        "name": "Anna Sophie Fokdal Christensen",
+                        "color": "#40F887",
+                        "orderindex": 28
+                    },
+                    {
+                        "id": "37092768-2a61-46a0-b740-d1f8c4ed6520",
+                        "name": "Jacob Struve",
+                        "color": "#6FD764",
+                        "orderindex": 29
+                    },
+                    {
+                        "id": "f075212a-3efb-45e8-b19e-668aaeed7445",
+                        "name": "Nikolaj Ølgaard",
+                        "color": "#449CC0",
+                        "orderindex": 30
+                    },
+                    {
+                        "id": "fb94216c-696a-49bb-afa1-97acd9bc11c5",
+                        "name": "Karsten Hansen",
+                        "color": "#EF1044",
+                        "orderindex": 31
+                    },
+                    {
+                        "id": "19bd4da9-7b4b-4308-8f02-d7ecaf8ee8f4",
+                        "name": "Anders Schneider",
+                        "color": "#A0EA80",
+                        "orderindex": 32
+                    },
+                    {
+                        "id": "59cf6412-2492-4cd3-a74e-ec14c023d9ed",
+                        "name": "Magnus Rønnest France",
+                        "color": null,
+                        "orderindex": 33
+                    },
+                    {
+                        "id": "4f4c40e9-9c67-4a4e-abc1-6662cceab248",
+                        "name": "Tobias Rønn",
+                        "color": "#26E788",
+                        "orderindex": 34
+                    },
+                    {
+                        "id": "2cdef54b-39d8-4651-8f50-95a93287f5c5",
+                        "name": "Asger Kallehauge",
+                        "color": "#D11587",
+                        "orderindex": 35
+                    },
+                    {
+                        "id": "6f1d3c15-c5d8-45f1-9ccc-c72e14461b8c",
+                        "name": "Jakob Bøgh",
+                        "color": "#913CD3",
+                        "orderindex": 36
+                    }
+                ]
+            },
+            "date_created": "1665659654517",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "902b157f-a2fc-428d-b2c1-af70561a91f2",
+            "name": "🤝 Kundenoter",
+            "type": "text",
+            "type_config": {},
+            "date_created": "1667296622612",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "ca36706e-fd33-443c-98ae-e0d9d79bdf10",
+            "name": "Andre domæner",
+            "type": "tasks",
+            "type_config": {
+                "fields": []
+            },
+            "date_created": "1677751794886",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "18042a7e-baef-4422-843a-78271d2a8e99",
+            "name": "⭐ CVR",
+            "type": "short_text",
+            "type_config": {},
+            "date_created": "1702557931812",
+            "hide_from_guests": false,
+            "value": "16835048",
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "8b643716-b815-4e61-bf4f-44817a224280",
+            "name": "⭐ Virksomhedsnavn",
+            "type": "short_text",
+            "type_config": {},
+            "date_created": "1718880315203",
+            "hide_from_guests": false,
+            "value": "nu-denmark.dk",
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "939d8fcd-f47e-4629-94f0-8cfafa1de8bb",
+            "name": "💡 Kundeinfo",
+            "type": "list_relationship",
+            "type_config": {
+                "fields": [
+                    {
+                        "field": "cf_eef63082-0927-4945-a4ab-a3c53a6415c6",
+                        "width": 100,
+                        "hidden": false,
+                        "relationship": "939d8fcd-f47e-4629-94f0-8cfafa1de8bb"
+                    }
+                ],
+                "subcategory_id": "901201046268",
+                "linked_subcategory_access": true,
+                "subcategory_inverted_name": "💡 Kundeinfo"
+            },
+            "date_created": "1719215122956",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "c2d498b7-ba58-45fe-8c93-815a233731a9",
+            "name": "💰 CLV",
+            "type": "formula",
+            "type_config": {
+                "simple": true,
+                "formula": "CUSTOM_FIELD_333d5c10_27c3_4ebc_bb71_33c68934f753 * CUSTOM_FIELD_34969aea_0fb2_413e_8eb0_0c79fe9825ab",
+                "version": "1.12",
+                "reset_at": 1758887827189,
+                "is_dynamic": true,
+                "return_types": [
+                    "number",
+                    "null"
+                ],
+                "calculation_state": "ready"
+            },
+            "date_created": "1732180481242",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "d88ea01e-f07c-4688-9475-4bc929f2d209",
+            "name": "💸 Budget Manager",
+            "type": "list_relationship",
+            "type_config": {
+                "fields": [
+                    {
+                        "name": "⭐️ Client Lead",
+                        "field": "cf_28b06356-6f19-4633-bfa4-416c150a562c",
+                        "width": 100,
+                        "hidden": false
+                    },
+                    {
+                        "name": "💰 MRR",
+                        "field": "cf_333d5c10-27c3-4ebc-bb71-33c68934f753",
+                        "width": 100,
+                        "hidden": false
+                    },
+                    {
+                        "name": "🤝 2.SEO - Ansvarlig",
+                        "field": "cf_51ed563e-4a2c-489b-9506-be385c49a354",
+                        "width": 100,
+                        "hidden": false
+                    }
+                ],
+                "subcategory_id": "211128994",
+                "linked_subcategory_access": true,
+                "subcategory_inverted_name": "💸 Budget Manager"
+            },
+            "date_created": "1666185477926",
+            "hide_from_guests": false,
+            "value": [
+                {
+                    "id": "869ag9kay",
+                    "name": "nu-denmark.dk - Budget - 2025_10",
+                    "status": "aktiv",
+                    "color": "#4466ff",
+                    "custom_type": null,
+                    "team_id": "20450769",
+                    "deleted": false,
+                    "url": "https://app.clickup.com/t/869ag9kay",
+                    "access": true
+                },
+                {
+                    "id": "869a6mjrc",
+                    "name": "nu-denmark.dk - Budget - 2025_09",
+                    "status": "aktiv",
+                    "color": "#4466ff",
+                    "custom_type": null,
+                    "team_id": "20450769",
+                    "deleted": false,
+                    "url": "https://app.clickup.com/t/869a6mjrc",
+                    "access": true
+                },
+                {
+                    "id": "869a163e9",
+                    "name": "nu-denmark.dk - Budget - 2025_08",
+                    "status": "aktiv",
+                    "color": "#4466ff",
+                    "custom_type": null,
+                    "team_id": "20450769",
+                    "deleted": false,
+                    "url": "https://app.clickup.com/t/869a163e9",
+                    "access": true
+                }
+            ],
+            "required": false
+        },
+        {
+            "id": "0c48b349-7e75-45b8-b2cf-958cf44c4a7d",
+            "name": "📢 NPS",
+            "type": "list_relationship",
+            "type_config": {
+                "fields": [
+                    {
+                        "field": "cf_e09cb0a5-055e-4d2d-a865-852a47ecc4e8",
+                        "width": 400,
+                        "hidden": false
+                    },
+                    {
+                        "field": "dateCreated",
+                        "width": 100,
+                        "hidden": false
+                    }
+                ],
+                "linked_subcategory_access": true,
+                "subcategory_inverted_name": "📢 NPS",
+                "subcategory_id": "223619284"
+            },
+            "date_created": "1678358108302",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "28b06356-6f19-4633-bfa4-416c150a562c",
+            "name": "⭐️ Client Lead",
+            "type": "drop_down",
+            "type_config": {
+                "sorting": "manual",
+                "new_drop_down": true,
+                "options": [
+                    {
+                        "id": "4b08a29f-519a-4bb6-a88a-79270d9bf3a7",
+                        "name": "Martin Hansen",
+                        "color": "#800000",
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "6ef12cb6-13ec-477e-8d77-1262d3efe999",
+                        "name": "Cæcilie Salomonsen",
+                        "color": "#e50000",
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "c444271b-2837-4e61-ad50-0e4ab2094d3b",
+                        "name": "Simon Pagh Kristensen",
+                        "color": "#FF4081",
+                        "orderindex": 2
+                    },
+                    {
+                        "id": "3d6bd0bb-926e-4e28-b716-8ae46fd42eb3",
+                        "name": "Brian Ahle",
+                        "color": "#FF7FAB",
+                        "orderindex": 3
+                    },
+                    {
+                        "id": "83c6d117-cdb0-4aeb-bd7d-6d370eb4a915",
+                        "name": "Anders Fabricius Thomsen",
+                        "color": "#f900ea",
+                        "orderindex": 4
+                    },
+                    {
+                        "id": "0570bb13-eb87-4d3d-a6ce-a81e63cf95dd",
+                        "name": "Sofia Færk",
+                        "color": "#EA80FC",
+                        "orderindex": 5
+                    },
+                    {
+                        "id": "fd28aa97-ad95-4a53-b46f-afaec1ba2431",
+                        "name": "Amalie Adelgaard",
+                        "color": "#bf55ec",
+                        "orderindex": 6
+                    },
+                    {
+                        "id": "c279a1b8-dd12-47cf-97c2-ce8871cbe089",
+                        "name": "Lotte Kildegaard",
+                        "color": "#1bbc9c",
+                        "orderindex": 7
+                    },
+                    {
+                        "id": "4e9b8bb0-b39c-45e7-8469-317e0cb7e2f6",
+                        "name": "Frederikke Knudsen",
+                        "color": "#fff",
+                        "orderindex": 8
+                    },
+                    {
+                        "id": "765b61a4-5398-4a9b-b4ef-fdfbbff0f50d",
+                        "name": "Cejanah Luxmy",
+                        "color": "#fff",
+                        "orderindex": 9
+                    },
+                    {
+                        "id": "5561cc5c-a1cc-4cdc-ad69-3212f1c6fe6d",
+                        "name": "Aske Warming",
+                        "color": "#7C4DFF",
+                        "orderindex": 10
+                    },
+                    {
+                        "id": "3ee200ff-4e8a-4703-8bbe-24815e1b912e",
+                        "name": "Kasper Olesen",
+                        "color": "#0231E8",
+                        "orderindex": 11
+                    },
+                    {
+                        "id": "994a320e-81c7-40c9-87c5-0beac82f7643",
+                        "name": "Nicolai Damgaard",
+                        "color": "#81B1FF",
+                        "orderindex": 12
+                    },
+                    {
+                        "id": "7295511c-46c7-4562-84bc-1a321d5d54f0",
+                        "name": "Annesofie Bjørnstad",
+                        "color": "#3397dd",
+                        "orderindex": 13
+                    },
+                    {
+                        "id": "7f928db1-3c4e-46a7-8208-0aca2f6a19ed",
+                        "name": "Line Bork Nielsen",
+                        "color": "#b5bcc2",
+                        "orderindex": 14
+                    },
+                    {
+                        "id": "7d4ec9cc-c0a6-4e54-91e9-d882beb5ed14",
+                        "name": "Nanna Gøbel",
+                        "color": "#04A9F4",
+                        "orderindex": 15
+                    },
+                    {
+                        "id": "3560a930-7fee-4e64-93ed-3260ac7e2061",
+                        "name": "Jakob Kaad",
+                        "color": "#fff",
+                        "orderindex": 16
+                    },
+                    {
+                        "id": "40a0a7b0-1b3d-44c9-9357-66e339b080d1",
+                        "name": "Magnus France",
+                        "color": "#0231E8",
+                        "orderindex": 17
+                    },
+                    {
+                        "id": "3b4d9329-150b-450b-9912-214203ec5885",
+                        "name": "Anna Sophie Fokdal Christensen",
+                        "color": "#1bbc9c",
+                        "orderindex": 18
+                    },
+                    {
+                        "id": "8b250108-0f61-423e-9ed4-135f3226692d",
+                        "name": "Karsten Hansen",
+                        "color": "#2ecd6f",
+                        "orderindex": 19
+                    },
+                    {
+                        "id": "d32542eb-352a-4d80-a465-e9f45f04e152",
+                        "name": "Jonas Sandbjerg Hansen",
+                        "color": "#f9d900",
+                        "orderindex": 20
+                    },
+                    {
+                        "id": "29c9eca9-c224-4a28-887b-0005765098e5",
+                        "name": "Linnea Harken",
+                        "color": "#AF7E2E",
+                        "orderindex": 21
+                    },
+                    {
+                        "id": "c50dd309-adf2-486a-870b-6def23b4dacd",
+                        "name": "Alexander Achenza",
+                        "color": "#ff7800",
+                        "orderindex": 22
+                    },
+                    {
+                        "id": "6a03b555-b5bc-4751-9dfe-bbdc7ee01715",
+                        "name": "Anders Kunnerup",
+                        "color": "#E65100",
+                        "orderindex": 23
+                    },
+                    {
+                        "id": "8cae371c-f68c-4afb-af1b-4d621b501fb9",
+                        "name": "Andreas Seiling Petersen",
+                        "color": "#667684",
+                        "orderindex": 24
+                    },
+                    {
+                        "id": "eb7e7c0c-a19b-4795-b1f6-1ee72af7a518",
+                        "name": "Rasmus Mikkelsen",
+                        "color": "#4ed06e",
+                        "orderindex": 25
+                    },
+                    {
+                        "id": "c9b8ebdf-61d7-4bfe-9b1e-98f9e02b00ea",
+                        "name": "Anders Bisgaard",
+                        "color": "#13568f",
+                        "orderindex": 26
+                    },
+                    {
+                        "id": "a0df7aff-ab31-4799-9ca3-5568bc56ced1",
+                        "name": "Sophus Tejlgaard",
+                        "color": "#7652ed",
+                        "orderindex": 27
+                    },
+                    {
+                        "id": "ae46ad76-ec8c-4748-8457-524ff842fc62",
+                        "name": "Rasmus Sahlholdt",
+                        "color": "#c22883",
+                        "orderindex": 28
+                    },
+                    {
+                        "id": "06d56d54-c189-4782-93ff-dae152717cdc",
+                        "name": "Maria Østergaard",
+                        "color": "#8da51f",
+                        "orderindex": 29
+                    },
+                    {
+                        "id": "1dcd2a63-237f-480f-aca1-7d2be6202e0f",
+                        "name": "Anders Schneider",
+                        "color": "#38047a",
+                        "orderindex": 30
+                    },
+                    {
+                        "id": "80345193-d3a9-4888-8acb-ac776f94f574",
+                        "name": "Nicolai Jensen",
+                        "color": "#5f6603",
+                        "orderindex": 31
+                    },
+                    {
+                        "id": "e9170c31-5f57-45f9-b3aa-dbc471758b96",
+                        "name": "Mette Pej Stensballe",
+                        "color": "#210D39",
+                        "orderindex": 32
+                    },
+                    {
+                        "id": "439ddd89-0001-4336-a5ec-6593211ee791",
+                        "name": "Simon Østergaard",
+                        "color": "#108d29",
+                        "orderindex": 33
+                    },
+                    {
+                        "id": "b58d4475-fff5-4f2d-bd76-d350ebb2c5b2",
+                        "name": "Jacob Struve",
+                        "color": "#541313",
+                        "orderindex": 34
+                    },
+                    {
+                        "id": "a3bc6409-58a7-457a-9239-c4e304e9aa81",
+                        "name": "Line Pihl",
+                        "color": "#44d496",
+                        "orderindex": 35
+                    },
+                    {
+                        "id": "c383cf72-09e2-4cdb-be29-9c28936ef892",
+                        "name": "Christian Grøtner",
+                        "color": "#DF423B",
+                        "orderindex": 36
+                    },
+                    {
+                        "id": "7c6b9648-8aa7-4fb8-87df-f41878f5c913",
+                        "name": "Jakob Bøgh",
+                        "color": "#3082B7",
+                        "orderindex": 37
+                    },
+                    {
+                        "id": "006c9b3a-d79f-4935-ab99-b77ff4d1ea3f",
+                        "name": "Asger Kallehauge",
+                        "color": "#89E6D6",
+                        "orderindex": 38
+                    },
+                    {
+                        "id": "5a197d71-5458-4db7-ad43-42d574a51738",
+                        "name": "Oskar Sylvest",
+                        "color": "#9255B1",
+                        "orderindex": 39
+                    },
+                    {
+                        "id": "80205c24-f216-43e3-8e20-a9d22802fd18",
+                        "name": "Nikolaj Ølgaard",
+                        "color": "#7665c0",
+                        "orderindex": 40
+                    },
+                    {
+                        "id": "1889248b-7ad5-4fde-ac84-ff8bd0db4f95",
+                        "name": "Nicoline Tordrup Lage",
+                        "color": "#FB8958",
+                        "orderindex": 41
+                    }
+                ]
+            },
+            "date_created": "1661759562211",
+            "hide_from_guests": false,
+            "value": 3,
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "333d5c10-27c3-4ebc-bb71-33c68934f753",
+            "name": "💰 Marketing - MRR",
+            "type": "formula",
+            "type_config": {
+                "simple": false,
+                "formula": "SUM(CUSTOM_FIELD_72d633a0_9a5c_42cc_9f4b_c7de604ff00d,CUSTOM_FIELD_094bc2fe_f8e9_4942_ba1d_29d52ce18f7e)",
+                "version": "1.12",
+                "reset_at": 1750922080867,
+                "is_dynamic": false,
+                "return_types": [
+                    "number",
+                    "null"
+                ],
+                "calculation_state": "ready"
+            },
+            "date_created": "1667205050955",
+            "hide_from_guests": false,
+            "value": "40000",
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "72d633a0-9a5c-42cc-9f4b-c7de604ff00d",
+            "name": "💰 Marketing - Start MRR",
+            "type": "currency",
+            "type_config": {
+                "default": null,
+                "precision": 2,
+                "currency_type": "DKK"
+            },
+            "date_created": "1663839211746",
+            "hide_from_guests": false,
+            "value": "40000",
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "094bc2fe-f8e9-4942-ba1d-29d52ce18f7e",
+            "name": "💰 Marketing - Opsalg MRR",
+            "type": "currency",
+            "type_config": {
+                "default": null,
+                "precision": 2,
+                "currency_type": "DKK"
+            },
+            "date_created": "1665482992048",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "973dd24d-2def-4422-ac11-539daf280443",
+            "name": "💰 Marketing - Opstartspris",
+            "type": "currency",
+            "type_config": {
+                "default": null,
+                "precision": 2,
+                "currency_type": "DKK"
+            },
+            "date_created": "1663839226367",
+            "hide_from_guests": false,
+            "value": "50000",
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "cb084c33-826b-4e45-8b23-25add027a7b3",
+            "name": "💰 Web - MRR",
+            "type": "currency",
+            "type_config": {
+                "precision": 2,
+                "currency_type": "DKK"
+            },
+            "date_created": "1748244545923",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "4f2a0d67-6bab-44d4-86d4-b8c97d3e4be0",
+            "name": "💰 Web - Engangspris",
+            "type": "currency",
+            "type_config": {
+                "precision": 2,
+                "currency_type": "DKK"
+            },
+            "date_created": "1748244448678",
+            "hide_from_guests": false,
+            "required": false
+        },
+        {
+            "id": "5e6888c3-576e-41aa-b205-906555dd3e31",
+            "name": "💰 Web - Opsalg",
+            "type": "currency",
+            "type_config": {
+                "precision": 2,
+                "currency_type": "DKK"
+            },
+            "date_created": "1750921590458",
+            "hide_from_guests": true,
+            "required": false
+        },
+        {
+            "id": "09ea16ef-e1ac-4b34-b302-f5893b6fd19b",
+            "name": "💰 Web - ARR Opstartsdato",
+            "type": "date",
+            "type_config": {},
+            "date_created": "1750921784469",
+            "hide_from_guests": true,
+            "required": false
+        },
+        {
+            "id": "d67f1403-0fcd-45b8-a455-ac2740ab2265",
+            "name": "🤝 Status",
+            "type": "drop_down",
+            "type_config": {
+                "default": 0,
+                "placeholder": null,
+                "new_drop_down": true,
+                "options": [
+                    {
+                        "id": "446deec0-5762-453f-80b1-145be8f51c8f",
+                        "name": "Aktiv",
+                        "color": "#059c75",
+                        "orderindex": 0
+                    },
+                    {
+                        "id": "b8d50e8b-0582-4de2-85de-ec56c2ec230a",
+                        "name": "Inaktiv",
+                        "color": "#434a50",
+                        "orderindex": 1
+                    },
+                    {
+                        "id": "d5d5563c-b03b-4e8c-b4e0-7a2064a22d6d",
+                        "name": "Pause",
+                        "color": "#ff7800",
+                        "orderindex": 2
+                    },
+                    {
+                        "id": "32b91917-01b4-4863-a0df-e40cbd9e91e0",
+                        "name": "Winback",
+                        "color": "#7C4DFF",
+                        "orderindex": 3
+                    }
+                ]
+            },
+            "date_created": "1661759559113",
+            "hide_from_guests": false,
+            "value": 0,
+            "value_richtext": null,
+            "required": false
+        },
+        {
+            "id": "effb6ddb-c24c-447e-aa2c-b0abfdf21fc4",
+            "name": "🤝 Startdato",
+            "type": "date",
+            "type_config": {},
+            "date_created": "1661759559113",
+            "hide_from_guests": false,
+            "value": "1754013600000",
+            "value_richtext": null,
+            "required": false
+        }
+    ],
+    "dependencies": [],
+    "linked_tasks": [],
+    "locations": [],
+    "team_id": "20450769",
+    "url": "https://app.clickup.com/t/8699m8d8y",
+    "sharing": {
+        "public": false,
+        "public_share_expires_on": null,
+        "public_fields": [
+            "assignees",
+            "priority",
+            "due_date",
+            "content",
+            "comments",
+            "attachments",
+            "customFields",
+            "subtasks",
+            "tags",
+            "checklists",
+            "coverimage"
+        ],
+        "token": null,
+        "seo_optimized": false
+    },
+    "permission_level": "create",
+    "list": {
+        "id": "210313781",
+        "name": "🤝 Account Dashboard",
+        "access": true
+    },
+    "project": {
+        "id": "114575057",
+        "name": "hidden",
+        "hidden": true,
+        "access": true
+    },
+    "folder": {
+        "id": "114575057",
+        "name": "hidden",
+        "hidden": true,
+        "access": true
+    },
+    "space": {
+        "id": "48599244"
+    },
+    "attachments": []
+}

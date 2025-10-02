@@ -8,7 +8,6 @@ export default async function ProtectedLayout({ children }) {
     try {
         session = await getServerSession(authOptions);
         
-        // Log session existence regardless of environment
         console.log("Protected layout - session exists:", !!session);
     } catch (error) {
         console.error("Error retrieving session:", error);

@@ -22,12 +22,10 @@ export default function DashboardCharts({
         hue4: "#9BABE1",
     };
 
-    // Revenue chart data setup - Toggle between YTD and Period
     const revenueChartData = useMemo(() => {
         const sourceData = revenueViewMode === "YTD" ? monthlyYTDData : validChartData;
         const compData = revenueViewMode === "YTD" ? monthlyYTDComparisonData : comparisonData;
 
-        // Format labels based on view mode
         const labels = sourceData.map((row) => revenueViewMode === "YTD" ? formatMonthLabel(row.date) : row.date);
 
         return {
@@ -52,18 +50,16 @@ export default function DashboardCharts({
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
-                    borderDash: [5, 5], // Dashed line for comparison
+                    borderDash: [5, 5],
                 },
             ],
         };
     }, [revenueViewMode, monthlyYTDData, validChartData, monthlyYTDComparisonData, comparisonData, colors, formatMonthLabel, comparison]);
 
-    // AOV chart data setup - Toggle between YTD and Period
     const aovChartData = useMemo(() => {
         const sourceData = aovViewMode === "YTD" ? monthlyYTDData : validChartData;
         const compData = aovViewMode === "YTD" ? monthlyYTDComparisonData : comparisonData;
 
-        // Format labels based on view mode
         const labels = sourceData.map((row) => aovViewMode === "YTD" ? formatMonthLabel(row.date) : row.date);
 
         return {
@@ -93,13 +89,12 @@ export default function DashboardCharts({
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
-                    borderDash: [5, 5], // Dashed line for comparison
+                    borderDash: [5, 5],
                 },
             ],
         };
     }, [aovViewMode, monthlyYTDData, monthlyYTDComparisonData, validChartData, comparisonData, colors, comparison, formatMonthLabel, formatComparisonDate]);
 
-    // Spend allocation pie chart
     const spendAllocationChartData = {
         labels: ["Google Ads", "Meta"],
         datasets: [
@@ -113,9 +108,7 @@ export default function DashboardCharts({
         ],
     };
 
-    // Modified sessions chart data to display correctly with horizontal bar chart
     const sessionsChartData = useMemo(() => {
-        // Sort entries by session count (descending)
         const entries = Object.entries(currentMetrics.channel_sessions || {})
             .sort((a, b) => b[1] - a[1]);
 
@@ -145,12 +138,10 @@ export default function DashboardCharts({
         };
     }, [currentMetrics.channel_sessions, colors]);
 
-    // Spend allocation line chart - Toggle between YTD and Period
     const spendAllocationLineChartData = useMemo(() => {
         const sourceData = spendViewMode === "YTD" ? monthlyYTDData : validChartData;
         const compData = spendViewMode === "YTD" ? monthlyYTDComparisonData : comparisonData;
 
-        // Format labels based on view mode
         const labels = sourceData.map((row) => spendViewMode === "YTD" ? formatMonthLabel(row.date) : row.date);
 
         return {
@@ -185,7 +176,7 @@ export default function DashboardCharts({
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
-                    borderDash: [5, 5], // Dashed line for comparison
+                    borderDash: [5, 5],
                 },
                 {
                     label: `Meta (${comparison})${spendViewMode === "YTD" ? " (YTD)" : ""}`,
@@ -196,19 +187,17 @@ export default function DashboardCharts({
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
-                    borderDash: [5, 5], // Dashed line for comparison
+                    borderDash: [5, 5],
                 },
             ],
         };
     }, [spendViewMode, monthlyYTDData, validChartData, monthlyYTDComparisonData, comparisonData, colors, formatMonthLabel, comparison]);
 
-    // Chart options
     const getChartOptions = (viewMode) => {
         return {
             maintainAspectRatio: false,
             scales: {
                 x: {
-                    // Use categorical scale for YTD mode, time scale for Period mode
                     type: viewMode === "YTD" ? "category" : "time",
                     time: viewMode === "YTD" ? undefined : { unit: "day" },
                     grid: { display: false },
@@ -278,9 +267,8 @@ export default function DashboardCharts({
         responsive: true,
     };
 
-    // Updated bar chart options for horizontal display
     const barChartOptions = {
-        indexAxis: 'y', // This makes the bars horizontal
+        indexAxis: 'y',
         maintainAspectRatio: false,
         scales: {
             x: {
@@ -326,14 +314,13 @@ export default function DashboardCharts({
                 anchor: "end",
                 align: "start",
                 display: function (context) {
-                    return context.dataset.data[context.dataIndex] > 500; // Only show labels for values > 500
+                    return context.dataset.data[context.dataIndex] > 500;
                 },
             },
         },
         responsive: true,
     };
 
-    // Chart components for mobile carousel
     const chartComponents = [
         {
             title: "Revenue",
@@ -361,7 +348,6 @@ export default function DashboardCharts({
         }
     ];
 
-    // Navigation for chart carousel
     const navigateChart = (direction) => {
         if (direction === 'next') {
             setActiveChartIndex((prev) =>
@@ -374,7 +360,6 @@ export default function DashboardCharts({
         }
     };
 
-    // Toggle view mode button component
     const ViewModeToggle = ({ viewMode, setViewMode }) => (
         <div className="flex items-center">
             <button

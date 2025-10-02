@@ -8,7 +8,6 @@ export async function PUT(req) {
     try {
         const session = await getServerSession(authOptions);
 
-        // Check if user is authenticated
         if (!session) {
             return new Response(JSON.stringify({ message: "Unauthorized" }), {
                 status: 401,
@@ -36,9 +35,7 @@ export async function PUT(req) {
             });
         }
 
-        // For password change
         if (currentPassword && newPassword) {
-            // First verify current password
             const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
             if (!isPasswordValid) {
                 return new Response(JSON.stringify({ message: "Current password is incorrect" }), {
@@ -47,16 +44,13 @@ export async function PUT(req) {
                 });
             }
 
-            // Use the raw password - the model schema pre-save hook will hash it
             user.password = newPassword;
         }
 
-        // For name change
         if (name) {
             user.name = name;
         }
 
-        // For email change
         if (email && email !== user.email) {
             const existingUser = await User.findOne({ email, _id: { $ne: userId } });
             if (existingUser) {
@@ -68,10 +62,8 @@ export async function PUT(req) {
             user.email = email;
         }
 
-        // Save the updated user
         await user.save();
 
-        // Return user data without password
         const userResponse = {
             id: user._id.toString(),
             name: user.name,

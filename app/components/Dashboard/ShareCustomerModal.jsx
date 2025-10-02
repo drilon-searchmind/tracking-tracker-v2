@@ -18,13 +18,12 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [hasPermission, setHasPermission] = useState(false);
-    const [sharingMode, setSharingMode] = useState("new"); // "new" or "existing"
+    const [sharingMode, setSharingMode] = useState("new");
     const [existingUsers, setExistingUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState("");
     const { data: session } = useSession();
     const router = useRouter();
 
-    // Check if user has permission to share reports
     useEffect(() => {
         if (session?.user) {
             const isAdmin = session.user.isAdmin === true;
@@ -33,7 +32,6 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
         }
     }, [session]);
 
-    // Fetch existing users
     useEffect(() => {
         if (sharingMode === "existing") {
             const fetchUsers = async () => {

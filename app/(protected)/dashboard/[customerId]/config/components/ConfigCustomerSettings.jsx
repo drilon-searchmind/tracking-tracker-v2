@@ -12,7 +12,6 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
     const [clickupLoading, setClickupLoading] = useState(false);
     const [tempClickupId, setTempClickupId] = useState("");
 
-    // Convert currency data object to sorted array for dropdown
     const currencies = Object.entries(currencyData)
         .map(([code, data]) => ({ code, ...data }))
         .sort((a, b) => a.code.localeCompare(b.code));
@@ -20,7 +19,6 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                // Fetch metric preference
                 const settingsResponse = await fetch(`/api/customer-settings/${customerId}`);
                 if (settingsResponse.ok) {
                     const data = await settingsResponse.json();
@@ -29,7 +27,6 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     setTempClickupId(data.customerClickupID || "");
                 }
 
-                // Fetch currency separately from the dedicated endpoint
                 const currencyResponse = await fetch(`/api/customer-settings/${customerId}/customerValuta`);
                 if (currencyResponse.ok) {
                     const data = await currencyResponse.json();
@@ -109,17 +106,16 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                 setClickupId(tempClickupId);
             } else {
                 console.error("Failed to update Clickup ID");
-                setTempClickupId(clickupId); // Reset to original value on failure
+                setTempClickupId(clickupId);
             }
         } catch (error) {
             console.error("Error updating Clickup ID:", error);
-            setTempClickupId(clickupId); // Reset to original value on failure
+            setTempClickupId(clickupId);
         } finally {
             setClickupLoading(false);
         }
     };
 
-    // Find current currency code by its native symbol
     const getCurrentCurrencyCode = () => {
         const found = Object.entries(currencyData).find(
             ([_, data]) => data.symbol_native === customerValuta

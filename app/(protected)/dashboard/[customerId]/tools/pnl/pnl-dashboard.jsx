@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import { Tooltip } from "react-tooltip"; // Make sure this package is installed
+import { Tooltip } from "react-tooltip";
 import { FaInfoCircle } from "react-icons/fa";
 
 export default function PnLDashboard({ customerId, customerName, initialData }) {
@@ -13,7 +13,6 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
         setIsClient(true);
     }, []);
 
-    // Initialize date picker to first day of current month to yesterday
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -32,13 +31,11 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
     const { metrics_by_date, staticExpenses } = initialData || {};
 
-    // Filter data based on date range
     const filteredMetricsByDate = useMemo(() => {
         const filtered = metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
         return filtered;
     }, [metrics_by_date, startDate, endDate]);
 
-    // Calculate P&L metrics for current period
     const metrics = useMemo(() => {
         const aggregated = filteredMetricsByDate.reduce(
             (acc, row) => ({
@@ -57,7 +54,6 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
             }
         );
 
-        // Correct COGS calculation
         const cogs = aggregated.net_sales * (staticExpenses.cogs_percentage || 0);
         const db1 = aggregated.net_sales - cogs;
 
@@ -72,14 +68,12 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
         const realized_roas = aggregated.total_marketing_spend > 0 ? aggregated.net_sales / aggregated.total_marketing_spend : 0;
 
-        // Calculate total costs for percentage calculations
         const total_costs = cogs + shipping_cost + transaction_cost +
             aggregated.total_marketing_spend +
             (staticExpenses.marketing_bureau_cost || 0) +
             (staticExpenses.marketing_tooling_cost || 0) +
             (staticExpenses.fixed_expenses || 0);
 
-        // Correct percentage calculations for DB shares
         const db1_percentage = total_costs > 0 ? ((total_costs - cogs) / total_costs) * 100 : 0;
         const db2_percentage = total_costs > 0 ? ((total_costs - cogs - shipping_cost - transaction_cost) / total_costs) * 100 : 0;
         const db3_percentage = total_costs > 0 ? ((total_costs - cogs - shipping_cost - transaction_cost -
@@ -115,7 +109,6 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
         return resultMetrics;
     }, [filteredMetricsByDate, staticExpenses]);
 
-    // Calculate comparison dates
     const getComparisonDates = () => {
         try {
             const end = new Date(endDate);
@@ -157,7 +150,6 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
     const { compStart, compEnd } = getComparisonDates();
 
-    // Calculate metrics for comparison period
     const comparisonMetrics = useMemo(() => {
         const comparisonData = metrics_by_date?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
         const aggregated = comparisonData.reduce(
@@ -177,7 +169,6 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
             }
         );
 
-        // Correct COGS calculation
         const cogs = aggregated.net_sales * (staticExpenses.cogs_percentage || 0);
         const db1 = aggregated.net_sales - cogs;
 
@@ -192,14 +183,12 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
         const realized_roas = aggregated.total_marketing_spend > 0 ? aggregated.net_sales / aggregated.total_marketing_spend : 0;
 
-        // Calculate total costs for percentage calculations
         const total_costs = cogs + shipping_cost + transaction_cost +
             aggregated.total_marketing_spend +
             (staticExpenses.marketing_bureau_cost || 0) +
             (staticExpenses.marketing_tooling_cost || 0) +
             (staticExpenses.fixed_expenses || 0);
 
-        // Correct percentage calculations for DB shares
         const db1_percentage = total_costs > 0 ? ((total_costs - cogs) / total_costs) * 100 : 0;
         const db2_percentage = total_costs > 0 ? ((total_costs - cogs - shipping_cost - transaction_cost) / total_costs) * 100 : 0;
         const db3_percentage = total_costs > 0 ? ((total_costs - cogs - shipping_cost - transaction_cost -

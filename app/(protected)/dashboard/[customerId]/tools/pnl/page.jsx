@@ -10,7 +10,6 @@ export default async function PnLPage({ params }) {
     const resolvedParams = await params;
     const customerId = resolvedParams.customerId;
 
-    // Fetch static expenses
     let staticExpenses = {
         cogs_percentage: 0,
         shipping_cost_per_order: 0,

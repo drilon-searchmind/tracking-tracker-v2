@@ -3,7 +3,6 @@ import detailedChangelog from '@/git_pr_export/detailed-changelog.json';
 export const releases = detailedChangelog.map(weekRelease => {
     const allFeatures = [];
 
-    // Process feature
     if (weekRelease.changes.feature) {
         weekRelease.changes.feature.slice(0, 5).forEach(feature => {
             allFeatures.push({

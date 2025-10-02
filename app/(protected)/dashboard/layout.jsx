@@ -28,7 +28,6 @@ export default function DashboardLayout({ children }) {
     const isToolsActive = pathname.startsWith(`/dashboard/${customerId}/tools`) && !pathname.includes("kampagneplan");
     const isConfigActive = pathname.startsWith(`/dashboard/${customerId}/config`);
 
-    // Close mobile menu when path changes
     useEffect(() => {
         setMobileMenuOpen(false);
     }, [pathname]);

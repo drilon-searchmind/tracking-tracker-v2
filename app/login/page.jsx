@@ -14,7 +14,6 @@ function LoginForm() {
     const { data: session, status } = useSession();
     const searchParams = useSearchParams();
     
-    // Handle already authenticated users
     useEffect(() => {
         if (status === "authenticated") {
             window.location.href = "/home";
@@ -37,7 +36,6 @@ function LoginForm() {
                 setError(result.error);
                 setLoading(false);
             } else if (result?.ok) {
-                // Use direct navigation instead of Next.js router
                 window.location.href = "/home";
             }
         } catch (error) {
@@ -49,7 +47,6 @@ function LoginForm() {
 
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
-            {/* Your existing login form JSX */}
             <div className="max-w-md mx-auto z-10 relative">
                 <div className="mb-8 text-center">
                     <h4 className="mb-4 text-base md:text-lg font-light text-zinc-700">Searchmind Apex</h4>

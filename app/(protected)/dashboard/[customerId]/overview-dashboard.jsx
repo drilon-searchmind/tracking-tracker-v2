@@ -22,7 +22,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         if (initialData) {
             const timer = setTimeout(() => {
                 setLoading(false);
-            }, 500); // Short timeout to show loading state
+            }, 500);
             return () => clearTimeout(timer);
         }
     }, [initialData]);
@@ -120,7 +120,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
     const lastYearEnd = formatDate(new Date(new Date(endDate).setFullYear(new Date(endDate).getFullYear() - 1)));
 
     const lastYearMetrics = useMemo(() => {
-        // First, filter by date range and add calculated fields
         const metricsWithCalculations = overview_metrics
             .filter((row) => row.date >= lastYearStart && row.date <= lastYearEnd)
             .map(row => ({
@@ -129,7 +128,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                 spendshare_db: row.revenue_ex_tax > 0 ? (row.ppc_cost + row.ps_cost) / (0.7 * row.revenue_ex_tax) : 0,
             }));
 
-        // Then group by date to consolidate duplicate dates
         const groupedByDate = {};
 
         metricsWithCalculations.forEach(row => {
@@ -297,7 +295,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         };
     };
 
-    // Reset expanded rows when date range changes
     useEffect(() => {
         setExpandedRows({});
         setExpandedLastYearRows({});

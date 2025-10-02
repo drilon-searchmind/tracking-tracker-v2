@@ -29,7 +29,6 @@ const CustomersContent = () => {
             console.log("Fetched customers:", data);
             setCustomers(data);
 
-            // Initialize editing state for all customers
             const initialEditState = {};
             data.forEach(customer => {
                 initialEditState[customer._id] = {
@@ -76,7 +75,6 @@ const CustomersContent = () => {
 
             const updatedCustomer = await response.json();
 
-            // Update local state
             setCustomers(customers.map(customer =>
                 customer._id === customerId ? updatedCustomer : customer
             ));
@@ -91,7 +89,6 @@ const CustomersContent = () => {
     };
 
     const handleDeleteCustomer = async (customerId) => {
-        // Confirmation before deleting
         if (!window.confirm("Are you sure you want to delete this customer? This action cannot be undone.")) {
             return;
         }
@@ -107,7 +104,6 @@ const CustomersContent = () => {
                 throw new Error(`Error deleting customer: ${response.status}`);
             }
 
-            // Update local state by removing the deleted customer
             setCustomers(customers.filter(customer => customer._id !== customerId));
 
             showToast("Customer deleted successfully", "success");

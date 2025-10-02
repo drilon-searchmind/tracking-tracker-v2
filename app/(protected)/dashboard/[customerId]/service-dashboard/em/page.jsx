@@ -4,19 +4,16 @@ import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
-// Support for different email providers (active campaign, klaviyo)
 export default async function EmailDashboardPage({ params }) {
     const resolvedParams = await params;
     const customerId = resolvedParams.customerId;
 
-    // In a real scenario, this would be determined from the customer's settings
-    const emailType = "klaviyo"; // Change to "active_campaign" to test Active Campaign dashboard
+    const emailType = "klaviyo";
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
-        // Choose the right query based on email provider type
         let data;
         if (emailType === "klaviyo") {
             const klaviyoQuery = `
@@ -176,7 +173,6 @@ export default async function EmailDashboardPage({ params }) {
             });
 
         } else {
-            // Existing Active Campaign query
             const dashboardQuery = `
     WITH raw_data AS (
         SELECT

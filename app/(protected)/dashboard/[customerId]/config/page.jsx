@@ -34,7 +34,6 @@ export default async function ConfigPage({ params }) {
         if (responseRevenueBudget.ok) {
             revenueBudget = await responseRevenueBudget.json();
         } else if (responseRevenueBudget.status === 404) {
-            // No revenue/budget config exists for this customer — treat as empty
             console.warn(`No revenue budget found for customer ${customerId} (404). Returning empty configs.`);
             revenueBudget = { configs: [] };
         } else {

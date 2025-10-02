@@ -2,7 +2,7 @@
 
 import { useToast } from "@/app/contexts/ToastContext";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
-import { useEffect, useState } from "react"; // Make sure to import useState
+import { useEffect, useState } from "react";
 import { IoMdClose } from "react-icons/io";
 import Select from 'react-select';
 import countryCodes from "@/lib/static-data/countryCodes.json";
@@ -31,7 +31,7 @@ export default function CampaignPlannerModal({
         { value: "NL", label: "Netherlands (NL)" },
         { value: "NO", label: "Norway (NO)" },
         { value: "FR", label: "France (FR)" },
-        { value: "", label: "───────────────" }, // Divider
+        { value: "", label: "───────────────" },
     ];
 
     const allCountryOptions = [...frequentCountries, ...countryOptions];
@@ -63,7 +63,6 @@ export default function CampaignPlannerModal({
         option.value === formData.countryCode
     ) || null;
 
-    // Get selected user options for the Select component
     const selectedUserOptions = formData.assignedUsers && formData.assignedUsers.length > 0
         ? users.filter(user => {
             return formData.assignedUsers.some(id =>
@@ -80,9 +79,9 @@ export default function CampaignPlannerModal({
 
                     if (response.ok) {
                         const userData = await response.json();
-                        console.log("Fetched users:", userData); // Debug log
+                        console.log("Fetched users:", userData);
                         setUsers(userData.map(user => ({
-                            value: user._id || user.id, // Handle both _id and id
+                            value: user._id || user.id,
                             label: user.name || user.email
                         })));
                     }
@@ -97,7 +96,7 @@ export default function CampaignPlannerModal({
     }, [isOpen, showToast]);
 
     const handleUserChange = (selectedOptions) => {
-        console.log("Selected options:", selectedOptions); // Debug log
+        console.log("Selected options:", selectedOptions);
 
         const syntheticEvent = {
             target: {
@@ -106,7 +105,7 @@ export default function CampaignPlannerModal({
             }
         };
 
-        console.log("New assigned users:", syntheticEvent.target.value); // Debug log
+        console.log("New assigned users:", syntheticEvent.target.value);
         onInputChange(syntheticEvent);
     };
 

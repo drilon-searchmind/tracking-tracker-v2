@@ -215,7 +215,7 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                     item.campaign_name.toLowerCase().includes(campaignSearch.toLowerCase()) :
                     true
             )
-            .slice(0, campaignSearch ? undefined : 10); // Show all matching results when searching
+            .slice(0, campaignSearch ? undefined : 10);
     }, [allCampaigns, campaignSearch]);
 
     const selectedCampaigns = useMemo(() => {
@@ -445,7 +445,6 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
         },
     };
 
-    // Chart components for mobile carousel
     const chartComponents = [
         {
             title: selectedMetric,
@@ -484,7 +483,6 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
         }
     ];
 
-    // Navigation for chart carousel
     const navigateChart = (direction) => {
         if (direction === 'next') {
             setActiveChartIndex((prev) =>
@@ -497,7 +495,6 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
         }
     };
 
-    // Toggle campaign expansion
     const toggleCampaignExpansion = (index) => {
         setExpandedCampaigns(prev => ({
             ...prev,
@@ -505,7 +502,6 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
         }));
     };
 
-    // Reset expanded items when date range changes
     useEffect(() => {
         setExpandedCampaigns({});
     }, [startDate, endDate]);

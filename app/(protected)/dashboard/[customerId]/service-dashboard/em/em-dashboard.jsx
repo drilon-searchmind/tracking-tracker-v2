@@ -29,7 +29,6 @@ ChartJS.register(
 );
 
 export default function EmailDashboard({ customerId, initialData, customerName, emailType }) {
-    // Initialize date picker to first day of current month to yesterday
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -55,7 +54,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
 
     const { metrics_by_date, top_campaigns, campaigns_by_date, campaign_performance } = initialData || {};
 
-    // Filter data based on date range
     const filteredMetricsByDate = useMemo(() => {
         return metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
     }, [metrics_by_date, startDate, endDate]);
@@ -68,7 +66,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
         return campaign_performance?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
     }, [campaign_performance, startDate, endDate]);
 
-    // Calculate metrics for current period
     const metrics = useMemo(() => {
         if (emailType === "klaviyo") {
             return filteredMetricsByDate.reduce(
@@ -102,7 +99,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
                 }
             );
         } else {
-            // Original ActiveCampaign metrics calculation
             return filteredMetricsByDate.reduce(
                 (acc, row) => ({
                     clicks: acc.clicks + (row.clicks || 0),
@@ -128,7 +124,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
         }
     }, [filteredMetricsByDate, emailType]);
 
-    // Calculate comparison dates
     const getComparisonDates = () => {
         try {
             const end = new Date(endDate);
@@ -170,7 +165,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
 
     const { compStart, compEnd } = getComparisonDates();
 
-    // Calculate metrics for comparison period
     const comparisonMetrics = useMemo(() => {
         const comparisonData = metrics_by_date?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
 
@@ -206,7 +200,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
                 }
             );
         } else {
-            // Original ActiveCampaign metrics calculation
             return comparisonData.reduce(
                 (acc, row) => ({
                     clicks: acc.clicks + (row.clicks || 0),
@@ -233,7 +226,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
     }, [metrics_by_date, compStart, compEnd, emailType]);
 
 
-    // Calculate filtered top_campaigns
     const filteredTopCampaigns = useMemo(() => {
         const campaignMap = filteredCampaignsByDate.reduce((acc, row) => {
             acc[row.campaign_name] = {
@@ -327,7 +319,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
                 },
             ];
         } else {
-            // Original ActiveCampaign metrics
             return [
                 {
                     label: "Total Emails Sent",
@@ -381,7 +372,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
         }
     }, [metrics, comparisonMetrics, emailType, calculateDelta]);
 
-    // Update metricsChartData to conditionally include Klaviyo-specific metrics
     const metricsChartData = useMemo(() => {
         const metricOptions = emailType === "klaviyo"
             ? ["Opens", "Open Rate", "Clicks", "CTR", "Bounces", "Unsubscribes", "Revenue"]
@@ -502,7 +492,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
         },
     };
 
-    // Chart components for mobile carousel
     const chartComponents = [
         {
             title: selectedMetric,
@@ -541,7 +530,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
         }
     ];
 
-    // Navigation for chart carousel
     const navigateChart = (direction) => {
         if (direction === 'next') {
             setActiveChartIndex((prev) => 
@@ -554,7 +542,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
         }
     };
 
-    // Toggle campaign expansion
     const toggleCampaignExpansion = (index) => {
         setExpandedCampaigns(prev => ({
             ...prev,
@@ -562,7 +549,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
         }));
     };
 
-    // Toggle performance row expansion
     const togglePerformanceExpansion = (index) => {
         setExpandedPerformance(prev => ({
             ...prev,
@@ -582,7 +568,6 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
         }
     }, [emailType]);
 
-    // Reset expanded states when date range changes
     useEffect(() => {
         setExpandedCampaigns({});
         setExpandedPerformance({});

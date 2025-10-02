@@ -117,7 +117,6 @@ export default function UserSettingsContent() {
                 dataToUpdate.newPassword = updatedData.newPassword;
             }
     
-            // First update the database
             const response = await fetch('/api/users/profile', {
                 method: 'PUT',
                 headers: {
@@ -132,7 +131,6 @@ export default function UserSettingsContent() {
                 throw new Error(result.message || 'Failed to update profile');
             }
     
-            // Update local state
             if (field !== 'password') {
                 setUserData(prev => ({
                     ...prev,
@@ -140,9 +138,7 @@ export default function UserSettingsContent() {
                 }));
             }
     
-            // For name and email updates, we need to update the session
             if (field === 'name' || field === 'email') {
-                // Create a new session object with updated values
                 const updatedSession = {
                     ...session,
                     user: {
@@ -151,21 +147,17 @@ export default function UserSettingsContent() {
                     }
                 };
                 
-                // Use the NextAuth update method to update the JWT and session
                 const updateResult = await update(updatedSession);
                 
                 console.log("Session update result:", updateResult);
                 
-                // Wait for some time to allow session to propagate
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
-                // Display success message
                 showToast(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully!`, "success");
             } else {
                 showToast(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully!`, "success");
             }
     
-            // Clear password fields if appropriate
             if (field === 'password') {
                 setUpdatedData(prev => ({
                     ...prev,
@@ -175,7 +167,6 @@ export default function UserSettingsContent() {
                 }));
             }
     
-            // Exit edit mode
             toggleEditMode(field);
         } catch (error) {
             console.error(`Error updating ${field}:`, error);
@@ -185,7 +176,6 @@ export default function UserSettingsContent() {
         }
     };
 
-    // Rest of your component remains the same...
     return (
         <>
             <div>

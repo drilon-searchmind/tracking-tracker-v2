@@ -29,13 +29,10 @@ export default function CampaignList({ customerId }) {
     const [commentCounts, setCommentCounts] = useState({});
     const [parentCampaignMap, setParentCampaignMap] = useState({});
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [fetchId, setFetchId] = useState(0); // Used to track fetch operations
+    const [fetchId, setFetchId] = useState(0);
 
-    // Track expanded parent campaigns
     const [expandedParents, setExpandedParents] = useState({});
-    // Organize campaigns by parent
     const [organizedCampaigns, setOrganizedCampaigns] = useState({});
-    // Store filtered campaigns separately
     const [filteredCampaigns, setFilteredCampaigns] = useState([]);
 
     const [modalUpdateTriggered, setModalUpdateTriggered] = useState(false);
@@ -62,7 +59,6 @@ export default function CampaignList({ customerId }) {
         }
     }, []);
 
-    // Toggle expansion of parent campaign
     const toggleParentExpansion = useCallback((parentId) => {
         setExpandedParents(prev => ({
             ...prev,
@@ -75,7 +71,6 @@ export default function CampaignList({ customerId }) {
         const uniqueMonthsSet = new Set();
 
         campaigns.forEach(campaign => {
-            // Skip "Always On" campaigns when generating month options
             if (campaign.campaignType === "Always On" || !campaign.startDate || !campaign.endDate) {
                 return;
             }
@@ -85,9 +80,8 @@ export default function CampaignList({ customerId }) {
 
             let currentDate = new Date(startDate);
 
-            // Create a safe end date to prevent infinite loops
             const safeEndDate = new Date(endDate);
-            safeEndDate.setFullYear(safeEndDate.getFullYear() + 1); // Add a year as safety
+            safeEndDate.setFullYear(safeEndDate.getFullYear() + 1);
 
             while (currentDate <= endDate && currentDate <= safeEndDate) {
                 const monthKey = format(currentDate, 'yyyy-MM');
@@ -112,7 +106,6 @@ export default function CampaignList({ customerId }) {
         return months;
     }, [campaigns]);
 
-    // Organize campaigns by parent - memoized with useCallback to prevent recreating on every render
     const organizeCampaigns = useCallback(() => {
         const organized = {
             'no-parent': {
@@ -156,10 +149,7 @@ export default function CampaignList({ customerId }) {
         setIsDetailsModalOpen(false);
     }, [setIsDetailsModalOpen]);
 
-    // IMPORTANT: This is the single centralized fetch function
-    // In your fetchCampaigns function:
     const fetchCampaigns = useCallback(async (isRefreshOperation = false) => {
-        // Prevent multiple simultaneous refreshes
         if (isRefreshing) return;
 
         const currentFetchId = fetchId + 1;
@@ -169,7 +159,6 @@ export default function CampaignList({ customerId }) {
             setIsRefreshing(true);
             setLoading(true);
 
-            // Log only once at the beginning of the fetch
             console.log("Fetching campaigns for customer ID:", customerId);
             console.log("Current fetch ID:", currentFetchId);
 
@@ -182,7 +171,6 @@ export default function CampaignList({ customerId }) {
 
             console.log("Fetch complete. Current/Latest fetch ID:", currentFetchId, fetchId);
 
-            // Always set the data regardless of fetch ID
             setCampaigns(data);
 
             if (data.length > 0) {
@@ -196,10 +184,8 @@ export default function CampaignList({ customerId }) {
                 }
             }
 
-            // Always turn off loading after successful fetch
             setLoading(false);
 
-            // Use setTimeout to avoid race conditions
             setTimeout(() => {
                 setIsRefreshing(false);
             }, 300);
@@ -211,7 +197,6 @@ export default function CampaignList({ customerId }) {
             console.error("Error fetching campaigns:", error);
             showToast(isRefreshOperation ? "Error refreshing campaign list" : "Error fetching campaigns", "error");
 
-            // Always turn off loading on error
             setLoading(false);
             setTimeout(() => {
                 setIsRefreshing(false);
@@ -220,24 +205,20 @@ export default function CampaignList({ customerId }) {
     }, [customerId, fetchCommentCounts, showToast, selectedCampaign, fetchId, isRefreshing]);
 
     const handleCampaignUpdated = useCallback(() => {
-        // Just set the modal update trigger - no need to refresh campaigns immediately
         setModalUpdateTriggered(true);
     }, []);
 
-    // Initial fetch on component mount
     useEffect(() => {
         fetchCampaigns();
-    }, [customerId]); // Only depend on customerId
+    }, [customerId]);
 
-    // Handle modalUpdateTriggered changes
     useEffect(() => {
         let refreshTimer;
         if (modalUpdateTriggered) {
-            // Debounce the refresh operation to prevent multiple calls
             clearTimeout(refreshTimer);
             refreshTimer = setTimeout(() => {
-                fetchCampaigns(true); // true = isRefreshOperation
-            }, 200); // Increased debounce time to avoid race conditions
+                fetchCampaigns(true);
+            }, 200);
         }
 
         return () => {
@@ -245,7 +226,6 @@ export default function CampaignList({ customerId }) {
         };
     }, [modalUpdateTriggered, fetchCampaigns]);
 
-    // Fetch parent campaigns only when campaigns change
     useEffect(() => {
         const fetchParentCampaigns = async () => {
             if (campaigns.length === 0) return;
@@ -268,10 +248,8 @@ export default function CampaignList({ customerId }) {
         fetchParentCampaigns();
     }, [campaigns.length, customerId]);
 
-    // Filter campaigns whenever the dependencies change
     useEffect(() => {
         const filtered = campaigns.filter(campaign => {
-            // Service filter logic
             let passesServiceFilter = true;
             if (activeFilter === "Social") passesServiceFilter = campaign.service === "Paid Social";
             else if (activeFilter === "Email") passesServiceFilter = campaign.service === "Email Marketing";
@@ -279,11 +257,10 @@ export default function CampaignList({ customerId }) {
             else if (activeFilter === "SEO") passesServiceFilter = campaign.service === "SEO";
             else if (activeFilter === "Pending Customer Approval") passesServiceFilter = campaign.status === "Pending Customer Approval";
 
-            // Month filter logic
             let passesMonthFilter = true;
             if (selectedMonth !== "All") {
                 if (campaign.campaignType === "Always On") {
-                    passesMonthFilter = true; // Always include "Always On" campaigns
+                    passesMonthFilter = true;
                 } else {
                     const [year, month] = selectedMonth.split('-').map(num => parseInt(num, 10));
                     const filterStartDate = startOfMonth(new Date(year, month - 1));
@@ -299,12 +276,11 @@ export default function CampaignList({ customerId }) {
                             (campaignStartDate <= filterStartDate && campaignEndDate >= filterEndDate)
                         );
                     } else {
-                        passesMonthFilter = false; // If no dates, don't show in month filter
+                        passesMonthFilter = false;
                     }
                 }
             }
 
-            // Search query filter logic
             let passesSearchFilter = true;
             if (searchQuery.trim() !== "") {
                 passesSearchFilter = campaign.campaignName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -316,7 +292,6 @@ export default function CampaignList({ customerId }) {
         setFilteredCampaigns(filtered);
     }, [campaigns, activeFilter, selectedMonth, searchQuery]);
 
-    // Update organized campaigns when filtered campaigns or parent campaign map changes
     useEffect(() => {
         setOrganizedCampaigns(organizeCampaigns());
     }, [filteredCampaigns, parentCampaignMap, organizeCampaigns]);
@@ -371,7 +346,7 @@ export default function CampaignList({ customerId }) {
 
             if (response.ok) {
                 showToast("Campaign copied successfully", "success");
-                setModalUpdateTriggered(true); // Use modalUpdateTriggered instead of directly calling fetchCampaigns
+                setModalUpdateTriggered(true);
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData.error || "Failed to copy campaign");

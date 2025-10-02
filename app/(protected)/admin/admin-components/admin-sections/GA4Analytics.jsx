@@ -28,7 +28,6 @@ ChartJS.register(
 const GA4Analytics = () => {
     const [timeRange, setTimeRange] = useState('7d');
 
-    // Mock data for GA4 analytics
     const mockData = {
         summary: {
             users: 1248,

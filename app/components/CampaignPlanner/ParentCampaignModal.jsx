@@ -34,7 +34,6 @@ export default function ParentCampaignModal({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedServices, setSelectedServices] = useState([]);
 
-    // Country selection options
     const countryOptions = countryCodes.map(country => ({
         value: country.code,
         label: `${country.name} (${country.code})`,
@@ -46,7 +45,7 @@ export default function ParentCampaignModal({
         { value: "NL", label: "Netherlands (NL)" },
         { value: "NO", label: "Norway (NO)" },
         { value: "FR", label: "France (FR)" },
-        { value: "", label: "───────────────" }, // Divider
+        { value: "", label: "───────────────" },
     ];
 
     const allCountryOptions = [...frequentCountries, ...countryOptions];
@@ -55,7 +54,6 @@ export default function ParentCampaignModal({
         option.value === formData.countryCode
     ) || null;
 
-    // Service selection options
     const serviceOptions = [
         { value: "Paid Social", label: "Paid Social" },
         { value: "Paid Search", label: "Paid Search" },

@@ -11,7 +11,6 @@ export async function POST(req, { params }) {
         await dbConnect();
         
         if (body.userId) {
-            // Sharing with existing user flow
             const user = await User.findById(body.userId);
             
             if (!user) {
@@ -20,10 +19,8 @@ export async function POST(req, { params }) {
                 }), { status: 404 });
             }
             
-            // Important: Convert both to strings for consistent comparison
             const customerIdString = String(customerId);
             
-            // Check if this exact customer-email combination already exists
             const existingSharing = await CustomerSharings.findOne({ 
                 customer: customerIdString, 
                 email: user.email 
@@ -35,7 +32,6 @@ export async function POST(req, { params }) {
                 }), { status: 409 });
             }
             
-            // Create a new sharing
             try {
                 const newSharing = new CustomerSharings({
                     customer: customerIdString,
@@ -51,16 +47,13 @@ export async function POST(req, { params }) {
                     userCreated: false
                 }), { status: 201 });
             } catch (saveError) {
-                // Handle specific MongoDB error code for duplicate key
                 if (saveError.code === 11000) {
-                    // Get more detailed information about the duplicate key error
                     console.error("Duplicate key details:", JSON.stringify({
                         keyPattern: saveError.keyPattern,
                         keyValue: saveError.keyValue,
                         message: saveError.message
                     }, null, 2));
                     
-                    // Check if the error is about email+customer combination
                     if (saveError.keyPattern && saveError.keyPattern.customer && saveError.keyPattern.email) {
                         return new Response(JSON.stringify({ 
                             message: "This customer is already shared with this user",
@@ -77,7 +70,6 @@ export async function POST(req, { params }) {
             }
         } 
         else {
-            // New user flow (existing logic)
             const { email, sharedWith, password } = body;
             
             if (!email || !sharedWith || !password) {
@@ -87,7 +79,6 @@ export async function POST(req, { params }) {
             }
             
             try {
-                // Important: Convert customerId to string for consistent comparison
                 const customerIdString = String(customerId);
                 
                 const existingSharing = await CustomerSharings.findOne({ 

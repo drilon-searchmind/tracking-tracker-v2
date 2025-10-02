@@ -22,7 +22,6 @@ export default function ConfigCustomerSharings({ customerId, baseUrl }) {
             const text = await response.text();
             console.log("Raw API response:", text);
 
-            // Only try to parse if there's content
             if (text && text.trim()) {
                 const result = JSON.parse(text);
                 console.log("Parsed API result:", result);

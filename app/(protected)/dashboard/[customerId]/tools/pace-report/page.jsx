@@ -78,7 +78,6 @@ export default async function PacePage({ params }) {
             return <div>No data available for {customerId}</div>;
         }
 
-        // Serialize numeric fields to plain JavaScript numbers
         const serializedDailyMetrics = data[0].daily_metrics.map(row => ({
             date: row.date,
             orders: Number(row.orders || 0),

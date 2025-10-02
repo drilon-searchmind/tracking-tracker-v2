@@ -29,7 +29,6 @@ export default function IntegrationsContent() {
     };
 
     const handleSaveIntegration = (integration) => {
-        // This is just UI placeholder - actual API call would be implemented later
         setIsSaving(true);
         setTimeout(() => {
             setIntegrations(prev => ({

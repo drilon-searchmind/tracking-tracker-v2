@@ -38,7 +38,6 @@ export async function PUT(req, { params }) {
         const body = await req.json();
         const { name, bigQueryCustomerId, bigQueryProjectId } = body;
 
-        // Create an update object with only the fields that are provided
         const updateData = {};
         if (name) updateData.name = name;
         if (bigQueryCustomerId) updateData.bigQueryCustomerId = bigQueryCustomerId;
@@ -46,8 +45,7 @@ export async function PUT(req, { params }) {
         
         updateData.updatedAt = new Date();
 
-        // Check if we have at least one field to update
-        if (Object.keys(updateData).length <= 1) { // <= 1 because we always have updatedAt
+        if (Object.keys(updateData).length <= 1) { 
             return new Response(JSON.stringify({ message: "::: At least one field (name, bigQueryCustomerId, or bigQueryProjectId) is required" }), { status: 400 });
         }
 
@@ -56,7 +54,6 @@ export async function PUT(req, { params }) {
             updateData,
             {
                 new: true,
-                // Return all fields instead of just selected ones
             }
         );
 
@@ -92,7 +89,7 @@ export async function DELETE(req, { params }) {
             return new Response(JSON.stringify({ message: "::: Customer not found" }), { status: 404 });
         }
 
-        // FIXME: might want to delete related data here (like StaticExpenses for this customer)
+        // FIXME: delete related data here (like StaticExpenses for this customer)
         // example:
         // await StaticExpenses.deleteMany({ customer: customerId });
 

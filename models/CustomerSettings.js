@@ -5,6 +5,7 @@ const CustomerSettingsSchema = new mongoose.Schema({
     metricPreference: { type: String, enum: ["ROAS/POAS", "Spendshare"], required: true, default: "ROAS/PAOS" },
     customerValuta: { type: String, required: true, default: "DKK" },
     customerClickupID: { type: String, default: "" },
+    customerMetaID: { type: String, default: "" },
 }, { timestamps: true })
 
 export default mongoose.models.CustomerSettings || mongoose.model("CustomerSettings", CustomerSettingsSchema);

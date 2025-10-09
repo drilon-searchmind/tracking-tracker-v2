@@ -11,7 +11,7 @@ export default async function OverviewPage({ params }) {
     console.log("::: Fetching customer with ID:", customerId);
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
@@ -29,6 +29,7 @@ export default async function OverviewPage({ params }) {
             date_start AS date,
             SUM(spend) AS ps_cost
         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
+        WHERE country = "${customerMetaID}"
         GROUP BY date_start
     ),
     google_ads_data AS (

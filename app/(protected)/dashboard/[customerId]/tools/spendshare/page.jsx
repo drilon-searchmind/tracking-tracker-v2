@@ -14,7 +14,7 @@ export default async function SpendSharePage({ params }) {
             : process.env.NEXT_PUBLIC_BASE_URL;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
@@ -32,7 +32,7 @@ export default async function SpendSharePage({ params }) {
                     EXTRACT(MONTH FROM date_start) AS month,
                     SUM(spend) AS meta_spend
                 FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-                WHERE EXTRACT(YEAR FROM date_start) = EXTRACT(YEAR FROM CURRENT_DATE())
+                WHERE EXTRACT(YEAR FROM date_start) = EXTRACT(YEAR FROM CURRENT_DATE()) AND country = "${customerMetaID}"
                 GROUP BY month
             ),
             google_ads_data AS (

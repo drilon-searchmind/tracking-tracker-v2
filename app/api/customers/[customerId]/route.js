@@ -1,5 +1,6 @@
 import { dbConnect } from "@/lib/dbConnect";
 import Customer from "@/models/Customer";
+import CustomerSettings from "@/models/CustomerSettings"; // Add this import
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
@@ -21,7 +22,20 @@ export async function GET(req, { params }) {
             return new Response(JSON.stringify({ message: "::: Customer not found" }), { status: 404 });
         }
 
-        return new Response(JSON.stringify(customer), { status: 200 });
+        const customerSettings = await CustomerSettings.findOne({ customer: customerId });
+        
+        const responseData = {
+            _id: customer._id,
+            bigQueryCustomerId: customer.bigQueryCustomerId,
+            bigQueryProjectId: customer.bigQueryProjectId,
+            name: customer.name,
+            customerMetaID: customerSettings?.customerMetaID || "",
+            metricPreference: customerSettings?.metricPreference || "ROAS/POAS",
+            customerValuta: customerSettings?.customerValuta || "DKK",
+            customerClickupID: customerSettings?.customerClickupID || ""
+        };
+
+        return new Response(JSON.stringify(responseData), { status: 200 });
     } catch (error) {
         console.error("::: Error fetching customer:", error);
         return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });

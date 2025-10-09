@@ -9,7 +9,7 @@ export default async function PacePage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
@@ -32,7 +32,7 @@ export default async function PacePage({ params }) {
             CAST(date_start AS STRING) AS date,
             SUM(COALESCE(spend, 0)) AS ps_cost
         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-        WHERE date_start IS NOT NULL
+        WHERE date_start IS NOT NULL AND country = "${customerMetaID}"
         GROUP BY date_start
     ),
     google_ads_data AS (

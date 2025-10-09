@@ -20,7 +20,7 @@ export default async function OverviewPage({ params }) {
             DATE(processed_at) AS date,
             COUNT(*) AS orders,
             SUM(amount) AS revenue
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
         WHERE status = 'SUCCESS' AND kind = 'AUTHORIZATION'
         GROUP BY DATE(processed_at)
     ),
@@ -28,14 +28,14 @@ export default async function OverviewPage({ params }) {
         SELECT
             date_start AS date,
             SUM(spend) AS ps_cost
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.meta_ads_insights\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
         GROUP BY date_start
     ),
     google_ads_data AS (
         SELECT
             segments_date AS date,
             SUM(metrics_cost_micros / 1000000.0) AS ppc_cost
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.google_ads_campaign\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
         GROUP BY segments_date
     ),
     combined_data AS (

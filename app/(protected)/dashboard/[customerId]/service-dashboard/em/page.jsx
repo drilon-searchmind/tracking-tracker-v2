@@ -24,7 +24,7 @@ export default async function EmailDashboardPage({ params }) {
                     JSON_EXTRACT_SCALAR(k.attributes, '$.name') AS campaign_name,
                     JSON_EXTRACT_SCALAR(k.attributes, '$.status') AS status,
                     JSON_EXTRACT_SCALAR(k.attributes, '$.channel') AS channel
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.klaviyo_campaigns\` k
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.klaviyo_campaigns\` k
                 WHERE k.updated_at IS NOT NULL
             ),
             detailed_metrics AS (
@@ -40,7 +40,7 @@ export default async function EmailDashboardPage({ params }) {
                     MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.conversions') AS FLOAT64)) AS conversions,
                     MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.revenue') AS FLOAT64)) AS conversion_value
                 FROM campaign_data cd
-                JOIN \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.klaviyo_campaigns_detailed\` kcd
+                JOIN \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.klaviyo_campaigns_detailed\` kcd
                 ON cd.campaign_id = kcd.id
                 CROSS JOIN UNNEST(JSON_EXTRACT_ARRAY(kcd.campaign_messages, '$')) AS msg
                 GROUP BY cd.campaign_name, cd.date
@@ -183,7 +183,7 @@ export default async function EmailDashboardPage({ params }) {
             CAST(metrics_conversions AS FLOAT64) AS conversions,
             CAST(metrics_conversions_value AS FLOAT64) AS conversion_value,
             metrics_cost_micros / 1000000.0 AS cost
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.campaign\`
         WHERE segments_date IS NOT NULL
     ),
     metrics_by_date AS (

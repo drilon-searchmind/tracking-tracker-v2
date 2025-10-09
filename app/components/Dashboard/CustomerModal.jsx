@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { IoMdClose } from "react-icons/io";
 import { useSession } from "next-auth/react";
+import currencyData from '@/lib/static-data/commonCurrency.json';
+import Select from "react-select";
 
 export default function CustomerModal({ closeModal }) {
     const [search, setSearch] = useState("");
@@ -15,10 +17,43 @@ export default function CustomerModal({ closeModal }) {
         name: "",
         bigQueryCustomerId: "",
         bigQueryProjectId: "",
+        metricPreference: "ROAS/POAS",
+        customerValuta: "DKK",
+        customerClickupID: "",
     });
     const [addingCustomer, setAddingCustomer] = useState(false);
     const router = useRouter();
     const { data: session } = useSession();
+
+    const currencyOptions = Object.entries(currencyData)
+        .map(([code, data]) => ({
+            value: data.symbol_native,
+            label: `${code} - ${data.name} (${data.symbol_native})`,
+            code: code
+        }))
+        .sort((a, b) => a.code.localeCompare(b.code));
+
+    const frequentCurrencies = [
+        { value: "kr", label: "DKK - Danish Krone (kr)", code: "DKK" },
+        { value: "€", label: "EUR - Euro (€)", code: "EUR" },
+        { value: "$", label: "USD - US Dollar ($)", code: "USD" },
+        { value: "£", label: "GBP - British Pound Sterling (£)", code: "GBP" },
+        { value: "kr", label: "SEK - Swedish Krona (kr)", code: "SEK" },
+        { value: "kr", label: "NOK - Norwegian Krone (kr)", code: "NOK" },
+        { value: "", label: "───────────────" },
+    ];
+
+    const allCurrencyOptions = [...frequentCurrencies, ...currencyOptions];
+    const selectedCurrencyOption = allCurrencyOptions.find(option =>
+        option.value === newCustomer?.customerValuta
+    ) || null;
+
+    const handleCurrencyChange = (selectedOption) => {
+        setNewCustomer({
+            ...newCustomer,
+            customerValuta: selectedOption ? selectedOption.value : 'kr'
+        });
+    };
 
     useEffect(() => {
         async function fetchCustomers() {
@@ -74,7 +109,12 @@ export default function CustomerModal({ closeModal }) {
     }, [search, customers]);
 
     const handleAddCustomer = async () => {
-        if (!newCustomer.name || !newCustomer.bigQueryCustomerId || !newCustomer.bigQueryProjectId) {
+        if (!newCustomer.name ||
+            !newCustomer.bigQueryCustomerId ||
+            !newCustomer.bigQueryProjectId ||
+            !newCustomer.metricPreference ||
+            !newCustomer.customerValuta ||
+            !newCustomer.customerClickupID) {
             alert("Please fill in all fields.");
             return;
         }
@@ -94,8 +134,15 @@ export default function CustomerModal({ closeModal }) {
                 const result = await response.json();
                 alert("Customer added successfully!");
                 setCustomers((prev) => [...prev, result.customer]);
-                setShowAddCustomerForm(false); 
-                setNewCustomer({ name: "", bigQueryCustomerId: "", bigQueryProjectId: "" });
+                setShowAddCustomerForm(false);
+                setNewCustomer({
+                    name: "",
+                    bigQueryCustomerId: "",
+                    bigQueryProjectId: "",
+                    metricPreference: "ROAS/POAS",
+                    customerValuta: "DKK",
+                    customerClickupID: ""
+                });
             } else {
                 const errorData = await response.json();
                 alert(`Failed to add customer: ${errorData.message}`);
@@ -138,6 +185,35 @@ export default function CustomerModal({ closeModal }) {
                             placeholder="BigQuery Project ID"
                             value={newCustomer.bigQueryProjectId}
                             onChange={(e) => setNewCustomer({ ...newCustomer, bigQueryProjectId: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded mb-4"
+                        />
+                        <div className="mb-2">
+                            <select
+                                value={newCustomer.metricPreference}
+                                onChange={(e) => setNewCustomer({ ...newCustomer, metricPreference: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded"
+                            >
+                                <option value="ROAS/POAS">ROAS/POAS</option>
+                                <option value="Spendshare">Spendshare</option>
+                            </select>
+                        </div>
+
+                        <div className="mb-2">
+                            <Select
+                                value={selectedCurrencyOption}
+                                onChange={handleCurrencyChange}
+                                options={allCurrencyOptions}
+                                className="w-full"
+                                placeholder="Select currency..."
+                                isClearable
+                            />
+                        </div>
+
+                        <input
+                            type="text"
+                            placeholder="Customer ClickUp ID"
+                            value={newCustomer.customerClickupID}
+                            onChange={(e) => setNewCustomer({ ...newCustomer, customerClickupID: e.target.value })}
                             className="w-full px-4 py-2 border border-gray-300 rounded mb-4"
                         />
                         <button

@@ -7,7 +7,7 @@ export default async function TestPage({ params }) {
     const projectId = `performance-dashboard-airbyte`;
 
     try {
-        const cleanCustomerId = customerId.replace("airbyte_", "");
+        const cleanCustomerId = customerId.replace("airbyte_", "airbyte_");
 
         const dashboardQuery = `
             WITH orders_data AS (

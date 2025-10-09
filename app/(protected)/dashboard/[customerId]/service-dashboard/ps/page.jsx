@@ -22,7 +22,7 @@ export default async function PaidSocialDashboardPage({ params }) {
             CAST(JSON_VALUE(conversions) AS FLOAT64) AS conversions,
             CAST(JSON_VALUE(conversion_values) AS FLOAT64) AS conversion_value,
             spend
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.meta_ads_insights\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
         WHERE date_start IS NOT NULL
     ),
     metrics_by_date AS (

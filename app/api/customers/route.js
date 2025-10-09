@@ -1,6 +1,7 @@
 import { dbConnect } from "@/lib/dbConnect";
 import Customer from "@/models/Customer";
 import StaticExpenses from "@/models/StaticExpenses";
+import CustomerSettings from "@/models/CustomerSettings";
 
 export async function GET(req) {
     try {
@@ -18,7 +19,14 @@ export async function POST(req) {
     try {
         await dbConnect();
 
-        const { name, bigQueryCustomerId, bigQueryProjectId } = await req.json();
+        const {
+            name,
+            bigQueryCustomerId,
+            bigQueryProjectId,
+            metricPreference,
+            customerValuta,
+            customerClickupID
+        } = await req.json();
 
         const newCustomer = new Customer({
             name,
@@ -30,11 +38,23 @@ export async function POST(req) {
 
         const newStaticExpenses = new StaticExpenses({
             customer: savedCustomer._id,
-        }); 
+        });
 
         await newStaticExpenses.save();
 
-        return new Response(JSON.stringify({ message: "Customer and static expenses created successfully", customer: savedCustomer }), { status: 201 });
+        const newCustomerSettings = new CustomerSettings({
+            customer: savedCustomer._id,
+            metricPreference: metricPreference || "ROAS/POAS",
+            customerValuta,
+            customerClickupID,
+        });
+
+        await newCustomerSettings.save();
+
+        return new Response(JSON.stringify({
+            message: "Customer, static expenses and settings created successfully",
+            customer: savedCustomer
+        }), { status: 201 });
     } catch (error) {
         console.error("Error creating customer:", error);
         return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });

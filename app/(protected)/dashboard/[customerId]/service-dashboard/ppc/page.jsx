@@ -22,7 +22,7 @@ export default async function GoogleAdsDashboardPage({ params }) {
             metrics_conversions AS conversions,
             metrics_conversions_value AS conversions_value,
             metrics_cost_micros / 1000000.0 AS cost
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.google_ads_campaign\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
         WHERE segments_date IS NOT NULL
     ),
     metrics_by_date AS (

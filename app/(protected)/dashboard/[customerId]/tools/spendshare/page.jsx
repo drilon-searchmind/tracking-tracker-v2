@@ -23,7 +23,7 @@ export default async function SpendSharePage({ params }) {
                     EXTRACT(MONTH FROM processed_at) AS month,
                     SUM(amount) AS revenue,
                     SUM(amount) - SUM(amount * 0.25) AS net_profit
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
                 WHERE EXTRACT(YEAR FROM processed_at) = EXTRACT(YEAR FROM CURRENT_DATE()) AND status = 'SUCCESS' AND kind = 'AUTHORIZATION'
                 GROUP BY month
             ),
@@ -31,7 +31,7 @@ export default async function SpendSharePage({ params }) {
                 SELECT
                     EXTRACT(MONTH FROM date_start) AS month,
                     SUM(spend) AS meta_spend
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.meta_ads_insights\`
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
                 WHERE EXTRACT(YEAR FROM date_start) = EXTRACT(YEAR FROM CURRENT_DATE())
                 GROUP BY month
             ),
@@ -39,7 +39,7 @@ export default async function SpendSharePage({ params }) {
                 SELECT
                     EXTRACT(MONTH FROM segments_date) AS month,
                     SUM(metrics_cost_micros / 1000000.0) AS google_ads_spend
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.google_ads_campaign\`
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
                 WHERE EXTRACT(YEAR FROM segments_date) = EXTRACT(YEAR FROM CURRENT_DATE())
                 GROUP BY month
             ),

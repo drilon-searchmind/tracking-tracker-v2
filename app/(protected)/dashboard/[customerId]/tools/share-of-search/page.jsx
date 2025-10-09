@@ -18,7 +18,7 @@ export default async function SEODashboardPage({ params }) {
                     impressions,
                     ctr,
                     position
-                FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "")}.gsc_search_analytics_all_fields\`
+                FROM \`${projectId}.airbyte_${customerId.replace("airbyte_", "airbyte_")}.gsc_search_analytics_all_fields\`
             ),
             metrics AS (
                 SELECT

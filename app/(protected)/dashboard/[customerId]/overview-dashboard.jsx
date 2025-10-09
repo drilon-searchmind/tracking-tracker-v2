@@ -386,8 +386,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                             <th className="px-2 py-2 font-medium">Revenue Ex Tax</th>
                                             <th className="px-2 py-2 font-medium">PPC Cost</th>
                                             <th className="px-2 py-2 font-medium">PS Cost</th>
-                                            <th className="px-2 py-2 font-medium">{metricView === "roas" ? "ROAS" : "Spendshare"}</th>
-                                            <th className="px-2 py-2 font-medium">{metricView === "roas" ? "POAS" : "Spendshare inc. DB"}</th>
+                                            <th className="px-2 py-2 font-medium">{metricView === "ROAS/POAS" ? "ROAS" : "Spendshare"}</th>
+                                            <th className="px-2 py-2 font-medium">{metricView === "ROAS/POAS" ? "POAS" : "Spendshare inc. DB"}</th>
                                             <th className="px-2 py-2 font-medium">GP</th>
                                             <th className="px-2 py-2 font-medium">AOV</th>
                                         </tr>

@@ -140,10 +140,9 @@ export default function DashboardCharts({
 
     const spendAllocationLineChartData = useMemo(() => {
         const sourceData = spendViewMode === "YTD" ? monthlyYTDData : validChartData;
-        const compData = spendViewMode === "YTD" ? monthlyYTDComparisonData : comparisonData;
-
+    
         const labels = sourceData.map((row) => spendViewMode === "YTD" ? formatMonthLabel(row.date) : row.date);
-
+    
         return {
             labels,
             datasets: [
@@ -166,33 +165,11 @@ export default function DashboardCharts({
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
-                },
-                {
-                    label: `Google Ads (${comparison})${spendViewMode === "YTD" ? " (YTD)" : ""}`,
-                    data: compData.map((row) => row.google_ads_cost || 0),
-                    borderColor: colors.hue2,
-                    backgroundColor: colors.hue2,
-                    borderWidth: 1,
-                    pointRadius: 2,
-                    pointHoverRadius: 4,
-                    fill: false,
-                    borderDash: [5, 5],
-                },
-                {
-                    label: `Meta (${comparison})${spendViewMode === "YTD" ? " (YTD)" : ""}`,
-                    data: compData.map((row) => row.meta_spend || 0),
-                    borderColor: colors.hue3,
-                    backgroundColor: colors.hue3,
-                    borderWidth: 1,
-                    pointRadius: 2,
-                    pointHoverRadius: 4,
-                    fill: false,
-                    borderDash: [5, 5],
-                },
+                }
             ],
         };
-    }, [spendViewMode, monthlyYTDData, validChartData, monthlyYTDComparisonData, comparisonData, colors, formatMonthLabel, comparison]);
-
+    }, [spendViewMode, monthlyYTDData, validChartData, colors, formatMonthLabel]);
+    
     const getChartOptions = (viewMode) => {
         return {
             maintainAspectRatio: false,

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useToast } from "@/app/contexts/ToastContext";
 import CampaignDetailsModal from "./CampaignDetailsModal";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
@@ -13,6 +13,7 @@ import { SiGoogleads } from "react-icons/si";
 import { FaMagnifyingGlassChart } from "react-icons/fa6";
 import { MdOutlinePending } from "react-icons/md";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
+import countryCodes from "@/lib/static-data/countryCodes.json";
 
 export default function CampaignList({ customerId }) {
     const { showToast } = useToast();
@@ -30,12 +31,32 @@ export default function CampaignList({ customerId }) {
     const [parentCampaignMap, setParentCampaignMap] = useState({});
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [fetchId, setFetchId] = useState(0);
-
     const [expandedParents, setExpandedParents] = useState({});
     const [organizedCampaigns, setOrganizedCampaigns] = useState({});
     const [filteredCampaigns, setFilteredCampaigns] = useState([]);
-
+    const [selectedCountry, setSelectedCountry] = useState("All");
     const [modalUpdateTriggered, setModalUpdateTriggered] = useState(false);
+
+    const countryOptions = useMemo(() => {
+        const uniqueCountryCodes = new Set(campaigns.map(campaign => campaign.countryCode).filter(Boolean));
+        const frequentCountries = [
+            { value: "DK", name: "Denmark" },
+            { value: "DE", name: "Germany" },
+            { value: "NL", name: "Netherlands" },
+            { value: "NO", name: "Norway" },
+            { value: "FR", name: "France" },
+        ].filter(country => uniqueCountryCodes.has(country.value));
+        
+        const otherCountries = [...uniqueCountryCodes]
+            .filter(code => !frequentCountries.some(c => c.value === code))
+            .map(code => {
+                const countryInfo = countryCodes.find(c => c.code === code) || { code };
+                return { value: code, name: countryInfo.name || code };
+            })
+            .sort((a, b) => a.name.localeCompare(b.name));
+            
+        return [...frequentCountries, ...otherCountries];
+    }, [campaigns]);
 
     const pendingApprovalCount = campaigns.filter(
         campaign => campaign.status === "Pending Customer Approval"
@@ -281,16 +302,21 @@ export default function CampaignList({ customerId }) {
                 }
             }
 
+            let passesCountryFilter = true;
+            if (selectedCountry !== "All") {
+                passesCountryFilter = campaign.countryCode === selectedCountry;
+            }
+
             let passesSearchFilter = true;
             if (searchQuery.trim() !== "") {
                 passesSearchFilter = campaign.campaignName.toLowerCase().includes(searchQuery.toLowerCase());
             }
 
-            return passesServiceFilter && passesMonthFilter && passesSearchFilter;
+            return passesServiceFilter && passesMonthFilter && passesCountryFilter && passesSearchFilter;
         });
 
         setFilteredCampaigns(filtered);
-    }, [campaigns, activeFilter, selectedMonth, searchQuery]);
+    }, [campaigns, activeFilter, selectedMonth, selectedCountry, searchQuery]);
 
     useEffect(() => {
         setOrganizedCampaigns(organizeCampaigns());
@@ -420,6 +446,10 @@ export default function CampaignList({ customerId }) {
                     <option value="Live">Live</option>
                     <option value="Ended">Ended</option>
                 </select>
+            </td>
+            {/* Add new cell for country code */}
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {campaign.countryCode || "-"}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {campaign.campaignType === "Always On" ? (
@@ -567,6 +597,24 @@ export default function CampaignList({ customerId }) {
                         </div>
                     </div>
                     <div className="flex items-center">
+                        <label htmlFor="country-filter" className="mr-2 text-sm font-medium text-gray-700">
+                            Filter by country:
+                        </label>
+                        <select
+                            id="country-filter"
+                            value={selectedCountry}
+                            onChange={(e) => setSelectedCountry(e.target.value)}
+                            className="text-sm border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
+                        >
+                            <option value="All">All Countries</option>
+                            {countryOptions.map(country => (
+                                <option key={country.value} value={country.value}>
+                                    {country.name} ({country.value})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex items-center">
                         <label htmlFor="month-filter" className="mr-2 text-sm font-medium text-gray-700">
                             Filter by month:
                         </label>
@@ -596,6 +644,9 @@ export default function CampaignList({ customerId }) {
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Country
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Period

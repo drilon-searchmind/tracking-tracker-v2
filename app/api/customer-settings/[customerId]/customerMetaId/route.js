@@ -11,13 +11,13 @@ export async function GET(req, { params }) {
         const settings = await CustomerSettings.findOne({ customer: customerId });
 
         if (!settings) {
-            return new Response(JSON.stringify({ error: "Settings not found", customerClickupID: "" }), { status: 404 });
+            return new Response(JSON.stringify({ error: "Settings not found", customerMetaID: "" }), { status: 404 });
         }
 
-        return new Response(JSON.stringify({ customerClickupID: settings.customerClickupID || "" }), { status: 200 });
+        return new Response(JSON.stringify({ customerMetaID: settings.customerMetaID || "" }), { status: 200 });
     } catch (error) {
-        console.error("Error fetching customer clickup ID:", error);
-        return new Response(JSON.stringify({ error: "Internal Server Error", customerClickupID: "" }), { status: 500 });
+        console.error("Error fetching customer Meta ID:", error);
+        return new Response(JSON.stringify({ error: "Internal Server Error", customerMetaID: "" }), { status: 500 });
     }
 }
 
@@ -28,20 +28,20 @@ export async function PUT(req, { params }) {
     await dbConnect();
 
     try {
-        const { customerClickupID } = await req.json();
+        const { customerMetaID } = await req.json();
 
         const updatedSettings = await CustomerSettings.findOneAndUpdate(
             { customer: customerId },
-            { customerClickupID },
+            { customerMetaID },
             { new: true, upsert: true }
         );
 
         return new Response(JSON.stringify({
-            message: "Clickup ID updated successfully",
-            customerClickupID: updatedSettings.customerClickupID
+            message: "Meta ID updated successfully",
+            customerMetaID: updatedSettings.customerMetaID
         }), { status: 200 });
     } catch (error) {
-        console.error("Error updating customer clickup ID:", error);
+        console.error("Error updating customer Meta ID:", error);
         return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
     }
 }

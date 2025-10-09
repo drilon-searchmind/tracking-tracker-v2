@@ -1,5 +1,6 @@
 import { dbConnect } from "@/lib/dbConnect";
 import Customer from "@/models/Customer";
+import CustomerSettings from "@/models/CustomerSettings"; // Add this import
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
@@ -21,7 +22,20 @@ export async function GET(req, { params }) {
             return new Response(JSON.stringify({ message: "::: Customer not found" }), { status: 404 });
         }
 
-        return new Response(JSON.stringify(customer), { status: 200 });
+        const customerSettings = await CustomerSettings.findOne({ customer: customerId });
+        
+        const responseData = {
+            _id: customer._id,
+            bigQueryCustomerId: customer.bigQueryCustomerId,
+            bigQueryProjectId: customer.bigQueryProjectId,
+            name: customer.name,
+            customerMetaID: customerSettings?.customerMetaID || "",
+            metricPreference: customerSettings?.metricPreference || "ROAS/POAS",
+            customerValuta: customerSettings?.customerValuta || "DKK",
+            customerClickupID: customerSettings?.customerClickupID || ""
+        };
+
+        return new Response(JSON.stringify(responseData), { status: 200 });
     } catch (error) {
         console.error("::: Error fetching customer:", error);
         return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });
@@ -38,7 +52,6 @@ export async function PUT(req, { params }) {
         const body = await req.json();
         const { name, bigQueryCustomerId, bigQueryProjectId } = body;
 
-        // Create an update object with only the fields that are provided
         const updateData = {};
         if (name) updateData.name = name;
         if (bigQueryCustomerId) updateData.bigQueryCustomerId = bigQueryCustomerId;
@@ -46,8 +59,7 @@ export async function PUT(req, { params }) {
         
         updateData.updatedAt = new Date();
 
-        // Check if we have at least one field to update
-        if (Object.keys(updateData).length <= 1) { // <= 1 because we always have updatedAt
+        if (Object.keys(updateData).length <= 1) { 
             return new Response(JSON.stringify({ message: "::: At least one field (name, bigQueryCustomerId, or bigQueryProjectId) is required" }), { status: 400 });
         }
 
@@ -56,7 +68,6 @@ export async function PUT(req, { params }) {
             updateData,
             {
                 new: true,
-                // Return all fields instead of just selected ones
             }
         );
 
@@ -92,7 +103,7 @@ export async function DELETE(req, { params }) {
             return new Response(JSON.stringify({ message: "::: Customer not found" }), { status: 404 });
         }
 
-        // FIXME: might want to delete related data here (like StaticExpenses for this customer)
+        // FIXME: delete related data here (like StaticExpenses for this customer)
         // example:
         // await StaticExpenses.deleteMany({ customer: customerId });
 

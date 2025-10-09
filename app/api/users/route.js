@@ -71,7 +71,7 @@ export async function POST(request) {
         const newUser = new User({
             name,
             email,
-            password, // bcrypt hashing happens in the User model's pre-save hook
+            password,
             isAdmin: isAdmin || false,
             isExternal: isExternal || false,
             isArchived: false,

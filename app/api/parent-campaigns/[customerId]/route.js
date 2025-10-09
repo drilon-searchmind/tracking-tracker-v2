@@ -70,14 +70,14 @@ export async function POST(req, { params }) {
                 const childCampaign = new Campaign({
                     customerId,
                     service: service,
-                    media: "Other", // Default value, can be updated later
-                    campaignFormat: "Collection", // Default value, can be updated later
+                    media: "Other", 
+                    campaignFormat: "Collection", 
                     countryCode: body.countryCode || "",
                     startDate: body.startDate || null,
                     endDate: body.endDate || null,
                     campaignName: `${body.parentCampaignName}: ${service}`,
                     messageBrief: body.campaignBrief || "",
-                    b2bOrB2c: body.b2bOrB2c || "B2B", // Default if not specified
+                    b2bOrB2c: body.b2bOrB2c || "B2B", 
                     budget: body.budget ? parseFloat(body.budget) / body.service.length : 0,
                     materialFromCustomer: body.materialFromCustomer || "",
                     parentCampaignId: parentCampaign._id,

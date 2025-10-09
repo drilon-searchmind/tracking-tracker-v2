@@ -38,7 +38,7 @@ export default function Nav() {
                         <span className="text-lg text-black font-extrabold fontFamilyFustatHeading">
                             Searchmind Apex
                             <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-md font-medium">
-                                🚧 Under Construction
+                                🚧 v 0.2.3
                             </span>
                         </span>
                         {session ? (

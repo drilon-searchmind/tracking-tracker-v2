@@ -47,7 +47,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
     const [endDate, setEndDate] = useState(formatDate(yesterday));
     const [activeChartIndex, setActiveChartIndex] = useState(0);
 
-    // Calculate daysInMonth for use in UI
     const end = new Date(endDate);
     const daysInMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
 
@@ -98,17 +97,14 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         const daysElapsed = daysInRange;
         const daysRemaining = daysInMonth - daysElapsed;
 
-        // Revenue pace calculation
         const revenuePace = (aggregated.revenue / daysInMonth) * (daysElapsed - 1) > 0
             ? revenueBudgetNum / ((aggregated.revenue / daysInMonth) * (daysElapsed - 1))
             : 0;
 
-        // Orders pace calculation
         const ordersPace = (aggregated.orders / daysInMonth) * (daysElapsed - 1) > 0
             ? ordersBudgetNum / ((aggregated.orders / daysInMonth) * (daysElapsed - 1))
             : 0;
 
-        // Ad spend pace calculation
         const adSpendPace = (aggregated.ad_spend / daysInMonth) * (daysElapsed - 1) > 0
             ? adSpendBudgetNum / ((aggregated.ad_spend / daysInMonth) * (daysElapsed - 1))
             : 0;
@@ -342,7 +338,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         }
     };
 
-    // Chart components for mobile carousel
     const chartComponents = [
         {
             title: "Ad Spend Budget",
@@ -411,7 +406,6 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         }
     ];
 
-    // Navigation for chart carousel
     const navigateChart = (direction) => {
         if (direction === 'next') {
             setActiveChartIndex((prev) => 

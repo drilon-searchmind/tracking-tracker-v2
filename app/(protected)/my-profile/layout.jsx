@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 export default async function ProfileLayout({ children }) {
     const session = await getServerSession(authOptions);
 
-    // Verify user is authenticated
     if (!session) {
         redirect("/login");
     }

@@ -1,12 +1,10 @@
 const https = require('https');
 const fs = require('fs');
 
-// Replace these values with your repository details
 const owner = 'drilon-searchmind';
 const repo = 'tracking-tracker-v2';
-const token = ''; // Replace with your token
+const token = ''; 
 
-// Function to make GitHub API requests
 function makeGitHubRequest(path) {
     return new Promise((resolve, reject) => {
         const options = {
@@ -41,7 +39,6 @@ function makeGitHubRequest(path) {
     });
 }
 
-// Function to fetch all pull requests (paginated)
 async function fetchAllPullRequests() {
     console.log('Fetching pull requests...');
     let allPRs = [];
@@ -61,11 +58,9 @@ async function fetchAllPullRequests() {
         }
     }
 
-    // Filter to only merged PRs
     return allPRs.filter(pr => pr.merged_at !== null);
 }
 
-// Function to get PR details with additional info
 async function fetchPRDetails(prs) {
     console.log('Fetching PR details...');
     const detailedPRs = [];
@@ -73,10 +68,8 @@ async function fetchPRDetails(prs) {
     for (const pr of prs) {
         console.log(`Fetching details for PR #${pr.number}: ${pr.title}`);
 
-        // Get PR details including labels
         const prDetails = await makeGitHubRequest(`/repos/${owner}/${repo}/pulls/${pr.number}`);
 
-        // Get commits for this PR
         const commits = await makeGitHubRequest(`/repos/${owner}/${repo}/pulls/${pr.number}/commits`);
 
         detailedPRs.push({
@@ -98,17 +91,13 @@ async function fetchPRDetails(prs) {
     return detailedPRs;
 }
 
-// Main function to fetch all PR data and save to file
 async function main() {
     try {
-        // Fetch all merged PRs
         const mergedPRs = await fetchAllPullRequests();
         console.log(`Found ${mergedPRs.length} merged PRs`);
 
-        // Get detailed information for each PR
         const detailedPRs = await fetchPRDetails(mergedPRs);
 
-        // Save raw PR data
         fs.writeFileSync('github_prs_raw.json', JSON.stringify(detailedPRs, null, 2));
         console.log('Raw PR data saved to github_prs_raw.json');
 

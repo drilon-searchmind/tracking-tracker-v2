@@ -7,7 +7,6 @@ import UnauthorizedAccess from "@/app/components/UI/UnauthorizedAccess";
 export default async function AdminLayout({ children }) {
     const session = await getServerSession(authOptions);
 
-    // Verify user is authenticated
     if (!session) {
         redirect("/login");
     }

@@ -35,8 +35,8 @@ export async function PUT(req, { params }) {
             userId,
             updateData,
             { 
-                new: true, // Return the updated document
-                runValidators: false // Don't validate fields that aren't being updated
+                new: true, 
+                runValidators: false
             }
         );
 

@@ -387,7 +387,6 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
         },
     };
 
-    // Chart components for mobile carousel
     const chartComponents = [
         {
             title: selectedMetric,
@@ -426,7 +425,6 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
         }
     ];
 
-    // Navigation for chart carousel
     const navigateChart = (direction) => {
         if (direction === 'next') {
             setActiveChartIndex((prev) => 
@@ -439,7 +437,6 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
         }
     };
 
-    // Toggle campaign expansion
     const toggleCampaignExpansion = (index) => {
         setExpandedCampaigns(prev => ({
             ...prev,
@@ -447,7 +444,6 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
         }));
     };
 
-    // Reset expanded items when date range changes
     useEffect(() => {
         setExpandedCampaigns({});
     }, [startDate, endDate]);

@@ -8,7 +8,6 @@ const ThemeContext = createContext({
 });
 
 export function ThemeProvider({ children }) {
-    // Check for saved theme preference or use light as default
     const [theme, setTheme] = useState("light");
 
     useEffect(() => {

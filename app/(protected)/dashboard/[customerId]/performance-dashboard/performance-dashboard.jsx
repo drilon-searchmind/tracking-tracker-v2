@@ -18,7 +18,6 @@ import {
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import "chartjs-adapter-date-fns";
 
-// Import components
 import DashboardMetrics from "./components/DashboardMetrics";
 import DashboardCharts from "./components/DashboardCharts";
 import ServiceDashboards from "./components/ServiceDashboards";
@@ -38,7 +37,6 @@ ChartJS.register(
 );
 
 export default function PerformanceDashboard({ customerId, customerName, initialData }) {
-    // Initialize date picker to first day of current month to yesterday
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -57,7 +55,6 @@ export default function PerformanceDashboard({ customerId, customerName, initial
     const [isLoading, setIsLoading] = useState(true);
     const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
-    // View mode states for each chart
     const [revenueViewMode, setRevenueViewMode] = useState("YTD");
     const [spendViewMode, setSpendViewMode] = useState("YTD");
     const [aovViewMode, setAovViewMode] = useState("YTD");
@@ -65,22 +62,19 @@ export default function PerformanceDashboard({ customerId, customerName, initial
 
     const data = Array.isArray(initialData) ? initialData : [];
 
-    // Initial loading effect when component mounts
     useEffect(() => {
         if (initialData) {
             const timer = setTimeout(() => {
                 setIsLoading(false);
-                setInitialLoadComplete(true); // Mark initial load as complete
+                setInitialLoadComplete(true);
             }, 800);
 
             return () => clearTimeout(timer);
         }
     }, [initialData]);
 
-    // Modified to only show loading on filters change when initial load is not complete
     useEffect(() => {
         if (initialLoadComplete) {
-            // Don't show loader for subsequent filter changes
             return;
         }
 
@@ -114,12 +108,10 @@ export default function PerformanceDashboard({ customerId, customerName, initial
         }
     };
 
-    // Filter data for the selected period
     const filteredData = useMemo(() => {
         return data.filter((row) => row.date >= dateStart && row.date <= dateEnd);
     }, [data, dateStart, dateEnd]);
 
-    // Get comparison dates
     const getComparisonDates = () => {
         const end = new Date(dateEnd);
         const start = new Date(dateStart);
@@ -140,12 +132,10 @@ export default function PerformanceDashboard({ customerId, customerName, initial
 
     const { compStart, compEnd } = getComparisonDates();
 
-    // Get comparison data
     const comparisonData = useMemo(() => {
         return data.filter((row) => row.date >= compStart && row.date <= compEnd);
     }, [data, compStart, compEnd]);
 
-    // Function to get YTD data
     const getYTDData = useMemo(() => {
         const currentYear = new Date(dateEnd).getFullYear();
         const startOfYear = `${currentYear}-01-01`;
@@ -156,7 +146,6 @@ export default function PerformanceDashboard({ customerId, customerName, initial
         });
     }, [data, dateEnd]);
 
-    // Function to get YTD comparison data
     const getYTDComparisonData = useMemo(() => {
         const currentYear = new Date(dateEnd).getFullYear();
         const previousYear = currentYear - 1;
@@ -169,16 +158,13 @@ export default function PerformanceDashboard({ customerId, customerName, initial
         });
     }, [data, dateEnd]);
 
-    // Function to group YTD data by month
     const groupDataByMonth = (dataArray) => {
         const groupedData = {};
 
         dataArray.forEach(row => {
-            // Extract year and month from date
             const date = new Date(row.date);
             const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
-            // Initialize month group if it doesn't exist
             if (!groupedData[yearMonth]) {
                 groupedData[yearMonth] = {
                     date: yearMonth,
@@ -193,7 +179,6 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                 };
             }
 
-            // Aggregate the metrics
             groupedData[yearMonth].revenue += row.revenue || 0;
             groupedData[yearMonth].gross_profit += row.gross_profit || 0;
             groupedData[yearMonth].orders += row.orders || 0;
@@ -202,7 +187,6 @@ export default function PerformanceDashboard({ customerId, customerName, initial
             groupedData[yearMonth].meta_spend += row.meta_spend || 0;
             groupedData[yearMonth].impressions += row.impressions || 0;
 
-            // Aggregate channel sessions
             if (row.channel_sessions) {
                 row.channel_sessions.forEach(({ channel_group, sessions }) => {
                     if (channel_group) {
@@ -213,22 +197,18 @@ export default function PerformanceDashboard({ customerId, customerName, initial
             }
         });
 
-        // Calculate derived metrics for each month
         Object.values(groupedData).forEach(month => {
             month.roas = month.cost > 0 ? month.revenue / month.cost : 0;
             month.poas = month.cost > 0 ? month.gross_profit / month.cost : 0;
             month.aov = month.orders > 0 ? month.revenue / month.orders : 0;
         });
 
-        // Convert to array and sort by date
         return Object.values(groupedData).sort((a, b) => a.date.localeCompare(b.date));
     };
 
-    // Get monthly grouped data for YTD views
     const monthlyYTDData = useMemo(() => groupDataByMonth(getYTDData), [getYTDData]);
     const monthlyYTDComparisonData = useMemo(() => groupDataByMonth(getYTDComparisonData), [getYTDComparisonData]);
 
-    // Function to format month labels
     const formatMonthLabel = (yearMonth) => {
         const [year, month] = yearMonth.split('-');
         const date = new Date(parseInt(year), parseInt(month) - 1, 1);
@@ -246,7 +226,6 @@ export default function PerformanceDashboard({ customerId, customerName, initial
                         }
                     });
                 } else {
-                    // Handle case where channel_sessions is an object (for grouped data)
                     Object.entries(row.channel_sessions).forEach(([channel_group, sessions]) => {
                         channelSessions[channel_group] = (channelSessions[channel_group] || 0) + (sessions || 0);
                     });
@@ -269,11 +248,9 @@ export default function PerformanceDashboard({ customerId, customerName, initial
         };
     };
 
-    // Get metrics based on the currently selected data
     const currentMetrics = aggregateMetrics(filteredData);
     const prevMetrics = aggregateMetrics(comparisonData);
 
-    // Filter valid chart data
     const validChartData = filteredData.filter(
         (row) => row.date && !isNaN(new Date(row.date).getTime()) && row.revenue !== 0 && row.aov !== 0
     );

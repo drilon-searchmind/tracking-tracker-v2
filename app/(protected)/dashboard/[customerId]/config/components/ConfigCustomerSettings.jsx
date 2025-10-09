@@ -11,8 +11,10 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
     const [clickupId, setClickupId] = useState("");
     const [clickupLoading, setClickupLoading] = useState(false);
     const [tempClickupId, setTempClickupId] = useState("");
+    const [countryIdLoading, setCountryIdLoading] = useState(false);
+    const [tempCountryId, setTempCountryId] = useState("");
+    const [countryId, setCountryId] = useState("");
 
-    // Convert currency data object to sorted array for dropdown
     const currencies = Object.entries(currencyData)
         .map(([code, data]) => ({ code, ...data }))
         .sort((a, b) => a.code.localeCompare(b.code));
@@ -20,7 +22,6 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                // Fetch metric preference
                 const settingsResponse = await fetch(`/api/customer-settings/${customerId}`);
                 if (settingsResponse.ok) {
                     const data = await settingsResponse.json();
@@ -29,11 +30,17 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     setTempClickupId(data.customerClickupID || "");
                 }
 
-                // Fetch currency separately from the dedicated endpoint
                 const currencyResponse = await fetch(`/api/customer-settings/${customerId}/customerValuta`);
                 if (currencyResponse.ok) {
                     const data = await currencyResponse.json();
                     setCustomerValuta(data.customerValuta || "DKK");
+                }
+
+                const metaIdResponse = await fetch(`/api/customer-settings/${customerId}/customerMetaId`);
+                if (metaIdResponse.ok) {
+                    const data = await metaIdResponse.json();
+                    setCountryId(data.customerMetaID || "");
+                    setTempCountryId(data.customerMetaID || "");
                 }
             } catch (error) {
                 console.error("Error fetching customer settings:", error);
@@ -94,6 +101,10 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
         setTempClickupId(e.target.value);
     };
 
+    const handleClickupIdChangeMeta = (e) => {
+        setTempCountryId(e.target.value);
+    };
+
     const handleClickupIdUpdate = async () => {
         if (tempClickupId === clickupId) return;
 
@@ -109,17 +120,42 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                 setClickupId(tempClickupId);
             } else {
                 console.error("Failed to update Clickup ID");
-                setTempClickupId(clickupId); // Reset to original value on failure
+                setTempClickupId(clickupId);
             }
         } catch (error) {
             console.error("Error updating Clickup ID:", error);
-            setTempClickupId(clickupId); // Reset to original value on failure
+            setTempClickupId(clickupId);
         } finally {
             setClickupLoading(false);
         }
     };
 
-    // Find current currency code by its native symbol
+    const handleClickupIdUpdateMeta = async () => {
+        if (tempCountryId === countryId) return;
+
+        setCountryIdLoading(true);
+
+        try {
+            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}/customerMetaId`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ customerMetaID: tempCountryId }),
+            });
+
+            if (response.ok) {
+                setCountryId(tempCountryId);
+            } else {
+                console.error("Failed to update Country Meta ID");
+                setTempCountryId(countryId);
+            }
+        } catch (error) {
+            console.error("Error updating Country Meta ID:", error);
+            setTempCountryId(countryId);
+        } finally {
+            setCountryIdLoading(false); 
+        }
+    };
+
     const getCurrentCurrencyCode = () => {
         const found = Object.entries(currencyData).find(
             ([_, data]) => data.symbol_native === customerValuta
@@ -213,6 +249,30 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                                         className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
                                     >
                                         {clickupLoading ? "Updating..." : "Update"}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr className="border-b border-zinc-100">
+                            <td className="px-4 py-3">Meta Customer Country</td>
+                            <td className="px-4 py-3">
+                                {countryId || "Not set"}
+                            </td>
+                            <td className="px-4 py-3">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={tempCountryId}
+                                        onChange={handleClickupIdChangeMeta}
+                                        placeholder="Enter Country ID (e.g., DK, UK)"
+                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                    />
+                                    <button
+                                        onClick={handleClickupIdUpdateMeta}
+                                        disabled={countryIdLoading || tempCountryId === countryId}
+                                        className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
+                                    >
+                                        {countryIdLoading ? "Updating..." : "Update"}
                                     </button>
                                 </div>
                             </td>

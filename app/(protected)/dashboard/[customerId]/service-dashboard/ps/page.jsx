@@ -9,7 +9,7 @@ export default async function PaidSocialDashboardPage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
@@ -22,8 +22,8 @@ export default async function PaidSocialDashboardPage({ params }) {
             CAST(JSON_VALUE(conversions) AS FLOAT64) AS conversions,
             CAST(JSON_VALUE(conversion_values) AS FLOAT64) AS conversion_value,
             spend
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.meta_ads_insights\`
-        WHERE date_start IS NOT NULL
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
+        WHERE date_start IS NOT NULL AND country = "${customerMetaID}"
     ),
     metrics_by_date AS (
         SELECT

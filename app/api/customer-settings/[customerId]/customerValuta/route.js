@@ -37,7 +37,7 @@ export async function PUT(req, { params }) {
         const updatedSettings = await CustomerSettings.findOneAndUpdate(
             { customer: customerId },
             { customerValuta },
-            { new: true, upsert: true } // Create if not exists
+            { new: true, upsert: true }
         );
 
         return new Response(JSON.stringify({

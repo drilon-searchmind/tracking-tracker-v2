@@ -22,7 +22,7 @@ export default async function SEODashboardPage({ params }) {
                     impressions,
                     ctr,
                     position
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.gsc_search_analytics_all_fields\`
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.gsc_search_analytics_all_fields\`
                 WHERE date IS NOT NULL
             ),
             impressions_by_date AS (

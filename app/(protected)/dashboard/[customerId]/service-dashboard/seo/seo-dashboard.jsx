@@ -51,7 +51,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     const [expandedKeywords, setExpandedKeywords] = useState({});
     const [expandedUrls, setExpandedUrls] = useState({});
 
-    // New state for search functionality
     const [keywordSearch, setKeywordSearch] = useState("");
     const [urlSearch, setUrlSearch] = useState("");
 
@@ -137,7 +136,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         );
     }, [impressions_data, compStart, compEnd]);
 
-    // Updated to gather and process all keywords, not just top 10
     const allKeywords = useMemo(() => {
         const keywordMap = filteredKeywordsByDate.reduce((acc, row) => {
             acc[row.keyword] = {
@@ -158,7 +156,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
             .sort((a, b) => b.clicks - a.clicks);
     }, [filteredKeywordsByDate]);
 
-    // Filter keywords by search term if provided
     const filteredTopKeywords = useMemo(() => {
         return allKeywords
             .filter(item =>
@@ -166,10 +163,9 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     item.keyword.toLowerCase().includes(keywordSearch.toLowerCase()) :
                     true
             )
-            .slice(0, keywordSearch ? undefined : 10); // Show all matching results when searching
+            .slice(0, keywordSearch ? undefined : 10);
     }, [allKeywords, keywordSearch]);
 
-    // Similar approach for URLs - gather all and filter by search
     const allUrls = useMemo(() => {
         const urlMap = filteredUrlsByDate.reduce((acc, row) => {
             acc[row.url] = {
@@ -199,7 +195,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
             .slice(0, urlSearch ? undefined : 20);
     }, [allUrls, urlSearch]);
 
-    // Select top items for charts
     const selectedUrls = useMemo(() => {
         return filteredTopUrls.slice(0, 5).map(item => item.url);
     }, [filteredTopUrls]);

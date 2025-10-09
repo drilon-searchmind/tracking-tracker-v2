@@ -48,8 +48,6 @@ export default function UserCampaignsContent() {
 
     const fetchCustomers = async () => {
         try {
-            // In a real implementation, this would fetch customer data from the API
-            // For now, we'll just simulate some data
             const mockCustomers = {
                 '101': 'Acme Corporation',
                 '102': 'TechVision Inc.',
@@ -87,13 +85,11 @@ export default function UserCampaignsContent() {
         }
     };
 
-    // Get unique statuses from campaigns
     const getUniqueStatuses = () => {
         const statuses = [...new Set(campaigns.map(campaign => campaign.status))];
         return ['All', ...statuses];
     };
 
-    // Get unique months from campaign start dates
     const getUniqueMonths = () => {
         const months = [];
         const monthNames = [
@@ -112,7 +108,6 @@ export default function UserCampaignsContent() {
         });
 
         return ['All', ...months.sort((a, b) => {
-            // Sort by year, then by month
             const [monthA, yearA] = a.split(' ');
             const [monthB, yearB] = b.split(' ');
 
@@ -123,15 +118,12 @@ export default function UserCampaignsContent() {
 
     const filterCampaigns = () => {
         return campaigns.filter(campaign => {
-            // Text search filter
             const matchesSearch = campaign.campaignName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (customerMap[campaign.customerId] &&
                     customerMap[campaign.customerId].toLowerCase().includes(searchQuery.toLowerCase()));
 
-            // Status filter
             const matchesStatus = statusFilter === 'All' || campaign.status === statusFilter;
 
-            // Month filter
             let matchesMonth = true;
             if (monthFilter !== 'All' && campaign.startDate) {
                 const date = new Date(campaign.startDate);

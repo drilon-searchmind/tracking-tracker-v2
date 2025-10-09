@@ -1,4 +1,4 @@
-export const runtime = "nodejs"; // ensure Node runtime so mongoose works
+export const runtime = "nodejs";
 
 import StaticExpenses from "@/models/StaticExpenses";
 import { dbConnect } from "@/lib/dbConnect";

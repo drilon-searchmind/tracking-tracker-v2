@@ -4,19 +4,16 @@ import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
-// Support for different email providers (active campaign, klaviyo)
 export default async function EmailDashboardPage({ params }) {
     const resolvedParams = await params;
     const customerId = resolvedParams.customerId;
 
-    // In a real scenario, this would be determined from the customer's settings
-    const emailType = "klaviyo"; // Change to "active_campaign" to test Active Campaign dashboard
+    const emailType = "klaviyo";
 
     try {
         const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
-        // Choose the right query based on email provider type
         let data;
         if (emailType === "klaviyo") {
             const klaviyoQuery = `
@@ -27,7 +24,7 @@ export default async function EmailDashboardPage({ params }) {
                     JSON_EXTRACT_SCALAR(k.attributes, '$.name') AS campaign_name,
                     JSON_EXTRACT_SCALAR(k.attributes, '$.status') AS status,
                     JSON_EXTRACT_SCALAR(k.attributes, '$.channel') AS channel
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.klaviyo_campaigns\` k
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.klaviyo_campaigns\` k
                 WHERE k.updated_at IS NOT NULL
             ),
             detailed_metrics AS (
@@ -43,7 +40,7 @@ export default async function EmailDashboardPage({ params }) {
                     MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.conversions') AS FLOAT64)) AS conversions,
                     MAX(CAST(JSON_EXTRACT_SCALAR(msg, '$.attributes.stats.revenue') AS FLOAT64)) AS conversion_value
                 FROM campaign_data cd
-                JOIN \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.klaviyo_campaigns_detailed\` kcd
+                JOIN \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.klaviyo_campaigns_detailed\` kcd
                 ON cd.campaign_id = kcd.id
                 CROSS JOIN UNNEST(JSON_EXTRACT_ARRAY(kcd.campaign_messages, '$')) AS msg
                 GROUP BY cd.campaign_name, cd.date
@@ -176,7 +173,6 @@ export default async function EmailDashboardPage({ params }) {
             });
 
         } else {
-            // Existing Active Campaign query
             const dashboardQuery = `
     WITH raw_data AS (
         SELECT
@@ -187,7 +183,7 @@ export default async function EmailDashboardPage({ params }) {
             CAST(metrics_conversions AS FLOAT64) AS conversions,
             CAST(metrics_conversions_value AS FLOAT64) AS conversion_value,
             metrics_cost_micros / 1000000.0 AS cost
-        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "")}.campaign\`
+        FROM \`${projectId}.airbyte_${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.campaign\`
         WHERE segments_date IS NOT NULL
     ),
     metrics_by_date AS (

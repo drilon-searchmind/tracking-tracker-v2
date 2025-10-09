@@ -10,7 +10,6 @@ export default async function PnLPage({ params }) {
     const resolvedParams = await params;
     const customerId = resolvedParams.customerId;
 
-    // Fetch static expenses
     let staticExpenses = {
         cogs_percentage: 0,
         shipping_cost_per_order: 0,
@@ -39,7 +38,7 @@ export default async function PnLPage({ params }) {
     }
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
@@ -52,7 +51,7 @@ export default async function PnLPage({ params }) {
             SELECT
                 CAST(DATE(created_at) AS STRING) AS date,
                 amount
-            FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
+            FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
             WHERE status = 'SUCCESS' AND kind = 'AUTHORIZATION'
         ) t
         GROUP BY date
@@ -61,15 +60,15 @@ export default async function PnLPage({ params }) {
         SELECT
             CAST(date_start AS STRING) AS date,
             SUM(COALESCE(spend, 0)) AS marketing_spend_facebook
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.meta_ads_insights\`
-        WHERE date_start IS NOT NULL
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
+        WHERE date_start IS NOT NULL AND country = "${customerMetaID}"
         GROUP BY date_start
     ),
     google_ads_data AS (
         SELECT
             CAST(segments_date AS STRING) AS date,
             SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS marketing_spend_google
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.google_ads_campaign\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
         WHERE segments_date IS NOT NULL
         GROUP BY segments_date
     ),
@@ -78,7 +77,7 @@ export default async function PnLPage({ params }) {
         SELECT
             CAST(sdate AS STRING) AS date,
             SUM(COALESCE(cost, 0)) AS marketing_spend_email
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.klaviyo_campaigns\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.klaviyo_campaigns\`
         WHERE sdate IS NOT NULL
         GROUP BY sdate
     ), */

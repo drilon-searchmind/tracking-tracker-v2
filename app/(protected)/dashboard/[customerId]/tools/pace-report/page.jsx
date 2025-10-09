@@ -9,7 +9,7 @@ export default async function PacePage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
@@ -22,7 +22,7 @@ export default async function PacePage({ params }) {
             SELECT
                 CAST(DATE(processed_at) AS STRING) AS date,
                 amount
-            FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.shopify_transactions\`
+            FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
             WHERE status = 'SUCCESS' AND kind = 'AUTHORIZATION'
         ) t
         GROUP BY date
@@ -31,15 +31,15 @@ export default async function PacePage({ params }) {
         SELECT
             CAST(date_start AS STRING) AS date,
             SUM(COALESCE(spend, 0)) AS ps_cost
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.meta_ads_insights\`
-        WHERE date_start IS NOT NULL
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
+        WHERE date_start IS NOT NULL AND country = "${customerMetaID}"
         GROUP BY date_start
     ),
     google_ads_data AS (
         SELECT
             CAST(segments_date AS STRING) AS date,
             SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS ppc_cost
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "")}.google_ads_campaign\`
+        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
         WHERE segments_date IS NOT NULL
         GROUP BY segments_date
     ),
@@ -78,7 +78,6 @@ export default async function PacePage({ params }) {
             return <div>No data available for {customerId}</div>;
         }
 
-        // Serialize numeric fields to plain JavaScript numbers
         const serializedDailyMetrics = data[0].daily_metrics.map(row => ({
             date: row.date,
             orders: Number(row.orders || 0),

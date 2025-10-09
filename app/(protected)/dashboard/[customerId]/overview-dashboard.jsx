@@ -22,7 +22,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         if (initialData) {
             const timer = setTimeout(() => {
                 setLoading(false);
-            }, 500); // Short timeout to show loading state
+            }, 500);
             return () => clearTimeout(timer);
         }
     }, [initialData]);
@@ -120,7 +120,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
     const lastYearEnd = formatDate(new Date(new Date(endDate).setFullYear(new Date(endDate).getFullYear() - 1)));
 
     const lastYearMetrics = useMemo(() => {
-        // First, filter by date range and add calculated fields
         const metricsWithCalculations = overview_metrics
             .filter((row) => row.date >= lastYearStart && row.date <= lastYearEnd)
             .map(row => ({
@@ -129,7 +128,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                 spendshare_db: row.revenue_ex_tax > 0 ? (row.ppc_cost + row.ps_cost) / (0.7 * row.revenue_ex_tax) : 0,
             }));
 
-        // Then group by date to consolidate duplicate dates
         const groupedByDate = {};
 
         metricsWithCalculations.forEach(row => {
@@ -297,7 +295,6 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         };
     };
 
-    // Reset expanded rows when date range changes
     useEffect(() => {
         setExpandedRows({});
         setExpandedLastYearRows({});
@@ -389,8 +386,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                             <th className="px-2 py-2 font-medium">Revenue Ex Tax</th>
                                             <th className="px-2 py-2 font-medium">PPC Cost</th>
                                             <th className="px-2 py-2 font-medium">PS Cost</th>
-                                            <th className="px-2 py-2 font-medium">{metricView === "roas" ? "ROAS" : "Spendshare"}</th>
-                                            <th className="px-2 py-2 font-medium">{metricView === "roas" ? "POAS" : "Spendshare inc. DB"}</th>
+                                            <th className="px-2 py-2 font-medium">{metricView === "ROAS/POAS" ? "ROAS" : "Spendshare"}</th>
+                                            <th className="px-2 py-2 font-medium">{metricView === "ROAS/POAS" ? "POAS" : "Spendshare inc. DB"}</th>
                                             <th className="px-2 py-2 font-medium">GP</th>
                                             <th className="px-2 py-2 font-medium">AOV</th>
                                         </tr>

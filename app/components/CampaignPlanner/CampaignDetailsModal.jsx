@@ -43,7 +43,7 @@ export default function CampaignDetailsModal({
         { value: "NL", label: "Netherlands (NL)" },
         { value: "NO", label: "Norway (NO)" },
         { value: "FR", label: "France (FR)" },
-        { value: "", label: "───────────────" }, // Divider
+        { value: "", label: "───────────────" },
     ];
 
     const allCountryOptions = [...frequentCountries, ...countryOptions];

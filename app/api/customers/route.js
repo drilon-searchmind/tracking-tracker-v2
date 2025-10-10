@@ -25,6 +25,7 @@ export async function POST(req) {
             bigQueryProjectId,
             metricPreference,
             customerValuta,
+            customerValutaCode,
             customerClickupID
         } = await req.json();
 
@@ -46,6 +47,7 @@ export async function POST(req) {
             customer: savedCustomer._id,
             metricPreference: metricPreference || "ROAS/POAS",
             customerValuta,
+            customerValutaCode,
             customerClickupID,
         });
 

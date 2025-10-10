@@ -19,6 +19,7 @@ export default function CustomerModal({ closeModal }) {
         bigQueryProjectId: "",
         metricPreference: "ROAS/POAS",
         customerValuta: "DKK",
+        customerValutaCode: "DKK",
         customerClickupID: "",
     });
     const [addingCustomer, setAddingCustomer] = useState(false);
@@ -49,9 +50,19 @@ export default function CustomerModal({ closeModal }) {
     ) || null;
 
     const handleCurrencyChange = (selectedOption) => {
+        if (!selectedOption) {
+            setNewCustomer({
+                ...newCustomer,
+                customerValuta: 'kr',
+                customerValutaCode: 'DKK'
+            });
+            return;
+        }
+
         setNewCustomer({
             ...newCustomer,
-            customerValuta: selectedOption ? selectedOption.value : 'kr'
+            customerValuta: selectedOption ? selectedOption.value : 'kr',
+            customerValutaCode: selectedOption.code
         });
     };
 

@@ -38,7 +38,7 @@ export default async function PnLPage({ params }) {
     }
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
@@ -52,7 +52,10 @@ export default async function PnLPage({ params }) {
                 CAST(DATE(created_at) AS STRING) AS date,
                 amount
             FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
-            WHERE status = 'SUCCESS' AND kind = 'AUTHORIZATION'
+            WHERE 
+                status = 'SUCCESS' 
+                AND kind = 'AUTHORIZATION'
+                AND JSON_EXTRACT_SCALAR(total_unsettled_set, '$.presentment_money.currency') = "${customerValutaCode}"
         ) t
         GROUP BY date
     ),

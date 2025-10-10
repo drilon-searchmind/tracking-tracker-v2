@@ -9,61 +9,64 @@ export default async function PacePage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
-    WITH shopify_data AS (
-        SELECT
-            date,
-            SUM(COALESCE(amount, 0)) AS revenue,
-            COUNT(*) AS orders
-        FROM (
+            WITH shopify_data AS (
+                SELECT
+                    date,
+                    SUM(COALESCE(amount, 0)) AS revenue,
+                    COUNT(*) AS orders
+                FROM (
+                    SELECT
+                        CAST(DATE(processed_at) AS STRING) AS date,
+                        amount
+                    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
+                    WHERE 
+                        status = 'SUCCESS' 
+                        AND kind = 'AUTHORIZATION'
+                        AND JSON_EXTRACT_SCALAR(total_unsettled_set, '$.presentment_money.currency') = "${customerValutaCode}"
+                ) t
+                GROUP BY date
+            ),
+            facebook_data AS (
+                SELECT
+                    CAST(date_start AS STRING) AS date,
+                    SUM(COALESCE(spend, 0)) AS ps_cost
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
+                WHERE date_start IS NOT NULL AND country = "${customerMetaID}"
+                GROUP BY date_start
+            ),
+            google_ads_data AS (
+                SELECT
+                    CAST(segments_date AS STRING) AS date,
+                    SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS ppc_cost
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
+                WHERE segments_date IS NOT NULL
+                GROUP BY segments_date
+            ),
+            combined_data AS (
+                SELECT
+                    COALESCE(s.date, f.date, g.date) AS date,
+                    COALESCE(s.orders, 0) AS orders,
+                    COALESCE(s.revenue, 0) AS revenue,
+                    COALESCE(f.ps_cost, 0) AS ps_cost,
+                    COALESCE(g.ppc_cost, 0) AS ppc_cost
+                FROM shopify_data s
+                FULL OUTER JOIN facebook_data f ON s.date = f.date
+                FULL OUTER JOIN google_ads_data g ON s.date = g.date
+                WHERE COALESCE(s.date, f.date, g.date) IS NOT NULL
+            )
             SELECT
-                CAST(DATE(processed_at) AS STRING) AS date,
-                amount
-            FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
-            WHERE status = 'SUCCESS' AND kind = 'AUTHORIZATION'
-        ) t
-        GROUP BY date
-    ),
-    facebook_data AS (
-        SELECT
-            CAST(date_start AS STRING) AS date,
-            SUM(COALESCE(spend, 0)) AS ps_cost
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-        WHERE date_start IS NOT NULL AND country = "${customerMetaID}"
-        GROUP BY date_start
-    ),
-    google_ads_data AS (
-        SELECT
-            CAST(segments_date AS STRING) AS date,
-            SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS ppc_cost
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
-        WHERE segments_date IS NOT NULL
-        GROUP BY segments_date
-    ),
-    combined_data AS (
-        SELECT
-            COALESCE(s.date, f.date, g.date) AS date,
-            COALESCE(s.orders, 0) AS orders,
-            COALESCE(s.revenue, 0) AS revenue,
-            COALESCE(f.ps_cost, 0) AS ps_cost,
-            COALESCE(g.ppc_cost, 0) AS ppc_cost
-        FROM shopify_data s
-        FULL OUTER JOIN facebook_data f ON s.date = f.date
-        FULL OUTER JOIN google_ads_data g ON s.date = g.date
-        WHERE COALESCE(s.date, f.date, g.date) IS NOT NULL
-    )
-    SELECT
-        ARRAY_AGG(STRUCT(
-            date,
-            orders,
-            revenue,
-            (ps_cost + ppc_cost) AS ad_spend
-        ) ORDER BY date) AS daily_metrics
-    FROM combined_data
-`;
+                ARRAY_AGG(STRUCT(
+                    date,
+                    orders,
+                    revenue,
+                    (ps_cost + ppc_cost) AS ad_spend
+                ) ORDER BY date) AS daily_metrics
+            FROM combined_data
+        `;
 
         const data = await queryBigQueryDashboardMetrics({
             tableId: projectId,

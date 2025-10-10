@@ -32,6 +32,7 @@ export async function GET(req, { params }) {
             customerMetaID: customerSettings?.customerMetaID || "",
             metricPreference: customerSettings?.metricPreference || "ROAS/POAS",
             customerValuta: customerSettings?.customerValuta || "DKK",
+            customerValutaCode: customerSettings?.customerValutaCode || "DKK",
             customerClickupID: customerSettings?.customerClickupID || ""
         };
 

@@ -14,7 +14,7 @@ export default async function SpendSharePage({ params }) {
             : process.env.NEXT_PUBLIC_BASE_URL;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const dashboardQuery = `
@@ -24,7 +24,10 @@ export default async function SpendSharePage({ params }) {
                     SUM(amount) AS revenue,
                     SUM(amount) - SUM(amount * 0.25) AS net_profit
                 FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
-                WHERE EXTRACT(YEAR FROM processed_at) = EXTRACT(YEAR FROM CURRENT_DATE()) AND status = 'SUCCESS' AND kind = 'AUTHORIZATION'
+                WHERE 
+                    EXTRACT(YEAR FROM processed_at) = EXTRACT(YEAR FROM CURRENT_DATE()) 
+                    AND status = 'SUCCESS' AND kind = 'AUTHORIZATION'
+                    AND JSON_EXTRACT_SCALAR(total_unsettled_set, '$.presentment_money.currency') = "${customerValutaCode}"
                 GROUP BY month
             ),
             meta_data AS (

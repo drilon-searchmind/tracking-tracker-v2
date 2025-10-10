@@ -82,7 +82,10 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
             const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}/customerValuta`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ customerValuta: selectedCurrency.symbol_native }),
+                body: JSON.stringify({ 
+                    customerValuta: selectedCurrency.symbol_native,
+                    customerValutaCode: selectedCurrency.code,
+                }),
             });
 
             if (response.ok) {

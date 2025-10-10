@@ -28,7 +28,9 @@ export async function PUT(req, { params }) {
     await dbConnect();
 
     try {
-        const { customerValuta } = await req.json();
+        const { customerValuta, customerValutaCode } = await req.json();
+
+        console.log({customerValutaCode})
 
         if (!customerValuta || typeof customerValuta !== 'string') {
             return new Response(JSON.stringify({ error: "Invalid currency value" }), { status: 400 });
@@ -36,7 +38,10 @@ export async function PUT(req, { params }) {
 
         const updatedSettings = await CustomerSettings.findOneAndUpdate(
             { customer: customerId },
-            { customerValuta },
+            { 
+                customerValuta,
+                customerValutaCode
+             },
             { new: true, upsert: true }
         );
 

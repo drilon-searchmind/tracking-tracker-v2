@@ -3,7 +3,7 @@ export default function DashboardPage() {
         <section id="pageDashboardPage" className="py-20">
             <div className="grid grid-cols-12 gap-10">
                 <span className="col-span-6">
-                    <h4 class="mb-4.5 text-lg font-medium text-black dark:text-white">Searchmind Hub - Performance Dashboard</h4>
+                    <h4 class="mb-4.5 text-lg font-medium text-black">Searchmind Hub - Performance Dashboard</h4>
                     <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px]">Your Performance Dashboard Overview</h1>
                     <p>Welcome to your protected dashboard! Fetch GA4 data here.</p>
                 </span>

@@ -277,7 +277,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                     {/* Campaign List */}
                     <div className="mb-6 md:mb-10">
                         <div className="mb-2 md:mb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <h3 className="text-lg md:text-xl font-semibold text-black dark:text-white xl:text-2xl">Your Campaigns</h3>
+                            <h3 className="text-lg md:text-xl font-semibold text-black xl:text-2xl">Your Campaigns</h3>
 
                             <div className="flex flex-col md:flex-row gap-3 md:gap-4 w-full md:w-auto">
                                 <button
@@ -300,7 +300,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                     </div>
 
                     <div className="mb-8 md:mb-12">
-                        <h3 className="text-lg md:text-xl font-semibold text-black dark:text-white xl:text-2xl mb-4 md:mb-5">Campaign Calendar</h3>
+                        <h3 className="text-lg md:text-xl font-semibold text-black xl:text-2xl mb-4 md:mb-5">Campaign Calendar</h3>
                         <div className="overflow-x-auto">
                             <div className="min-w-[700px]">
                                 <CampaignCalendar
@@ -313,7 +313,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                     </div>
 
                     <div className="mb-8 md:mb-12">
-                        <h3 className="text-lg md:text-xl font-semibold text-black dark:text-white xl:text-2xl mb-4 md:mb-5">Campaign Timeline</h3>
+                        <h3 className="text-lg md:text-xl font-semibold text-black xl:text-2xl mb-4 md:mb-5">Campaign Timeline</h3>
                         <div className="overflow-x-auto">
                             <div className="min-w-[700px]">
                                 <CampaignPlannerGanttChart

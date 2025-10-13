@@ -17,7 +17,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="col-span-1 md:col-span-6 mb-8 md:mb-0 z-10">
-                    <h4 className="mb-4 text-base md:text-lg font-light text-zinc-700 dark:text-white">Searchmind Apex - Home</h4>
+                    <h4 className="mb-4 text-base md:text-lg font-light text-zinc-700">Searchmind Apex - Home</h4>
                     <h1 className="mb-5 text-2xl md:text-3xl xl:text-[44px] font-bold text-black md:pr-8 z-10">
                         Welcome to Your <span className="bg-titlebg relative w-full bottom-0 z-10">Searchmind Apex</span> Homepage
                     </h1>
@@ -33,7 +33,7 @@ export default function HomePage() {
                     <div className="border border-zinc-200 w-full pt-20 md:pt-40 text-center flex justify-center pb-20 md:pb-40 rounded-md mt-6 md:mt-10">
                         <FaPlay className="text-zinc-400 text-4xl md:text-6xl" />
                     </div>
-                    <h3 className="mb-2 text-lg md:text-xl xl:text-2xl font-semibold text-black dark:text-white mt-4 md:mt-5">Get Started</h3>
+                    <h3 className="mb-2 text-lg md:text-xl xl:text-2xl font-semibold text-black mt-4 md:mt-5">Get Started</h3>
                     <div className="">
                         <p className="text-sm md:text-base">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore cupiditate perspiciatis.</p>
                     </div>

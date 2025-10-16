@@ -103,7 +103,7 @@ export default function DashboardLayout({ children }) {
                             <PiCaretDownThin />
                         </div>
                         <ul className="absolute left-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 origin-top z-20">
-                            {["seo", "ppc", "em", "ps"].map((slug) => (
+                            {["seo", "ppc", "ps"].map((slug) => (
                                 <li key={slug}>
                                     <a
                                         href={`/dashboard/${customerId}/service-dashboard/${slug}`}
@@ -128,8 +128,8 @@ export default function DashboardLayout({ children }) {
                             {[
                                 { slug: "pnl", label: "P&L" },
                                 { slug: "pace-report", label: "Pace Report" },
-                                { slug: "aarshjul", label: "Year Wheel" },
-                                { slug: "share-of-search", label: "Share of Search" },
+                                // { slug: "aarshjul", label: "Year Wheel" },
+                                // { slug: "share-of-search", label: "Share of Search" },
                             ].map(({ slug, label }) => (
                                 <li key={slug}>
                                     <a
@@ -220,8 +220,8 @@ export default function DashboardLayout({ children }) {
                                 { slug: "pnl", label: "P&L" },
                                 { slug: "pace-report", label: "Pace Report" },
                                 { slug: "kampagneplan", label: "Campaign Planner" },
-                                { slug: "aarshjul", label: "Year Wheel" },
-                                { slug: "share-of-search", label: "Share of Search" },
+                                // { slug: "aarshjul", label: "Year Wheel" },
+                                // { slug: "share-of-search", label: "Share of Search" },
                             ].map(({ slug, label }) => (
                                 <li key={slug} className="py-2">
                                     <a

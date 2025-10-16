@@ -9,12 +9,14 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
         customerValuta: "kr",
         customerValutaCode: "DKK",
         customerClickupID: "",
-        customerMetaID: ""
+        customerMetaID: "",
+        customerMetaIDExclude: ""
     });
     const [loading, setLoading] = useState(false);
     const [tempValues, setTempValues] = useState({
         clickupId: "",
-        countryId: ""
+        countryId: "",
+        excludeCountries: ""
     });
 
     const currencies = Object.entries(currencyData)
@@ -37,11 +39,13 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     customerValuta: data.customerValuta || "kr",
                     customerValutaCode: data.customerValutaCode || "DKK",
                     customerClickupID: data.customerClickupID || "",
-                    customerMetaID: data.customerMetaID || ""
+                    customerMetaID: data.customerMetaID || "",
+                    customerMetaIDExclude: data.customerMetaIDExclude || ""
                 });
                 setTempValues({
                     clickupId: data.customerClickupID || "",
-                    countryId: data.customerMetaID || ""
+                    countryId: data.customerMetaID || "",
+                    excludeCountries: data.customerMetaIDExclude || ""
                 });
             }
         } catch (error) {
@@ -110,6 +114,15 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
         const success = await updateSettings({ customerMetaID: tempValues.countryId });
         if (!success) {
             setTempValues(prev => ({ ...prev, countryId: settings.customerMetaID }));
+        }
+    };
+
+    const handleExcludeCountriesUpdate = async () => {
+        if (tempValues.excludeCountries === settings.customerMetaIDExclude) return;
+        
+        const success = await updateSettings({ customerMetaIDExclude: tempValues.excludeCountries });
+        if (!success) {
+            setTempValues(prev => ({ ...prev, excludeCountries: settings.customerMetaIDExclude }));
         }
     };
 
@@ -224,6 +237,30 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                                     <button
                                         onClick={handleMetaIdUpdate}
                                         disabled={loading || tempValues.countryId === settings.customerMetaID}
+                                        className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
+                                    >
+                                        {loading ? "Updating..." : "Update"}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr className="border-b border-zinc-100">
+                            <td className="px-4 py-3">Exclude Meta Countries</td>
+                            <td className="px-4 py-3">
+                                {settings.customerMetaIDExclude || "Not set"}
+                            </td>
+                            <td className="px-4 py-3">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={tempValues.excludeCountries}
+                                        onChange={(e) => setTempValues(prev => ({ ...prev, excludeCountries: e.target.value }))}
+                                        placeholder="Enter countries to exclude (e.g., DE,DK,NO)"
+                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                    />
+                                    <button
+                                        onClick={handleExcludeCountriesUpdate}
+                                        disabled={loading || tempValues.excludeCountries === settings.customerMetaIDExclude}
                                         className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
                                     >
                                         {loading ? "Updating..." : "Update"}

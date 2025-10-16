@@ -13,6 +13,10 @@ export default async function DashboardPage({ params }) {
 		const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode } = await fetchCustomerDetails(customerId);
 		let projectId = bigQueryProjectId;
 
+		const facebookWhereClause = customerMetaID && customerMetaID.trim() 
+            ? `WHERE country = "${customerMetaID}"` 
+            : '';
+
 		const dashboardQuery = `
 			WITH orders_data AS (
 				SELECT
@@ -41,7 +45,7 @@ export default async function DashboardPage({ params }) {
 				CAST(SUM(spend) AS FLOAT64) as meta_spend,
 				SUM(impressions) as meta_impressions
 				FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-				WHERE country = "${customerMetaID}"
+				${facebookWhereClause}
 				GROUP BY date
 			),
 			sessions_data AS (

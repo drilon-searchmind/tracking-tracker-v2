@@ -12,6 +12,10 @@ export default async function PacePage({ params }) {
         const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
+        const facebookWhereClause = customerMetaID && customerMetaID.trim() 
+            ? `WHERE country = "${customerMetaID}"` 
+            : '';
+
         const dashboardQuery = `
             WITH shopify_data AS (
                 SELECT
@@ -35,7 +39,7 @@ export default async function PacePage({ params }) {
                     CAST(date_start AS STRING) AS date,
                     SUM(COALESCE(spend, 0)) AS ps_cost
                 FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-                WHERE date_start IS NOT NULL AND country = "${customerMetaID}"
+                ${facebookWhereClause}
                 GROUP BY date_start
             ),
             google_ads_data AS (

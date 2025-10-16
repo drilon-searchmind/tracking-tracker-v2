@@ -17,6 +17,10 @@ export default async function SpendSharePage({ params }) {
         const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
+        const facebookWhereClause = customerMetaID && customerMetaID.trim() 
+            ? `WHERE country = "${customerMetaID}"` 
+            : '';
+
         const dashboardQuery = `
             WITH shopify_data AS (
                 SELECT
@@ -35,7 +39,7 @@ export default async function SpendSharePage({ params }) {
                     EXTRACT(MONTH FROM date_start) AS month,
                     SUM(spend) AS meta_spend
                 FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-                WHERE EXTRACT(YEAR FROM date_start) = EXTRACT(YEAR FROM CURRENT_DATE()) AND country = "${customerMetaID}"
+                ${facebookWhereClause}
                 GROUP BY month
             ),
             google_ads_data AS (

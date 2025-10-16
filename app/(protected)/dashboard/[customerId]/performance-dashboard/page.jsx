@@ -10,12 +10,32 @@ export default async function DashboardPage({ params }) {
 	const customerId = resolvedParams.customerId;
 
 	try {
-		const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode } = await fetchCustomerDetails(customerId);
-		let projectId = bigQueryProjectId;
+		const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude } = await fetchCustomerDetails(customerId);
+        let projectId = bigQueryProjectId;
 
-		const facebookWhereClause = customerMetaID && customerMetaID.trim() 
-            ? `WHERE country = "${customerMetaID}"` 
-            : '';
+        const buildFacebookWhereClause = () => {
+            const conditions = [];
+            
+            if (customerMetaID?.trim()) {
+                conditions.push(`country = "${customerMetaID}"`);
+            }
+            
+            if (customerMetaIDExclude?.trim()) {
+                const excludeList = customerMetaIDExclude
+                    .split(',')
+                    .map(c => `"${c.trim()}"`)
+                    .filter(c => c !== '""')
+                    .join(', ');
+                
+                if (excludeList) {
+                    conditions.push(`country NOT IN (${excludeList})`);
+                }
+            }
+            
+            return conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        };
+
+        const facebookWhereClause = buildFacebookWhereClause();
 
 		const dashboardQuery = `
 			WITH orders_data AS (

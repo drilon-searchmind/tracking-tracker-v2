@@ -33,7 +33,8 @@ export async function GET(req, { params }) {
             metricPreference: customerSettings?.metricPreference || "ROAS/POAS",
             customerValuta: customerSettings?.customerValuta || "DKK",
             customerValutaCode: customerSettings?.customerValutaCode || "DKK",
-            customerClickupID: customerSettings?.customerClickupID || ""
+            customerClickupID: customerSettings?.customerClickupID || "",
+            customerMetaIDExclude: customerSettings?.customerMetaIDExclude || "",
         };
 
         return new Response(JSON.stringify(responseData), { status: 200 });

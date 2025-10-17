@@ -41,15 +41,13 @@ export default async function OverviewPage({ params }) {
         const dashboardQuery = `
             WITH shopify_data AS (
                 SELECT
-                    DATE(processed_at) AS date,
+                    DATE(created_at) AS date,
                     COUNT(*) AS orders,
-                    SUM(amount) AS revenue
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
+                    SUM(total_price) AS revenue
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
                 WHERE 
-                    status = 'SUCCESS' 
-                    AND kind = 'AUTHORIZATION'
-                    AND JSON_EXTRACT_SCALAR(total_unsettled_set, '$.presentment_money.currency') = "${customerValutaCode}"
-                GROUP BY DATE(processed_at)
+                    presentment_currency = "${customerValutaCode}"
+                GROUP BY DATE(created_at)
             ),
             facebook_data AS (
                 SELECT

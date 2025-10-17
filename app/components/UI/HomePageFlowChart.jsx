@@ -10,7 +10,7 @@ const HomePageFlowChart = () => {
     return (
         <span className="mt-10 col-span-12 rounded-lg py-10 z-10">
             <span className='max-w-xl mx-auto text-center block mb-10'>
-                <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5">How Data Flows Through Our Platform</h3>
+                <h3 className="mb-2 text-xl font-semibold text-black xl:text-2xl mt-5">How Data Flows Through Our Platform</h3>
                 <div>
                     <p>From data collection to visualization, our platform seamlessly integrates with your marketing data sources for comprehensive performance dashboards.</p>
                 </div>

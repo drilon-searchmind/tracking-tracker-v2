@@ -8,15 +8,33 @@ export async function PUT(req, { params }) {
     await dbConnect();
 
     try {
-        const { metricPreference } = await req.json();
+        const body = await req.json();
+        const {
+            metricPreference,
+            customerValuta,
+            customerValutaCode,
+            customerClickupID,
+            customerMetaID,
+            customerMetaIDExclude
+        } = body;
 
-        if (!["ROAS/POAS", "Spendshare"].includes(metricPreference)) {
+        if (metricPreference && !["ROAS/POAS", "Spendshare"].includes(metricPreference)) {
             return new Response(JSON.stringify({ error: "Invalid metric preference" }), { status: 400 });
         }
 
+        const updateData = {};
+        if (metricPreference !== undefined) updateData.metricPreference = metricPreference;
+        if (customerValuta !== undefined) updateData.customerValuta = customerValuta;
+        if (customerValutaCode !== undefined) updateData.customerValutaCode = customerValutaCode;
+        if (customerClickupID !== undefined) updateData.customerClickupID = customerClickupID;
+        if (customerMetaID !== undefined) updateData.customerMetaID = customerMetaID;
+        if (customerMetaIDExclude !== undefined) updateData.customerMetaIDExclude = customerMetaIDExclude;
+
+        updateData.updatedAt = new Date();
+
         const updatedSettings = await CustomerSettings.findOneAndUpdate(
             { customer: customerId },
-            { metricPreference },
+            updateData,
             { new: true, upsert: true }
         );
 
@@ -37,7 +55,16 @@ export async function GET(req, { params }) {
         const settings = await CustomerSettings.findOne({ customer: customerId });
 
         if (!settings) {
-            return new Response(JSON.stringify({ error: "Settings not found" }), { status: 404 });
+            const defaultSettings = {
+                customer: customerId,
+                metricPreference: "ROAS/POAS",
+                customerValuta: "kr",
+                customerValutaCode: "DKK",
+                customerClickupID: "",
+                customerMetaID: "",
+                customerMetaIDExclude: ""
+            };
+            return new Response(JSON.stringify(defaultSettings), { status: 200 });
         }
 
         return new Response(JSON.stringify(settings), { status: 200 });

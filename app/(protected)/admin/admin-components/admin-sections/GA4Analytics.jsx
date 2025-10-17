@@ -138,7 +138,7 @@ const GA4Analytics = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">GA4 Analytics Dashboard</h2>
+                <h2 className="mb-2 text-xl font-semibold text-black xl:text-2xl mt-5 mb-5">GA4 Analytics Dashboard</h2>
                 <div className="flex space-x-2">
                     <button
                         onClick={() => setTimeRange('7d')}

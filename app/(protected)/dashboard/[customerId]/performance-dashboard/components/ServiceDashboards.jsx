@@ -2,7 +2,7 @@ export default function ServiceDashboards() {
     return (
         <section>
             <div className="mt-8 md:mt-16 space-y-4 px-0 md:px-0 mx-auto z-10 relative">
-                <h3 className="mb-2 text-xl font-semibold text-black dark:text-white xl:text-2xl mt-5 mb-5">
+                <h3 className="mb-2 text-xl font-semibold text-black xl:text-2xl mt-5 mb-5">
                     Service Dashboards
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

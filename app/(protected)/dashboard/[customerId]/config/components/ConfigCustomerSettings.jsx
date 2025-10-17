@@ -4,71 +4,87 @@ import { useState, useEffect } from "react";
 import currencyData from "@/lib/static-data/commonCurrency.json";
 
 export default function ConfigCustomerSettings({ customerId, baseUrl }) {
-    const [metricPreference, setMetricPreference] = useState("ROAS/POAS");
-    const [customerValuta, setCustomerValuta] = useState("DKK");
+    const [settings, setSettings] = useState({
+        metricPreference: "ROAS/POAS",
+        customerValuta: "kr",
+        customerValutaCode: "DKK",
+        customerClickupID: "",
+        customerMetaID: "",
+        customerMetaIDExclude: ""
+    });
     const [loading, setLoading] = useState(false);
-    const [currencyLoading, setCurrencyLoading] = useState(false);
-    const [clickupId, setClickupId] = useState("");
-    const [clickupLoading, setClickupLoading] = useState(false);
-    const [tempClickupId, setTempClickupId] = useState("");
-    const [countryIdLoading, setCountryIdLoading] = useState(false);
-    const [tempCountryId, setTempCountryId] = useState("");
-    const [countryId, setCountryId] = useState("");
+    const [tempValues, setTempValues] = useState({
+        clickupId: "",
+        countryId: "",
+        excludeCountries: ""
+    });
 
     const currencies = Object.entries(currencyData)
         .map(([code, data]) => ({ code, ...data }))
         .sort((a, b) => a.code.localeCompare(b.code));
 
     useEffect(() => {
-        const fetchSettings = async () => {
-            try {
-                const settingsResponse = await fetch(`/api/customer-settings/${customerId}`);
-                if (settingsResponse.ok) {
-                    const data = await settingsResponse.json();
-                    setMetricPreference(data.metricPreference || "ROAS/POAS");
-                    setClickupId(data.customerClickupID || "");
-                    setTempClickupId(data.customerClickupID || "");
-                }
-
-                const currencyResponse = await fetch(`/api/customer-settings/${customerId}/customerValuta`);
-                if (currencyResponse.ok) {
-                    const data = await currencyResponse.json();
-                    setCustomerValuta(data.customerValuta || "DKK");
-                }
-
-                const metaIdResponse = await fetch(`/api/customer-settings/${customerId}/customerMetaId`);
-                if (metaIdResponse.ok) {
-                    const data = await metaIdResponse.json();
-                    setCountryId(data.customerMetaID || "");
-                    setTempCountryId(data.customerMetaID || "");
-                }
-            } catch (error) {
-                console.error("Error fetching customer settings:", error);
-            }
-        };
-
         fetchSettings();
     }, [customerId, baseUrl]);
 
-    const handleToggle = async (preference) => {
-        setLoading(true);
+    const fetchSettings = async () => {
         try {
-            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ metricPreference: preference }),
-            });
-
+            setLoading(true);
+            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}`);
+            
             if (response.ok) {
-                setMetricPreference(preference);
-            } else {
-                console.error("Failed to update metric preference");
+                const data = await response.json();
+                setSettings({
+                    metricPreference: data.metricPreference || "ROAS/POAS",
+                    customerValuta: data.customerValuta || "kr",
+                    customerValutaCode: data.customerValutaCode || "DKK",
+                    customerClickupID: data.customerClickupID || "",
+                    customerMetaID: data.customerMetaID || "",
+                    customerMetaIDExclude: data.customerMetaIDExclude || ""
+                });
+                setTempValues({
+                    clickupId: data.customerClickupID || "",
+                    countryId: data.customerMetaID || "",
+                    excludeCountries: data.customerMetaIDExclude || ""
+                });
             }
         } catch (error) {
-            console.error("Error updating metric preference:", error);
+            console.error("Error fetching customer settings:", error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const updateSettings = async (updateData) => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updateData),
+            });
+
+            if (response.ok) {
+                const updatedData = await response.json();
+                setSettings(prevSettings => ({
+                    ...prevSettings,
+                    ...updateData
+                }));
+                return true;
+            } else {
+                console.error("Failed to update settings");
+                return false;
+            }
+        } catch (error) {
+            console.error("Error updating settings:", error);
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleToggle = async (preference) => {
+        await updateSettings({ metricPreference: preference });
     };
 
     const handleCurrencyChange = async (e) => {
@@ -77,93 +93,41 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
 
         if (!selectedCurrency) return;
 
-        setCurrencyLoading(true);
-        try {
-            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}/customerValuta`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    customerValuta: selectedCurrency.symbol_native,
-                    customerValutaCode: selectedCurrency.code,
-                }),
-            });
-
-            if (response.ok) {
-                setCustomerValuta(selectedCurrency.symbol_native);
-            } else {
-                console.error("Failed to update currency");
-            }
-        } catch (error) {
-            console.error("Error updating currency:", error);
-        } finally {
-            setCurrencyLoading(false);
-        }
-    };
-
-    const handleClickupIdChange = (e) => {
-        setTempClickupId(e.target.value);
-    };
-
-    const handleClickupIdChangeMeta = (e) => {
-        setTempCountryId(e.target.value);
+        await updateSettings({
+            customerValuta: selectedCurrency.symbol_native,
+            customerValutaCode: selectedCurrency.code
+        });
     };
 
     const handleClickupIdUpdate = async () => {
-        if (tempClickupId === clickupId) return;
-
-        setClickupLoading(true);
-        try {
-            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}/clickupId`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ customerClickupID: tempClickupId }),
-            });
-
-            if (response.ok) {
-                setClickupId(tempClickupId);
-            } else {
-                console.error("Failed to update Clickup ID");
-                setTempClickupId(clickupId);
-            }
-        } catch (error) {
-            console.error("Error updating Clickup ID:", error);
-            setTempClickupId(clickupId);
-        } finally {
-            setClickupLoading(false);
+        if (tempValues.clickupId === settings.customerClickupID) return;
+        
+        const success = await updateSettings({ customerClickupID: tempValues.clickupId });
+        if (!success) {
+            setTempValues(prev => ({ ...prev, clickupId: settings.customerClickupID }));
         }
     };
 
-    const handleClickupIdUpdateMeta = async () => {
-        if (tempCountryId === countryId) return;
+    const handleMetaIdUpdate = async () => {
+        if (tempValues.countryId === settings.customerMetaID) return;
+        
+        const success = await updateSettings({ customerMetaID: tempValues.countryId });
+        if (!success) {
+            setTempValues(prev => ({ ...prev, countryId: settings.customerMetaID }));
+        }
+    };
 
-        setCountryIdLoading(true);
-
-        try {
-            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}/customerMetaId`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ customerMetaID: tempCountryId }),
-            });
-
-            if (response.ok) {
-                setCountryId(tempCountryId);
-            } else {
-                console.error("Failed to update Country Meta ID");
-                setTempCountryId(countryId);
-            }
-        } catch (error) {
-            console.error("Error updating Country Meta ID:", error);
-            setTempCountryId(countryId);
-        } finally {
-            setCountryIdLoading(false); 
+    const handleExcludeCountriesUpdate = async () => {
+        if (tempValues.excludeCountries === settings.customerMetaIDExclude) return;
+        
+        const success = await updateSettings({ customerMetaIDExclude: tempValues.excludeCountries });
+        if (!success) {
+            setTempValues(prev => ({ ...prev, excludeCountries: settings.customerMetaIDExclude }));
         }
     };
 
     const getCurrentCurrencyCode = () => {
-        const found = Object.entries(currencyData).find(
-            ([_, data]) => data.symbol_native === customerValuta
-        );
-        return found ? found[0] : "DKK";
+        return settings.customerValutaCode || "DKK";
     };
 
     return (
@@ -182,14 +146,14 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                         <tr className="border-b border-zinc-100">
                             <td className="px-4 py-3">Metric Preference</td>
                             <td className="px-4 py-3">
-                                {metricPreference}
+                                {settings.metricPreference}
                             </td>
                             <td className="px-4 py-3">
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => handleToggle("ROAS/POAS")}
-                                        disabled={loading || metricPreference === "ROAS/POAS"}
-                                        className={`py-1 px-3 rounded text-sm ${metricPreference === "ROAS/POAS"
+                                        disabled={loading || settings.metricPreference === "ROAS/POAS"}
+                                        className={`py-1 px-3 rounded text-sm ${settings.metricPreference === "ROAS/POAS"
                                             ? "bg-zinc-700 text-white"
                                             : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                             }`}
@@ -198,8 +162,8 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                                     </button>
                                     <button
                                         onClick={() => handleToggle("Spendshare")}
-                                        disabled={loading || metricPreference === "Spendshare"}
-                                        className={`py-1 px-3 rounded text-sm ${metricPreference === "Spendshare"
+                                        disabled={loading || settings.metricPreference === "Spendshare"}
+                                        className={`py-1 px-3 rounded text-sm ${settings.metricPreference === "Spendshare"
                                             ? "bg-zinc-700 text-white"
                                             : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                             }`}
@@ -212,14 +176,14 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                         <tr className="border-b border-zinc-100">
                             <td className="px-4 py-3">Currency</td>
                             <td className="px-4 py-3">
-                                {customerValuta} ({getCurrentCurrencyCode()})
+                                {settings.customerValuta} ({getCurrentCurrencyCode()})
                             </td>
                             <td className="px-4 py-3">
                                 <div className="flex gap-2">
                                     <select
                                         value={getCurrentCurrencyCode()}
                                         onChange={handleCurrencyChange}
-                                        disabled={currencyLoading}
+                                        disabled={loading}
                                         className="border border-gray-300 rounded px-2 py-1 text-sm"
                                     >
                                         {currencies.map(currency => (
@@ -228,30 +192,30 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                                             </option>
                                         ))}
                                     </select>
-                                    {currencyLoading && <span className="text-xs italic">Updating...</span>}
+                                    {loading && <span className="text-xs italic">Updating...</span>}
                                 </div>
                             </td>
                         </tr>
                         <tr className="border-b border-zinc-100">
                             <td className="px-4 py-3">Clickup ID</td>
                             <td className="px-4 py-3">
-                                {clickupId || "Not set"}
+                                {settings.customerClickupID || "Not set"}
                             </td>
                             <td className="px-4 py-3">
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
-                                        value={tempClickupId}
-                                        onChange={handleClickupIdChange}
+                                        value={tempValues.clickupId}
+                                        onChange={(e) => setTempValues(prev => ({ ...prev, clickupId: e.target.value }))}
                                         placeholder="Enter Clickup ID"
                                         className="border border-gray-300 rounded px-2 py-1 text-sm"
                                     />
                                     <button
                                         onClick={handleClickupIdUpdate}
-                                        disabled={clickupLoading || tempClickupId === clickupId}
+                                        disabled={loading || tempValues.clickupId === settings.customerClickupID}
                                         className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
                                     >
-                                        {clickupLoading ? "Updating..." : "Update"}
+                                        {loading ? "Updating..." : "Update"}
                                     </button>
                                 </div>
                             </td>
@@ -259,23 +223,47 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                         <tr className="border-b border-zinc-100">
                             <td className="px-4 py-3">Meta Customer Country</td>
                             <td className="px-4 py-3">
-                                {countryId || "Not set"}
+                                {settings.customerMetaID || "Not set"}
                             </td>
                             <td className="px-4 py-3">
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
-                                        value={tempCountryId}
-                                        onChange={handleClickupIdChangeMeta}
+                                        value={tempValues.countryId}
+                                        onChange={(e) => setTempValues(prev => ({ ...prev, countryId: e.target.value }))}
                                         placeholder="Enter Country ID (e.g., DK, UK)"
                                         className="border border-gray-300 rounded px-2 py-1 text-sm"
                                     />
                                     <button
-                                        onClick={handleClickupIdUpdateMeta}
-                                        disabled={countryIdLoading || tempCountryId === countryId}
+                                        onClick={handleMetaIdUpdate}
+                                        disabled={loading || tempValues.countryId === settings.customerMetaID}
                                         className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
                                     >
-                                        {countryIdLoading ? "Updating..." : "Update"}
+                                        {loading ? "Updating..." : "Update"}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr className="border-b border-zinc-100">
+                            <td className="px-4 py-3">Exclude Meta Countries</td>
+                            <td className="px-4 py-3">
+                                {settings.customerMetaIDExclude || "Not set"}
+                            </td>
+                            <td className="px-4 py-3">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={tempValues.excludeCountries}
+                                        onChange={(e) => setTempValues(prev => ({ ...prev, excludeCountries: e.target.value }))}
+                                        placeholder="Enter countries to exclude (e.g., DE,DK,NO)"
+                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                    />
+                                    <button
+                                        onClick={handleExcludeCountriesUpdate}
+                                        disabled={loading || tempValues.excludeCountries === settings.customerMetaIDExclude}
+                                        className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
+                                    >
+                                        {loading ? "Updating..." : "Update"}
                                     </button>
                                 </div>
                             </td>

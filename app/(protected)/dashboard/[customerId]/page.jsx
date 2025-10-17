@@ -11,8 +11,32 @@ export default async function OverviewPage({ params }) {
     console.log("::: Fetching customer with ID:", customerId);
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
+
+        const buildFacebookWhereClause = () => {
+            const conditions = [];
+            
+            if (customerMetaID?.trim()) {
+                conditions.push(`country = "${customerMetaID}"`);
+            }
+            
+            if (customerMetaIDExclude?.trim()) {
+                const excludeList = customerMetaIDExclude
+                    .split(',')
+                    .map(c => `"${c.trim()}"`)
+                    .filter(c => c !== '""')
+                    .join(', ');
+                
+                if (excludeList) {
+                    conditions.push(`country NOT IN (${excludeList})`);
+                }
+            }
+            
+            return conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        };
+
+        const facebookWhereClause = buildFacebookWhereClause();
 
         const dashboardQuery = `
             WITH shopify_data AS (
@@ -32,7 +56,7 @@ export default async function OverviewPage({ params }) {
                     date_start AS date,
                     SUM(spend) AS ps_cost
                 FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-                WHERE country = "${customerMetaID}"
+                ${facebookWhereClause}
                 GROUP BY date_start
             ),
             google_ads_data AS (

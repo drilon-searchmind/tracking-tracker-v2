@@ -9,8 +9,32 @@ export default async function PacePage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
+
+        const buildFacebookWhereClause = () => {
+            const conditions = [];
+            
+            if (customerMetaID?.trim()) {
+                conditions.push(`country = "${customerMetaID}"`);
+            }
+            
+            if (customerMetaIDExclude?.trim()) {
+                const excludeList = customerMetaIDExclude
+                    .split(',')
+                    .map(c => `"${c.trim()}"`)
+                    .filter(c => c !== '""')
+                    .join(', ');
+                
+                if (excludeList) {
+                    conditions.push(`country NOT IN (${excludeList})`);
+                }
+            }
+            
+            return conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        };
+
+        const facebookWhereClause = buildFacebookWhereClause();
 
         const dashboardQuery = `
             WITH shopify_data AS (
@@ -35,7 +59,7 @@ export default async function PacePage({ params }) {
                     CAST(date_start AS STRING) AS date,
                     SUM(COALESCE(spend, 0)) AS ps_cost
                 FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-                WHERE date_start IS NOT NULL AND country = "${customerMetaID}"
+                ${facebookWhereClause}
                 GROUP BY date_start
             ),
             google_ads_data AS (

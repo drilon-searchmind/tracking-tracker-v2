@@ -10,8 +10,32 @@ export default async function DashboardPage({ params }) {
 	const customerId = resolvedParams.customerId;
 
 	try {
-		const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode } = await fetchCustomerDetails(customerId);
-		let projectId = bigQueryProjectId;
+		const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude } = await fetchCustomerDetails(customerId);
+        let projectId = bigQueryProjectId;
+
+        const buildFacebookWhereClause = () => {
+            const conditions = [];
+            
+            if (customerMetaID?.trim()) {
+                conditions.push(`country = "${customerMetaID}"`);
+            }
+            
+            if (customerMetaIDExclude?.trim()) {
+                const excludeList = customerMetaIDExclude
+                    .split(',')
+                    .map(c => `"${c.trim()}"`)
+                    .filter(c => c !== '""')
+                    .join(', ');
+                
+                if (excludeList) {
+                    conditions.push(`country NOT IN (${excludeList})`);
+                }
+            }
+            
+            return conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        };
+
+        const facebookWhereClause = buildFacebookWhereClause();
 
 		const dashboardQuery = `
 			WITH orders_data AS (
@@ -41,7 +65,7 @@ export default async function DashboardPage({ params }) {
 				CAST(SUM(spend) AS FLOAT64) as meta_spend,
 				SUM(impressions) as meta_impressions
 				FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-				WHERE country = "${customerMetaID}"
+				${facebookWhereClause}
 				GROUP BY date
 			),
 			sessions_data AS (

@@ -24,7 +24,7 @@ export default function Nav() {
     }, [session, router]);
 
     return (
-        <section id="componentNav" className="dark:bg-gray-800">
+        <section id="componentNav" className="">
             <nav className="flex justify-between items-center container mx-auto">
                 <div className="flex items-center gap-4 py-6">
                     <Image
@@ -85,7 +85,7 @@ export default function Nav() {
                             <div className="hidden">
                                 <button
                                     onClick={toggleTheme}
-                                    className="text-zinc-700 dark:text-gray-300 hover:text-black dark:hover:text-white cursor-pointer"
+                                    className="text-zinc-700 hover:text-black cursor-pointer"
                                     aria-label="Toggle dark mode"
                                 >
                                     {theme === 'dark' ? <FaSun /> : <FaMoon />}
@@ -99,7 +99,7 @@ export default function Nav() {
                 </div>
 
                 {/* Mobile Navigation */}
-                <div className={`fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white dark:bg-gray-800 shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:hidden flex flex-col pt-24 px-6`}>
+                <div className={`fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:hidden flex flex-col pt-24 px-6`}>
                     {session ? (
                         <>
                             <a href="/home" className="hover:text-black flex items-center gap-2 m-0 py-4 text-zinc-700 border-b border-gray-100">
@@ -127,7 +127,7 @@ export default function Nav() {
                             <div className="hidden">
                                 <button
                                     onClick={toggleTheme}
-                                    className="flex items-center gap-2 py-4 border-b border-gray-100 dark:border-gray-700 text-zinc-700 dark:text-gray-300"
+                                    className="flex items-center gap-2 py-4 border-b border-gray-100 text-zinc-700"
                                 >
                                     {theme === 'dark' ? <FaSun /> : <FaMoon />}
                                     {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}

@@ -39,15 +39,37 @@ export default async function OverviewPage({ params }) {
         const facebookWhereClause = buildFacebookWhereClause();
 
         const dashboardQuery = `
-            WITH shopify_data AS (
+            WITH orders_by_date AS (
                 SELECT
                     DATE(created_at) AS date,
-                    COUNT(*) AS orders,
-                    SUM(total_price) AS revenue
+                    SUM(CAST(total_price AS FLOAT64)) AS gross_sales,
+                    COUNT(*) AS order_count,
+                    presentment_currency AS currency
                 FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
-                WHERE 
-                    presentment_currency = "${customerValutaCode}"
+                WHERE presentment_currency = "${customerValutaCode}"
+                GROUP BY DATE(created_at), presentment_currency
+            ),
+            refunds_by_date AS (
+                SELECT
+                    DATE(created_at) AS date,
+                    SUM(
+                        (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(transaction, '$.amount') AS FLOAT64))
+                        FROM UNNEST(JSON_EXTRACT_ARRAY(transactions)) AS transaction
+                        WHERE JSON_EXTRACT_SCALAR(transaction, '$.kind') = 'refund'
+                        )
+                    ) AS total_refunds
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
                 GROUP BY DATE(created_at)
+            ),
+            shopify_data AS (
+                SELECT
+                    o.date,
+                    o.order_count AS orders,
+                    o.gross_sales AS gross_revenue,
+                    o.gross_sales - COALESCE(r.total_refunds, 0) AS revenue,
+                    o.currency AS presentment_currency
+                FROM orders_by_date o
+                LEFT JOIN refunds_by_date r ON o.date = r.date
             ),
             facebook_data AS (
                 SELECT

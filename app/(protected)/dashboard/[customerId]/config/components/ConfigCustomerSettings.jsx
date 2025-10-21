@@ -174,7 +174,7 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                             </td>
                         </tr>
                         <tr className="border-b border-zinc-100">
-                            <td className="px-4 py-3">Currency</td>
+                            <td className="px-4 py-3">Backend/Store Currency</td>
                             <td className="px-4 py-3">
                                 {settings.customerValuta} ({getCurrentCurrencyCode()})
                             </td>

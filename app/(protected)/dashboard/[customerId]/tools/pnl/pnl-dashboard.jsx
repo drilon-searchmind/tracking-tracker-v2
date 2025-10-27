@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Tooltip } from "react-tooltip";
 import { FaInfoCircle } from "react-icons/fa";
+import Subheading from "@/app/components/UI/Utility/Subheading";
 
 export default function PnLDashboard({ customerId, customerName, initialData }) {
     const [isClient, setIsClient] = useState(false);
@@ -306,7 +307,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
+                    <Subheading headingText={customerName} />
                     <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">P&L</h1>
                     <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                         Overview of profit and loss metrics including net turnover, direct costs, marketing expenses, and financial results.

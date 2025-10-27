@@ -15,6 +15,7 @@ import CampaignPlannerGanttChart from "@/app/components/CampaignPlanner/Campaign
 import CustomerAssignedUsers from "@/app/components/CampaignPlanner/CustomerAssignedUsers";
 
 import { FaCirclePlus } from "react-icons/fa6";
+import Subheading from "@/app/components/UI/Utility/Subheading";
 
 export default function KampagneplanDashboard({ customerId, customerName, initialData }) {
     const { showToast } = useToast();
@@ -259,7 +260,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                 <div className="px-0 md:px-20 mx-auto z-10 relative">
                     <div className="mb-6 md:mb-8 flex flex-col md:flex-row justify-between items-center md:items-center gap-4">
                         <span>
-                            <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
+                            <Subheading headingText={customerName} />
                             <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">Campaign Planner</h1>
                             <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                                 Plan and adjust your marketing campaigns with precise budgets and expected results.

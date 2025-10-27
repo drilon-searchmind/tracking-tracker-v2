@@ -21,6 +21,7 @@ import "chartjs-adapter-date-fns";
 import DashboardMetrics from "./components/DashboardMetrics";
 import DashboardCharts from "./components/DashboardCharts";
 import ServiceDashboards from "./components/ServiceDashboards";
+import Subheading from "@/app/components/UI/Utility/Subheading";
 
 ChartJS.register(
     LineElement,
@@ -281,7 +282,7 @@ export default function PerformanceDashboard({ customerId, customerName, initial
 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
+                    <Subheading headingText={customerName} />
                     <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black md:pr-16 xl:text-[44px] inline-grid z-10">Performance Dashboard</h1>
                     <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                         Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros scelerisque sed. Commodo in viv...

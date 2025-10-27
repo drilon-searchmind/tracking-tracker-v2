@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { FaChevronRight } from "react-icons/fa";
+import Subheading from "@/app/components/UI/Utility/Subheading";
 
 export default function OverviewDashboard({ customerId, customerName, initialData }) {
     const today = new Date();
@@ -315,7 +316,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
+                    <Subheading headingText={customerName} />
                     <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Overview</h1>
                     <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                         Daily overview of key performance metrics including orders, revenue, ad spend, and profitability.

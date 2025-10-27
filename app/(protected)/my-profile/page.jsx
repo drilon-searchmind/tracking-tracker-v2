@@ -4,6 +4,7 @@ import Image from "next/image";
 import ProfileAccordionTab from "./my-profile-components/ProfileAccordionTab";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import Subheading from "@/app/components/UI/Utility/Subheading";
 
 export default function MyProfile() {
     const { data: session } = useSession();
@@ -26,7 +27,7 @@ export default function MyProfile() {
 
                 <div className="px-20 mx-auto z-10 relative">
                     <div className="mb-8">
-                        <h2 className="text-blue-900 font-semibold text-sm uppercase">Searchmind Hub - My Profile</h2>
+                        <Subheading headingText="My Profile" />
                         <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Profile Overview</h1>
                         <p className="text-gray-600 max-w-2xl">
                             {session?.user?.name

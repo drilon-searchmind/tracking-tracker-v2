@@ -1,5 +1,6 @@
 import Image from "next/image";
 import AdminAccordionTab from "./admin-components/AdminAccordionTab";
+import Subheading from "@/app/components/UI/Utility/Subheading";
 
 export default function AdminPage() {
     return (
@@ -18,7 +19,7 @@ export default function AdminPage() {
 
                 <div className="px-20 mx-auto z-10 relative">
                     <div className="mb-8">
-                        <h2 className="text-blue-900 font-semibold text-sm uppercase">Searchmind Hub - Admin Page</h2>
+                        <Subheading headingText="Admin Page" />
                         <h1 className="mb-5 pr-16 text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Admin Dashboard Overview</h1>
                         <p className="text-gray-600 max-w-2xl">
                             Welcome to the admin page! Manage users and customers here.

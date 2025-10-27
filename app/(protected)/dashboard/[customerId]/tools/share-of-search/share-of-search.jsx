@@ -15,6 +15,7 @@ import {
     CategoryScale,
 } from "chart.js";
 import "chartjs-adapter-date-fns";
+import Subheading from "@/app/components/UI/Utility/Subheading";
 
 ChartJS.register(
     LineElement,
@@ -55,7 +56,7 @@ export default function ShareOfSearch({ customerId, initialData }) {
 
             <div className="px-20 mx-auto z-10 relative">
                 <div className="mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerId.replace("airbyte_", "airbyte_")}</h2>
+                    <Subheading headingText={customerId.replace("airbyte_", "airbyte_")} />
                     <h1 className="mb-5 text-3xl font-bold text-black xl:text-[44px]">Share of Search</h1>
                     <p className="text-gray-600 max-w-2xl">
                         Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque accusantium ex tempore at quas distinctio sint velit labore quaerat ea.

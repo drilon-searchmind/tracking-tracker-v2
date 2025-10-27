@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaExclamationTriangle } from 'react-icons/fa';
+import Subheading from '../components/UI/Utility/Subheading';
 
 const UnauthorizedAccess = ({ message = "You do not have permission to access this page." }) => {
     return (

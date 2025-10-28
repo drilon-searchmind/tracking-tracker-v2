@@ -164,7 +164,7 @@ const HeroSection = () => {
                                     <div className="bg-white p-4 rounded-lg border">
                                         <FaChartLine className="text-[var(--color-light-green)] mb-2" />
                                         <div className="text-xl font-bold text-[var(--color-dark-green)]">
-                                            ${currentRevenue.toFixed(1)}K
+                                            {currentRevenue.toFixed(1)}K DKK
                                         </div>
                                         <div className="text-sm text-[var(--color-green)]">Revenue</div>
                                     </div>

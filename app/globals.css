@@ -12,6 +12,16 @@
 	--color-primary-searchmind-hover: #344b4b;
 	--color-secondary-searchmind: #D6CDB6;
 	--color-secondary-searchmind-hover: #c0b8a3;
+
+	/* New palette colors */
+	--color-dark-green: #1E2928;
+	--color-lime: #C6ED62;
+	--color-natural: #FEFBF2;
+	--color-light-natural: #EAE3D1;
+	--color-dark-natural: #D6CDB6;
+	--color-light-green: #6A8F4D;
+	--color-green: #213834;
+	--color-black: #131313;
 }
 
 /* .dark {

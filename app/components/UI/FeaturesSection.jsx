@@ -8,32 +8,32 @@ import { SiGoogleanalytics, SiGoogleads, SiMeta, SiMongodb, SiGooglebigquery } f
 const FeaturesSection = () => {
     const features = [
         {
-            icon: <FaChartBar className="text-3xl text-blue-600" />,
+            icon: <FaChartBar className="text-3xl text-[var(--color-light-green)]" />,
             title: "Advanced Analytics",
             description: "Comprehensive dashboard with real-time metrics, campaign performance tracking, and revenue analysis."
         },
         {
-            icon: <SiGooglebigquery className="text-3xl text-green-600" />,
+            icon: <SiGooglebigquery className="text-3xl text-[var(--color-lime)]" />,
             title: "BigQuery Integration",
             description: "Seamless data processing and analysis with Google BigQuery for scalable marketing insights."
         },
         {
-            icon: <FaUsers className="text-3xl text-purple-600" />,
+            icon: <FaUsers className="text-3xl text-[var(--color-green)]" />,
             title: "Campaign Management",
             description: "Plan, execute, and track marketing campaigns with user assignment and collaboration tools."
         },
         {
-            icon: <FaDatabase className="text-3xl text-orange-600" />,
+            icon: <FaDatabase className="text-3xl text-[var(--color-light-green)]" />,
             title: "Data Integration",
             description: "Connect multiple data sources including Google Ads, Facebook, and analytics platforms."
         },
         {
-            icon: <FaCog className="text-3xl text-gray-600" />,
+            icon: <FaCog className="text-3xl text-[var(--color-dark-green)]" />,
             title: "Custom Configuration",
             description: "Flexible settings for revenue budgets, static expenses, and customer-specific preferences."
         },
         {
-            icon: <FaShieldAlt className="text-3xl text-red-600" />,
+            icon: <FaShieldAlt className="text-3xl text-[var(--color-green)]" />,
             title: "Secure Access",
             description: "Role-based access control with secure authentication and customer data isolation."
         }
@@ -55,14 +55,14 @@ const FeaturesSection = () => {
             <div className="max-w-7xl mx-auto px-0 md:px-20 z-10 relative">
                 {/* Header */}
                 <div className="text-center mb-16">
-                    <span className="inline-block px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-4">
+                    <span className="inline-block px-4 py-2 bg-[var(--color-lime)]/10 text-[var(--color-dark-green)] rounded-full text-sm font-medium mb-4">
                         CORE FEATURES
                     </span>
-                    <h2 className="text-3xl md:text-4xl xl:text-5xl font-bold text-black mb-6">
+                    <h2 className="text-3xl md:text-4xl xl:text-5xl font-bold text-[var(--color-dark-green)] mb-6">
                         Everything You Need for 
                         <span className="bg-titlebg relative"> Marketing Success</span>
                     </h2>
-                    <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                    <p className="text-lg text-[var(--color-green)] max-w-3xl mx-auto">
                         Our platform combines powerful analytics, seamless integrations, and intuitive campaign management 
                         to help you optimize your marketing performance and drive better results.
                     </p>
@@ -75,8 +75,8 @@ const FeaturesSection = () => {
                             <div className="mb-6">
                                 {feature.icon}
                             </div>
-                            <h3 className="text-xl font-bold text-black mb-4">{feature.title}</h3>
-                            <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                            <h3 className="text-xl font-bold text-[var(--color-dark-green)] mb-4">{feature.title}</h3>
+                            <p className="text-[var(--color-green)] leading-relaxed">{feature.description}</p>
                         </div>
                     ))}
                 </div>
@@ -84,38 +84,38 @@ const FeaturesSection = () => {
                 {/* Integration Showcase */}
                 <div className="bg-white rounded-2xl p-8 md:p-12 shadow-solid-l border border-gray-200">
                     <div className="text-center mb-12">
-                        <h3 className="text-2xl md:text-3xl font-bold text-black mb-4">
+                        <h3 className="text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] mb-4">
                             Powerful Integrations
                         </h3>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
+                        <p className="text-[var(--color-green)] max-w-2xl mx-auto">
                             Connect your favorite marketing tools and data sources for a unified view of your performance.
                         </p>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center">
-                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                            <SiGoogleads className="text-4xl text-blue-600 mb-2" />
-                            <span className="text-sm font-medium text-gray-700">Google Ads</span>
+                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-[var(--color-natural)] transition-colors">
+                            <SiGoogleads className="text-4xl text-[var(--color-light-green)] mb-2" />
+                            <span className="text-sm font-medium text-[var(--color-green)]">Google Ads</span>
                         </div>
-                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                            <SiGoogleanalytics className="text-4xl text-orange-500 mb-2" />
-                            <span className="text-sm font-medium text-gray-700">Analytics</span>
+                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-[var(--color-natural)] transition-colors">
+                            <SiGoogleanalytics className="text-4xl text-[var(--color-lime)] mb-2" />
+                            <span className="text-sm font-medium text-[var(--color-green)]">Analytics</span>
                         </div>
-                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                            <SiMeta className="text-4xl text-blue-700 mb-2" />
-                            <span className="text-sm font-medium text-gray-700">Meta Ads</span>
+                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-[var(--color-natural)] transition-colors">
+                            <SiMeta className="text-4xl text-[var(--color-dark-green)] mb-2" />
+                            <span className="text-sm font-medium text-[var(--color-green)]">Meta Ads</span>
                         </div>
-                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                            <SiMongodb className="text-4xl text-green-500 mb-2" />
-                            <span className="text-sm font-medium text-gray-700">MongoDB</span>
+                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-[var(--color-natural)] transition-colors">
+                            <SiMongodb className="text-4xl text-[var(--color-light-green)] mb-2" />
+                            <span className="text-sm font-medium text-[var(--color-green)]">MongoDB</span>
                         </div>
-                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                            <SiGooglebigquery className="text-4xl text-blue-500 mb-2" />
-                            <span className="text-sm font-medium text-gray-700">BigQuery</span>
+                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-[var(--color-natural)] transition-colors">
+                            <SiGooglebigquery className="text-4xl text-[var(--color-lime)] mb-2" />
+                            <span className="text-sm font-medium text-[var(--color-green)]">BigQuery</span>
                         </div>
-                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                            <FaRocket className="text-4xl text-purple-600 mb-2" />
-                            <span className="text-sm font-medium text-gray-700">More</span>
+                        <div className="flex flex-col items-center p-4 rounded-lg hover:bg-[var(--color-natural)] transition-colors">
+                            <FaRocket className="text-4xl text-[var(--color-green)] mb-2" />
+                            <span className="text-sm font-medium text-[var(--color-green)]">More</span>
                         </div>
                     </div>
                 </div>

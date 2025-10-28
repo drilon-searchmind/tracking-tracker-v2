@@ -16,6 +16,7 @@ import {
     CategoryScale,
 } from "chart.js";
 import "chartjs-adapter-date-fns";
+import Subheading from "@/app/components/UI/Utility/Subheading";
 
 ChartJS.register(
     LineElement,
@@ -592,7 +593,7 @@ export default function EmailDashboard({ customerId, initialData, customerName, 
 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
+                    <Subheading headingText={customerName} />
                     <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">EM ({emailTypeName}) Dashboard</h1>
                     <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                         Overview of key email marketing metrics including clicks, conversions, and campaign performance.

@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaExclamationTriangle } from 'react-icons/fa';
+import Subheading from './Utility/Subheading';
 
 const UnauthorizedAccess = ({ message = "You do not have permission to access this page." }) => {
     return (
@@ -19,7 +20,7 @@ const UnauthorizedAccess = ({ message = "You do not have permission to access th
 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">Searchmind Apex</h2>
+                    <Subheading headingText="Searchmind Apex" />
                     <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">Access Restricted</h1>
                 </div>
 
@@ -38,8 +39,8 @@ const UnauthorizedAccess = ({ message = "You do not have permission to access th
                     </div>
                 </div>
 
-                <Link 
-                    href="/home" 
+                <Link
+                    href="/home"
                     className="inline-flex items-center justify-center py-2 px-4 rounded text-white bg-zinc-700 hover:bg-zinc-800 gap-2 text-sm"
                 >
                     Return to Home Page

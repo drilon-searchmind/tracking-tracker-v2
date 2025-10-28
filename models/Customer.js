@@ -6,6 +6,7 @@ const CustomerSchema = new mongoose.Schema({
     bigQueryProjectId: { type: String, required: true }, 
     createdAt: { type: Date, default: Date.now }, 
     updatedAt: { type: Date, default: Date.now },
+    isArchived: { type: Boolean, default: false },
 });
 
 export default mongoose.models.Customer || mongoose.model("Customer", CustomerSchema);

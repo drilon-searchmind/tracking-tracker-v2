@@ -38,18 +38,39 @@ export default async function DashboardPage({ params }) {
         const facebookWhereClause = buildFacebookWhereClause();
 
 		const dashboardQuery = `
-			WITH orders_data AS (
+			WITH orders_by_date AS (
 				SELECT
-				CAST(DATE(created_at) AS STRING) as date,
-				CAST(SUM(amount) AS FLOAT64) as revenue,
-				CAST(SUM(amount) AS FLOAT64) as gross_profit,
-				COUNT(id) as order_count
-				FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
-				WHERE 
-					status = 'SUCCESS' 
-					AND kind = 'AUTHORIZATION'
-					AND JSON_EXTRACT_SCALAR(total_unsettled_set, '$.presentment_money.currency') = "${customerValutaCode}"
-				GROUP BY date
+					DATE(created_at) AS date,
+					SUM(CAST(total_price AS FLOAT64)) AS gross_sales,
+					COUNT(*) AS order_count,
+					presentment_currency AS currency
+				FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
+				WHERE presentment_currency = "${customerValutaCode}"
+				GROUP BY DATE(created_at), presentment_currency
+			),
+			refunds_by_date AS (
+				SELECT
+					DATE(created_at) AS date,
+					SUM(
+						(SELECT SUM(CAST(JSON_EXTRACT_SCALAR(transaction, '$.amount') AS FLOAT64))
+						FROM UNNEST(JSON_EXTRACT_ARRAY(transactions)) AS transaction
+						WHERE JSON_EXTRACT_SCALAR(transaction, '$.kind') = 'refund'
+						)
+					) AS total_refunds
+				FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
+				GROUP BY DATE(created_at)
+			),
+			shopify_data AS (
+				SELECT
+					CAST(o.date AS STRING) as date,
+					o.order_count AS orders,
+					o.gross_sales AS gross_revenue,
+					o.gross_sales - COALESCE(r.total_refunds, 0) AS revenue,
+					o.gross_sales - COALESCE(r.total_refunds, 0) AS gross_profit,
+					o.order_count,
+					o.currency AS presentment_currency
+				FROM orders_by_date o
+				LEFT JOIN refunds_by_date r ON o.date = r.date
 			),
 			ads_data AS (
 				SELECT
@@ -78,36 +99,36 @@ export default async function DashboardPage({ params }) {
 			),
 			combined_data AS (
 				SELECT
-				COALESCE(o.date, a.date, m.date, s.date) as date,
-				o.revenue,
-				o.gross_profit,
-				o.order_count,
+				COALESCE(s.date, a.date, m.date, sess.date) as date,
+				s.revenue,
+				s.gross_profit,
+				s.order_count,
 				COALESCE(a.google_ads_cost, 0) as google_ads_cost,
 				COALESCE(m.meta_spend, 0) as meta_spend,
 				COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0) as total_cost,
 				CASE
 					WHEN (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0)) > 0
-					THEN o.revenue / (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0))
+					THEN s.revenue / (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0))
 					ELSE 0
 				END as roas,
 				CASE
 					WHEN (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0)) > 0
-					THEN o.gross_profit / (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0))
+					THEN s.gross_profit / (COALESCE(a.google_ads_cost, 0) + COALESCE(m.meta_spend, 0))
 					ELSE 0
 				END as poas,
 				CASE
-					WHEN o.order_count > 0
-					THEN o.revenue / o.order_count
+					WHEN s.order_count > 0
+					THEN s.revenue / s.order_count
 					ELSE 0
 				END as aov,
 				COALESCE(a.google_ads_impressions, 0) + COALESCE(m.meta_impressions, 0) as total_impressions,
-				ARRAY_AGG(STRUCT(s.channel_group, s.sessions) IGNORE NULLS) as channel_sessions
-				FROM orders_data o
-				FULL OUTER JOIN ads_data a ON o.date = a.date
-				FULL OUTER JOIN meta_data m ON o.date = m.date
-				FULL OUTER JOIN sessions_data s ON o.date = s.date
-				WHERE COALESCE(o.date, a.date, m.date, s.date) IS NOT NULL
-				GROUP BY date, o.revenue, o.gross_profit, o.order_count, a.google_ads_cost, m.meta_spend, a.google_ads_impressions, m.meta_impressions
+				ARRAY_AGG(STRUCT(sess.channel_group, sess.sessions) IGNORE NULLS) as channel_sessions
+				FROM shopify_data s
+				FULL OUTER JOIN ads_data a ON s.date = a.date
+				FULL OUTER JOIN meta_data m ON s.date = m.date
+				FULL OUTER JOIN sessions_data sess ON s.date = sess.date
+				WHERE COALESCE(s.date, a.date, m.date, sess.date) IS NOT NULL
+				GROUP BY date, s.revenue, s.gross_profit, s.order_count, a.google_ads_cost, m.meta_spend, a.google_ads_impressions, m.meta_impressions
 			)
 			SELECT
 				date,

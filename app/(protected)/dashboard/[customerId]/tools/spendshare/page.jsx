@@ -42,17 +42,37 @@ export default async function SpendSharePage({ params }) {
         const facebookWhereClause = buildFacebookWhereClause();
 
         const dashboardQuery = `
-            WITH shopify_data AS (
+            WITH orders_by_month AS (
                 SELECT
-                    EXTRACT(MONTH FROM processed_at) AS month,
-                    SUM(amount) AS revenue,
-                    SUM(amount) - SUM(amount * 0.25) AS net_profit
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_transactions\`
+                    EXTRACT(MONTH FROM created_at) AS month,
+                    SUM(CAST(total_price AS FLOAT64)) AS gross_sales,
+                    presentment_currency AS currency
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
                 WHERE 
-                    EXTRACT(YEAR FROM processed_at) = EXTRACT(YEAR FROM CURRENT_DATE()) 
-                    AND status = 'SUCCESS' AND kind = 'AUTHORIZATION'
-                    AND JSON_EXTRACT_SCALAR(total_unsettled_set, '$.presentment_money.currency') = "${customerValutaCode}"
-                GROUP BY month
+                    EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE())
+                    AND presentment_currency = "${customerValutaCode}"
+                GROUP BY EXTRACT(MONTH FROM created_at), presentment_currency
+            ),
+            refunds_by_month AS (
+                SELECT
+                    EXTRACT(MONTH FROM created_at) AS month,
+                    SUM(
+                        (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(transaction, '$.amount') AS FLOAT64))
+                        FROM UNNEST(JSON_EXTRACT_ARRAY(transactions)) AS transaction
+                        WHERE JSON_EXTRACT_SCALAR(transaction, '$.kind') = 'refund'
+                        )
+                    ) AS total_refunds
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
+                WHERE EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE())
+                GROUP BY EXTRACT(MONTH FROM created_at)
+            ),
+            shopify_data AS (
+                SELECT
+                    o.month,
+                    o.gross_sales - COALESCE(r.total_refunds, 0) AS revenue,
+                    (o.gross_sales - COALESCE(r.total_refunds, 0)) - (o.gross_sales - COALESCE(r.total_refunds, 0)) * 0.25 AS net_profit
+                FROM orders_by_month o
+                LEFT JOIN refunds_by_month r ON o.month = r.month
             ),
             meta_data AS (
                 SELECT

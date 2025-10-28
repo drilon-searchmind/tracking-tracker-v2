@@ -666,20 +666,24 @@ export default function CampaignList({ customerId }) {
                         {Object.keys(organizedCampaigns).length > 0 ? (
                             Object.values(organizedCampaigns).map((parentGroup) => (
                                 <React.Fragment key={parentGroup.id}>
-                                    <tr
-                                        className="bg-gray-50 hover:bg-gray-100 cursor-pointer"
-                                        onClick={() => toggleParentExpansion(parentGroup.id)}
-                                    >
-                                        <td className="px-3 py-3 whitespace-nowrap text-center">
-                                            {expandedParents[parentGroup.id] ?
-                                                <FaChevronDown className="text-gray-500" /> :
-                                                <FaChevronRight className="text-gray-500" />
-                                            }
-                                        </td>
-                                        <td colSpan="6" className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {parentGroup.name} ({parentGroup.campaigns.length})
-                                        </td>
-                                    </tr>
+                                    {parentGroup.name !== "No Parent" ? (
+                                        <tr
+                                            className="bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                                            onClick={() => toggleParentExpansion(parentGroup.id)}
+                                        >
+                                            <td className="px-3 py-3 whitespace-nowrap text-center">
+                                                {expandedParents[parentGroup.id] ?
+                                                    <FaChevronDown className="text-gray-500" /> :
+                                                    <FaChevronRight className="text-gray-500" />
+                                                }
+                                            </td>
+                                            <td colSpan="6" className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {parentGroup.name} ({parentGroup.campaigns.length})
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        null
+                                    )}                                
 
                                     {expandedParents[parentGroup.id] &&
                                         parentGroup.campaigns.map(campaign => renderCampaignRow(campaign))

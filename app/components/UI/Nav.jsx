@@ -59,7 +59,7 @@ export default function Nav() {
                 </button>
 
                 {/* Desktop Navigation */}
-                <div className="hidden md:flex items-center gap-8">
+                <div className="hidden md:flex items-center gap-8 text-sm">
                     {session ? (
                         <>
                             <a href="/home" className="hover:text-black flex items-center gap-2 m-0 p-0 text-zinc-700">

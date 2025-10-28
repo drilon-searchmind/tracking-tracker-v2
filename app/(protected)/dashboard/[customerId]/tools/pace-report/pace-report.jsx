@@ -14,6 +14,7 @@ import {
     Tooltip,
     Legend
 } from "chart.js";
+import Subheading from "@/app/components/UI/Utility/Subheading";
 
 ChartJS.register(
     CategoryScale,
@@ -433,7 +434,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
+                    <Subheading headingText={customerName} />
                     <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-black xl:text-[44px] z-10">Pace Report</h1>
                     <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                         Track budget utilization and pacing for revenue and ad spend, with projections for the current month.

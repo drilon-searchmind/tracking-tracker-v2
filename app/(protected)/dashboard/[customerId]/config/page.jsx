@@ -6,6 +6,7 @@ import StaticExpenses from "./components/StaticExpenses";
 import ConfigCustomerInfo from "./components/ConfigCustomerInfo";
 import ConfigCustomerSharings from "./components/ConfigCustomerSharings";
 import ConfigCustomerSettings from "./components/ConfigCustomerSettings";
+import Subheading from "@/app/components/UI/Utility/Subheading";
 
 export default async function ConfigPage({ params }) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
@@ -61,7 +62,7 @@ export default async function ConfigPage({ params }) {
 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
-                    <h2 className="text-blue-900 font-semibold text-sm uppercase">{customerName}</h2>
+                    <Subheading headingText={customerName} />
                     <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">Config</h1>
                     <p className="text-gray-600 max-w-2xl text-sm md:text-base">
                         Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros

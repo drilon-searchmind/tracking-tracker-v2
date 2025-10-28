@@ -34,24 +34,23 @@ const FAQSection = () => {
     };
 
     return (
-        <section className="py-20 px-4 md:px-6 bg-gray-50">
+        <section className="py-20 px-4 md:px-6 bg-[var(--color-natural)]">
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
                     {/* Left Content */}
                     <div className="lg:col-span-5">
-                        <span className="inline-block px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-6">
+                        <span className="inline-block px-4 py-2 bg-[var(--color-lime)]/10 text-[var(--color-dark-green)] rounded-full text-sm font-medium mb-6">
                             OUR FAQS
                         </span>
-                        <h2 className="text-3xl md:text-4xl xl:text-5xl font-bold text-black mb-6">
+                        <h2 className="text-3xl md:text-4xl xl:text-5xl font-bold text-[var(--color-dark-green)] mb-6">
                             Frequently Asked
                             <span className="bg-titlebg relative"> Questions</span>
                         </h2>
-                        <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                            We provide digital experience services to startups and small businesses. 
-                            We help our clients succeed by creating brand identities, digital experiences, 
-                            and comprehensive marketing strategies.
+                        <p className="text-lg text-[var(--color-green)] mb-8 leading-relaxed">
+                            Get answers to common questions about our marketing analytics platform. Learn how we help 
+                            businesses succeed with comprehensive data insights, campaign management, and performance tracking.
                         </p>
-                        <button className="bg-[var(--color-primary-searchmind)] hover:bg-[var(--color-primary-searchmind-hover)] text-white px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center group">
+                        <button className="bg-[var(--color-dark-green)] hover:bg-[var(--color-green)] text-white px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center group">
                             Know More
                             <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
                         </button>
@@ -64,16 +63,16 @@ const FAQSection = () => {
                                 <div key={index} className="bg-white rounded-xl border border-gray-200 shadow-solid-11">
                                     <button
                                         onClick={() => toggleFAQ(index)}
-                                        className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors rounded-xl"
+                                        className="w-full flex items-center justify-between p-6 text-left hover:bg-[var(--color-natural)] transition-colors rounded-xl"
                                     >
-                                        <h3 className="text-lg font-semibold text-black pr-4">
+                                        <h3 className="text-lg font-semibold text-[var(--color-dark-green)] pr-4">
                                             {faq.question}
                                         </h3>
                                         <div className="flex-shrink-0">
                                             {openFAQ === index ? (
-                                                <FaMinus className="text-gray-400" />
+                                                <FaMinus className="text-[var(--color-lime)]" />
                                             ) : (
-                                                <FaPlus className="text-gray-400" />
+                                                <FaPlus className="text-[var(--color-lime)]" />
                                             )}
                                         </div>
                                     </button>
@@ -81,7 +80,7 @@ const FAQSection = () => {
                                     {openFAQ === index && (
                                         <div className="px-6 pb-6">
                                             <div className="border-t border-gray-100 pt-4">
-                                                <p className="text-gray-600 leading-relaxed">
+                                                <p className="text-[var(--color-green)] leading-relaxed">
                                                     {faq.answer}
                                                 </p>
                                             </div>

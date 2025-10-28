@@ -12,7 +12,7 @@ const CTASection = () => {
     ];
 
     return (
-        <section className="py-20 px-4 md:px-6 bg-gradient-to-br from-[var(--color-primary-searchmind)] to-[var(--color-primary-searchmind-hover)] relative overflow-hidden hidden">
+        <section className="py-20 px-4 md:px-6 bg-gradient-to-br from-[var(--color-dark-green)] to-[var(--color-green)] relative overflow-hidden hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-10 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
@@ -25,7 +25,7 @@ const CTASection = () => {
                     {/* Left Content */}
                     <div className="lg:col-span-6 text-white">
                         <div className="mb-6">
-                            <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium border border-white/20">
+                            <span className="inline-flex items-center px-4 py-2 rounded-full bg-[var(--color-lime)]/20 backdrop-blur-sm text-[var(--color-lime)] text-sm font-medium border border-[var(--color-lime)]/30">
                                 <FaRocket className="mr-2 text-xs" />
                                 LAUNCH YOUR SAAS FAST
                             </span>
@@ -33,7 +33,7 @@ const CTASection = () => {
                         
                         <h2 className="text-3xl md:text-4xl xl:text-5xl font-bold mb-6 leading-tight">
                             Packed with All Essential
-                            <span className="block text-[var(--color-secondary-searchmind)]">Integrations</span>
+                            <span className="block text-[var(--color-lime)]">Integrations</span>
                         </h2>
                         
                         <p className="text-lg text-white/90 mb-8 leading-relaxed">
@@ -45,14 +45,14 @@ const CTASection = () => {
                         <div className="space-y-4 mb-8">
                             {benefits.map((benefit, index) => (
                                 <div key={index} className="flex items-start">
-                                    <FaCheckCircle className="text-[var(--color-secondary-searchmind)] mt-1 mr-3 flex-shrink-0" />
+                                    <FaCheckCircle className="text-[var(--color-lime)] mt-1 mr-3 flex-shrink-0" />
                                     <span className="text-white/90">{benefit}</span>
                                 </div>
                             ))}
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <button className="bg-white text-[var(--color-primary-searchmind)] px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center justify-center group">
+                            <button className="bg-[var(--color-lime)] text-[var(--color-dark-green)] px-8 py-4 rounded-lg font-semibold hover:bg-[var(--color-lime)]/90 transition-colors inline-flex items-center justify-center group">
                                 Get Started
                                 <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
                             </button>
@@ -69,34 +69,34 @@ const CTASection = () => {
                             <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl">
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xl font-bold text-gray-800">Audience Overview</h3>
+                                    <h3 className="text-xl font-bold text-[var(--color-dark-green)]">Audience Overview</h3>
                                     <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                        <span className="text-sm text-gray-600">New Visitor</span>
-                                        <div className="w-3 h-3 bg-green-500 rounded-full ml-4"></div>
-                                        <span className="text-sm text-gray-600">Unique Visitor</span>
+                                        <div className="w-3 h-3 bg-[var(--color-lime)] rounded-full"></div>
+                                        <span className="text-sm text-[var(--color-green)]">New Visitor</span>
+                                        <div className="w-3 h-3 bg-[var(--color-light-green)] rounded-full ml-4"></div>
+                                        <span className="text-sm text-[var(--color-green)]">Unique Visitor</span>
                                     </div>
                                 </div>
 
                                 {/* Stats */}
                                 <div className="grid grid-cols-2 gap-4 mb-6">
                                     <div>
-                                        <div className="text-2xl font-bold text-blue-600">+24,558</div>
-                                        <div className="text-sm text-gray-600">New Visitors</div>
+                                        <div className="text-2xl font-bold text-[var(--color-lime)]">+24,558</div>
+                                        <div className="text-sm text-[var(--color-green)]">New Visitors</div>
                                     </div>
                                     <div>
-                                        <div className="text-2xl font-bold text-green-600">+45,558</div>
-                                        <div className="text-sm text-gray-600">Unique Visitors</div>
+                                        <div className="text-2xl font-bold text-[var(--color-light-green)]">+45,558</div>
+                                        <div className="text-sm text-[var(--color-green)]">Unique Visitors</div>
                                     </div>
                                 </div>
 
                                 {/* Mock Chart */}
-                                <div className="h-32 bg-gray-50 rounded-lg flex items-end justify-between p-4 relative overflow-hidden">
+                                <div className="h-32 bg-[var(--color-natural)] rounded-lg flex items-end justify-between p-4 relative overflow-hidden">
                                     {/* Chart bars */}
                                     {[60, 80, 40, 90, 70, 85, 65, 95, 75, 88, 92, 78].map((height, index) => (
                                         <div 
                                             key={index} 
-                                            className="w-4 bg-gradient-to-t from-blue-500 to-purple-500 rounded-t transition-all duration-300 hover:from-blue-600 hover:to-purple-600" 
+                                            className="w-4 bg-gradient-to-t from-[var(--color-light-green)] to-[var(--color-lime)] rounded-t transition-all duration-300 hover:from-[var(--color-green)] hover:to-[var(--color-lime)]" 
                                             style={{height: `${height}%`}}
                                         ></div>
                                     ))}
@@ -106,7 +106,7 @@ const CTASection = () => {
                                         <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                                             <polyline
                                                 fill="none"
-                                                stroke="rgba(34, 197, 94, 0.8)"
+                                                stroke="var(--color-lime)"
                                                 strokeWidth="2"
                                                 points="0,40 10,20 20,60 30,10 40,30 50,15 60,35 70,5 80,25 90,12 100,22"
                                             />
@@ -115,7 +115,7 @@ const CTASection = () => {
                                 </div>
 
                                 {/* Bottom metrics */}
-                                <div className="mt-4 flex justify-between text-xs text-gray-500">
+                                <div className="mt-4 flex justify-between text-xs text-[var(--color-green)]">
                                     <span>Jan</span>
                                     <span>Feb</span>
                                     <span>Mar</span>
@@ -127,10 +127,10 @@ const CTASection = () => {
                             </div>
 
                             {/* Floating notification cards */}
-                            <div className="absolute -top-4 -left-4 bg-green-500 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg">
+                            <div className="absolute -top-4 -left-4 bg-[var(--color-lime)] text-[var(--color-dark-green)] px-3 py-2 rounded-lg text-sm font-medium shadow-lg">
                                 📈 Revenue +15%
                             </div>
-                            <div className="absolute -bottom-4 -right-4 bg-blue-500 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg">
+                            <div className="absolute -bottom-4 -right-4 bg-[var(--color-light-green)] text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg">
                                 ✉️ Gmail Integration
                             </div>
                         </div>

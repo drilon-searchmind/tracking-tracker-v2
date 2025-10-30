@@ -58,7 +58,7 @@ export default function DashboardLayout({ children }) {
         <section id="DashboardLayout" className="relative">
             <nav
                 className="flex justify-between items-center pt-6 pb-3 border-t border-gray-200 mb-5 bg-white sticky top-0 px-4 md:px-0"
-                style={{ zIndex: isAnyModalOpen ? 1 : 50 }}
+                style={{ zIndex: isAnyModalOpen ? 1 : 10 }}
             >
                 {/* Mobile Menu Button */}
                 <button

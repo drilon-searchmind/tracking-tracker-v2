@@ -299,7 +299,7 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                                 
                                 <div className="flex gap-3 md:gap-4 w-full md:w-auto">
                                     <button
-                                        onClick={handleOpenModal}
+                                        onClick={handleOpenParentModal}
                                         className="bg-[var(--color-lime)] text-[var(--color-dark-green)] py-2 px-6 rounded-lg hover:bg-[var(--color-light-green)] hover:text-white transition-colors duration-300 text-sm font-medium flex gap-2 items-center justify-center md:justify-start shadow-sm"
                                     >
                                         <FaCirclePlus />

@@ -70,6 +70,7 @@ export default function ParentCampaignModal({
     }, [isOpen, setIsParentCampaignModalOpen]);
 
     const handleClose = () => {
+        setIsParentCampaignModalOpen?.(false);
         onClose();
     };
 
@@ -131,7 +132,7 @@ export default function ParentCampaignModal({
                 });
                 setSelectedServices([]);
                 onSuccess?.();
-                onClose();
+                handleClose();
             } else {
                 const errorData = await response.json();
                 showToast(`Failed to create parent campaign: ${errorData.error}`, "error");
@@ -148,29 +149,29 @@ export default function ParentCampaignModal({
 
     return (
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-[99999999]">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
-                <span className="flex justify-between mb-5">
-                    <h4 className="text-xl font-semibold">Create Parent Campaign</h4>
-                    <button onClick={handleClose} className="text-gray-500 hover:text-gray-700 text-lg">
+            <div className="bg-white rounded-xl shadow-solid-l p-8 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto border border-gray-200 mt-40">
+                <span className="flex justify-between mb-6">
+                    <h4 className="text-xl font-bold text-[var(--color-dark-green)]">Create Parent Campaign</h4>
+                    <button onClick={handleClose} className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] text-lg transition-colors">
                         <IoMdClose className="text-2xl" />
                     </button>
                 </span>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Parent Campaign Name</label>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Parent Campaign Name</label>
                         <input
                             type="text"
                             name="parentCampaignName"
                             value={formData.parentCampaignName}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Service (Multiple)</label>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Service (Multiple)</label>
                         <Select
                             name="service"
                             value={selectedServices}
@@ -180,11 +181,27 @@ export default function ParentCampaignModal({
                             placeholder="Select services..."
                             isMulti
                             isClearable
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '0.5rem',
+                                    padding: '0.25rem',
+                                    '&:hover': {
+                                        borderColor: 'var(--color-lime)'
+                                    }
+                                }),
+                                option: (base, state) => ({
+                                    ...base,
+                                    backgroundColor: state.isSelected ? 'var(--color-lime)' : state.isFocused ? 'var(--color-natural)' : 'white',
+                                    color: 'var(--color-dark-green)'
+                                })
+                            }}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Country Code</label>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Country Code</label>
                         <Select
                             name="countryCode"
                             value={selectedCountryOption}
@@ -193,40 +210,56 @@ export default function ParentCampaignModal({
                             className="w-full"
                             placeholder="Search for a country..."
                             isClearable
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '0.5rem',
+                                    padding: '0.25rem',
+                                    '&:hover': {
+                                        borderColor: 'var(--color-lime)'
+                                    }
+                                }),
+                                option: (base, state) => ({
+                                    ...base,
+                                    backgroundColor: state.isSelected ? 'var(--color-lime)' : state.isFocused ? 'var(--color-natural)' : 'white',
+                                    color: 'var(--color-dark-green)'
+                                })
+                            }}
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Start Date</label>
                             <input
                                 type="date"
                                 name="startDate"
                                 value={formData.startDate}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                            <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">End Date</label>
                             <input
                                 type="date"
                                 name="endDate"
                                 value={formData.endDate}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                             />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Market</label>
+                            <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">B2B/B2C</label>
                             <select
                                 name="b2bOrB2c"
                                 value={formData.b2bOrB2c}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                             >
                                 <option value="">Select</option>
                                 <option value="B2B">B2B</option>
@@ -234,13 +267,13 @@ export default function ParentCampaignModal({
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Budget (Optional)</label>
+                            <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Budget (Optional)</label>
                             <input
                                 type="number"
                                 name="budget"
                                 value={formData.budget}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                 min="0"
                                 step="0.01"
                             />
@@ -248,73 +281,73 @@ export default function ParentCampaignModal({
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Text</label>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Campaign Text</label>
                         <input
                             type="text"
                             name="campaignText"
                             value={formData.campaignText}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Message</label>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Campaign Message</label>
                         <textarea
                             name="campaignMessage"
                             value={formData.campaignMessage}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                             rows="3"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Brief</label>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Campaign Brief</label>
                         <textarea
                             name="campaignBrief"
                             value={formData.campaignBrief}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                             rows="3"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Material from Customer</label>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Material from Customer</label>
                         <textarea
                             name="materialFromCustomer"
                             value={formData.materialFromCustomer}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                             rows="3"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Material Links</label>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Material Links</label>
                         <textarea
                             name="materialLinks"
                             value={formData.materialLinks}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                             rows="3"
                             placeholder="Add links to materials, one per line"
                         />
                     </div>
 
-                    <div className="mt-6 space-y-2">
+                    <div className="mt-6 space-y-3">
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full bg-[var(--color-dark-green)] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[var(--color-green)] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? "Creating..." : "Create Parent Campaign"}
                         </button>
                         <button
                             type="button"
                             onClick={handleClose}
-                            className="w-full text-zinc-700 text-center border border-zinc-700 py-2 px-4 rounded hover:bg-zinc-50 gap-2 hover:cursor-pointer text-sm"
+                            className="w-full border-2 border-[var(--color-dark-green)] text-[var(--color-dark-green)] py-3 px-6 rounded-lg font-semibold hover:bg-[var(--color-dark-green)] hover:text-white transition-colors"
                         >
                             Cancel
                         </button>

@@ -5,23 +5,19 @@ import Image from "next/image";
 import { FaPlay, FaArrowRight, FaChartLine, FaUsers, FaBolt } from "react-icons/fa";
 
 const HeroSection = () => {
-    // Animation state for chart bars
     const [chartHeights, setChartHeights] = useState([60, 80, 40, 90, 70, 85, 65, 95, 75, 88, 92, 78]);
     
-    // Animation state for dynamic metric values
     const [currentRevenue, setCurrentRevenue] = useState(24.5);
     const [currentConversions, setCurrentConversions] = useState(1247);
     const [targetRevenue, setTargetRevenue] = useState(24.5);
     const [targetConversions, setTargetConversions] = useState(1247);
 
-    // Generate random values for metrics
     const generateRandomValues = () => {
-        const newRevenue = Math.random() * 90 + 10; // 10k to 100k
-        const newConversions = Math.floor(Math.random() * 1900 + 100); // 100 to 2000
+        const newRevenue = Math.random() * 90 + 10; 
+        const newConversions = Math.floor(Math.random() * 1900 + 100);
         return { newRevenue, newConversions };
     };
 
-    // Animate chart bars and metrics every 4 seconds
     useEffect(() => {
         const interval = setInterval(() => {
             const newHeights = Array.from({ length: 12 }, () => Math.random() * 90 + 10);
@@ -36,10 +32,9 @@ const HeroSection = () => {
         return () => clearInterval(interval);
     }, []);
 
-    // Animate metric values to new targets
     useEffect(() => {
-        const duration = 1000; // 1 second for smoother transition
-        const steps = 30; // 30 steps for smooth animation
+        const duration = 1000; 
+        const steps = 30;
         const stepTime = duration / steps;
         
         let currentStep = 0;
@@ -50,7 +45,6 @@ const HeroSection = () => {
             currentStep++;
             const progress = currentStep / steps;
             
-            // Easing function for smoother animation
             const easeInOutQuad = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
             
             const newRevenue = startRevenue + (targetRevenue - startRevenue) * easeInOutQuad;

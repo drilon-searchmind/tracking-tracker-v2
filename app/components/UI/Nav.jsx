@@ -24,127 +24,150 @@ export default function Nav() {
     }, [session, router]);
 
     return (
-        <section id="componentNav" className="">
-            <nav className="flex justify-between items-center container mx-auto">
-                <div className="flex items-center gap-4 py-6">
-                    <Image
-                        src="/images/searchmind/apex-icon.svg"
-                        alt="logo"
-                        width={20}
-                        height={30}
-                        className="w-full max-w-[30px] object-contain filter brightness-0"
-                    />
-                    <a href="/" className="">
-                        <span className="text-lg text-black font-extrabold fontFamilyFustatHeading">
-                            Searchmind Apex
-                            <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-md font-medium">
-                                🚧 v 0.2.3
+        <section id="componentNav" className="bg-white border-b border-gray-100 sticky top-0 z-50">
+            <nav className="flex justify-between items-center container mx-auto px-4 md:px-0">
+                <div className="flex items-center gap-3 py-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                            <Image
+                                src="/images/searchmind/apex-icon.svg"
+                                alt="logo"
+                                width={20}
+                                height={30}
+                                className="w-full max-w-[30px] object-contain filter brightness-0"
+                            />
+                        </div>
+                        <div>
+                            <span className="text-lg text-[var(--color-dark-green)] font-bold">
+                                Searchmind Apex
                             </span>
-                        </span>
-                        {session ? (
-                            <span className="flex items-center gap-2 text-xs text-gray-500">
-                                <p className="m-0 text-xs">{session.user.email}</p>
+                            <span className="ml-2 text-xs bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] px-2 py-1 rounded-full font-medium">
+                                v 0.2.3
                             </span>
-                        ) : null}
-                    </a>
+                            {session && (
+                                <div className="text-xs text-[var(--color-green)] mt-0.5">
+                                    {session.user.email}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
-                {/* Mobile menu button */}
                 <button
-                    className="md:hidden text-2xl z-50"
+                    className="md:hidden text-[var(--color-dark-green)] text-xl z-50 p-2"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                     aria-label="Toggle menu"
                 >
                     {isMenuOpen ? <FaTimes /> : <FaBars />}
                 </button>
 
-                {/* Desktop Navigation */}
-                <div className="hidden md:flex items-center gap-8 text-sm">
+                <div className="hidden md:flex items-center gap-1">
                     {session ? (
                         <>
-                            <a href="/home" className="hover:text-black flex items-center gap-2 m-0 p-0 text-zinc-700">
-                                <FaHome /> Home
+                            <a href="/home" className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium">
+                                <FaHome className="text-xs" /> Home
                             </a>
-                            <button onClick={() => setShowModal(true)} className="text-zinc-700 cursor-pointer hover:text-black flex items-center gap-2 m-0 p-0">
-                                <FaChartLine /> Performance Dashboard
+                            <button onClick={() => setShowModal(true)} className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium">
+                                <FaChartLine className="text-xs" /> Dashboard
                             </button>
-                            <a href="/admin" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
-                                <FaUserCog /> Admin
+                            <a href="/admin" className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium">
+                                <FaUserCog className="text-xs" /> Admin
                             </a>
-                            <a href="/my-profile" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
-                                <FaUserCircle /> My Profile
+                            <a href="/my-profile" className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium">
+                                <FaUserCircle className="text-xs" /> Profile
                             </a>
-                            <a href="/my-profile?tab=campaigns" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
-                                <FaChartBar /> My Campaigns
+                            <a href="/my-profile?tab=campaigns" className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium">
+                                <FaChartBar className="text-xs" /> Campaigns
                             </a>
-
-                            <a href="/whats-new" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
-                                <FaBell /> What's New
+                            <a href="/whats-new" className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium">
+                                <FaBell className="text-xs" /> Updates
                             </a>
-                            <a href="#" className="hover:text-black line-through hidden">Tracking Tracker</a>
-                            <div className="hidden">
-                                <button
-                                    onClick={toggleTheme}
-                                    className="text-zinc-700 hover:text-black cursor-pointer"
-                                    aria-label="Toggle dark mode"
-                                >
-                                    {theme === 'dark' ? <FaSun /> : <FaMoon />}
-                                </button>
+                            
+                            <div className="ml-2 pl-2 border-l border-gray-200">
+                                <LogoutButton />
                             </div>
-                            <LogoutButton />
                         </>
                     ) : (
                         <LoginButton />
                     )}
                 </div>
 
-                {/* Mobile Navigation */}
-                <div className={`fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:hidden flex flex-col pt-24 px-6`}>
-                    {session ? (
-                        <>
-                            <a href="/home" className="hover:text-black flex items-center gap-2 m-0 py-4 text-zinc-700 border-b border-gray-100">
-                                <FaHome /> Home
-                            </a>
-                            <button onClick={() => {
-                                setShowModal(true);
-                                setIsMenuOpen(false);
-                            }} className="text-zinc-700 cursor-pointer hover:text-black flex items-center gap-2 m-0 py-4 border-b border-gray-100">
-                                <FaChartLine /> Performance Dashboard
-                            </button>
-                            <a href="/admin" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 py-4 border-b border-gray-100">
-                                <FaUserCog /> Admin
-                            </a>
-                            <a href="/my-profile" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 py-4 border-b border-gray-100">
-                                <FaUserCircle /> My Profile
-                            </a>
-                            <a href="/my-profile?tab=campaigns" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 p-0">
-                                <FaChartBar /> My Campaigns
-                            </a>
-
-                            <a href="/whats-new" className="text-zinc-700 hover:text-black flex items-center gap-2 m-0 py-4 border-b border-gray-100">
-                                <FaBell /> What's New
-                            </a>
-                            <div className="hidden">
+                <div className={`fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white shadow-2xl z-40 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:hidden`}>
+                    <div className="flex flex-col h-full">
+                        <div className="p-6 border-b border-gray-100">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-[var(--color-lime)] rounded-lg flex items-center justify-center">
+                                        <span className="text-[var(--color-dark-green)] font-bold">SA</span>
+                                    </div>
+                                    <div>
+                                        <div className="text-lg text-[var(--color-dark-green)] font-bold">Searchmind Apex</div>
+                                        {session && (
+                                            <div className="text-xs text-[var(--color-green)]">{session.user.email}</div>
+                                        )}
+                                    </div>
+                                </div>
                                 <button
-                                    onClick={toggleTheme}
-                                    className="flex items-center gap-2 py-4 border-b border-gray-100 text-zinc-700"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] p-2"
                                 >
-                                    {theme === 'dark' ? <FaSun /> : <FaMoon />}
-                                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                                    <FaTimes />
                                 </button>
                             </div>
-                            <div className="mt-4">
+                        </div>
+
+                        <div className="flex-1 px-6 py-4">
+                            {session ? (
+                                <>
+                                    <a href="/home" 
+                                       onClick={() => setIsMenuOpen(false)}
+                                       className="flex items-center gap-3 py-3 text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 rounded-lg transition-colors font-medium">
+                                        <FaHome /> Home
+                                    </a>
+                                    <button onClick={() => {
+                                        setShowModal(true);
+                                        setIsMenuOpen(false);
+                                    }} className="w-full flex items-center gap-3 py-3 text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 rounded-lg transition-colors font-medium">
+                                        <FaChartLine /> Dashboard
+                                    </button>
+                                    <a href="/admin" 
+                                       onClick={() => setIsMenuOpen(false)}
+                                       className="flex items-center gap-3 py-3 text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 rounded-lg transition-colors font-medium">
+                                        <FaUserCog /> Admin
+                                    </a>
+                                    <a href="/my-profile" 
+                                       onClick={() => setIsMenuOpen(false)}
+                                       className="flex items-center gap-3 py-3 text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 rounded-lg transition-colors font-medium">
+                                        <FaUserCircle /> Profile
+                                    </a>
+                                    <a href="/my-profile?tab=campaigns" 
+                                       onClick={() => setIsMenuOpen(false)}
+                                       className="flex items-center gap-3 py-3 text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 rounded-lg transition-colors font-medium">
+                                        <FaChartBar /> Campaigns
+                                    </a>
+                                    <a href="/whats-new" 
+                                       onClick={() => setIsMenuOpen(false)}
+                                       className="flex items-center gap-3 py-3 text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 rounded-lg transition-colors font-medium">
+                                        <FaBell /> Updates
+                                    </a>
+                                </>
+                            ) : null}
+                        </div>
+
+                        {session && (
+                            <div className="p-6 border-t border-gray-100">
                                 <LogoutButton />
                             </div>
-                        </>
-                    ) : (
-                        <div className="mt-4">
-                            <LoginButton />
-                        </div>
-                    )}
+                        )}
+
+                        {!session && (
+                            <div className="p-6">
+                                <LoginButton />
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Overlay when mobile menu is open */}
                 {isMenuOpen && (
                     <div
                         className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"

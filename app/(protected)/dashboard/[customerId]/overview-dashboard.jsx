@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import { FaChevronRight } from "react-icons/fa";
+import { FaChevronRight, FaCalendarAlt } from "react-icons/fa";
 import Subheading from "@/app/components/UI/Utility/Subheading";
 
 export default function OverviewDashboard({ customerId, customerName, initialData }) {
@@ -317,150 +317,136 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
                     <Subheading headingText={customerName} />
-                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px] inline-grid z-10">Overview</h1>
-                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
+                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] xl:text-[44px] inline-grid z-10">Overview</h1>
+                    <p className="text-[var(--color-green)] max-w-2xl text-sm md:text-base">
                         Daily overview of key performance metrics including orders, revenue, ad spend, and profitability.
                     </p>
                 </div>
 
                 {/* Current Period Table */}
-                <div className="mb-6 md:mb-12 bg-white border border-gray-200 rounded-lg">
-                    <div className="flex flex-col md:flex-row md:items-center p-4 border-b border-gray-200 bg-gray-50 gap-4">
-                        <h3 className="text-base md:text-lg font-semibold">Current Period</h3>
+                <div className="mb-6 md:mb-12 bg-white border border-gray-200 rounded-xl shadow-solid-s">
+                    <div className="flex flex-col md:flex-row md:items-center p-6 border-b border-gray-100 bg-[var(--color-natural)] rounded-t-xl gap-4">
+                        <div className="flex items-center gap-2">
+                            <FaCalendarAlt className="text-[var(--color-dark-green)] text-sm" />
+                            <h3 className="text-base md:text-lg font-semibold text-[var(--color-dark-green)]">Current Period</h3>
+                        </div>
 
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 w-full md:w-auto md:ml-auto">
-                            <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-start md:items-center w-full md:w-auto">
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    className="border border-gray-300 px-3 py-2 rounded text-sm w-full md:w-auto"
-                                />
-                                <span className="text-gray-400 hidden md:inline">→</span>
-                                <span className="text-gray-400 md:hidden">to</span>
-                                <input
-                                    type="date"
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    className="border border-gray-300 px-3 py-2 rounded text-sm w-full md:w-auto"
-                                />
-                            </div>
-
-                            <div className="flex rounded overflow-hidden w-full md:w-auto hidden">
-                                <button
-                                    onClick={() => setMetricView("roas")}
-                                    className={`text-center py-2 px-4 text-sm flex-1 md:flex-none ${metricView === "roas"
-                                        ? "bg-zinc-700 text-white"
-                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                        }`}
-                                >
-                                    ROAS/POAS
-                                </button>
-                                <button
-                                    onClick={() => setMetricView("spendshare")}
-                                    className={`text-center py-2 px-4 text-sm flex-1 md:flex-none ${metricView === "spendshare"
-                                        ? "bg-zinc-700 text-white"
-                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                        }`}
-                                >
-                                    Spendshare
-                                </button>
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-3 w-full md:w-auto md:ml-auto">
+                            <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full md:w-auto">
+                                <div className="relative">
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-full md:w-auto focus:border-[var(--color-lime)] focus:outline-none transition-colors"
+                                    />
+                                </div>
+                                <span className="text-[var(--color-green)] hidden md:inline font-medium">to</span>
+                                <span className="text-[var(--color-green)] md:hidden text-sm">to</span>
+                                <div className="relative">
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-full md:w-auto focus:border-[var(--color-lime)] focus:outline-none transition-colors"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {loading ? (
                         <div className="text-center py-20">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary-searchmind)] mx-auto"></div>
-                            <p className="mt-4 text-gray-600">Loading overview data...</p>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-lime)] mx-auto"></div>
+                            <p className="mt-4 text-[var(--color-green)]">Loading overview data...</p>
                         </div>
                     ) : (
                         <>
                             {/* Desktop Table - Hidden on mobile */}
                             <div className="hidden md:block overflow-x-auto">
-                                <table className="min-w-full text-xs text-left compact-table">
-                                    <thead className="bg-gray-50 border-b border-gray-200">
-                                        <tr className="text-gray-600 uppercase">
-                                            <th className="px-2 py-2 font-medium">Date</th> {/* Reduced padding */}
-                                            <th className="px-2 py-2 font-medium">Orders</th>
-                                            <th className="px-2 py-2 font-medium">Revenue</th>
-                                            <th className="px-2 py-2 font-medium">Revenue Ex Tax</th>
-                                            <th className="px-2 py-2 font-medium">PPC Cost</th>
-                                            <th className="px-2 py-2 font-medium">PS Cost</th>
-                                            <th className="px-2 py-2 font-medium">{metricView === "ROAS/POAS" ? "ROAS" : "Spendshare"}</th>
-                                            <th className="px-2 py-2 font-medium">{metricView === "ROAS/POAS" ? "POAS" : "Spendshare inc. DB"}</th>
-                                            <th className="px-2 py-2 font-medium">GP</th>
-                                            <th className="px-2 py-2 font-medium">AOV</th>
+                                <table className="min-w-full text-xs text-left">
+                                    <thead className="bg-[var(--color-natural)] border-b border-gray-100">
+                                        <tr className="text-[var(--color-dark-green)] uppercase font-medium">
+                                            <th className="px-4 py-3">Date</th>
+                                            <th className="px-4 py-3">Orders</th>
+                                            <th className="px-4 py-3">Revenue</th>
+                                            <th className="px-4 py-3">Revenue Ex Tax</th>
+                                            <th className="px-4 py-3">PPC Cost</th>
+                                            <th className="px-4 py-3">PS Cost</th>
+                                            <th className="px-4 py-3">{metricView === "ROAS/POAS" ? "ROAS" : "Spendshare"}</th>
+                                            <th className="px-4 py-3">{metricView === "ROAS/POAS" ? "POAS" : "Spendshare inc. DB"}</th>
+                                            <th className="px-4 py-3">GP</th>
+                                            <th className="px-4 py-3">AOV</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="text-gray-800">
+                                    <tbody className="text-[var(--color-dark-green)] text-xs">
                                         {filteredMetrics.map((row, i) => (
-                                            <tr key={i} className="border-b last:border-0">
-                                                <td className="px-2 py-2">{row.date}</td> {/* Reduced padding */}
-                                                <td className="px-2 py-2" style={getHeatmapStyle(row.orders, 'orders')}>
+                                            <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-[var(--color-natural)]/30 transition-colors">
+                                                <td className="px-2 py-1 font-medium">{row.date}</td>
+                                                <td className="px-2 py-1" style={getHeatmapStyle(row.orders, 'orders')}>
                                                     {Math.round(row.orders).toLocaleString()}
                                                 </td>
-                                                <td className="px-2 py-2" style={getHeatmapStyle(row.revenue, 'revenue')}>
+                                                <td className="px-2 py-1" style={getHeatmapStyle(row.revenue, 'revenue')}>
                                                     kr. {Math.round(row.revenue).toLocaleString()}
                                                 </td>
-                                                <td className="px-2 py-2" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax')}>
+                                                <td className="px-2 py-1" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax')}>
                                                     kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
                                                 </td>
-                                                <td className="px-2 py-2" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost')}>
+                                                <td className="px-2 py-1" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost')}>
                                                     kr. {Math.round(row.ppc_cost).toLocaleString()}
                                                 </td>
-                                                <td className="px-2 py-2" style={getHeatmapStyle(row.ps_cost, 'ps_cost')}>
+                                                <td className="px-2 py-1" style={getHeatmapStyle(row.ps_cost, 'ps_cost')}>
                                                     kr. {Math.round(row.ps_cost).toLocaleString()}
                                                 </td>
-                                                <td className="px-2 py-2" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare')}>
+                                                <td className="px-2 py-1" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare')}>
                                                     {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
                                                 </td>
-                                                <td className="px-2 py-2" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db')}>
+                                                <td className="px-2 py-1" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db')}>
                                                     {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
                                                 </td>
-                                                <td className="px-2 py-2" style={getHeatmapStyle(row.gp, 'gp')}>
+                                                <td className="px-2 py-1" style={getHeatmapStyle(row.gp, 'gp')}>
                                                     kr. {Math.round(row.gp).toLocaleString()}
                                                 </td>
-                                                <td className="px-2 py-2" style={getHeatmapStyle(row.aov, 'aov')}>
+                                                <td className="px-2 py-1" style={getHeatmapStyle(row.aov, 'aov')}>
                                                     kr. {Math.round(row.aov).toLocaleString()}
                                                 </td>
                                             </tr>
                                         ))}
-                                        <tr className="bg-gray-200 font-semibold text-sm">
-                                            <td className="px-4 py-3">Total</td>
-                                            <td className="px-4 py-3">{Math.round(filteredTotals.orders).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredTotals.revenue).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredTotals.revenue_ex_tax).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredTotals.ppc_cost).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredTotals.ps_cost).toLocaleString()}</td>
-                                            <td className="px-4 py-3">{(metricView === "roas" ? filteredTotals.roas : filteredTotals.spendshare).toFixed(2)}</td>
-                                            <td className="px-4 py-3">{(metricView === "roas" ? filteredTotals.poas : filteredTotals.spendshare_db).toFixed(2)}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredTotals.gp).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredTotals.aov).toLocaleString()}</td>
+                                        <tr className="bg-[var(--color-lime)]/10 border-t-2 border-[var(--color-lime)] font-semibold text-xs">
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)] font-bold">Total</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(filteredTotals.orders).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.revenue).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.revenue_ex_tax).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.ppc_cost).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.ps_cost).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredTotals.roas : filteredTotals.spendshare).toFixed(2)}</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredTotals.poas : filteredTotals.spendshare_db).toFixed(2)}</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.gp).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.aov).toLocaleString()}</td>
                                         </tr>
-                                        <tr className="bg-gray-200 font-semibold text-sm">
-                                            <td className="px-4 py-3">Last Year</td>
-                                            <td className="px-4 py-3">{Math.round(filteredLastYearTotals.orders).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
-                                            <td className="px-4 py-3">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</td>
-                                            <td className="px-4 py-3">{(metricView === "roas" ? filteredLastYearTotals.poas : filteredLastYearTotals.spendshare_db).toFixed(2)}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
+                                        <tr className="bg-[var(--color-natural)] font-semibold text-xs">
+                                            <td className="px-2 py-2 text-[var(--color-green)] font-bold">Last Year</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">{Math.round(filteredLastYearTotals.orders).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">{(metricView === "roas" ? filteredLastYearTotals.poas : filteredLastYearTotals.spendshare_db).toFixed(2)}</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
                                         </tr>
-                                        <tr className="bg-gray-200 font-semibold text-sm">
-                                            <td className="px-4 py-3">Difference</td>
-                                            <td className="px-4 py-3">{Math.round(differences.orders).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(differences.revenue).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(differences.revenue_ex_tax).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(differences.ppc_cost).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(differences.ps_cost).toLocaleString()}</td>
-                                            <td className="px-4 py-3">{(metricView === "roas" ? differences.roas : differences.spendshare).toFixed(2)}</td>
-                                            <td className="px-4 py-3">{(metricView === "roas" ? differences.poas : differences.spendshare_db).toFixed(2)}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(differences.gp).toLocaleString()}</td>
-                                            <td className="px-4 py-3">kr. {Math.round(differences.aov).toLocaleString()}</td>
+                                        <tr className="bg-gradient-to-r from-[var(--color-lime)]/20 to-[var(--color-natural)] font-semibold text-xs border-t border-[var(--color-lime)]/50">
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)] font-bold">Difference</td>
+                                            <td className={`px-2 py-2 ${differences.orders >= 0 ? 'text-green-600' : 'text-red-600'}`}>{Math.round(differences.orders).toLocaleString()}</td>
+                                            <td className={`px-2 py-2 ${differences.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.revenue).toLocaleString()}</td>
+                                            <td className={`px-2 py-2 ${differences.revenue_ex_tax >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.revenue_ex_tax).toLocaleString()}</td>
+                                            <td className={`px-2 py-2 ${differences.ppc_cost >= 0 ? 'text-red-600' : 'text-green-600'}`}>kr. {Math.round(differences.ppc_cost).toLocaleString()}</td>
+                                            <td className={`px-2 py-2 ${differences.ps_cost >= 0 ? 'text-red-600' : 'text-green-600'}`}>kr. {Math.round(differences.ps_cost).toLocaleString()}</td>
+                                            <td className={`px-2 py-2 ${differences.roas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "roas" ? differences.roas : differences.spendshare).toFixed(2)}</td>
+                                            <td className={`px-2 py-2 ${differences.poas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "roas" ? differences.poas : differences.spendshare_db).toFixed(2)}</td>
+                                            <td className={`px-2 py-2 ${differences.gp >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.gp).toLocaleString()}</td>
+                                            <td className={`px-2 py-2 ${differences.aov >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.aov).toLocaleString()}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -468,122 +454,154 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
 
                             {/* Mobile Card-Based Layout */}
                             <div className="md:hidden">
-                                <div className="border-b border-gray-200">
-                                    <div className="px-4 py-3 bg-gray-200 font-semibold">
-                                        <div className="text-sm">Total</div>
-                                        <div className="mt-2 flex justify-between">
-                                            <span className="text-sm">Orders: {Math.round(filteredTotals.orders).toLocaleString()}</span>
-                                            <span className="text-sm">Revenue: kr. {Math.round(filteredTotals.revenue).toLocaleString()}</span>
-                                        </div>
-                                        <div className="mt-1 flex justify-between">
-                                            <span className="text-sm">{metricView === "roas" ? "ROAS" : "Spendshare"}: {(metricView === "roas" ? filteredTotals.roas : filteredTotals.spendshare).toFixed(2)}</span>
-                                            <span className="text-sm">GP: kr. {Math.round(filteredTotals.gp).toLocaleString()}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="border-b border-gray-200">
-                                    <div className="px-4 py-3 bg-gray-200 font-semibold">
-                                        <div className="text-sm">Last Year</div>
-                                        <div className="mt-2 flex justify-between">
-                                            <span className="text-sm">Orders: {Math.round(filteredLastYearTotals.orders).toLocaleString()}</span>
-                                            <span className="text-sm">Revenue: kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</span>
-                                        </div>
-                                        <div className="mt-1 flex justify-between">
-                                            <span className="text-sm">{metricView === "roas" ? "ROAS" : "Spendshare"}: {(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</span>
-                                            <span className="text-sm">GP: kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</span>
+                                <div className="border-b border-gray-100">
+                                    <div className="px-6 py-4 bg-[var(--color-lime)]/10 border-l-4 border-[var(--color-lime)]">
+                                        <div className="text-sm font-bold text-[var(--color-dark-green)] mb-2">Total</div>
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">Orders:</span>
+                                                <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(filteredTotals.orders).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">Revenue:</span>
+                                                <span className="font-semibold text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.revenue).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
+                                                <span className="font-semibold text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredTotals.roas : filteredTotals.spendshare).toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">GP:</span>
+                                                <span className="font-semibold text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.gp).toLocaleString()}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="border-b border-gray-200">
-                                    <div className="px-4 py-3 bg-gray-200 font-semibold">
-                                        <div className="text-sm">Difference</div>
-                                        <div className="mt-2 flex justify-between">
-                                            <span className="text-sm">Orders: {Math.round(differences.orders).toLocaleString()}</span>
-                                            <span className="text-sm">Revenue: kr. {Math.round(differences.revenue).toLocaleString()}</span>
-                                        </div>
-                                        <div className="mt-1 flex justify-between">
-                                            <span className="text-sm">{metricView === "roas" ? "ROAS" : "Spendshare"}: {(metricView === "roas" ? differences.roas : differences.spendshare).toFixed(2)}</span>
-                                            <span className="text-sm">GP: kr. {Math.round(differences.gp).toLocaleString()}</span>
+                                <div className="border-b border-gray-100">
+                                    <div className="px-6 py-4 bg-[var(--color-natural)]">
+                                        <div className="text-sm font-bold text-[var(--color-green)] mb-2">Last Year</div>
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">Orders:</span>
+                                                <span className="font-semibold">{Math.round(filteredLastYearTotals.orders).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">Revenue:</span>
+                                                <span className="font-semibold">kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
+                                                <span className="font-semibold">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">GP:</span>
+                                                <span className="font-semibold">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="text-xs uppercase text-gray-600 px-4 py-2 bg-gray-50 border-b border-gray-200">
+                                <div className="border-b border-gray-100">
+                                    <div className="px-6 py-4 bg-gradient-to-r from-[var(--color-lime)]/20 to-[var(--color-natural)]">
+                                        <div className="text-sm font-bold text-[var(--color-dark-green)] mb-2">Difference</div>
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">Orders:</span>
+                                                <span className={`font-semibold ${differences.orders >= 0 ? 'text-green-600' : 'text-red-600'}`}>{Math.round(differences.orders).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">Revenue:</span>
+                                                <span className={`font-semibold ${differences.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.revenue).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
+                                                <span className={`font-semibold ${differences.roas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "roas" ? differences.roas : differences.spendshare).toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--color-green)]">GP:</span>
+                                                <span className={`font-semibold ${differences.gp >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.gp).toLocaleString()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="text-xs uppercase text-[var(--color-green)] px-6 py-3 bg-[var(--color-natural)] border-b border-gray-100 font-medium">
                                     Daily Data
                                 </div>
 
                                 {filteredMetrics.map((row, i) => (
-                                    <div key={i} className="border-b border-gray-200 last:border-b-0">
+                                    <div key={i} className="border-b border-gray-50 last:border-b-0">
                                         <div
-                                            className="px-4 py-3 flex justify-between items-center cursor-pointer"
+                                            className="px-6 py-4 flex justify-between items-center cursor-pointer hover:bg-[var(--color-natural)]/50 transition-colors"
                                             onClick={() => toggleRowExpansion(i)}
                                         >
                                             <div>
-                                                <div className="font-semibold">{row.date}</div>
-                                                <div className="text-xs text-gray-500 mt-1">
+                                                <div className="font-semibold text-[var(--color-dark-green)]">{row.date}</div>
+                                                <div className="text-xs text-[var(--color-green)] mt-1">
                                                     Revenue: kr. {Math.round(row.revenue).toLocaleString()} | Orders: {Math.round(row.orders).toLocaleString()}
                                                 </div>
                                             </div>
-                                            <FaChevronRight className={`text-gray-400 transition-transform ${expandedRows[i] ? 'transform rotate-90' : ''}`} />
+                                            <FaChevronRight className={`text-[var(--color-green)] transition-transform ${expandedRows[i] ? 'transform rotate-90' : ''}`} />
                                         </div>
 
                                         {expandedRows[i] && (
-                                            <div className="px-4 pb-3 grid grid-cols-2 gap-2 text-sm">
-                                                <div className="flex justify-between border-b border-gray-100 py-1">
-                                                    <span className="text-gray-600">Orders:</span>
-                                                    <span style={getHeatmapStyle(row.orders, 'orders')}>
-                                                        {Math.round(row.orders).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-gray-100 py-1">
-                                                    <span className="text-gray-600">Revenue:</span>
-                                                    <span style={getHeatmapStyle(row.revenue, 'revenue')}>
-                                                        kr. {Math.round(row.revenue).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-gray-100 py-1">
-                                                    <span className="text-gray-600">Ex Tax:</span>
-                                                    <span style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax')}>
-                                                        kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-gray-100 py-1">
-                                                    <span className="text-gray-600">PPC Cost:</span>
-                                                    <span style={getHeatmapStyle(row.ppc_cost, 'ppc_cost')}>
-                                                        kr. {Math.round(row.ppc_cost).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-gray-100 py-1">
-                                                    <span className="text-gray-600">PS Cost:</span>
-                                                    <span style={getHeatmapStyle(row.ps_cost, 'ps_cost')}>
-                                                        kr. {Math.round(row.ps_cost).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-gray-100 py-1">
-                                                    <span className="text-gray-600">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
-                                                    <span style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare')}>
-                                                        {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-gray-100 py-1">
-                                                    <span className="text-gray-600">{metricView === "roas" ? "POAS:" : "Spendshare DB:"}</span>
-                                                    <span style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db')}>
-                                                        {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-gray-100 py-1">
-                                                    <span className="text-gray-600">GP:</span>
-                                                    <span style={getHeatmapStyle(row.gp, 'gp')}>
-                                                        kr. {Math.round(row.gp).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-gray-100 py-1">
-                                                    <span className="text-gray-600">AOV:</span>
-                                                    <span style={getHeatmapStyle(row.aov, 'aov')}>
-                                                        kr. {Math.round(row.aov).toLocaleString()}
-                                                    </span>
+                                            <div className="px-6 pb-4 bg-[var(--color-natural)]/30">
+                                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                                    <div className="flex justify-between border-b border-gray-100 py-1">
+                                                        <span className="text-[var(--color-green)]">Orders:</span>
+                                                        <span style={getHeatmapStyle(row.orders, 'orders')}>
+                                                            {Math.round(row.orders).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-gray-100 py-1">
+                                                        <span className="text-[var(--color-green)]">Revenue:</span>
+                                                        <span style={getHeatmapStyle(row.revenue, 'revenue')}>
+                                                            kr. {Math.round(row.revenue).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-gray-100 py-1">
+                                                        <span className="text-[var(--color-green)]">Ex Tax:</span>
+                                                        <span style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax')}>
+                                                            kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-gray-100 py-1">
+                                                        <span className="text-[var(--color-green)]">PPC Cost:</span>
+                                                        <span style={getHeatmapStyle(row.ppc_cost, 'ppc_cost')}>
+                                                            kr. {Math.round(row.ppc_cost).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-gray-100 py-1">
+                                                        <span className="text-[var(--color-green)]">PS Cost:</span>
+                                                        <span style={getHeatmapStyle(row.ps_cost, 'ps_cost')}>
+                                                            kr. {Math.round(row.ps_cost).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-gray-100 py-1">
+                                                        <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
+                                                        <span style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare')}>
+                                                            {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-gray-100 py-1">
+                                                        <span className="text-[var(--color-green)]">{metricView === "roas" ? "POAS:" : "Spendshare DB:"}</span>
+                                                        <span style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db')}>
+                                                            {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-gray-100 py-1">
+                                                        <span className="text-[var(--color-green)]">GP:</span>
+                                                        <span style={getHeatmapStyle(row.gp, 'gp')}>
+                                                            kr. {Math.round(row.gp).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-gray-100 py-1">
+                                                        <span className="text-[var(--color-green)]">AOV:</span>
+                                                        <span style={getHeatmapStyle(row.aov, 'aov')}>
+                                                            kr. {Math.round(row.aov).toLocaleString()}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
@@ -595,16 +613,22 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                 </div>
 
                 {/* Last Year Period Table */}
-                <div className="mb-6 md:mb-12 bg-white border border-gray-200 rounded-lg">
-                    <div className="flex items-center p-4 border-b border-gray-200 bg-gray-50 justify-between">
-                        <h3 className="text-base md:text-lg font-semibold">Last Year Period ({lastYearStart} to {lastYearEnd})</h3>
+                <div className="mb-6 md:mb-12 bg-white border border-gray-200 rounded-xl shadow-solid-s">
+                    <div className="flex items-center p-6 border-b border-gray-100 bg-[var(--color-natural)] rounded-t-xl justify-between">
+                        <div className="flex items-center gap-2">
+                            <FaCalendarAlt className="text-[var(--color-green)] text-sm" />
+                            <h3 className="text-base md:text-lg font-semibold text-[var(--color-dark-green)]">Last Year Period</h3>
+                            <span className="text-sm text-[var(--color-green)] bg-white px-3 py-1 rounded-full">
+                                {lastYearStart} to {lastYearEnd}
+                            </span>
+                        </div>
                     </div>
 
                     {/* Desktop Table - Hidden on mobile */}
                     <div className="hidden md:block overflow-x-auto">
-                        <table className="min-w-full text-xs text-left compact-table">
-                            <thead className="bg-gray-50 border-b border-gray-200">
-                                <tr className="text-gray-600 uppercase text-xs">
+                        <table className="min-w-full text-xs text-left">
+                            <thead className="bg-[var(--color-natural)] border-b border-gray-100">
+                                <tr className="text-[var(--color-dark-green)] uppercase text-xs font-medium">
                                     <th className="px-2 py-2 font-medium">Date</th>
                                     <th className="px-2 py-2 font-medium">Orders</th>
                                     <th className="px-2 py-2 font-medium">Revenue</th>
@@ -617,8 +641,8 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                     <th className="px-2 py-2 font-medium">AOV</th>
                                 </tr>
                             </thead>
-                            <tbody className="text-gray-800">
-                                <tr className="bg-gray-200 font-semibold text-sm">
+                            <tbody className="text-[var(--color-dark-green)] text-xs">
+                                <tr className="bg-[var(--color-natural)] font-semibold text-xs border-b-2 border-[var(--color-green)]">
                                     <td className="px-2 py-2">Total</td>
                                     <td className="px-2 py-2">{Math.round(filteredLastYearTotals.orders).toLocaleString()}</td>
                                     <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</td>
@@ -631,33 +655,33 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                                     <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
                                 </tr>
                                 {lastYearMetrics.map((row, i) => (
-                                    <tr key={i} className="border-b last:border-0">
-                                        <td className="px-2 py-2">{row.date}</td>
-                                        <td className="px-2 py-2" style={getHeatmapStyle(row.orders, 'orders', true)}>
+                                    <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-[var(--color-natural)]/30 transition-colors">
+                                        <td className="px-2 py-1">{row.date}</td>
+                                        <td className="px-2 py-1" style={getHeatmapStyle(row.orders, 'orders', true)}>
                                             {Math.round(row.orders).toLocaleString()}
                                         </td>
-                                        <td className="px-2 py-2" style={getHeatmapStyle(row.revenue, 'revenue', true)}>
+                                        <td className="px-2 py-1" style={getHeatmapStyle(row.revenue, 'revenue', true)}>
                                             kr. {Math.round(row.revenue).toLocaleString()}
                                         </td>
-                                        <td className="px-2 py-2" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax', true)}>
+                                        <td className="px-2 py-1" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax', true)}>
                                             kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
                                         </td>
-                                        <td className="px-2 py-2" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost', true)}>
+                                        <td className="px-2 py-1" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost', true)}>
                                             kr. {Math.round(row.ppc_cost).toLocaleString()}
                                         </td>
-                                        <td className="px-2 py-2" style={getHeatmapStyle(row.ps_cost, 'ps_cost', true)}>
+                                        <td className="px-2 py-1" style={getHeatmapStyle(row.ps_cost, 'ps_cost', true)}>
                                             kr. {Math.round(row.ps_cost).toLocaleString()}
                                         </td>
-                                        <td className="px-2 py-2" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare', true)}>
+                                        <td className="px-2 py-1" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare', true)}>
                                             {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
                                         </td>
-                                        <td className="px-2 py-2" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db', true)}>
+                                        <td className="px-2 py-1" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db', true)}>
                                             {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
                                         </td>
-                                        <td className="px-2 py-2" style={getHeatmapStyle(row.gp, 'gp', true)}>
+                                        <td className="px-2 py-1" style={getHeatmapStyle(row.gp, 'gp', true)}>
                                             kr. {Math.round(row.gp).toLocaleString()}
                                         </td>
-                                        <td className="px-2 py-2" style={getHeatmapStyle(row.aov, 'aov', true)}>
+                                        <td className="px-2 py-1" style={getHeatmapStyle(row.aov, 'aov', true)}>
                                             kr. {Math.round(row.aov).toLocaleString()}
                                         </td>
                                     </tr>
@@ -668,94 +692,106 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
 
                     {/* Mobile Card-Based Layout for Last Year */}
                     <div className="md:hidden">
-                        <div className="border-b border-gray-200">
-                            <div className="px-4 py-3 bg-gray-200 font-semibold">
-                                <div className="text-sm">Total</div>
-                                <div className="mt-2 flex justify-between">
-                                    <span className="text-sm">Orders: {Math.round(filteredLastYearTotals.orders).toLocaleString()}</span>
-                                    <span className="text-sm">Revenue: kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</span>
-                                </div>
-                                <div className="mt-1 flex justify-between">
-                                    <span className="text-sm">{metricView === "roas" ? "ROAS" : "Spendshare"}: {(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</span>
-                                    <span className="text-sm">GP: kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</span>
+                        <div className="border-b border-gray-100">
+                            <div className="px-6 py-4 bg-[var(--color-lime)]/10 border-l-4 border-[var(--color-lime)]">
+                                <div className="text-sm font-bold text-[var(--color-dark-green)] mb-2">Total</div>
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-[var(--color-green)]">Orders:</span>
+                                        <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(filteredLastYearTotals.orders).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-[var(--color-green)]">Revenue:</span>
+                                        <span className="font-semibold text-[var(--color-dark-green)]">kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
+                                        <span className="font-semibold text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-[var(--color-green)]">GP:</span>
+                                        <span className="font-semibold text-[var(--color-dark-green)]">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="text-xs uppercase text-gray-600 px-4 py-2 bg-gray-50 border-b border-gray-200">
+                        <div className="text-xs uppercase text-[var(--color-green)] px-6 py-3 bg-[var(--color-natural)] border-b border-gray-100 font-medium">
                             Daily Data
                         </div>
 
                         {lastYearMetrics.map((row, i) => (
-                            <div key={i} className="border-b border-gray-200 last:border-b-0">
+                            <div key={i} className="border-b border-gray-50 last:border-b-0">
                                 <div
-                                    className="px-4 py-3 flex justify-between items-center cursor-pointer"
+                                    className="px-6 py-4 flex justify-between items-center cursor-pointer hover:bg-[var(--color-natural)]/50 transition-colors"
                                     onClick={() => toggleLastYearRowExpansion(i)}
                                 >
                                     <div>
-                                        <div className="font-semibold">{row.date}</div>
-                                        <div className="text-xs text-gray-500 mt-1">
+                                        <div className="font-semibold text-[var(--color-dark-green)]">{row.date}</div>
+                                        <div className="text-xs text-[var(--color-green)] mt-1">
                                             Revenue: kr. {Math.round(row.revenue).toLocaleString()} | Orders: {Math.round(row.orders).toLocaleString()}
                                         </div>
                                     </div>
-                                    <FaChevronRight className={`text-gray-400 transition-transform ${expandedLastYearRows[i] ? 'transform rotate-90' : ''}`} />
+                                    <FaChevronRight className={`text-[var(--color-green)] transition-transform ${expandedLastYearRows[i] ? 'transform rotate-90' : ''}`} />
                                 </div>
 
                                 {expandedLastYearRows[i] && (
-                                    <div className="px-4 pb-3 grid grid-cols-2 gap-2 text-sm">
-                                        <div className="flex justify-between border-b border-gray-100 py-1">
-                                            <span className="text-gray-600">Orders:</span>
-                                            <span style={getHeatmapStyle(row.orders, 'orders', true)}>
-                                                {Math.round(row.orders).toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between border-b border-gray-100 py-1">
-                                            <span className="text-gray-600">Revenue:</span>
-                                            <span style={getHeatmapStyle(row.revenue, 'revenue', true)}>
-                                                kr. {Math.round(row.revenue).toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between border-b border-gray-100 py-1">
-                                            <span className="text-gray-600">Ex Tax:</span>
-                                            <span style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax', true)}>
-                                                kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between border-b border-gray-100 py-1">
-                                            <span className="text-gray-600">PPC Cost:</span>
-                                            <span style={getHeatmapStyle(row.ppc_cost, 'ppc_cost', true)}>
-                                                kr. {Math.round(row.ppc_cost).toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between border-b border-gray-100 py-1">
-                                            <span className="text-gray-600">PS Cost:</span>
-                                            <span style={getHeatmapStyle(row.ps_cost, 'ps_cost', true)}>
-                                                kr. {Math.round(row.ps_cost).toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between border-b border-gray-100 py-1">
-                                            <span className="text-gray-600">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
-                                            <span style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare', true)}>
-                                                {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between border-b border-gray-100 py-1">
-                                            <span className="text-gray-600">{metricView === "roas" ? "POAS:" : "Spendshare DB:"}</span>
-                                            <span style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db', true)}>
-                                                {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between border-b border-gray-100 py-1">
-                                            <span className="text-gray-600">GP:</span>
-                                            <span style={getHeatmapStyle(row.gp, 'gp', true)}>
-                                                kr. {Math.round(row.gp).toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between border-b border-gray-100 py-1">
-                                            <span className="text-gray-600">AOV:</span>
-                                            <span style={getHeatmapStyle(row.aov, 'aov', true)}>
-                                                kr. {Math.round(row.aov).toLocaleString()}
-                                            </span>
+                                    <div className="px-6 pb-4 bg-[var(--color-natural)]/30">
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            <div className="flex justify-between border-b border-gray-100 py-1">
+                                                <span className="text-[var(--color-green)]">Orders:</span>
+                                                <span style={getHeatmapStyle(row.orders, 'orders', true)}>
+                                                    {Math.round(row.orders).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between border-b border-gray-100 py-1">
+                                                <span className="text-[var(--color-green)]">Revenue:</span>
+                                                <span style={getHeatmapStyle(row.revenue, 'revenue', true)}>
+                                                    kr. {Math.round(row.revenue).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between border-b border-gray-100 py-1">
+                                                <span className="text-[var(--color-green)]">Ex Tax:</span>
+                                                <span style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax', true)}>
+                                                    kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between border-b border-gray-100 py-1">
+                                                <span className="text-[var(--color-green)]">PPC Cost:</span>
+                                                <span style={getHeatmapStyle(row.ppc_cost, 'ppc_cost', true)}>
+                                                    kr. {Math.round(row.ppc_cost).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between border-b border-gray-100 py-1">
+                                                <span className="text-[var(--color-green)]">PS Cost:</span>
+                                                <span style={getHeatmapStyle(row.ps_cost, 'ps_cost', true)}>
+                                                    kr. {Math.round(row.ps_cost).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between border-b border-gray-100 py-1">
+                                                <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
+                                                <span style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare', true)}>
+                                                    {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between border-b border-gray-100 py-1">
+                                                <span className="text-[var(--color-green)]">{metricView === "roas" ? "POAS:" : "Spendshare DB:"}</span>
+                                                <span style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db', true)}>
+                                                    {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between border-b border-gray-100 py-1">
+                                                <span className="text-[var(--color-green)]">GP:</span>
+                                                <span style={getHeatmapStyle(row.gp, 'gp', true)}>
+                                                    kr. {Math.round(row.gp).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between border-b border-gray-100 py-1">
+                                                <span className="text-[var(--color-green)]">AOV:</span>
+                                                <span style={getHeatmapStyle(row.aov, 'aov', true)}>
+                                                    kr. {Math.round(row.aov).toLocaleString()}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 )}

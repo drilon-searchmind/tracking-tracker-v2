@@ -52,7 +52,25 @@ export default function PaceReport({ customerId, customerName, initialData }) {
     const daysInMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
 
     if (!initialData || !initialData.daily_metrics) {
-        return <div className="p-4 text-center">No data available for {customerId}</div>;
+        return (
+            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
+                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                    <Image
+                        width={1920}
+                        height={1080}
+                        src="/images/shape-dotted-light.svg"
+                        alt="bg"
+                        className="w-full h-full"
+                    />
+                </div>
+                <div className="px-0 md:px-20 mx-auto z-10 relative">
+                    <div className="flex justify-center items-center p-10 bg-white rounded-lg shadow-sm border border-[var(--color-natural)]">
+                        <p className="text-[var(--color-dark-green)] text-lg">No data available for {customerId}</p>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     const { daily_metrics } = initialData;
@@ -420,8 +438,8 @@ export default function PaceReport({ customerId, customerName, initialData }) {
     };
 
     return (
-        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
                     width={1920}
@@ -435,57 +453,64 @@ export default function PaceReport({ customerId, customerName, initialData }) {
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
                     <Subheading headingText={customerName} />
-                    <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-black xl:text-[44px] z-10">Pace Report</h1>
-                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
+                    <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] xl:text-[44px]">Pace Report</h1>
+                    <p className="text-[var(--color-green)] max-w-2xl text-sm md:text-base">
                         Track budget utilization and pacing for revenue and ad spend, with projections for the current month.
                     </p>
                 </div>
 
-                <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center mb-6 md:mb-10 justify-start md:justify-end">
-                    <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
-                        <select
-                            value={comparison}
-                            onChange={(e) => setComparison(e.target.value)}
-                            className="border px-4 py-2 rounded text-sm bg-white w-full md:w-auto"
-                        >
-                            <option>Previous Year</option>
-                            <option>Previous Period</option>
-                        </select>
-                        
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
-                            />
-                            <span className="text-gray-400 hidden md:inline">→</span>
-                            <span className="text-gray-400 md:hidden">to</span>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
-                            />
+                {/* Controls Section */}
+                <div className="bg-white rounded-lg shadow-sm border border-[var(--color-natural)] p-4 md:p-6 mb-6 md:mb-8">
+                    <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center justify-end">
+                        <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
+                            <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Comparison:</label>
+                            <select
+                                value={comparison}
+                                onChange={(e) => setComparison(e.target.value)}
+                                className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent w-full md:w-auto transition-colors"
+                            >
+                                <option>Previous Year</option>
+                                <option>Previous Period</option>
+                            </select>
+                            
+                            <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Date Range:</label>
+                                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    />
+                                    <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
+                                    <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Mobile Chart Carousel */}
                 <div className="md:hidden mb-6">
-                    <div className="bg-white border border-zinc-200 rounded-lg p-4 shadow-solid-l">
+                    <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-4">
                         <div className="flex items-center justify-between mb-4">
-                            <p className="font-semibold text-sm">{chartComponents[activeChartIndex].title}</p>
+                            <p className="font-semibold text-sm text-[var(--color-dark-green)]">{chartComponents[activeChartIndex].title}</p>
                             <div className="flex gap-1">
                                 <button 
                                     onClick={() => navigateChart('prev')} 
-                                    className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                    className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
                                 >
                                     <FaChevronLeft size={12} />
                                 </button>
                                 <button 
                                     onClick={() => navigateChart('next')} 
-                                    className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                    className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
                                 >
                                     <FaChevronRight size={12} />
                                 </button>
@@ -498,22 +523,22 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                             {chartComponents[activeChartIndex].metrics.map((item, i) => (
                                 item.input ? (
                                     <div key={i} className={i === 0 && activeChartIndex === 1 ? "col-span-2" : ""}>
-                                        <p className="text-xs text-gray-500 mb-1">{item.label}</p>
+                                        <p className="text-xs text-[var(--color-green)] mb-1">{item.label}</p>
                                         <input
                                             type="text"
                                             value={item.value}
                                             onChange={item.onChange}
-                                            className="w-full border border-gray-300 rounded px-3 py-1 text-xs"
+                                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-1 text-xs text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                             placeholder={item.placeholder}
                                         />
                                     </div>
                                 ) : item.select ? (
                                     <div key={i} className="col-span-2">
-                                        <p className="text-xs text-gray-500 mb-1">{item.label}</p>
+                                        <p className="text-xs text-[var(--color-green)] mb-1">{item.label}</p>
                                         <select
                                             value={item.value}
                                             onChange={item.onChange}
-                                            className="w-full border border-gray-300 rounded px-3 py-1 text-xs"
+                                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-1 text-xs text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                         >
                                             {item.options.map(option => (
                                                 <option key={option}>{option}</option>
@@ -522,8 +547,8 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                                     </div>
                                 ) : (
                                     <div key={i}>
-                                        <p className="text-xs text-gray-500">{item.label}</p>
-                                        <p className="text-sm font-semibold">{item.value}</p>
+                                        <p className="text-xs text-[var(--color-green)]">{item.label}</p>
+                                        <p className="text-sm font-semibold text-[var(--color-dark-green)]">{item.value}</p>
                                     </div>
                                 )
                             ))}
@@ -533,7 +558,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                         {chartComponents.map((_, index) => (
                             <span 
                                 key={index} 
-                                className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
+                                className={`block w-2 h-2 rounded-full transition-colors ${index === activeChartIndex ? 'bg-[var(--color-lime)]' : 'bg-[var(--color-light-natural)]'}`}
                             />
                         ))}
                     </div>
@@ -541,73 +566,73 @@ export default function PaceReport({ customerId, customerName, initialData }) {
 
                 {/* Desktop Charts Layout */}
                 <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-solid-l">
+                    <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <p className="font-semibold">Ad Spend Budget</p>
+                            <p className="font-semibold text-[var(--color-dark-green)]">Ad Spend Budget</p>
                         </div>
                         <div className="h-[280px]">
                             <Line data={budgetChartData} options={chartOptions} />
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4">
                             <div className="col-span-2">
-                                <p className="text-sm text-gray-500 mb-2">Ad Spend Budget</p>
+                                <p className="text-sm text-[var(--color-green)] mb-2">Ad Spend Budget</p>
                                 <input
                                     type="text"
                                     value={adSpendBudget}
                                     onChange={(e) => setAdSpendBudget(e.target.value)}
-                                    className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
+                                    className="w-full border border-[var(--color-dark-natural)] rounded-lg px-4 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     placeholder="kr. 100,000"
                                 />
                             </div>
                             <div className="hidden">
-                                <p className="text-sm text-gray-500">ROAS</p>
-                                <p className="text-lg font-semibold">{totals.roas.toFixed(2)}x</p>
+                                <p className="text-sm text-[var(--color-green)]">ROAS</p>
+                                <p className="text-lg font-semibold text-[var(--color-dark-green)]">{totals.roas.toFixed(2)}x</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Ad Spend</p>
-                                <p className="text-lg font-semibold">kr. {Math.round(totals.ad_spend).toLocaleString("en-US")}</p>
+                                <p className="text-sm text-[var(--color-green)]">Ad Spend</p>
+                                <p className="text-lg font-semibold text-[var(--color-dark-green)]">kr. {Math.round(totals.ad_spend).toLocaleString("en-US")}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Pace Ratio</p>
-                                <p className="text-lg font-semibold">
+                                <p className="text-sm text-[var(--color-green)]">Pace Ratio</p>
+                                <p className="text-lg font-semibold text-[var(--color-dark-green)]">
                                     {totals.ad_spend_pace_ratio.toFixed(2)}
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-solid-l">
+                    <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <p className="font-semibold">Pace</p>
+                            <p className="font-semibold text-[var(--color-dark-green)]">Pace</p>
                         </div>
                         <div className="h-[280px]">
                             <Line data={paceChartData} options={chartOptions} />
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4">
                             <div>
-                                <p className="text-sm text-gray-500 mb-2">Metric</p>
+                                <p className="text-sm text-[var(--color-green)] mb-2">Metric</p>
                                 <select
                                     value={metric}
                                     onChange={(e) => setMetric(e.target.value)}
-                                    className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
+                                    className="w-full border border-[var(--color-dark-natural)] rounded-lg px-4 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                 >
                                     <option>Revenue</option>
                                     <option>Orders</option>
                                 </select>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 mb-2">{metric} Budget</p>
+                                <p className="text-sm text-[var(--color-green)] mb-2">{metric} Budget</p>
                                 <input
                                     type="text"
                                     value={metric === "Revenue" ? revenueBudget : ordersBudget}
                                     onChange={(e) => metric === "Revenue" ? setRevenueBudget(e.target.value) : setOrdersBudget(e.target.value)}
-                                    className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
+                                    className="w-full border border-[var(--color-dark-natural)] rounded-lg px-4 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     placeholder={metric === "Revenue" ? "kr. 500,000" : "1000"}
                                 />
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Current {metric}</p>
-                                <p className="text-lg font-semibold">
+                                <p className="text-sm text-[var(--color-green)]">Current {metric}</p>
+                                <p className="text-lg font-semibold text-[var(--color-dark-green)]">
                                     {metric === "Revenue"
                                         ? `kr. ${Math.round(totals.revenue).toLocaleString("en-US")}`
                                         : Math.round(totals.orders).toLocaleString("en-US")
@@ -615,8 +640,8 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">{metric} Pace</p>
-                                <p className="text-lg font-semibold">
+                                <p className="text-sm text-[var(--color-green)]">{metric} Pace</p>
+                                <p className="text-lg font-semibold text-[var(--color-dark-green)]">
                                     {metric === "Revenue"
                                         ? `kr. ${Math.round(totals.revenue_pace).toLocaleString("en-US")}`
                                         : Math.round(totals.orders_pace).toLocaleString("en-US")
@@ -624,8 +649,8 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Pace Ratio</p>
-                                <p className="text-lg font-semibold">
+                                <p className="text-sm text-[var(--color-green)]">Pace Ratio</p>
+                                <p className="text-lg font-semibold text-[var(--color-dark-green)]">
                                     {metric === "Revenue"
                                         ? totals.revenue_pace_ratio.toFixed(2)
                                         : totals.orders_pace_ratio.toFixed(2)
@@ -633,8 +658,8 @@ export default function PaceReport({ customerId, customerName, initialData }) {
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Daily {metric} Gap</p>
-                                <p className="text-lg font-semibold">
+                                <p className="text-sm text-[var(--color-green)]">Daily {metric} Gap</p>
+                                <p className="text-lg font-semibold text-[var(--color-dark-green)]">
                                     {metric === "Revenue"
                                         ? `kr. ${Math.round(totals.daily_revenue_gap).toLocaleString("en-US")}`
                                         : Math.round(totals.daily_orders_gap).toLocaleString("en-US")

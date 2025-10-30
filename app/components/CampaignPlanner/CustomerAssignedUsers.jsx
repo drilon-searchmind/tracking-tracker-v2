@@ -134,42 +134,29 @@ export default function CustomerAssignedUsers({ customerId, onUsersLoaded = null
 
     if (loading) {
         return (
-            <div className="border-b border-zinc-200 p-3 flex items-center justify-center">
-                <div className="w-4 h-4 border-2 border-gray-300 border-t-zinc-700 rounded-full animate-spin"></div>
-                <span className="ml-2 text-xs text-gray-500">Loading users...</span>
+            <div className="flex items-center justify-center p-3">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--color-lime)]"></div>
+                <span className="ml-2 text-xs text-[var(--color-green)]">Loading team...</span>
             </div>
         );
     }
 
-    if (error) {
+    if (error || assignedUsers.length === 0) {
         return (
-            <div className="border-b border-zinc-200 p-3">
+            <div className="p-3">
                 <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-600">No assigned users found</p>
-                    <div className="relative group">
-                        <div className="w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center text-[10px] font-medium text-gray-600 cursor-help ml-2">
-                            i
-                        </div>
-                        <div className="absolute z-50 hidden group-hover:block w-60 bg-white shadow-lg border border-gray-200 rounded p-2 right-0 top-6 text-xs">
-                            <p className="text-gray-700">This customer requires ClickUp configuration. Visit the config page for this customer and assign the appropiate ClickUp task ID.</p>
-                        </div>
+                    <div>
+                        <h3 className="text-xs font-semibold text-[var(--color-dark-green)] mb-1">Customer Team</h3>
+                        <p className="text-xs text-[var(--color-green)]">No assigned users found</p>
                     </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (assignedUsers.length === 0) {
-        return (
-            <div className="border-b border-zinc-200 p-3">
-                <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-500">No assigned users found</p>
                     <div className="relative group">
-                        <div className="w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center text-[10px] font-medium text-gray-600 cursor-help ml-2">
+                        <div className="w-4 h-4 bg-[var(--color-light-natural)] rounded-full flex items-center justify-center text-xs font-medium text-[var(--color-green)] cursor-help hover:bg-[var(--color-dark-natural)] transition-colors">
                             i
                         </div>
-                        <div className="absolute z-50 hidden group-hover:block w-60 bg-white shadow-lg border border-gray-200 rounded p-2 right-0 top-6 text-xs">
-                            <p className="text-gray-700">This customer requires ClickUp configuration. Visit the config page for this customer and assign the appropiate ClickUp task ID.</p>
+                        <div className="absolute z-50 hidden group-hover:block w-64 bg-white shadow-solid-l border border-[var(--color-light-natural)] rounded-lg p-2 right-0 top-6 text-xs">
+                            <p className="text-[var(--color-dark-green)] leading-relaxed">
+                                This customer requires ClickUp configuration. Visit the config page to assign the appropriate ClickUp task ID.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -178,40 +165,46 @@ export default function CustomerAssignedUsers({ customerId, onUsersLoaded = null
     }
 
     return (
-        <div className="border-b border-zinc-200 p-3">
-            <div className="flex text-right mb-2 w-full justify-end">
-                <h3 className="text-xs text-right font-semibold text-gray-700">Customer Team</h3>
+        <div className="p-3">
+            <div className="flex items-center justify-between mb-3">
+                <div>
+                    <h3 className="text-xs font-semibold text-[var(--color-dark-green)] mb-1">Customer Team</h3>
+                    <p className="text-xs text-[var(--color-green)]">{assignedUsers.length} member{assignedUsers.length !== 1 ? 's' : ''}</p>
+                </div>
             </div>
-            <div className="flex flex-wrap gap-2">
+            
+            <div className="flex gap-2">
                 {assignedUsers.map((user, index) => (
-                    <div key={index} className="flex items-center" title={`${user.username} (${user.service})`}>
-                        <div className="relative">
-                            <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-100">
-                                {user.profilePicture ? (
-                                    <Image
-                                        src={user.profilePicture}
-                                        alt={user.username}
-                                        width={40}
-                                        height={40}
-                                        className="object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 text-xs font-medium">
-                                        {user.initials || user.username?.charAt(0)}
-                                    </div>
-                                )}
-                                <div
-                                    className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[6px] font-bold text-white border border-white"
-                                    style={{
-                                        backgroundColor: user.service === "SEO" ? "#ff7800" :
-                                            user.service === "PPC" ? "#f9d900" :
-                                                user.service === "PS" ? "#0231E8" :
-                                                    user.service === "EM" ? "#3397dd" : "#667684"
-                                    }}
-                                >
-                                    {user.service?.charAt(0)}
+                    <div 
+                        key={index} 
+                        className="relative group"
+                        title={`${user.username} (${user.service})`}
+                    >
+                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm hover:scale-110 transition-transform cursor-help">
+                            {user.profilePicture ? (
+                                <Image
+                                    src={user.profilePicture}
+                                    alt={user.username}
+                                    width={50}
+                                    height={50}
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <div className="w-12 h-12 flex items-center justify-center bg-[var(--color-light-green)] text-white text-xs font-semibold">
+                                    {user.initials || user.username?.charAt(0)}
                                 </div>
-                            </div>
+                            )}
+                        </div>
+                        <div
+                            className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold text-white border border-white shadow-sm"
+                            style={{
+                                backgroundColor: user.service === "SEO" ? "#ff7800" :
+                                    user.service === "PPC" ? "#f9d900" :
+                                        user.service === "PS" ? "#0231E8" :
+                                            user.service === "EM" ? "#3397dd" : "#667684"
+                            }}
+                        >
+                            {user.service?.charAt(0)}
                         </div>
                     </div>
                 ))}

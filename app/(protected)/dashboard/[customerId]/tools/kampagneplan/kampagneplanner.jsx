@@ -245,8 +245,9 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
 
     return (
         <ClickUpUsersProvider>
-            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
+            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+                {/* Background Elements */}
+                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
                 <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                     <Image
                         width={1920}
@@ -258,74 +259,117 @@ export default function KampagneplanDashboard({ customerId, customerName, initia
                 </div>
 
                 <div className="px-0 md:px-20 mx-auto z-10 relative">
-                    <div className="mb-6 md:mb-8 flex flex-col md:flex-row justify-between items-center md:items-center gap-4">
-                        <span>
-                            <Subheading headingText={customerName} />
-                            <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">Campaign Planner</h1>
-                            <p className="text-gray-600 max-w-2xl text-sm md:text-base">
-                                Plan and adjust your marketing campaigns with precise budgets and expected results.
-                            </p>
-                        </span>
-
-                        <span>
-                            <CustomerAssignedUsers
-                                customerId={customerId}
-                                onUsersLoaded={handleClickupUsersLoaded}
-                            />
-                        </span>
+                    {/* Header Section with Customer Team */}
+                    <div className="mb-6 md:mb-8">
+                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                            <div className="flex-1">
+                                <Subheading headingText={customerName} />
+                                <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] xl:text-[44px]">
+                                    Campaign Planner
+                                </h1>
+                                <p className="text-[var(--color-green)] max-w-2xl text-sm md:text-base">
+                                    Plan and manage your marketing campaigns with precision. Create, track, and optimize campaigns across all channels with comprehensive analytics and team collaboration.
+                                </p>
+                            </div>
+                            
+                            {/* Customer Team - Compact Version */}
+                            <div className="lg:w-80 xl:w-96">
+                                <div className="bg-white rounded-lg shadow-sm border border-[var(--color-light-natural)] p-4">
+                                    <CustomerAssignedUsers
+                                        customerId={customerId}
+                                        onUsersLoaded={handleClickupUsersLoaded}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Campaign List */}
-                    <div className="mb-6 md:mb-10">
-                        <div className="mb-2 md:mb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <h3 className="text-lg md:text-xl font-semibold text-black xl:text-2xl">Your Campaigns</h3>
-
-                            <div className="flex flex-col md:flex-row gap-3 md:gap-4 w-full md:w-auto">
-                                <button
-                                    onClick={handleOpenParentModal}
-                                    className="text-center text-zinc-900 border border-zinc-700 py-2 px-4 rounded text-white hover:text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center justify-center md:justify-start"
-                                >
-                                    <FaCirclePlus />
-                                    <span className="whitespace-nowrap">Create Parent Campaign</span>
-                                </button>
-                                <button
-                                    onClick={handleOpenModal}
-                                    className="hidden text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm flex gap-2 items-center justify-center md:justify-start"
-                                >
-                                    <FaCirclePlus />
-                                    <span>Create Campaign</span>
-                                </button>
+                    {/* Campaign Actions */}
+                    <div className="mb-6 md:mb-8">
+                        <div className="bg-white rounded-lg shadow-sm border border-[var(--color-light-natural)] p-4 md:p-6">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <h3 className="text-lg md:text-xl font-semibold text-[var(--color-dark-green)] mb-2">
+                                        Campaign Management
+                                    </h3>
+                                    <p className="text-[var(--color-green)] text-sm">
+                                        Create new campaigns and manage your marketing initiatives
+                                    </p>
+                                </div>
+                                
+                                <div className="flex gap-3 md:gap-4 w-full md:w-auto">
+                                    <button
+                                        onClick={handleOpenModal}
+                                        className="bg-[var(--color-lime)] text-[var(--color-dark-green)] py-2 px-6 rounded-lg hover:bg-[var(--color-light-green)] hover:text-white transition-colors duration-300 text-sm font-medium flex gap-2 items-center justify-center md:justify-start shadow-sm"
+                                    >
+                                        <FaCirclePlus />
+                                        <span>Create Campaign</span>
+                                    </button>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Campaign List Section */}
+                    <div className="mb-6 md:mb-10">
+                        <div className="mb-4 md:mb-6">
+                            <h3 className="text-lg md:text-xl font-semibold text-[var(--color-dark-green)] xl:text-2xl mb-2">
+                                Your Campaigns
+                            </h3>
+                            <p className="text-[var(--color-green)] text-sm">
+                                View and manage all your active and planned marketing campaigns
+                            </p>
                         </div>
                         <CampaignList customerId={customerId} key={refreshList} />
                     </div>
 
+                    {/* Campaign Calendar Section */}
                     <div className="mb-8 md:mb-12">
-                        <h3 className="text-lg md:text-xl font-semibold text-black xl:text-2xl mb-4 md:mb-5">Campaign Calendar</h3>
-                        <div className="overflow-x-auto">
-                            <div className="min-w-[700px]">
-                                <CampaignCalendar
-                                    campaigns={campaigns}
-                                    customerId={customerId}
-                                    onViewCampaignDetails={handleViewCampaignDetails}
-                                />
+                        <div className="mb-4 md:mb-6">
+                            <h3 className="text-lg md:text-xl font-semibold text-[var(--color-dark-green)] xl:text-2xl mb-2">
+                                Campaign Calendar
+                            </h3>
+                            <p className="text-[var(--color-green)] text-sm">
+                                Visual overview of your campaign schedule and timeline
+                            </p>
+                        </div>
+                        <div className="bg-white rounded-lg shadow-sm border border-[var(--color-light-natural)] p-4 md:p-6">
+                            <div className="overflow-x-auto">
+                                <div className="min-w-[700px]">
+                                    <CampaignCalendar
+                                        campaigns={campaigns}
+                                        customerId={customerId}
+                                        onViewCampaignDetails={handleViewCampaignDetails}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    {/* Campaign Timeline Section */}
                     <div className="mb-8 md:mb-12">
-                        <h3 className="text-lg md:text-xl font-semibold text-black xl:text-2xl mb-4 md:mb-5">Campaign Timeline</h3>
-                        <div className="overflow-x-auto">
-                            <div className="min-w-[700px]">
-                                <CampaignPlannerGanttChart
-                                    campaigns={campaigns}
-                                    customerId={customerId}
-                                    onViewCampaignDetails={handleViewCampaignDetails}
-                                />
+                        <div className="mb-4 md:mb-6">
+                            <h3 className="text-lg md:text-xl font-semibold text-[var(--color-dark-green)] xl:text-2xl mb-2">
+                                Campaign Timeline
+                            </h3>
+                            <p className="text-[var(--color-green)] text-sm">
+                                Gantt chart view showing campaign dependencies and durations
+                            </p>
+                        </div>
+                        <div className="bg-white rounded-lg shadow-sm border border-[var(--color-light-natural)] p-4 md:p-6">
+                            <div className="overflow-x-auto">
+                                <div className="min-w-[700px]">
+                                    <CampaignPlannerGanttChart
+                                        campaigns={campaigns}
+                                        customerId={customerId}
+                                        onViewCampaignDetails={handleViewCampaignDetails}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    {/* Modals */}
                     <CampaignPlannerModal
                         isOpen={isModalOpen}
                         onClose={handleCloseModal}

@@ -119,23 +119,23 @@ export default function CampaignCalendar({
 	};
 
 	return (
-		<div className="bg-white border border-zinc-200 rounded-lg shadow-solid-l overflow-hidden">
-			<div className="flex justify-between items-center p-6 border-b border-zinc-200 bg-[#f8fafc]">
+		<div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-solid-l overflow-hidden">
+			<div className="flex justify-between items-center p-6 border-b border-[var(--color-light-natural)] bg-[var(--color-natural)]">
 				<div className="flex gap-2 hidden">
 					<button
 						onClick={() => handleViewChange("month")}
-						className={`px-4 py-2 text-sm rounded-md transition-colors ${view === "month"
-								? "bg-[#1C398E] text-white"
-								: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+						className={`px-4 py-2 text-sm rounded-lg transition-colors font-medium ${view === "month"
+								? "bg-[var(--color-dark-green)] text-white"
+								: "bg-white text-[var(--color-green)] border border-[var(--color-dark-natural)] hover:bg-[var(--color-natural)]"
 							}`}
 					>
 						Month
 					</button>
 					<button
 						onClick={() => handleViewChange("week")}
-						className={`px-4 py-2 text-sm rounded-md transition-colors ${view === "week"
-								? "bg-[#1C398E] text-white"
-								: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+						className={`px-4 py-2 text-sm rounded-lg transition-colors font-medium ${view === "week"
+								? "bg-[var(--color-dark-green)] text-white"
+								: "bg-white text-[var(--color-green)] border border-[var(--color-dark-natural)] hover:bg-[var(--color-natural)]"
 							}`}
 					>
 						Week
@@ -164,24 +164,24 @@ export default function CampaignCalendar({
 				/>
 			</div>
 
-			<div className="p-6 border-t border-zinc-200 bg-[#f8fafc] mt-4">
-				<p className="text-sm font-medium text-gray-500 mb-3">Campaign Types</p>
+			<div className="p-6 border-t border-[var(--color-light-natural)] bg-[var(--color-natural)] mt-4">
+				<p className="text-sm font-medium text-[var(--color-green)] mb-3">Campaign Types</p>
 				<div className="flex gap-6 flex-wrap">
 					<div className="flex items-center gap-2">
 						<div className="w-4 h-4 rounded-sm" style={{ backgroundColor: colors.hue1 }}></div>
-						<span className="text-sm text-gray-700">Paid Social</span>
+						<span className="text-sm text-[var(--color-dark-green)]">Paid Social</span>
 					</div>
 					<div className="flex items-center gap-2">
 						<div className="w-4 h-4 rounded-sm" style={{ backgroundColor: colors.hue2 }}></div>
-						<span className="text-sm text-gray-700">Paid Search</span>
+						<span className="text-sm text-[var(--color-dark-green)]">Paid Search</span>
 					</div>
 					<div className="flex items-center gap-2">
 						<div className="w-4 h-4 rounded-sm" style={{ backgroundColor: colors.hue3 }}></div>
-						<span className="text-sm text-gray-700">Email Marketing</span>
+						<span className="text-sm text-[var(--color-dark-green)]">Email Marketing</span>
 					</div>
 					<div className="flex items-center gap-2">
 						<div className="w-4 h-4 rounded-sm" style={{ backgroundColor: colors.hue4 }}></div>
-						<span className="text-sm text-gray-700">SEO</span>
+						<span className="text-sm text-[var(--color-dark-green)]">SEO</span>
 					</div>
 				</div>
 			</div>

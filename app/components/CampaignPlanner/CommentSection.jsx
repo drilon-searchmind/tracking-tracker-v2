@@ -158,7 +158,7 @@ export default function CommentSection({ campaignId }) {
 
     return (
         <div className="space-y-6">
-            <h4 className="font-medium text-lg text-gray-700">Comments</h4>
+            <h4 className="font-semibold text-lg text-[var(--color-dark-green)]">Comments</h4>
             
             {session && (
                 <form onSubmit={handleSubmit} className="mb-8">
@@ -167,7 +167,7 @@ export default function CommentSection({ campaignId }) {
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
                             placeholder="Add a comment..."
-                            className="border border-gray-300 px-4 py-2 rounded w-full text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
+                            className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-[var(--color-lime)] transition-colors text-[var(--color-dark-green)]"
                             disabled={isSubmitting}
                         />
                     </div>
@@ -175,7 +175,7 @@ export default function CommentSection({ campaignId }) {
                         <button
                             type="submit"
                             disabled={isSubmitting || !newComment.trim()}
-                            className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-4 py-2 bg-[var(--color-dark-green)] text-white rounded-lg hover:bg-[var(--color-green)] text-sm disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
                         >
                             {isSubmitting ? "Posting..." : "Post Comment"}
                         </button>
@@ -186,19 +186,21 @@ export default function CommentSection({ campaignId }) {
             {/* Comments List */}
             <div className="space-y-4">
                 {isLoading ? (
-                    <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto"></div>
-                        <p className="mt-2 text-sm text-gray-600">Loading comments...</p>
+                    <div className="text-center py-6">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--color-lime)] mx-auto"></div>
+                        <p className="mt-2 text-sm text-[var(--color-green)]">Loading comments...</p>
                     </div>
                 ) : comments.length === 0 ? (
-                    <p className="text-gray-500 text-sm py-4 text-center italic">No comments yet.</p>
+                    <div className="text-center py-8">
+                        <p className="text-[var(--color-green)] text-sm italic">No comments yet. Be the first to add one!</p>
+                    </div>
                 ) : (
                     comments.map((comment) => (
-                        <div key={comment._id} className="border border-gray-200 rounded-lg p-4 bg-white">
+                        <div key={comment._id} className="border border-[var(--color-light-natural)] rounded-lg p-4 bg-[var(--color-natural)]/30 hover:bg-[var(--color-natural)]/50 transition-colors">
                             <div className="flex justify-between items-start mb-2">
                                 <div>
-                                    <p className="font-medium text-[#1C398E]">{comment.userName}</p>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="font-medium text-[var(--color-dark-green)]">{comment.userName}</p>
+                                    <p className="text-xs text-[var(--color-green)]">
                                         {formatDateTime(comment.createdAt)}
                                         {comment.isEdited && <span className="ml-2 italic">(edited)</span>}
                                     </p>
@@ -208,14 +210,14 @@ export default function CommentSection({ campaignId }) {
                                     <div className="flex space-x-2">
                                         <button
                                             onClick={() => handleEdit(comment)}
-                                            className="text-gray-500 hover:text-[#1C398E]"
+                                            className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] transition-colors p-1 rounded hover:bg-white/50"
                                             title="Edit comment"
                                         >
                                             <FiEdit2 size={14} />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(comment._id)}
-                                            className="text-gray-500 hover:text-red-600"
+                                            className="text-[var(--color-green)] hover:text-red-600 transition-colors p-1 rounded hover:bg-white/50"
                                             title="Delete comment"
                                         >
                                             <FiTrash2 size={14} />
@@ -229,20 +231,20 @@ export default function CommentSection({ campaignId }) {
                                     <textarea
                                         value={editedContent}
                                         onChange={(e) => setEditedContent(e.target.value)}
-                                        className="border border-gray-300 px-3 py-2 rounded w-full text-sm min-h-[80px] focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
+                                        className="border border-gray-300 px-3 py-2 rounded-lg w-full text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-[var(--color-lime)] transition-colors text-[var(--color-dark-green)]"
                                         disabled={isSubmitting}
                                     />
                                     <div className="flex justify-end mt-2 space-x-2">
                                         <button
                                             onClick={cancelEdit}
-                                            className="px-3 py-1 border border-gray-300 rounded text-gray-600 text-xs hover:bg-gray-50"
+                                            className="px-3 py-1 border-2 border-[var(--color-dark-green)] text-[var(--color-dark-green)] rounded-lg text-xs hover:bg-[var(--color-dark-green)] hover:text-white font-medium transition-colors"
                                             disabled={isSubmitting}
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             onClick={() => submitEdit(comment._id)}
-                                            className="px-3 py-1 bg-zinc-700 text-white rounded text-xs hover:bg-zinc-800"
+                                            className="px-3 py-1 bg-[var(--color-dark-green)] text-white rounded-lg text-xs hover:bg-[var(--color-green)] font-medium transition-colors"
                                             disabled={isSubmitting || !editedContent.trim()}
                                         >
                                             {isSubmitting ? "Saving..." : "Save"}
@@ -250,7 +252,7 @@ export default function CommentSection({ campaignId }) {
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-gray-800 mt-2 text-sm whitespace-pre-wrap">{comment.content}</p>
+                                <p className="text-[var(--color-dark-green)] mt-2 text-sm whitespace-pre-wrap leading-relaxed">{comment.content}</p>
                             )}
                         </div>
                     ))

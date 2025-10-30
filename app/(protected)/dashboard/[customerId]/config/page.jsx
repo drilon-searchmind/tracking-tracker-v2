@@ -1,55 +1,58 @@
 import Image from "next/image";
-import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
-import ConfigForm from "./components/ConfigForm";
 import ConfigTable from "./components/ConfigTable";
+import ConfigForm from "./components/ConfigForm";
 import StaticExpenses from "./components/StaticExpenses";
 import ConfigCustomerInfo from "./components/ConfigCustomerInfo";
 import ConfigCustomerSharings from "./components/ConfigCustomerSharings";
 import ConfigCustomerSettings from "./components/ConfigCustomerSettings";
 import Subheading from "@/app/components/UI/Utility/Subheading";
+import { dbConnect } from "@/lib/dbConnect";
+import Customer from "@/models/Customer";
+import ConfigRevenueBudget from "@/models/ConfigRevenueBudget";
+
+async function getCustomerName(customerId) {
+    try {
+        await dbConnect();
+        const customer = await Customer.findById(customerId);
+        return customer?.name || customerId;
+    } catch (error) {
+        console.error("Error fetching customer name:", error);
+        return customerId;
+    }
+}
+
+async function getRevenueBudget(customerId) {
+    try {
+        console.log("Server: Fetching revenue budget for customer ID:", customerId);
+        await dbConnect();
+        
+        const revenueBudget = await ConfigRevenueBudget.findOne({ customer: customerId });
+        console.log("Server: Found revenue budget:", revenueBudget ? "Yes" : "No");
+        
+        if (revenueBudget) {
+            console.log("Server: Revenue budget configs count:", revenueBudget.configs?.length || 0);
+        }
+        
+        return revenueBudget ? JSON.parse(JSON.stringify(revenueBudget)) : null;
+    } catch (error) {
+        console.error("Error fetching revenue budget:", error);
+        return null;
+    }
+}
 
 export default async function ConfigPage({ params }) {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
-        ? process.env.NEXT_PUBLIC_BASE_URL
-        : process.env.NODE_ENV === "development"
-            ? "http://localhost:3000"
-            : process.env.NEXT_PUBLIC_BASE_URL;
-
-    const resolvedParams = await params;
-    const customerId = resolvedParams.customerId;
-    let customerName = "Customer";
-
-    try {
-        const details = await fetchCustomerDetails(customerId);
-        customerName = details?.customerName ?? "Customer";
-    } catch (err) {
-        console.error("Failed fetching customer details:", err);
-        customerName = "Customer";
-    }
-
-    let revenueBudget = { configs: [] };
-    try {
-        const apiUrl = baseUrl ? `${baseUrl}/api/config-revenue-budget/${customerId}` : `/api/config-revenue-budget/${customerId}`;
-        const responseRevenueBudget = await fetch(apiUrl);
-
-        if (responseRevenueBudget.ok) {
-            revenueBudget = await responseRevenueBudget.json();
-        } else if (responseRevenueBudget.status === 404) {
-            console.warn(`No revenue budget found for customer ${customerId} (404). Returning empty configs.`);
-            revenueBudget = { configs: [] };
-        } else {
-            const text = await responseRevenueBudget.text();
-            console.error("Failed fetching revenue budget:", responseRevenueBudget.status, text);
-            revenueBudget = { configs: [] };
-        }
-    } catch (err) {
-        console.error("Error fetching revenue budget:", err);
-        revenueBudget = { configs: [] };
-    }
+    // Await params for Next.js 15 compatibility
+    const { customerId } = await params;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "");
+    
+    const [customerName, revenueBudget] = await Promise.all([
+        getCustomerName(customerId),
+        getRevenueBudget(customerId)
+    ]);
 
     return (
-        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
                     width={1920}
@@ -63,59 +66,60 @@ export default async function ConfigPage({ params }) {
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
                     <Subheading headingText={customerName} />
-                    <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">Config</h1>
-                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
-                        Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros
-                        scelerisque sed. Commodo in viv
+                    <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] xl:text-[44px]">Configuration</h1>
+                    <p className="text-[var(--color-green)] max-w-2xl text-sm md:text-base">
+                        Manage your business settings, objectives, expenses, and customer configurations for optimized performance tracking.
                     </p>
                 </div>
 
-                {/* Mobile layout - show objectives and form vertically */}
-                <div className="md:hidden">
-                    <div className="mb-6">
-                        <h3 className="font-semibold text-base mb-2 text-zinc-800">Objectives</h3>
-                        <ConfigTable revenueBudget={revenueBudget} customerId={customerId} baseUrl={baseUrl} />
-                    </div>
-
-                    <div className="mb-6">
-                        <h3 className="font-semibold text-base mb-2 text-zinc-800">Add New Objective</h3>
-                        <ConfigForm customerId={customerId} baseUrl={baseUrl} />
-                    </div>
-                </div>
-
-                {/* Desktop layout - exactly as in original */}
-                <div className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2">
-                        <h3 className="font-semibold text-lg mb-2 text-zinc-800">Objectives</h3>
-                        <ConfigTable revenueBudget={revenueBudget} customerId={customerId} baseUrl={baseUrl} />
-                    </div>
-
-                    <div>
-                        <ConfigForm customerId={customerId} baseUrl={baseUrl} />
+                {/* Objectives Section */}
+                <div className="bg-white rounded-lg shadow-sm border border-[var(--color-light-natural)] p-4 md:p-6 mb-6 md:mb-8">
+                    <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
+                        <div className="flex-1">
+                            <h2 className="text-lg md:text-xl font-semibold text-[var(--color-dark-green)] mb-4">Revenue Objectives</h2>
+                            <ConfigTable revenueBudget={revenueBudget} customerId={customerId} baseUrl={baseUrl} />
+                        </div>
+                        
+                        <div className="lg:w-80 xl:w-96">
+                            <div className="lg:sticky lg:top-6">
+                                <ConfigForm customerId={customerId} baseUrl={baseUrl} />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="mt-6 md:mt-8">
-                    <h3 className="font-semibold text-base md:text-lg mb-2 text-zinc-800">Static Expenses</h3>
+                {/* Static Expenses Section */}
+                <div className="bg-white rounded-lg shadow-sm border border-[var(--color-light-natural)] p-4 md:p-6 mb-6 md:mb-8">
+                    <h2 className="text-lg md:text-xl font-semibold text-[var(--color-dark-green)] mb-4">Static Expenses</h2>
+                    <p className="text-[var(--color-green)] text-sm mb-6">Configure fixed costs and percentages for accurate P&L calculations.</p>
                     <StaticExpenses customerId={customerId} />
                 </div>
 
-                <div className="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 bg-white p-4 md:p-6 rounded-lg shadow-md border border-zinc-200">
-                    <div className="col-span-1 md:col-span-2">
-                        <h2 className="font-semibold text-xl md:text-2xl mb-2 text-zinc-800">Customer Settings</h2>
+                {/* Customer Settings Section */}
+                <div className="bg-white rounded-lg shadow-sm border border-[var(--color-light-natural)] p-4 md:p-6">
+                    <div className="mb-6">
+                        <h2 className="text-lg md:text-xl font-semibold text-[var(--color-dark-green)] mb-2">Customer Settings</h2>
+                        <p className="text-[var(--color-green)] text-sm">Manage customer information, preferences, and access permissions.</p>
                     </div>
-                    <div className="col-span-1">
-                        <h3 className="font-semibold text-base md:text-lg mb-2 text-zinc-800">Customer Info</h3>
-                        <ConfigCustomerInfo customerId={customerId} baseUrl={baseUrl} />
-                    </div>
-
-                    <div className="col-span-1">
-                        <h3 className="font-semibold text-base md:text-lg mb-2 text-zinc-800">Customer Sharings</h3>
-                        <ConfigCustomerSharings customerId={customerId} baseUrl={baseUrl} />
-                    </div>
-
-                    <div className="col-span-1 md:col-span-2">
-                        <ConfigCustomerSettings customerId={customerId} baseUrl={baseUrl} />
+                    
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
+                        <div className="xl:col-span-1">
+                            <div className="bg-[var(--color-natural)] rounded-lg p-4 mb-6">
+                                <h3 className="font-semibold text-base text-[var(--color-dark-green)] mb-4">Customer Information</h3>
+                                <ConfigCustomerInfo customerId={customerId} baseUrl={baseUrl} />
+                            </div>
+                            
+                            <div className="bg-[var(--color-natural)] rounded-lg p-4">
+                                <h3 className="font-semibold text-base text-[var(--color-dark-green)] mb-4">Access Management</h3>
+                                <ConfigCustomerSharings customerId={customerId} baseUrl={baseUrl} />
+                            </div>
+                        </div>
+                        
+                        <div className="xl:col-span-2">
+                            <div className="bg-[var(--color-natural)] rounded-lg p-4">
+                                <ConfigCustomerSettings customerId={customerId} baseUrl={baseUrl} />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

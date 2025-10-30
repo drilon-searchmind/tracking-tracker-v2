@@ -112,10 +112,10 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
     if (!hasPermission) {
         return (
             <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-100">
-                <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md relative">
-                    <span className="flex justify-between mb-5">
-                        <h4 className="text-xl font-semibold">Share report</h4>
-                        <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 text-lg">
+                <div className="bg-white rounded-xl shadow-solid-l p-8 w-full max-w-md relative border border-gray-200">
+                    <span className="flex justify-between mb-6">
+                        <h4 className="text-xl font-bold text-[var(--color-dark-green)]">Share report</h4>
+                        <button onClick={closeModal} className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] text-lg transition-colors">
                             <IoMdClose className="text-2xl" />
                         </button>
                     </span>
@@ -127,27 +127,27 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
 
     return (
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-100">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md relative">
-                <span className="flex justify-between mb-5">
-                    <h4 className="text-xl font-semibold">Share report</h4>
-                    <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 text-lg">
+            <div className="bg-white rounded-xl shadow-solid-l p-8 w-full max-w-md relative border border-gray-200">
+                <span className="flex justify-between mb-6">
+                    <h4 className="text-xl font-bold text-[var(--color-dark-green)]">Share report</h4>
+                    <button onClick={closeModal} className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] text-lg transition-colors">
                         <IoMdClose className="text-2xl" />
                     </button>
                 </span>
 
-                <div className="flex border-b border-gray-200 mb-4">
+                <div className="flex border-b border-gray-200 mb-6">
                     <button
-                        className={`py-2 px-4 ${sharingMode === "new" 
-                            ? "border-b-2 border-blue-500 font-medium text-blue-600" 
-                            : "text-gray-500"}`}
+                        className={`py-3 px-4 font-medium transition-colors ${sharingMode === "new" 
+                            ? "border-b-2 border-[var(--color-lime)] text-[var(--color-dark-green)]" 
+                            : "text-[var(--color-green)] hover:text-[var(--color-dark-green)]"}`}
                         onClick={() => setSharingMode("new")}
                     >
                         New User
                     </button>
                     <button
-                        className={`py-2 px-4 ${sharingMode === "existing" 
-                            ? "border-b-2 border-blue-500 font-medium text-blue-600" 
-                            : "text-gray-500"}`}
+                        className={`py-3 px-4 font-medium transition-colors ${sharingMode === "existing" 
+                            ? "border-b-2 border-[var(--color-lime)] text-[var(--color-dark-green)]" 
+                            : "text-[var(--color-green)] hover:text-[var(--color-dark-green)]"}`}
                         onClick={() => setSharingMode("existing")}
                     >
                         Existing User
@@ -161,23 +161,23 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
                             placeholder="Insert email address"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded mb-2"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:border-[var(--color-lime)] focus:outline-none transition-colors"
                         />
                         <input
                             type="text"
                             placeholder="Shared With (Name)"
                             value={sharedWith}
                             onChange={(e) => setSharedWith(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded mb-2"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:border-[var(--color-lime)] focus:outline-none transition-colors"
                         />
                         <input
                             type="password"
                             placeholder="Set Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded mb-2"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:border-[var(--color-lime)] focus:outline-none transition-colors"
                         />
-                        <p className="text-xs mb-5">
+                        <p className="text-xs text-[var(--color-green)] mb-6 bg-[var(--color-natural)] p-3 rounded-lg">
                             Notice: A new user account will be created for this email with the provided password.
                         </p>
                     </>
@@ -186,7 +186,7 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
                         <select
                             value={selectedUser}
                             onChange={(e) => setSelectedUser(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded mb-4"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:border-[var(--color-lime)] focus:outline-none transition-colors"
                         >
                             <option value="">Select existing user</option>
                             {existingUsers.map(user => (
@@ -195,7 +195,7 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
                                 </option>
                             ))}
                         </select>
-                        <p className="text-xs mb-5">
+                        <p className="text-xs text-[var(--color-green)] mb-6 bg-[var(--color-natural)] p-3 rounded-lg">
                             Share this customer report with an existing user account.
                         </p>
                     </>
@@ -204,8 +204,8 @@ export default function ShareCustomerModal({ closeModal, customerId }) {
                 <button
                     onClick={handleShareReport}
                     disabled={loading}
-                    className={`hover:cursor-pointer bg-[var(--color-primary-searchmind)] py-3 px-8 rounded text-white w-full ${
-                        loading ? "opacity-50 cursor-not-allowed" : ""
+                    className={`w-full bg-[var(--color-dark-green)] text-white py-3 px-6 rounded-lg font-semibold transition-colors ${
+                        loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[var(--color-green)]"
                     }`}
                 >
                     {loading ? "Sharing..." : "Share Customer Report"}

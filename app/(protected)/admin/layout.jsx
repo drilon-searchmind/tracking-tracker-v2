@@ -19,7 +19,7 @@ export default async function AdminLayout({ children }) {
 
     return (
         <ModalProvider>
-            <div className="min-h-screen bg-base-100">
+            <div className="min-h-screen">
                 <div className="container mx-auto">
                     {children}
                 </div>

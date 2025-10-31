@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { FaSearch, FaPlus, FaBuilding, FaEdit, FaTrash, FaDatabase, FaCog } from 'react-icons/fa';
 import { useToast } from '@/app/contexts/ToastContext';
 
 const CustomersContent = () => {
@@ -122,91 +123,144 @@ const CustomersContent = () => {
     );
 
     return (
-        <div>
-            <h2 className="text-2xl font-semibold mb-6">Customer Management</h2>
-            <div className="mb-6 flex justify-between items-center">
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] mb-2">Customer Management</h2>
+                    <p className="text-[var(--color-green)]">Manage customer accounts and BigQuery configurations</p>
+                </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <FaSearch className="text-[var(--color-green)] text-sm" />
+                    </div>
                     <input
                         type="text"
                         placeholder="Search customers..."
-                        className="w-64 px-4 py-2 border border-gray-300 rounded text-sm"
+                        className="w-full md:w-80 pl-10 pr-4 py-3 border border-[var(--color-dark-natural)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <button className="opacity-5 text-center bg-zinc-700 py-2 px-4 rounded text-white hover:bg-zinc-800 gap-2 hover:cursor-pointer text-sm">
+                <button 
+                    disabled
+                    className="bg-[var(--color-dark-natural)] text-[var(--color-green)] px-6 py-3 rounded-lg font-medium cursor-not-allowed flex items-center gap-2 opacity-50"
+                >
+                    <FaPlus />
                     Add New Customer
                 </button>
             </div>
 
             {loading ? (
-                <div className="text-center py-8">Loading customers...</div>
+                <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-lime)] mx-auto mb-4"></div>
+                    <p className="text-[var(--color-green)]">Loading customers...</p>
+                </div>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-50 border-b border-zinc-200 text-left">
-                            <tr className="text-zinc-600">
-                                <th className="px-4 py-3 font-medium">Customer Name</th>
-                                <th className="px-4 py-3 font-medium">BigQuery ID</th>
-                                <th className="px-4 py-3 font-medium">Project ID</th>
-                                <th className="px-4 py-3 font-medium">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-zinc-700 divide-y divide-zinc-100">
-                            {filteredCustomers.length > 0 ? (
-                                filteredCustomers.map(customer => (
-                                    <tr key={customer._id}>
-                                        <td className="px-4 py-3">
-                                            <input
-                                                type="text"
-                                                value={editingCustomers[customer._id]?.name || ''}
-                                                onChange={(e) => handleInputChange(customer._id, 'name', e.target.value)}
-                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                                            />
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <input
-                                                type="text"
-                                                value={editingCustomers[customer._id]?.bigQueryCustomerId || ''}
-                                                onChange={(e) => handleInputChange(customer._id, 'bigQueryCustomerId', e.target.value)}
-                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                                            />
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <input
-                                                type="text"
-                                                value={editingCustomers[customer._id]?.bigQueryProjectId || ''}
-                                                onChange={(e) => handleInputChange(customer._id, 'bigQueryProjectId', e.target.value)}
-                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                                            />
-                                        </td>
-                                        <td className="px-4 py-3 space-x-2">
-                                            <button
-                                                onClick={() => handleSaveCustomer(customer._id)}
-                                                disabled={updatingId === customer._id}
-                                                className="bg-zinc-700 py-1 px-3 rounded text-white hover:bg-zinc-800 text-sm disabled:bg-gray-400"
-                                            >
-                                                {updatingId === customer._id ? "Saving..." : "Save"}
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteCustomer(customer._id)}
-                                                disabled={deletingId === customer._id}
-                                                className="text-red-600 hover:text-red-800 py-1 px-3 rounded text-sm"
-                                            >
-                                                {deletingId === customer._id ? "Deleting..." : "Delete"}
-                                            </button>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">
+                            All Customers
+                            <span className="ml-2 text-sm font-normal text-[var(--color-green)]">
+                                ({filteredCustomers.length} {filteredCustomers.length === 1 ? 'customer' : 'customers'})
+                            </span>
+                        </h3>
+                    </div>
+
+                    <div className="overflow-x-auto bg-white rounded-lg border border-[var(--color-dark-natural)]">
+                        <table className="min-w-full text-sm">
+                            <thead className="bg-[var(--color-natural)] border-b border-[var(--color-dark-natural)]">
+                                <tr className="text-[var(--color-dark-green)]">
+                                    <th className="px-4 py-4 text-left font-semibold">
+                                        <span className="flex items-center gap-2">
+                                            <FaBuilding className="text-[var(--color-light-green)]" />
+                                            Customer Name
+                                        </span>
+                                    </th>
+                                    <th className="px-4 py-4 text-left font-semibold">
+                                        <span className="flex items-center gap-2">
+                                            <FaDatabase className="text-[var(--color-light-green)]" />
+                                            BigQuery Customer ID
+                                        </span>
+                                    </th>
+                                    <th className="px-4 py-4 text-left font-semibold">
+                                        <span className="flex items-center gap-2">
+                                            <FaCog className="text-[var(--color-light-green)]" />
+                                            BigQuery Project ID
+                                        </span>
+                                    </th>
+                                    <th className="px-4 py-4 text-left font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-[var(--color-green)] divide-y divide-[var(--color-light-natural)]">
+                                {filteredCustomers.length > 0 ? (
+                                    filteredCustomers.map(customer => (
+                                        <tr key={customer._id} className="hover:bg-[var(--color-natural)]/50 transition-colors">
+                                            <td className="px-4 py-4">
+                                                <input
+                                                    type="text"
+                                                    value={editingCustomers[customer._id]?.name || ''}
+                                                    onChange={(e) => handleInputChange(customer._id, 'name', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-[var(--color-dark-natural)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent"
+                                                    placeholder="Customer name"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <input
+                                                    type="text"
+                                                    value={editingCustomers[customer._id]?.bigQueryCustomerId || ''}
+                                                    onChange={(e) => handleInputChange(customer._id, 'bigQueryCustomerId', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-[var(--color-dark-natural)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent"
+                                                    placeholder="BigQuery Customer ID"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <input
+                                                    type="text"
+                                                    value={editingCustomers[customer._id]?.bigQueryProjectId || ''}
+                                                    onChange={(e) => handleInputChange(customer._id, 'bigQueryProjectId', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-[var(--color-dark-natural)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent"
+                                                    placeholder="BigQuery Project ID"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleSaveCustomer(customer._id)}
+                                                        disabled={updatingId === customer._id}
+                                                        className="bg-[var(--color-dark-green)] hover:bg-[var(--color-green)] text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:bg-[var(--color-dark-natural)] disabled:cursor-not-allowed flex items-center gap-1"
+                                                    >
+                                                        <FaEdit className="text-xs" />
+                                                        {updatingId === customer._id ? "Saving..." : "Save"}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteCustomer(customer._id)}
+                                                        disabled={deletingId === customer._id}
+                                                        className="text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                                    >
+                                                        <FaTrash className="text-xs" />
+                                                        {deletingId === customer._id ? "Deleting..." : "Delete"}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="4" className="px-4 py-12 text-center text-[var(--color-green)]">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <FaBuilding className="text-2xl text-[var(--color-light-green)]" />
+                                                <p>{searchQuery ? "No customers match your search" : "No customers found"}</p>
+                                            </div>
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
-                                        {searchQuery ? "No customers match your search" : "No customers found"}
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { FaUsers, FaBuilding, FaCog, FaClipboardList } from 'react-icons/fa';
 import UsersContent from './admin-panels/UsersContent';
 import CustomersContent from './admin-panels/CustomersContent';
 import SettingsContent from './admin-panels/SettingsContent';
@@ -11,10 +12,32 @@ const AdminAccordionTab = () => {
     const [activeTab, setActiveTab] = useState("users");
 
     const tabs = [
-        { id: "users", label: "Users" },
-        { id: "customers", label: "Customers" },
-        { id: "settings", label: "Settings (wip)" },
-        { id: "logs", label: "Activity Logs (wip)" }
+        { 
+            id: "users", 
+            label: "Users", 
+            icon: <FaUsers className="text-lg" />,
+            description: "Manage user accounts and permissions"
+        },
+        { 
+            id: "customers", 
+            label: "Customers", 
+            icon: <FaBuilding className="text-lg" />,
+            description: "Manage customer accounts and data"
+        },
+        { 
+            id: "settings", 
+            label: "Settings", 
+            icon: <FaCog className="text-lg" />,
+            description: "System configuration and preferences",
+            isWip: true
+        },
+        { 
+            id: "logs", 
+            label: "Activity Logs", 
+            icon: <FaClipboardList className="text-lg" />,
+            description: "Monitor system activity and events",
+            isWip: true
+        }
     ];
 
     const renderTabContent = () => {
@@ -33,37 +56,56 @@ const AdminAccordionTab = () => {
     };
 
     return (
-        <div>
-            <div className="bg-white border border-zinc-200 rounded-lg shadow-solid-l overflow-hidden">
-                <div className="flex h-[calc(100vh-220px)]">
-                    {/* Left Menu */}
-                    <div className="w-64 border-r border-zinc-200 bg-gray-50">
-                        <ul>
-                            {tabs.map((tab) => (
-                                <li key={tab.id}>
-                                    <button
-                                        onClick={() => setActiveTab(tab.id)}
-                                        className={`w-full text-left px-6 py-4 border-l-2 ${activeTab === tab.id
-                                            ? "border-l-zinc-700 bg-white font-medium"
-                                            : "border-l-transparent hover:bg-gray-100"
-                                            }`}
-                                    >
-                                        {tab.label}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
+        <div className="space-y-6 md:space-y-8">
+            {/* Tab Navigation Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                {tabs.map((tab) => (
+                    <div
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`p-4 md:p-6 rounded-xl border cursor-pointer transition-all duration-300 ${
+                            activeTab === tab.id
+                                ? "bg-[var(--color-lime)]/10 border-[var(--color-lime)] shadow-solid-l"
+                                : "bg-white border-[var(--color-dark-natural)] hover:border-[var(--color-light-green)] hover:shadow-solid-11"
+                        }`}
+                    >
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className={`${
+                                activeTab === tab.id 
+                                    ? "text-[var(--color-dark-green)]" 
+                                    : "text-[var(--color-light-green)]"
+                            }`}>
+                                {tab.icon}
+                            </div>
+                            <h3 className={`font-semibold ${
+                                activeTab === tab.id 
+                                    ? "text-[var(--color-dark-green)]" 
+                                    : "text-[var(--color-green)]"
+                            }`}>
+                                {tab.label}
+                                {tab.isWip && (
+                                    <span className="ml-2 text-xs bg-[var(--color-dark-natural)] text-[var(--color-green)] px-2 py-0.5 rounded-full">
+                                        WIP
+                                    </span>
+                                )}
+                            </h3>
+                        </div>
+                        <p className="text-sm text-[var(--color-green)] leading-relaxed">
+                            {tab.description}
+                        </p>
                     </div>
-
-                    {/* Right Content */}
-                    <div className="flex-1 p-6 overflow-y-auto">
-                        {renderTabContent()}
-                    </div>
-                </div>
-
+                ))}
             </div>
 
-            <div className='mt-10 opacity-50'>
+            {/* Content Area */}
+            <div className="bg-white border border-[var(--color-dark-natural)] rounded-xl shadow-solid-l overflow-hidden">
+                <div className="p-6 md:p-8">
+                    {renderTabContent()}
+                </div>
+            </div>
+
+            {/* GA4 Analytics Section */}
+            <div className="opacity-60">
                 <GA4Analytics />
             </div>
         </div>

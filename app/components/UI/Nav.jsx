@@ -79,7 +79,7 @@ export default function Nav() {
                             <a href="/my-profile?tab=campaigns" className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium">
                                 <FaChartBar className="text-xs" /> Campaigns
                             </a>
-                            <a href="/whats-new" className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium">
+                            <a href="/whats-new" className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium hidden">
                                 <FaBell className="text-xs" /> Updates
                             </a>
                             
@@ -147,7 +147,7 @@ export default function Nav() {
                                     </a>
                                     <a href="/whats-new" 
                                        onClick={() => setIsMenuOpen(false)}
-                                       className="flex items-center gap-3 py-3 text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 rounded-lg transition-colors font-medium">
+                                       className="flex items-center gap-3 py-3 text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)] px-3 rounded-lg transition-colors font-medium hidden">
                                         <FaBell /> Updates
                                     </a>
                                 </>

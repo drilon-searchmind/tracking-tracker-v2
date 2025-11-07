@@ -162,6 +162,7 @@ export default async function DashboardPage({ params }) {
 			<PerformanceDashboard
 				customerId={customerId}
 				customerName={customerName}
+				customerValutaCode={customerValutaCode}
 				initialData={data}
 			/>
 		);

@@ -307,6 +307,7 @@ export default async function OverviewPage({ params }) {
             <OverviewDashboard
                 customerId={customerId}
                 customerName={customerName}
+                customerValutaCode={customerValutaCode}
                 initialData={{ overview_metrics, totals, last_year_totals }}
             />
         );

@@ -4,8 +4,43 @@ import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { FaChevronRight, FaCalendarAlt } from "react-icons/fa";
 import Subheading from "@/app/components/UI/Utility/Subheading";
+import currencyExchangeData from "@/lib/static-data/currencyApiValues.json";
 
-export default function OverviewDashboard({ customerId, customerName, initialData }) {
+// Currency conversion utility
+const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
+    if (!amount || fromCurrency === toCurrency) return amount;
+    
+    const exchangeData = currencyExchangeData.data;
+    
+    if (!exchangeData[fromCurrency] || !exchangeData[toCurrency]) {
+        console.warn(`Currency conversion failed: ${fromCurrency} to ${toCurrency}`);
+        return amount;
+    }
+    
+    // Convert from source currency to USD, then to target currency
+    const amountInUSD = amount / exchangeData[fromCurrency].value;
+    const convertedAmount = amountInUSD * exchangeData[toCurrency].value;
+    
+    return convertedAmount;
+};
+
+// Apply currency conversion to a data row
+const convertDataRow = (row, fromCurrency) => {
+    if (fromCurrency === "DKK") return row;
+    
+    const revenueFields = ['revenue', 'revenue_ex_tax'];
+    const convertedRow = { ...row };
+    
+    revenueFields.forEach(field => {
+        if (convertedRow[field] !== undefined && convertedRow[field] !== null) {
+            convertedRow[field] = convertCurrency(convertedRow[field], fromCurrency);
+        }
+    });
+    
+    return convertedRow;
+};
+
+export default function OverviewDashboard({ customerId, customerName, customerValutaCode, initialData }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -70,12 +105,22 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         return overview_metrics
             .filter((row) => row.date >= startDate && row.date <= endDate)
             .sort((a, b) => a.date.localeCompare(b.date))
-            .map(row => ({
-                ...row,
-                spendshare: row.revenue_ex_tax > 0 ? (row.ppc_cost + row.ps_cost) / row.revenue_ex_tax : 0,
-                spendshare_db: row.revenue_ex_tax > 0 ? (row.ppc_cost + row.ps_cost) / (0.7 * row.revenue_ex_tax) : 0,
-            }));
-    }, [overview_metrics, startDate, endDate]);
+            .map(row => {
+                // First convert currency for revenue fields
+                const convertedRow = convertDataRow(row, customerValutaCode);
+                
+                // Then calculate metrics using converted revenue values
+                return {
+                    ...convertedRow,
+                    spendshare: convertedRow.revenue_ex_tax > 0 ? (convertedRow.ppc_cost + convertedRow.ps_cost) / convertedRow.revenue_ex_tax : 0,
+                    spendshare_db: convertedRow.revenue_ex_tax > 0 ? (convertedRow.ppc_cost + convertedRow.ps_cost) / (0.7 * convertedRow.revenue_ex_tax) : 0,
+                    roas: (convertedRow.ppc_cost + convertedRow.ps_cost) > 0 ? convertedRow.revenue / (convertedRow.ppc_cost + convertedRow.ps_cost) : 0,
+                    poas: (convertedRow.ppc_cost + convertedRow.ps_cost) > 0 ? (convertedRow.revenue * (1 - 0.25) - convertedRow.revenue * 0.7) / (convertedRow.ppc_cost + convertedRow.ps_cost) : 0,
+                    gp: convertedRow.revenue * (1 - 0.25) - convertedRow.revenue * 0.7,
+                    aov: convertedRow.orders > 0 ? convertedRow.revenue / convertedRow.orders : 0,
+                };
+            });
+    }, [overview_metrics, startDate, endDate, customerValutaCode]);
 
     const filteredTotals = useMemo(() => {
         return filteredMetrics.reduce(
@@ -121,20 +166,31 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
     const lastYearEnd = formatDate(new Date(new Date(endDate).setFullYear(new Date(endDate).getFullYear() - 1)));
 
     const lastYearMetrics = useMemo(() => {
-        const metricsWithCalculations = overview_metrics
+        const metricsWithConversion = overview_metrics
             .filter((row) => row.date >= lastYearStart && row.date <= lastYearEnd)
-            .map(row => ({
-                ...row,
-                spendshare: row.revenue_ex_tax > 0 ? (row.ppc_cost + row.ps_cost) / row.revenue_ex_tax : 0,
-                spendshare_db: row.revenue_ex_tax > 0 ? (row.ppc_cost + row.ps_cost) / (0.7 * row.revenue_ex_tax) : 0,
-            }));
+            .map(row => {
+                // First convert currency for revenue fields
+                const convertedRow = convertDataRow(row, customerValutaCode);
+                
+                // Then calculate metrics using converted revenue values
+                return {
+                    ...convertedRow,
+                    spendshare: convertedRow.revenue_ex_tax > 0 ? (convertedRow.ppc_cost + convertedRow.ps_cost) / convertedRow.revenue_ex_tax : 0,
+                    spendshare_db: convertedRow.revenue_ex_tax > 0 ? (convertedRow.ppc_cost + convertedRow.ps_cost) / (0.7 * convertedRow.revenue_ex_tax) : 0,
+                    roas: (convertedRow.ppc_cost + convertedRow.ps_cost) > 0 ? convertedRow.revenue / (convertedRow.ppc_cost + convertedRow.ps_cost) : 0,
+                    poas: (convertedRow.ppc_cost + convertedRow.ps_cost) > 0 ? (convertedRow.revenue * (1 - 0.25) - convertedRow.revenue * 0.7) / (convertedRow.ppc_cost + convertedRow.ps_cost) : 0,
+                    gp: convertedRow.revenue * (1 - 0.25) - convertedRow.revenue * 0.7,
+                    aov: convertedRow.orders > 0 ? convertedRow.revenue / convertedRow.orders : 0,
+                };
+            });
 
         const groupedByDate = {};
 
-        metricsWithCalculations.forEach(row => {
+        metricsWithConversion.forEach(row => {
             if (!groupedByDate[row.date]) {
                 groupedByDate[row.date] = { ...row };
             } else {
+                // Aggregate the raw values
                 groupedByDate[row.date].orders += row.orders;
                 groupedByDate[row.date].revenue += row.revenue;
                 groupedByDate[row.date].revenue_ex_tax += row.revenue_ex_tax;
@@ -142,6 +198,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
                 groupedByDate[row.date].ps_cost += row.ps_cost;
                 groupedByDate[row.date].gp += row.gp;
 
+                // Recalculate metrics using aggregated converted values
                 const totalCost = groupedByDate[row.date].ppc_cost + groupedByDate[row.date].ps_cost;
                 groupedByDate[row.date].roas = totalCost > 0
                     ? groupedByDate[row.date].revenue / totalCost
@@ -166,7 +223,7 @@ export default function OverviewDashboard({ customerId, customerName, initialDat
         });
 
         return Object.values(groupedByDate).sort((a, b) => a.date.localeCompare(b.date));
-    }, [overview_metrics, lastYearStart, lastYearEnd]);
+    }, [overview_metrics, lastYearStart, lastYearEnd, customerValutaCode]);
 
     const filteredLastYearTotals = useMemo(() => {
         return lastYearMetrics.reduce(

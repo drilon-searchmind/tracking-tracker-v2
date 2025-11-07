@@ -5,8 +5,41 @@ import Image from "next/image";
 import { Tooltip } from "react-tooltip";
 import { FaInfoCircle } from "react-icons/fa";
 import Subheading from "@/app/components/UI/Utility/Subheading";
+import currencyExchangeData from "@/lib/static-data/currencyApiValues.json";
 
-export default function PnLDashboard({ customerId, customerName, initialData }) {
+// Currency conversion utility
+const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
+    if (!amount || fromCurrency === toCurrency) return amount;
+    
+    const exchangeData = currencyExchangeData.data;
+    
+    if (!exchangeData[fromCurrency] || !exchangeData[toCurrency]) {
+        console.warn(`Currency conversion failed: ${fromCurrency} to ${toCurrency}`);
+        return amount;
+    }
+    
+    // Convert from source currency to USD, then to target currency
+    const amountInUSD = amount / exchangeData[fromCurrency].value;
+    const convertedAmount = amountInUSD * exchangeData[toCurrency].value;
+    
+    return convertedAmount;
+};
+
+// Apply currency conversion to a data row
+const convertDataRow = (row, fromCurrency) => {
+    if (fromCurrency === "DKK") return row;
+    
+    const convertedRow = { ...row };
+    
+    // Convert net_sales field
+    if (convertedRow.net_sales !== undefined && convertedRow.net_sales !== null) {
+        convertedRow.net_sales = convertCurrency(convertedRow.net_sales, fromCurrency);
+    }
+    
+    return convertedRow;
+};
+
+export default function PnLDashboard({ customerId, customerName, customerValutaCode, initialData }) {
     const [isClient, setIsClient] = useState(false);
     const [showAllMetrics, setShowAllMetrics] = useState(false);
     
@@ -34,8 +67,8 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
     const filteredMetricsByDate = useMemo(() => {
         const filtered = metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
-        return filtered;
-    }, [metrics_by_date, startDate, endDate]);
+        return filtered.map(row => convertDataRow(row, customerValutaCode));
+    }, [metrics_by_date, startDate, endDate, customerValutaCode]);
 
     const metrics = useMemo(() => {
         const aggregated = filteredMetricsByDate.reduce(
@@ -153,7 +186,8 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
     const comparisonMetrics = useMemo(() => {
         const comparisonData = metrics_by_date?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
-        const aggregated = comparisonData.reduce(
+        const convertedComparisonData = comparisonData.map(row => convertDataRow(row, customerValutaCode));
+        const aggregated = convertedComparisonData.reduce(
             (acc, row) => ({
                 net_sales: acc.net_sales + (Number(row.net_sales) || 0),
                 orders: acc.orders + (Number(row.orders) || 0),
@@ -223,7 +257,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
             total_costs,
         };
         return resultMetrics;
-    }, [metrics_by_date, compStart, compEnd, staticExpenses]);
+    }, [metrics_by_date, compStart, compEnd, staticExpenses, customerValutaCode]);
 
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;

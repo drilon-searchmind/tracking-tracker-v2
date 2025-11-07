@@ -131,6 +131,7 @@ export default async function PacePage({ params }) {
             <PaceReport
                 customerId={customerId}
                 customerName={customerName}
+                customerValutaCode={customerValutaCode}
                 initialData={{ daily_metrics: serializedDailyMetrics }}
             />
         );

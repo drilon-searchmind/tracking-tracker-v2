@@ -22,6 +22,47 @@ import DashboardMetrics from "./components/DashboardMetrics";
 import DashboardCharts from "./components/DashboardCharts";
 import ServiceDashboards from "./components/ServiceDashboards";
 import Subheading from "@/app/components/UI/Utility/Subheading";
+import currencyExchangeData from "@/lib/static-data/currencyApiValues.json";
+
+// Currency conversion utility
+const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
+    if (!amount || fromCurrency === toCurrency) return amount;
+    
+    const exchangeData = currencyExchangeData.data;
+    
+    if (!exchangeData[fromCurrency] || !exchangeData[toCurrency]) {
+        console.warn(`Currency conversion failed: ${fromCurrency} to ${toCurrency}`);
+        return amount;
+    }
+    
+    // Convert from source currency to USD, then to target currency
+    const amountInUSD = amount / exchangeData[fromCurrency].value;
+    const convertedAmount = amountInUSD * exchangeData[toCurrency].value;
+    
+    return convertedAmount;
+};
+
+// Apply currency conversion to a data row
+const convertDataRow = (row, fromCurrency) => {
+    if (fromCurrency === "DKK") return row;
+    
+    const revenueFields = ['revenue', 'gross_profit'];
+    const convertedRow = { ...row };
+    
+    revenueFields.forEach(field => {
+        if (convertedRow[field] !== undefined && convertedRow[field] !== null) {
+            convertedRow[field] = convertCurrency(convertedRow[field], fromCurrency);
+        }
+    });
+    
+    // Recalculate ROAS and POAS using converted revenue values
+    const totalCost = convertedRow.cost || 0;
+    convertedRow.roas = totalCost > 0 ? convertedRow.revenue / totalCost : 0;
+    convertedRow.poas = totalCost > 0 ? convertedRow.gross_profit / totalCost : 0;
+    convertedRow.aov = (convertedRow.orders || 0) > 0 ? convertedRow.revenue / convertedRow.orders : 0;
+    
+    return convertedRow;
+};
 
 ChartJS.register(
     LineElement,
@@ -37,7 +78,7 @@ ChartJS.register(
     ChartDataLabels,
 );
 
-export default function PerformanceDashboard({ customerId, customerName, initialData }) {
+export default function PerformanceDashboard({ customerId, customerName, customerValutaCode, initialData }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -61,7 +102,7 @@ export default function PerformanceDashboard({ customerId, customerName, initial
     const [aovViewMode, setAovViewMode] = useState("YTD");
     const [sessionsViewMode, setSessionsViewMode] = useState("YTD");
 
-    const data = Array.isArray(initialData) ? initialData : [];
+    const data = Array.isArray(initialData) ? initialData.map(row => convertDataRow(row, customerValutaCode)) : [];
 
     useEffect(() => {
         if (initialData) {

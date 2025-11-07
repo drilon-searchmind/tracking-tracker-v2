@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
-import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
+import { FaChevronRight, FaChevronLeft, FaCalendarAlt, FaTrendUp, FaTrendDown } from "react-icons/fa";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -15,6 +15,7 @@ import {
     Legend
 } from "chart.js";
 import Subheading from "@/app/components/UI/Utility/Subheading";
+import currencyExchangeData from "@/lib/static-data/currencyApiValues.json";
 
 ChartJS.register(
     CategoryScale,
@@ -26,7 +27,39 @@ ChartJS.register(
     Legend
 );
 
-export default function PaceReport({ customerId, customerName, initialData }) {
+// Currency conversion utility
+const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
+    if (!amount || fromCurrency === toCurrency) return amount;
+    
+    const exchangeData = currencyExchangeData.data;
+    
+    if (!exchangeData[fromCurrency] || !exchangeData[toCurrency]) {
+        console.warn(`Currency conversion failed: ${fromCurrency} to ${toCurrency}`);
+        return amount;
+    }
+    
+    // Convert from source currency to USD, then to target currency
+    const amountInUSD = amount / exchangeData[fromCurrency].value;
+    const convertedAmount = amountInUSD * exchangeData[toCurrency].value;
+    
+    return convertedAmount;
+};
+
+// Apply currency conversion to a data row
+const convertDataRow = (row, fromCurrency) => {
+    if (fromCurrency === "DKK") return row;
+    
+    const convertedRow = { ...row };
+    
+    // Convert revenue field
+    if (convertedRow.revenue !== undefined && convertedRow.revenue !== null) {
+        convertedRow.revenue = convertCurrency(convertedRow.revenue, fromCurrency);
+    }
+    
+    return convertedRow;
+};
+
+export default function PaceReport({ customerId, customerName, customerValutaCode, initialData }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -78,9 +111,10 @@ export default function PaceReport({ customerId, customerName, initialData }) {
     const filteredMetrics = useMemo(() => {
         const filtered = daily_metrics
             .filter(row => row.date >= startDate && row.date <= endDate)
+            .map(row => convertDataRow(row, customerValutaCode))
             .sort((a, b) => a.date.localeCompare(b.date));
         return filtered;
-    }, [daily_metrics, startDate, endDate]);
+    }, [daily_metrics, startDate, endDate, customerValutaCode]);
 
     const cumulativeMetrics = useMemo(() => {
         let cumOrders = 0, cumRevenue = 0, cumAdSpend = 0;
@@ -206,6 +240,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
     const comparisonTotals = useMemo(() => {
         const comparisonData = daily_metrics
             .filter(row => row.date >= compStart && row.date <= compEnd)
+            .map(row => convertDataRow(row, customerValutaCode))
             .sort((a, b) => a.date.localeCompare(b.date));
         let cumOrders = 0, cumRevenue = 0, cumAdSpend = 0;
         const cumulativeComparison = comparisonData.map(row => {
@@ -231,7 +266,7 @@ export default function PaceReport({ customerId, customerName, initialData }) {
         };
 
         return result;
-    }, [daily_metrics, compStart, compEnd]);
+    }, [daily_metrics, compStart, compEnd, customerValutaCode]);
 
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;

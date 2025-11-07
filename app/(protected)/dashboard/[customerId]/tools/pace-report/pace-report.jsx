@@ -331,7 +331,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         ]
     };
 
-    const chartOptions = {
+    const getChartOptions = (chartType) => ({
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -349,7 +349,19 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                 backgroundColor: "#1e3a8a",
                 titleFont: { size: 10, family: "'Inter', sans-serif" },
                 bodyFont: { size: 10, family: "'Inter', sans-serif" },
-                padding: 8
+                padding: 8,
+                callbacks: {
+                    label: function(context) {
+                        const label = context.dataset.label || '';
+                        const value = context.raw || 0;
+                        
+                        if (chartType === 'pace' && (metric === "Orders" || label.includes("Orders"))) {
+                            return `${label}: ${value.toLocaleString("en-US")}`;
+                        }
+                        
+                        return `${label}: kr. ${value.toLocaleString("en-US")}`;
+                    }
+                }
             }
         },
         scales: {
@@ -374,7 +386,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                     font: { size: 10, family: "'Inter', sans-serif" },
                     color: "#4b5563",
                     callback: function (value) {
-                        if (activeChartIndex === 1 && metric === "Orders") {
+                        if (chartType === 'pace' && metric === "Orders") {
                             return value.toLocaleString("en-US");
                         }
                         return `kr. ${value.toLocaleString("en-US")}`;
@@ -382,7 +394,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                 },
                 title: {
                     display: false,
-                    text: activeChartIndex === 0 ? "Ad Spend (kr.)" : 
+                    text: chartType === 'budget' ? "Ad Spend (kr.)" : 
                           (metric === "Revenue" ? "kr." : "Count"),
                     font: { size: 10, family: "'Inter', sans-serif" },
                     color: "#4b5563"
@@ -390,12 +402,12 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                 beginAtZero: true
             }
         }
-    };
+    });
 
     const chartComponents = [
         {
             title: "Ad Spend Budget",
-            chart: <Line data={budgetChartData} options={chartOptions} />,
+            chart: <Line data={budgetChartData} options={getChartOptions('budget')} />,
             metrics: [
                 {
                     label: "Ad Spend Budget",
@@ -416,7 +428,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         },
         {
             title: "Pace",
-            chart: <Line data={paceChartData} options={chartOptions} />,
+            chart: <Line data={paceChartData} options={getChartOptions('pace')} />,
             metrics: [
                 {
                     label: "Metric",
@@ -606,7 +618,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                             <p className="font-semibold text-[var(--color-dark-green)]">Ad Spend Budget</p>
                         </div>
                         <div className="h-[280px]">
-                            <Line data={budgetChartData} options={chartOptions} />
+                            <Line data={budgetChartData} options={getChartOptions('budget')} />
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4">
                             <div className="col-span-2">
@@ -641,7 +653,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                             <p className="font-semibold text-[var(--color-dark-green)]">Pace</p>
                         </div>
                         <div className="h-[280px]">
-                            <Line data={paceChartData} options={chartOptions} />
+                            <Line data={paceChartData} options={getChartOptions('pace')} />
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4">
                             <div>

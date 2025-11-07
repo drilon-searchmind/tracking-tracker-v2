@@ -456,10 +456,10 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                     kr. {Math.round(row.ps_cost).toLocaleString()}
                                                 </td>
                                                 <td className="px-2 py-1" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare')}>
-                                                    {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
+                                                    {metricView === "roas" ? row.roas.toFixed(2) : `${(row.spendshare * 100).toFixed(2)}%`}
                                                 </td>
                                                 <td className="px-2 py-1" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db')}>
-                                                    {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
+                                                    {metricView === "roas" ? row.poas.toFixed(2) : `${(row.spendshare_db * 100).toFixed(2)}%`}
                                                 </td>
                                                 <td className="px-2 py-1" style={getHeatmapStyle(row.gp, 'gp')}>
                                                     kr. {Math.round(row.gp).toLocaleString()}
@@ -476,8 +476,8 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                             <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.revenue_ex_tax).toLocaleString()}</td>
                                             <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.ppc_cost).toLocaleString()}</td>
                                             <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.ps_cost).toLocaleString()}</td>
-                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredTotals.roas : filteredTotals.spendshare).toFixed(2)}</td>
-                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredTotals.poas : filteredTotals.spendshare_db).toFixed(2)}</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredTotals.roas : (filteredTotals.spendshare * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</td>
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredTotals.poas : (filteredTotals.spendshare_db * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</td>
                                             <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.gp).toLocaleString()}</td>
                                             <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.aov).toLocaleString()}</td>
                                         </tr>
@@ -488,8 +488,8 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                             <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
                                             <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
                                             <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
-                                            <td className="px-2 py-2 text-[var(--color-green)]">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</td>
-                                            <td className="px-2 py-2 text-[var(--color-green)]">{(metricView === "roas" ? filteredLastYearTotals.poas : filteredLastYearTotals.spendshare_db).toFixed(2)}</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">{(metricView === "roas" ? filteredLastYearTotals.roas : (filteredLastYearTotals.spendshare * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</td>
+                                            <td className="px-2 py-2 text-[var(--color-green)]">{(metricView === "roas" ? filteredLastYearTotals.poas : (filteredLastYearTotals.spendshare_db * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</td>
                                             <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</td>
                                             <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
                                         </tr>
@@ -500,8 +500,8 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                             <td className={`px-2 py-2 ${differences.revenue_ex_tax >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.revenue_ex_tax).toLocaleString()}</td>
                                             <td className={`px-2 py-2 ${differences.ppc_cost >= 0 ? 'text-red-600' : 'text-green-600'}`}>kr. {Math.round(differences.ppc_cost).toLocaleString()}</td>
                                             <td className={`px-2 py-2 ${differences.ps_cost >= 0 ? 'text-red-600' : 'text-green-600'}`}>kr. {Math.round(differences.ps_cost).toLocaleString()}</td>
-                                            <td className={`px-2 py-2 ${differences.roas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "roas" ? differences.roas : differences.spendshare).toFixed(2)}</td>
-                                            <td className={`px-2 py-2 ${differences.poas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "roas" ? differences.poas : differences.spendshare_db).toFixed(2)}</td>
+                                            <td className={`px-2 py-2 ${differences.roas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "roas" ? differences.roas : (differences.spendshare * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</td>
+                                            <td className={`px-2 py-2 ${differences.poas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "roas" ? differences.poas : (differences.spendshare_db * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</td>
                                             <td className={`px-2 py-2 ${differences.gp >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.gp).toLocaleString()}</td>
                                             <td className={`px-2 py-2 ${differences.aov >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.aov).toLocaleString()}</td>
                                         </tr>
@@ -525,7 +525,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
-                                                <span className="font-semibold text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredTotals.roas : filteredTotals.spendshare).toFixed(2)}</span>
+                                                <span className="font-semibold text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredTotals.roas : (filteredTotals.spendshare * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-[var(--color-green)]">GP:</span>
@@ -549,7 +549,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
-                                                <span className="font-semibold">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</span>
+                                                <span className="font-semibold">{(metricView === "roas" ? filteredLastYearTotals.roas : (filteredLastYearTotals.spendshare * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-[var(--color-green)]">GP:</span>
@@ -573,7 +573,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
-                                                <span className={`font-semibold ${differences.roas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "roas" ? differences.roas : differences.spendshare).toFixed(2)}</span>
+                                                <span className={`font-semibold ${differences.roas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "roas" ? differences.roas : (differences.spendshare * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-[var(--color-green)]">GP:</span>
@@ -638,13 +638,13 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                     <div className="flex justify-between border-b border-gray-100 py-1">
                                                         <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
                                                         <span style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare')}>
-                                                            {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
+                                                            {metricView === "roas" ? row.roas.toFixed(2) : `${(row.spendshare * 100).toFixed(2)}%`}
                                                         </span>
                                                     </div>
                                                     <div className="flex justify-between border-b border-gray-100 py-1">
                                                         <span className="text-[var(--color-green)]">{metricView === "roas" ? "POAS:" : "Spendshare DB:"}</span>
                                                         <span style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db')}>
-                                                            {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
+                                                            {metricView === "roas" ? row.poas.toFixed(2) : `${(row.spendshare_db * 100).toFixed(2)}%`}
                                                         </span>
                                                     </div>
                                                     <div className="flex justify-between border-b border-gray-100 py-1">
@@ -706,8 +706,8 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                     <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
                                     <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
                                     <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
-                                    <td className="px-2 py-2">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</td>
-                                    <td className="px-2 py-2">{(metricView === "roas" ? filteredLastYearTotals.poas : filteredLastYearTotals.spendshare_db).toFixed(2)}</td>
+                                    <td className="px-2 py-2">{(metricView === "roas" ? filteredLastYearTotals.roas : (filteredLastYearTotals.spendshare * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</td>
+                                    <td className="px-2 py-2">{(metricView === "roas" ? filteredLastYearTotals.poas : (filteredLastYearTotals.spendshare_db * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</td>
                                     <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</td>
                                     <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
                                 </tr>
@@ -730,10 +730,10 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                             kr. {Math.round(row.ps_cost).toLocaleString()}
                                         </td>
                                         <td className="px-2 py-1" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare', true)}>
-                                            {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
+                                            {metricView === "roas" ? row.roas.toFixed(2) : `${(row.spendshare * 100).toFixed(2)}%`}
                                         </td>
                                         <td className="px-2 py-1" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db', true)}>
-                                            {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
+                                            {metricView === "roas" ? row.poas.toFixed(2) : `${(row.spendshare_db * 100).toFixed(2)}%`}
                                         </td>
                                         <td className="px-2 py-1" style={getHeatmapStyle(row.gp, 'gp', true)}>
                                             kr. {Math.round(row.gp).toLocaleString()}
@@ -763,7 +763,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
-                                        <span className="font-semibold text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredLastYearTotals.roas : filteredLastYearTotals.spendshare).toFixed(2)}</span>
+                                        <span className="font-semibold text-[var(--color-dark-green)]">{(metricView === "roas" ? filteredLastYearTotals.roas : (filteredLastYearTotals.spendshare * 100)).toFixed(2)}{metricView === "roas" ? "" : "%"}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-[var(--color-green)]">GP:</span>
@@ -828,13 +828,13 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                             <div className="flex justify-between border-b border-gray-100 py-1">
                                                 <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
                                                 <span style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare', true)}>
-                                                    {(metricView === "roas" ? row.roas : row.spendshare).toFixed(2)}
+                                                    {metricView === "roas" ? row.roas.toFixed(2) : `${(row.spendshare * 100).toFixed(2)}%`}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between border-b border-gray-100 py-1">
                                                 <span className="text-[var(--color-green)]">{metricView === "roas" ? "POAS:" : "Spendshare DB:"}</span>
                                                 <span style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db', true)}>
-                                                    {(metricView === "roas" ? row.poas : row.spendshare_db).toFixed(2)}
+                                                    {metricView === "roas" ? row.poas.toFixed(2) : `${(row.spendshare_db * 100).toFixed(2)}%`}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between border-b border-gray-100 py-1">

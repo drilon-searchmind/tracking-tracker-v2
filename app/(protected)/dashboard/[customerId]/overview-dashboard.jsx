@@ -424,16 +424,16 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                 <table className="min-w-full text-xs text-left">
                                     <thead className="bg-[var(--color-natural)] border-b border-gray-100">
                                         <tr className="text-[var(--color-dark-green)] uppercase font-medium">
-                                            <th className="px-4 py-3">Date</th>
-                                            <th className="px-4 py-3">Orders</th>
-                                            <th className="px-4 py-3">Revenue</th>
-                                            <th className="px-4 py-3">Revenue Ex Tax</th>
-                                            <th className="px-4 py-3">PPC Cost</th>
-                                            <th className="px-4 py-3">PS Cost</th>
-                                            <th className="px-4 py-3">{metricView === "ROAS/POAS" ? "ROAS" : "Spendshare"}</th>
-                                            <th className="px-4 py-3">{metricView === "ROAS/POAS" ? "POAS" : "Spendshare inc. DB"}</th>
-                                            <th className="px-4 py-3">GP</th>
-                                            <th className="px-4 py-3">AOV</th>
+                                            <th className="px-2 py-3">Date</th>
+                                            <th className="px-2 py-3">Orders</th>
+                                            <th className="px-2 py-3">Revenue</th>
+                                            <th className="px-2 py-3">Revenue Ex Tax</th>
+                                            <th className="px-2 py-3">PPC Cost</th>
+                                            <th className="px-2 py-3">PS Cost</th>
+                                            <th className="px-2 py-3">{metricView === "ROAS/POAS" ? "ROAS" : "Spendshare"}</th>
+                                            <th className="px-2 py-3">{metricView === "ROAS/POAS" ? "POAS" : "Spendshare inc. DB"}</th>
+                                            <th className="px-2 py-3">GP</th>
+                                            <th className="px-2 py-3">AOV</th>
                                         </tr>
                                     </thead>
                                     <tbody className="text-[var(--color-dark-green)] text-xs">

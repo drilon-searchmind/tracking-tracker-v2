@@ -15,7 +15,7 @@ export default function DashboardMetrics({ currentMetrics, prevMetrics }) {
 
     const metrics = [
         {
-            title: "Revenue",
+            title: "Revenue (Inc VAT)",
             value: `${Math.round(currentMetrics.revenue).toLocaleString('en-US')} DKK`,
             delta: calculateDelta(currentMetrics.revenue, prevMetrics.revenue),
             positive: currentMetrics.revenue >= prevMetrics.revenue,
@@ -43,14 +43,14 @@ export default function DashboardMetrics({ currentMetrics, prevMetrics }) {
             icon: <HiOutlineChartBar className="text-2xl text-[var(--color-green)]" />,
         },
         {
-            title: "ROAS (incl. moms)",
+            title: "ROAS (Inc VAT)",
             value: currentMetrics.roas.toFixed(2),
             delta: calculateDelta(currentMetrics.roas, prevMetrics.roas),
             positive: currentMetrics.roas >= prevMetrics.roas,
             icon: <HiOutlineArrowTrendingUp className="text-2xl text-[var(--color-green)]" />,
         },
         {
-            title: "POAS",
+            title: "POAS (Inc VAT)",
             value: currentMetrics.poas.toFixed(2),
             delta: calculateDelta(currentMetrics.poas, prevMetrics.poas),
             positive: currentMetrics.poas >= prevMetrics.poas,

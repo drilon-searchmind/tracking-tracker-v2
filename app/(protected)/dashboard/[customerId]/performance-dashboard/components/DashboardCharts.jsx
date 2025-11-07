@@ -365,7 +365,7 @@ export default function DashboardCharts({
             <div className="hidden md:grid md:grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                 <div className="bg-white border border-[var(--color-natural)] rounded-lg p-6 h-[300px] shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <p className="font-semibold text-[var(--color-dark-green)]">Revenue</p>
+                        <p className="font-semibold text-[var(--color-dark-green)]">Revenue (Inc VAT)</p>
                         <ViewModeToggle viewMode={revenueViewMode} setViewMode={setRevenueViewMode} />
                     </div>
                     <div className="w-full h-[calc(100%-2rem)]">

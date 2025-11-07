@@ -45,7 +45,7 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
     const [comparison, setComparison] = useState("Previous Year");
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
     const [endDate, setEndDate] = useState(formatDate(yesterday));
-    const [selectedMetric, setSelectedMetric] = useState("Conversions");
+    const [selectedMetric, setSelectedMetric] = useState("Ad Spend");
     const [cpcMetric, setCpcMetric] = useState("CPC");
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [expandedCampaigns, setExpandedCampaigns] = useState({});
@@ -140,11 +140,15 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
         if (!compData) return null;
 
         switch (metricName) {
-            case "Conversions": return compData.conversions || 0;
+            case "Conv. Value": return compData.conversions_value || 0;
             case "Ad Spend": return compData.ad_spend || 0;
             case "ROAS": return compData.roas || 0;
-            case "CPC": return compData.cpc || 0;
+            case "AOV": return compData.aov || 0;
+            case "Conversions": return compData.conversions || 0;
+            case "Impressions": return compData.impressions || 0;
+            case "Clicks": return compData.clicks || 0;
             case "CTR": return compData.ctr || 0;
+            case "CPC": return compData.cpc || 0;
             case "Conv. Rate": return compData.conv_rate || 0;
             default: return 0;
         }
@@ -313,6 +317,20 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                             return row.ad_spend || 0;
                         case "ROAS":
                             return row.roas || 0;
+                        case "Conv. Value":
+                            return row.conversions_value || 0;
+                        case "AOV":
+                            return row.aov || 0;
+                        case "Impressions":
+                            return row.impressions || 0;
+                        case "Clicks":
+                            return row.clicks || 0;
+                        case "CTR":
+                            return row.ctr || 0;
+                        case "CPC":
+                            return row.cpc || 0;
+                        case "Conv. Rate":
+                            return row.conv_rate || 0;
                         default:
                             return 0;
                     }
@@ -456,9 +474,16 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                     onChange={(e) => setSelectedMetric(e.target.value)}
                     className="border px-2 py-1 rounded text-xs"
                 >
-                    <option>Conversions</option>
+                    <option>Conv. Value</option>
                     <option>Ad Spend</option>
                     <option>ROAS</option>
+                    <option>AOV</option>
+                    <option>Conversions</option>
+                    <option>Impressions</option>
+                    <option>Clicks</option>
+                    <option>CTR</option>
+                    <option>CPC</option>
+                    <option>Conv. Rate</option>
                 </select>
             )
         },
@@ -593,13 +618,37 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                     <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm">
                         <div className="grid grid-cols-2 gap-px bg-[var(--color-natural)]">
                             {ppcMetrics.slice(0, showAllMetrics ? ppcMetrics.length : 4).map((item, i) => (
-                                <div key={i} className="bg-white p-4">
-                                    <p className="text-xs font-medium text-[var(--color-green)] mb-1">{item.label}</p>
-                                    <p className="text-xl font-bold text-[var(--color-dark-green)]">{item.value}</p>
+                                <div 
+                                    key={i} 
+                                    className={`p-4 transition-all duration-200 cursor-pointer ${
+                                        selectedMetric === item.label 
+                                            ? 'bg-[var(--color-primary-searchmind)]' 
+                                            : 'bg-white hover:bg-[var(--color-natural)]'
+                                    }`}
+                                    onClick={() => setSelectedMetric(item.label)}
+                                >
+                                    <p className={`text-xs font-medium mb-1 ${
+                                        selectedMetric === item.label 
+                                            ? 'text-white-important' 
+                                            : 'text-[var(--color-green)]'
+                                    }`}>
+                                        {item.label}
+                                    </p>
+                                    <p className={`text-xl font-bold ${
+                                        selectedMetric === item.label 
+                                            ? 'text-white-important' 
+                                            : 'text-[var(--color-dark-green)]'
+                                    }`}>
+                                        {item.value}
+                                    </p>
                                     {item.delta && (
-                                        <p className={`text-xs font-semibold ${item.positive ? "text-green-600" : "text-red-500"}`}>
+                                        <h6 className={`text-xs font-semibold ${
+                                            selectedMetric === item.label 
+                                                ? (item.positive ? "text-green-200" : "text-red-200")
+                                                : (item.positive ? "text-green-600" : "text-red-500")
+                                        }`}>
                                             {item.delta}
-                                        </p>
+                                        </h6>
                                     )}
                                 </div>
                             ))}
@@ -618,17 +667,47 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                 {/* Desktop Metrics Grid */}
                 <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 md:mb-8">
                     {ppcMetrics.map((item, i) => (
-                        <div key={i} className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6">
+                        <div 
+                            key={i} 
+                            className={`border rounded-lg shadow-sm p-6 transition-all duration-200 cursor-pointer hover:shadow-md ${
+                                selectedMetric === item.label 
+                                    ? 'bg-[var(--color-primary-searchmind)] border-[var(--color-primary-searchmind)]' 
+                                    : 'bg-white border-[var(--color-light-natural)] hover:border-[var(--color-green)]'
+                            }`}
+                            onClick={() => setSelectedMetric(item.label)}
+                        >
                             <div className="flex flex-col">
-                                <p className="text-sm font-medium text-[var(--color-green)] mb-2">{item.label}</p>
+                                <p className={`text-sm font-medium mb-2 ${
+                                    selectedMetric === item.label 
+                                        ? 'text-white-important' 
+                                        : 'text-[var(--color-green)]'
+                                }`}>
+                                    {item.label}
+                                </p>
                                 <div className="flex items-baseline justify-between">
-                                    <p className="text-2xl md:text-3xl font-bold text-[var(--color-dark-green)]">{item.value}</p>
+                                    <p className={`text-2xl md:text-3xl font-bold ${
+                                        selectedMetric === item.label 
+                                            ? 'text-white-important' 
+                                            : 'text-[var(--color-dark-green)]'
+                                    }`}>
+                                        {item.value}
+                                    </p>
                                     {item.delta && (
                                         <div className="flex flex-col items-end">
-                                            <p className={`text-sm font-semibold ${item.positive ? "text-green-600" : "text-red-500"}`}>
+                                            <h6 className={`text-sm font-semibold ${
+                                                selectedMetric === item.label 
+                                                    ? (item.positive ? "text-green-200" : "text-red-200")
+                                                    : (item.positive ? "text-green-600" : "text-red-500")
+                                            }`}>
                                                 {item.delta}
-                                            </p>
-                                            <p className="text-xs text-[var(--color-green)] mt-1">vs prev period</p>
+                                            </h6>
+                                            <h6 className={`text-xs mt-1 ${
+                                                selectedMetric === item.label 
+                                                    ? 'text-white-important opacity-80' 
+                                                    : 'text-[var(--color-green)]'
+                                            }`}>
+                                                vs prev period
+                                            </h6>
                                         </div>
                                     )}
                                 </div>
@@ -649,9 +728,16 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                                         onChange={(e) => setSelectedMetric(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
                                     >
-                                        <option>Conversions</option>
+                                        <option>Conv. Value</option>
                                         <option>Ad Spend</option>
                                         <option>ROAS</option>
+                                        <option>AOV</option>
+                                        <option>Conversions</option>
+                                        <option>Impressions</option>
+                                        <option>Clicks</option>
+                                        <option>CTR</option>
+                                        <option>CPC</option>
+                                        <option>Conv. Rate</option>
                                     </select>
                                 )}
                                 {activeChartIndex === 2 && (
@@ -704,9 +790,16 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                             onChange={(e) => setSelectedMetric(e.target.value)}
                             className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                         >
-                            <option>Conversions</option>
+                            <option>Conv. Value</option>
                             <option>Ad Spend</option>
                             <option>ROAS</option>
+                            <option>AOV</option>
+                            <option>Conversions</option>
+                            <option>Impressions</option>
+                            <option>Clicks</option>
+                            <option>CTR</option>
+                            <option>CPC</option>
+                            <option>Conv. Rate</option>
                         </select>
                     </div>
                     <div className="w-full h-[300px]">
@@ -762,9 +855,16 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                                 value={selectedMetric}
                                 onChange={(e) => setSelectedMetric(e.target.value)}
                             >
-                                <option>Conversions</option>
+                                <option>Conv. Value</option>
                                 <option>Ad Spend</option>
                                 <option>ROAS</option>
+                                <option>AOV</option>
+                                <option>Conversions</option>
+                                <option>Impressions</option>
+                                <option>Clicks</option>
+                                <option>CTR</option>
+                                <option>CPC</option>
+                                <option>Conv. Rate</option>
                             </select>
                         </div>
                         <div className="flex-1 w-full h-[calc(100%-2rem)] min-h-[300px] max-h-[500px] overflow-y-auto">

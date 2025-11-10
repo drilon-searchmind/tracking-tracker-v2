@@ -40,6 +40,11 @@ const ParentCampaignSchema = new mongoose.Schema({
         type: Number,
         min: 0,
     },
+    budgetDistribution: {
+        type: Map,
+        of: Number,
+        default: {}
+    },
     materialFromCustomer: {
         type: String,
     },

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Select from "react-select";
+import countryCodes from '@/lib/static-data/countryCodes.json';
 
 export default function ConfigCustomerSettings({ customerId, baseUrl }) {
     const [settings, setSettings] = useState(null);
@@ -15,6 +17,66 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
         headquarters: "",
         website: ""
     });
+
+    // Add country options based on countryCodes.json
+    const countryOptions = countryCodes.map(country => ({
+        value: country.code,
+        label: `${country.name} (${country.code})`,
+    }));
+
+    const frequentCountries = [
+        { value: "DK", label: "Denmark (DK)" },
+        { value: "DE", label: "Germany (DE)" },
+        { value: "NL", label: "Netherlands (NL)" },
+        { value: "NO", label: "Norway (NO)" },
+        { value: "FR", label: "France (FR)" },
+        { value: "CY", label: "Cyprus (CY)" },
+        { value: "", label: "───────────────" },
+    ];
+
+    const allCountryOptions = [...frequentCountries, ...countryOptions];
+
+    const selectedCountryOption = allCountryOptions.find(option =>
+        option.value === settings?.metaCustomerCountry
+    ) || null;
+
+    const handleCountryChange = (selectedOption) => {
+        setSettings({ 
+            ...settings, 
+            metaCustomerCountry: selectedOption ? selectedOption.value : "" 
+        });
+    };
+
+    const handleExcludeCountryAdd = (selectedOption) => {
+        if (!selectedOption) return;
+        
+        const currentExcluded = settings?.excludeMetaCountries || "";
+        const currentCountries = currentExcluded.split(',').map(c => c.trim()).filter(c => c !== "");
+        
+        // Check if country is already in the list
+        if (!currentCountries.includes(selectedOption.value)) {
+            const updatedCountries = [...currentCountries, selectedOption.value];
+            setSettings({ 
+                ...settings, 
+                excludeMetaCountries: updatedCountries.join(', ')
+            });
+        }
+    };
+
+    const removeExcludedCountry = (countryCode) => {
+        const currentExcluded = settings?.excludeMetaCountries || "";
+        const currentCountries = currentExcluded.split(',').map(c => c.trim()).filter(c => c !== "");
+        const updatedCountries = currentCountries.filter(c => c !== countryCode);
+        setSettings({ 
+            ...settings, 
+            excludeMetaCountries: updatedCountries.join(', ')
+        });
+    };
+
+    const getExcludedCountriesList = () => {
+        const currentExcluded = settings?.excludeMetaCountries || "";
+        return currentExcluded.split(',').map(c => c.trim()).filter(c => c !== "");
+    };
 
     useEffect(() => {
         async function fetchData() {
@@ -326,24 +388,131 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
 
                     <div>
                         <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Meta Customer Country</label>
-                        <input
-                            type="text"
-                            value={settings?.metaCustomerCountry || ""}
-                            onChange={(e) => setSettings({ ...settings, metaCustomerCountry: e.target.value })}
-                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
-                            placeholder="Enter Meta customer country"
+                        <Select
+                            name="metaCustomerCountry"
+                            value={selectedCountryOption}
+                            onChange={handleCountryChange}
+                            options={allCountryOptions}
+                            className="w-full"
+                            placeholder="Select Meta customer country..."
+                            isClearable
+                            styles={{
+                                control: (base, state) => ({
+                                    ...base,
+                                    border: '1px solid var(--color-dark-natural)',
+                                    borderRadius: '0.5rem',
+                                    padding: '0.125rem 0.25rem',
+                                    fontSize: '0.875rem',
+                                    '&:hover': {
+                                        borderColor: 'var(--color-lime)'
+                                    },
+                                    boxShadow: state.isFocused ? '0 0 0 2px var(--color-lime)' : 'none',
+                                    borderColor: state.isFocused ? 'transparent' : 'var(--color-dark-natural)'
+                                }),
+                                option: (base, state) => ({
+                                    ...base,
+                                    backgroundColor: state.isSelected ? 'var(--color-lime)' : state.isFocused ? 'var(--color-natural)' : 'white',
+                                    color: 'var(--color-dark-green)',
+                                    fontSize: '0.875rem'
+                                }),
+                                placeholder: (base) => ({
+                                    ...base,
+                                    color: '#9ca3af',
+                                    fontSize: '0.875rem'
+                                }),
+                                singleValue: (base) => ({
+                                    ...base,
+                                    color: 'var(--color-dark-green)',
+                                    fontSize: '0.875rem'
+                                })
+                            }}
                         />
                     </div>
 
                     <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Exclude Meta Countries</label>
-                        <textarea
-                            value={settings?.excludeMetaCountries || ""}
-                            onChange={(e) => setSettings({ ...settings, excludeMetaCountries: e.target.value })}
-                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
-                            placeholder="Enter countries to exclude (comma-separated)"
-                            rows="3"
-                        />
+                        <div className="space-y-3">
+                            <textarea
+                                value={settings?.excludeMetaCountries || ""}
+                                onChange={(e) => setSettings({ ...settings, excludeMetaCountries: e.target.value })}
+                                className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                placeholder="Enter countries to exclude (comma-separated)"
+                                rows="3"
+                            />
+                            
+                            {/* Country selection dropdown */}
+                            <div>
+                                <label className="block text-xs font-medium text-[var(--color-green)] mb-1">Add countries to exclude:</label>
+                                <Select
+                                    name="excludeCountrySelector"
+                                    value={null} // Always reset after selection
+                                    onChange={handleExcludeCountryAdd}
+                                    options={allCountryOptions}
+                                    className="w-full"
+                                    placeholder="Select a country to add..."
+                                    isClearable
+                                    styles={{
+                                        control: (base, state) => ({
+                                            ...base,
+                                            border: '1px solid var(--color-dark-natural)',
+                                            borderRadius: '0.375rem',
+                                            padding: '0.125rem 0.25rem',
+                                            fontSize: '0.75rem',
+                                            minHeight: '32px',
+                                            '&:hover': {
+                                                borderColor: 'var(--color-lime)'
+                                            },
+                                            boxShadow: state.isFocused ? '0 0 0 2px var(--color-lime)' : 'none',
+                                            borderColor: state.isFocused ? 'transparent' : 'var(--color-dark-natural)'
+                                        }),
+                                        option: (base, state) => ({
+                                            ...base,
+                                            backgroundColor: state.isSelected ? 'var(--color-lime)' : state.isFocused ? 'var(--color-natural)' : 'white',
+                                            color: 'var(--color-dark-green)',
+                                            fontSize: '0.75rem'
+                                        }),
+                                        placeholder: (base) => ({
+                                            ...base,
+                                            color: '#9ca3af',
+                                            fontSize: '0.75rem'
+                                        }),
+                                        singleValue: (base) => ({
+                                            ...base,
+                                            color: 'var(--color-dark-green)',
+                                            fontSize: '0.75rem'
+                                        })
+                                    }}
+                                />
+                            </div>
+                            
+                            {/* Display selected countries as tags */}
+                            {getExcludedCountriesList().length > 0 && (
+                                <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                                    <span className="text-xs font-medium text-[var(--color-green)] mb-1">Selected countries:</span>
+                                    <div className="w-full flex flex-wrap gap-2">
+                                        {getExcludedCountriesList().map((countryCode) => {
+                                            const countryInfo = countryCodes.find(c => c.code === countryCode);
+                                            return (
+                                                <span 
+                                                    key={countryCode} 
+                                                    className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] text-xs rounded-md border border-[var(--color-lime)]/50"
+                                                >
+                                                    {countryInfo ? `${countryInfo.name} (${countryCode})` : countryCode}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeExcludedCountry(countryCode)}
+                                                        className="ml-1 text-red-500 hover:text-red-700 transition-colors"
+                                                        title="Remove country"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 

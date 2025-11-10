@@ -296,7 +296,6 @@ export default function ParentCampaignModal({
                                     />
                                 </div>
                             ))}
-                            <p className="text-sm text-gray-500">Total: {getTotalDistribution()}%</p>
                         </div>
                     )}
 

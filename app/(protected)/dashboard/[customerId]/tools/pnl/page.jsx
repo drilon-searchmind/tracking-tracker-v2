@@ -172,6 +172,7 @@ export default async function PnLPage({ params }) {
             <PnLDashboard
                 customerId={customerId}
                 customerName={customerName}
+                customerValutaCode={customerValutaCode}
                 initialData={{ metrics_by_date: serializedMetricsByDate, staticExpenses }}
             />
         );

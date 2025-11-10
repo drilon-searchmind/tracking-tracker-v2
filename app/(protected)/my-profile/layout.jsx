@@ -10,7 +10,7 @@ export default async function ProfileLayout({ children }) {
     }
 
     return (
-        <div className="min-h-screen bg-base-100">
+        <div className="min-h-screen">
             <div className="container mx-auto">
                 {children}
             </div>

@@ -409,14 +409,17 @@ export default function CampaignList({ customerId }) {
 
     if (loading) {
         return (
-            <div className="w-full flex justify-center py-10">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900"></div>
+            <div className="bg-white rounded-lg shadow-sm border border-[var(--color-light-natural)] p-8">
+                <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-lime)]"></div>
+                    <span className="ml-3 text-[var(--color-green)]">Loading campaigns...</span>
+                </div>
             </div>
         );
     }
 
     const renderCampaignRow = (campaign) => (
-        <tr key={campaign._id} className="hover:bg-gray-50">
+        <tr key={campaign._id} className="hover:bg-[var(--color-natural)]/30 transition-colors">
             <td className="px-3 py-4 whitespace-nowrap text-center">
                 <div className="flex justify-center">
                     <div
@@ -431,14 +434,14 @@ export default function CampaignList({ customerId }) {
             </td>
             <td
                 onClick={() => handleViewDetails(campaign)}
-                className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1C398E] hover:underline cursor-pointer pl-10">
+                className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-dark-green)] hover:text-[var(--color-light-green)] hover:underline cursor-pointer pl-10 transition-colors">
                 {campaign.campaignName}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-dark-green)]">
                 <select
                     value={campaign.status || "Pending"}
                     onChange={(e) => handleStatusChange(campaign._id, e.target.value)}
-                    className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
+                    className="text-sm border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                 >
                     <option value="Pending">Pending</option>
                     <option value="Pending Customer Approval">Pending Customer Approval</option>
@@ -447,71 +450,71 @@ export default function CampaignList({ customerId }) {
                     <option value="Ended">Ended</option>
                 </select>
             </td>
-            {/* Add new cell for country code */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-dark-green)]">
                 {campaign.countryCode || "-"}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-dark-green)]">
                 {campaign.campaignType === "Always On" ? (
-                    <span className="text-gray-800 font-medium">Always On</span>
+                    <span className="text-[var(--color-green)] font-medium">Always On</span>
                 ) : (
                     <>
                         {campaign.startDate && campaign.endDate ? (
                             `${new Date(campaign.startDate).toLocaleDateString()} - ${new Date(campaign.endDate).toLocaleDateString()}`
                         ) : (
-                            <span className="text-gray-400">No dates specified</span>
+                            <span className="text-[var(--color-green)]">No dates specified</span>
                         )}
                     </>
                 )}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-dark-green)]">
                 {campaign.budget.toLocaleString()} DKK
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-dark-green)]">
                 <div className="flex space-x-2">
                     <button
                         onClick={() => handleViewDetails(campaign)}
-                        className="border py-1 text-xs text-center px-2 text-[var(--color-primary-searchmind)] hover:text-[#2E4CA8] font-medium flex items-center rounded-md"
+                        className="border border-[var(--color-dark-natural)] py-1 text-xs text-center px-3 text-[var(--color-dark-green)] hover:bg-[var(--color-lime)] hover:border-[var(--color-lime)] font-medium flex items-center rounded-lg transition-colors"
                     >
-                        <span className="">View</span>
+                        <span>View</span>
                     </button>
                     <button
                         onClick={() => handleCopyCampaign(campaign._id)}
                         disabled={copyingCampaignId === campaign._id}
-                        className="border py-1 text-xs text-center px-2 text-blue-600 hover:text-blue-800 font-medium flex items-center rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="border border-[var(--color-dark-natural)] py-1 text-xs text-center px-3 text-[var(--color-light-green)] hover:bg-[var(--color-light-green)] hover:text-white hover:border-[var(--color-light-green)] font-medium flex items-center rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                        <span className="">
+                        <span>
                             {copyingCampaignId === campaign._id ? "Copying..." : "Copy"}
                         </span>
                     </button>
                     <button
                         onClick={() => handleDeleteCampaign(campaign._id)}
-                        className="border py-1 text-xs text-center px-2 text-red-600 hover:text-red-800 font-medium flex items-center rounded-md"
+                        className="border border-red-300 py-1 text-xs text-center px-3 text-red-600 hover:bg-red-500 hover:text-white hover:border-red-500 font-medium flex items-center rounded-lg transition-colors"
                     >
-                        <span className="">Delete</span>
+                        <span>Delete</span>
                     </button>
                 </div>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-dark-green)]">
                 {commentCounts[campaign._id] > 0 ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]">
                         {commentCounts[campaign._id]}
                     </span>
                 ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100">0</span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--color-light-natural)] text-[var(--color-green)]">0</span>
                 )}
             </td>
         </tr>
     );
 
     return (
-        <div className="bg-white border border-zinc-200 rounded-lg shadow-solid-9 overflow-hidden">
-            <div className="flex border-b border-gray-200 bg-[#f8fafc]">
+        <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-solid-l overflow-hidden">
+            {/* Service Tabs */}
+            <div className="flex border-b border-[var(--color-light-natural)] bg-[var(--color-natural)]">
                 <button
                     key="All"
-                    className={`px-6 py-3 text-sm font-medium ${activeFilter === "All"
-                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
-                        : "text-gray-500 hover:text-gray-700"
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${activeFilter === "All"
+                        ? "border-b-2 border-[var(--color-lime)] text-[var(--color-dark-green)] bg-white"
+                        : "text-[var(--color-green)] hover:text-[var(--color-dark-green)]"
                         }`}
                     onClick={() => setActiveFilter("All")}
                 >
@@ -519,9 +522,9 @@ export default function CampaignList({ customerId }) {
                 </button>
                 <button
                     key="Social"
-                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "Social"
-                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
-                        : "text-gray-500 hover:text-gray-700"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 transition-colors ${activeFilter === "Social"
+                        ? "border-b-2 border-[var(--color-lime)] text-[var(--color-dark-green)] bg-white"
+                        : "text-[var(--color-green)] hover:text-[var(--color-dark-green)]"
                         }`}
                     onClick={() => setActiveFilter("Social")}
                 >
@@ -529,9 +532,9 @@ export default function CampaignList({ customerId }) {
                 </button>
                 <button
                     key="Email"
-                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "Email"
-                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
-                        : "text-gray-500 hover:text-gray-700"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 transition-colors ${activeFilter === "Email"
+                        ? "border-b-2 border-[var(--color-lime)] text-[var(--color-dark-green)] bg-white"
+                        : "text-[var(--color-green)] hover:text-[var(--color-dark-green)]"
                         }`}
                     onClick={() => setActiveFilter("Email")}
                 >
@@ -539,9 +542,9 @@ export default function CampaignList({ customerId }) {
                 </button>
                 <button
                     key="Paid Search"
-                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "Paid Search"
-                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
-                        : "text-gray-500 hover:text-gray-700"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 transition-colors ${activeFilter === "Paid Search"
+                        ? "border-b-2 border-[var(--color-lime)] text-[var(--color-dark-green)] bg-white"
+                        : "text-[var(--color-green)] hover:text-[var(--color-dark-green)]"
                         }`}
                     onClick={() => setActiveFilter("Paid Search")}
                 >
@@ -549,9 +552,9 @@ export default function CampaignList({ customerId }) {
                 </button>
                 <button
                     key="SEO"
-                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "SEO"
-                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
-                        : "text-gray-500 hover:text-gray-700"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 transition-colors ${activeFilter === "SEO"
+                        ? "border-b-2 border-[var(--color-lime)] text-[var(--color-dark-green)] bg-white"
+                        : "text-[var(--color-green)] hover:text-[var(--color-dark-green)]"
                         }`}
                     onClick={() => setActiveFilter("SEO")}
                 >
@@ -559,52 +562,53 @@ export default function CampaignList({ customerId }) {
                 </button>
                 <button
                     key="Pending Customer Approval"
-                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${activeFilter === "Pending Customer Approval"
-                        ? "border-b-2 border-[#1C398E] text-[#1C398E]"
-                        : "text-gray-500 hover:text-gray-700"
+                    className={`px-6 py-3 text-sm font-medium flex items-center gap-2 transition-colors ${activeFilter === "Pending Customer Approval"
+                        ? "border-b-2 border-[var(--color-lime)] text-[var(--color-dark-green)] bg-white"
+                        : "text-[var(--color-green)] hover:text-[var(--color-dark-green)]"
                         }`}
                     onClick={() => setActiveFilter("Pending Customer Approval")}
                 >
                     <MdOutlinePending className="text-lg" />
                     Pending Customer Approval
                     {pendingApprovalCount > 0 && (
-                        <span className="ml-0 px-2 py-0.5 text-[0.65rem] bg-red-100 text-red-800 rounded-full">
+                        <span className="ml-1 px-2 py-0.5 text-[0.65rem] bg-red-100 text-red-800 rounded-full">
                             {pendingApprovalCount}
                         </span>
                     )}
                 </button>
             </div>
 
-            <div className="overflow-x-auto">
-                <div className="flex justify-end px-6 py-2 bg-gray-50 border-b border-gray-200 gap-4">
-                    <div className="flex items-center">
-                        <div className="relative">
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row justify-end px-6 py-4 bg-[var(--color-natural)] border-b border-[var(--color-light-natural)] gap-4">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                    <div className="flex items-center w-full md:w-auto">
+                        <div className="relative w-full md:w-64">
                             <input
                                 type="text"
                                 placeholder="Search campaigns..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="text-sm border border-gray-300 rounded px-3 py-1.5 pr-8 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E] w-64"
+                                className="text-sm border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent w-full bg-white text-[var(--color-dark-green)] transition-colors"
                             />
                             {searchQuery && (
                                 <button
                                     onClick={() => setSearchQuery("")}
-                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[var(--color-green)] hover:text-[var(--color-dark-green)]"
                                 >
                                     <span className="text-xs">✕</span>
                                 </button>
                             )}
                         </div>
                     </div>
-                    <div className="flex items-center">
-                        <label htmlFor="country-filter" className="mr-2 text-sm font-medium text-gray-700">
-                            Filter by country:
+                    <div className="flex items-center w-full md:w-auto">
+                        <label htmlFor="country-filter" className="mr-2 text-sm font-medium text-[var(--color-dark-green)] whitespace-nowrap">
+                            Country:
                         </label>
                         <select
                             id="country-filter"
                             value={selectedCountry}
                             onChange={(e) => setSelectedCountry(e.target.value)}
-                            className="text-sm border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
+                            className="text-sm border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent bg-white text-[var(--color-dark-green)] transition-colors w-full md:w-auto"
                         >
                             <option value="All">All Countries</option>
                             {countryOptions.map(country => (
@@ -614,15 +618,15 @@ export default function CampaignList({ customerId }) {
                             ))}
                         </select>
                     </div>
-                    <div className="flex items-center">
-                        <label htmlFor="month-filter" className="mr-2 text-sm font-medium text-gray-700">
-                            Filter by month:
+                    <div className="flex items-center w-full md:w-auto">
+                        <label htmlFor="month-filter" className="mr-2 text-sm font-medium text-[var(--color-dark-green)] whitespace-nowrap">
+                            Month:
                         </label>
                         <select
                             id="month-filter"
                             value={selectedMonth}
                             onChange={(e) => setSelectedMonth(e.target.value)}
-                            className="text-sm border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1C398E] focus:border-[#1C398E]"
+                            className="text-sm border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent bg-white text-[var(--color-dark-green)] transition-colors w-full md:w-auto"
                         >
                             <option value="All">All Months</option>
                             {availableMonths.map(month => (
@@ -633,67 +637,75 @@ export default function CampaignList({ customerId }) {
                         </select>
                     </div>
                 </div>
+            </div>
 
-                <table className="min-w-full divide-y divide-gray-200" id="campaignListTable">
-                    <thead className="bg-gray-50">
+            {/* Table */}
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-[var(--color-light-natural)]" id="campaignListTable">
+                    <thead className="bg-[var(--color-natural)]">
                         <tr>
-                            <th scope="col" className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '40px' }}>
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Campaign Name
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-2 py-3 text-center text-xs font-medium text-[var(--color-green)] uppercase tracking-wider" style={{ width: '40px' }}>
                                 Status
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-green)] uppercase tracking-wider">
+                                Campaign Name
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-green)] uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-green)] uppercase tracking-wider">
                                 Country
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-green)] uppercase tracking-wider">
                                 Period
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-green)] uppercase tracking-wider">
                                 Budget
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-green)] uppercase tracking-wider">
                                 Actions
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-green)] uppercase tracking-wider">
                                 Comments
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-[var(--color-light-natural)]">
                         {Object.keys(organizedCampaigns).length > 0 ? (
                             Object.values(organizedCampaigns).map((parentGroup) => (
                                 <React.Fragment key={parentGroup.id}>
                                     {parentGroup.name !== "No Parent" ? (
                                         <tr
-                                            className="bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                                            className="bg-[var(--color-natural)] hover:bg-[var(--color-light-natural)] cursor-pointer transition-colors"
                                             onClick={() => toggleParentExpansion(parentGroup.id)}
                                         >
                                             <td className="px-3 py-3 whitespace-nowrap text-center">
                                                 {expandedParents[parentGroup.id] ?
-                                                    <FaChevronDown className="text-gray-500" /> :
-                                                    <FaChevronRight className="text-gray-500" />
+                                                    <FaChevronDown className="text-[var(--color-green)]" /> :
+                                                    <FaChevronRight className="text-[var(--color-green)]" />
                                                 }
                                             </td>
-                                            <td colSpan="6" className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {parentGroup.name} ({parentGroup.campaigns.length})
+                                            <td colSpan="7" className="px-6 py-3 whitespace-nowrap text-sm font-medium text-[var(--color-dark-green)]">
+                                                {parentGroup.name} ({parentGroup.campaigns.length} campaigns)
                                             </td>
                                         </tr>
-                                    ) : (
-                                        null
-                                    )}                                
+                                    ) : null}
 
-                                    {expandedParents[parentGroup.id] &&
+                                    {(parentGroup.name === "No Parent" || expandedParents[parentGroup.id]) &&
                                         parentGroup.campaigns.map(campaign => renderCampaignRow(campaign))
                                     }
                                 </React.Fragment>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="7" className="px-6 py-10 text-center text-gray-500">
-                                    No campaigns found for the selected filter
+                                <td colSpan="8" className="px-6 py-12 text-center">
+                                    <div className="flex flex-col items-center">
+                                        <div className="w-16 h-16 bg-[var(--color-natural)] rounded-full flex items-center justify-center mb-4">
+                                            <FaMagnifyingGlassChart className="text-2xl text-[var(--color-green)]" />
+                                        </div>
+                                        <p className="text-[var(--color-green)] text-lg font-medium mb-2">No campaigns found</p>
+                                        <p className="text-[var(--color-green)] text-sm">Try adjusting your filters or create a new campaign</p>
+                                    </div>
                                 </td>
                             </tr>
                         )}
@@ -701,7 +713,8 @@ export default function CampaignList({ customerId }) {
                 </table>
             </div>
 
-            <div className="flex items-center gap-6 text-xs text-gray-600 py-2 px-6">
+            {/* Status Legend */}
+            <div className="flex items-center gap-6 text-xs text-[var(--color-green)] py-3 px-6 bg-[var(--color-natural)] border-t border-[var(--color-light-natural)]">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     <span>Live</span>

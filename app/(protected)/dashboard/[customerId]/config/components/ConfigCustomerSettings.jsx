@@ -1,276 +1,362 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import currencyData from "@/lib/static-data/commonCurrency.json";
 
 export default function ConfigCustomerSettings({ customerId, baseUrl }) {
-    const [settings, setSettings] = useState({
-        metricPreference: "ROAS/POAS",
-        customerValuta: "kr",
-        customerValutaCode: "DKK",
-        customerClickupID: "",
-        customerMetaID: "",
-        customerMetaIDExclude: ""
+    const [settings, setSettings] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [parentCustomers, setParentCustomers] = useState([]);
+    const [showNewParentForm, setShowNewParentForm] = useState(false);
+    const [newParentData, setNewParentData] = useState({
+        name: "",
+        description: "",
+        industry: "",
+        headquarters: "",
+        website: ""
     });
-    const [loading, setLoading] = useState(false);
-    const [tempValues, setTempValues] = useState({
-        clickupId: "",
-        countryId: "",
-        excludeCountries: ""
-    });
-
-    const currencies = Object.entries(currencyData)
-        .map(([code, data]) => ({ code, ...data }))
-        .sort((a, b) => a.code.localeCompare(b.code));
 
     useEffect(() => {
-        fetchSettings();
-    }, [customerId, baseUrl]);
-
-    const fetchSettings = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}`);
+        async function fetchData() {
+            console.log("Fetching settings for customer ID:", customerId);
             
-            if (response.ok) {
-                const data = await response.json();
+            try {
+                // Fetch customer settings
+                const settingsResponse = await fetch(`/api/customer-settings/${customerId}`);
+                const settingsData = await settingsResponse.json();
+                
+                // Fetch customer info (including parent customer)
+                const customerResponse = await fetch(`/api/customers/${customerId}`);
+                const customerData = await customerResponse.json();
+                
+                // Fetch parent customers
+                const parentCustomersResponse = await fetch('/api/parent-customers');
+                const parentCustomersData = await parentCustomersResponse.json();
+                
+                // Map API response fields to component fields
+                const apiData = settingsData.data || settingsData;
                 setSettings({
-                    metricPreference: data.metricPreference || "ROAS/POAS",
-                    customerValuta: data.customerValuta || "kr",
-                    customerValutaCode: data.customerValutaCode || "DKK",
-                    customerClickupID: data.customerClickupID || "",
-                    customerMetaID: data.customerMetaID || "",
-                    customerMetaIDExclude: data.customerMetaIDExclude || ""
+                    metricPreference: apiData.metricPreference || "",
+                    backendStoreCurrency: apiData.customerValutaCode || "DKK",
+                    clickupId: apiData.customerClickupID || "",
+                    metaCustomerCountry: apiData.customerMetaID || "",
+                    excludeMetaCountries: apiData.customerMetaIDExclude || "",
+                    parentCustomer: customerData.parentCustomer?._id || ""
                 });
-                setTempValues({
-                    clickupId: data.customerClickupID || "",
-                    countryId: data.customerMetaID || "",
-                    excludeCountries: data.customerMetaIDExclude || ""
+                
+                setParentCustomers(parentCustomersData || []);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                setSettings({
+                    metricPreference: "",
+                    backendStoreCurrency: "DKK",
+                    clickupId: "",
+                    metaCustomerCountry: "",
+                    excludeMetaCountries: "",
+                    parentCustomer: ""
                 });
+                setParentCustomers([]);
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error("Error fetching customer settings:", error);
-        } finally {
-            setLoading(false);
         }
-    };
+        
+        if (customerId) {
+            fetchData();
+        }
+    }, [customerId]);
 
-    const updateSettings = async (updateData) => {
+    const handleCreateParentCustomer = async () => {
+        if (!newParentData.name.trim()) {
+            alert("Parent customer name is required");
+            return;
+        }
+
         try {
-            setLoading(true);
-            const response = await fetch(`${baseUrl}/api/customer-settings/${customerId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updateData),
+            const response = await fetch('/api/parent-customers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newParentData),
             });
 
             if (response.ok) {
-                const updatedData = await response.json();
-                setSettings(prevSettings => ({
-                    ...prevSettings,
-                    ...updateData
+                const result = await response.json();
+                const createdParent = result.parentCustomer;
+                
+                // Add to parent customers list
+                setParentCustomers(prev => [...prev, createdParent]);
+                
+                // Select the newly created parent
+                setSettings(prev => ({
+                    ...prev,
+                    parentCustomer: createdParent._id
                 }));
-                return true;
+                
+                // Reset form and hide it
+                setNewParentData({
+                    name: "",
+                    description: "",
+                    industry: "",
+                    headquarters: "",
+                    website: ""
+                });
+                setShowNewParentForm(false);
+                
+                alert("Parent customer created successfully!");
             } else {
-                console.error("Failed to update settings");
-                return false;
+                const errorData = await response.json();
+                alert(`Failed to create parent customer: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error("Error creating parent customer:", error);
+            alert("An error occurred while creating parent customer.");
+        }
+    };
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        
+        try {
+            console.log("Saving settings for customer ID:", customerId);
+            
+            // Save customer settings
+            const settingsPayload = {
+                metricPreference: settings.metricPreference,
+                customerValutaCode: settings.backendStoreCurrency,
+                customerClickupID: settings.clickupId,
+                customerMetaID: settings.metaCustomerCountry,
+                customerMetaIDExclude: settings.excludeMetaCountries
+            };
+            
+            const settingsResponse = await fetch(`/api/customer-settings/${customerId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(settingsPayload),
+            });
+
+            // Save customer parent relationship
+            const customerPayload = {
+                parentCustomer: settings.parentCustomer || null
+            };
+            
+            const customerResponse = await fetch(`/api/customers/${customerId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(customerPayload),
+            });
+
+            if (settingsResponse.ok && customerResponse.ok) {
+                alert("Settings updated successfully!");
+            } else {
+                alert("Failed to update some settings.");
             }
         } catch (error) {
             console.error("Error updating settings:", error);
-            return false;
+            alert("An error occurred while updating settings.");
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
     };
 
-    const handleToggle = async (preference) => {
-        await updateSettings({ metricPreference: preference });
-    };
-
-    const handleCurrencyChange = async (e) => {
-        const currencyCode = e.target.value;
-        const selectedCurrency = currencyData[currencyCode];
-
-        if (!selectedCurrency) return;
-
-        await updateSettings({
-            customerValuta: selectedCurrency.symbol_native,
-            customerValutaCode: selectedCurrency.code
-        });
-    };
-
-    const handleClickupIdUpdate = async () => {
-        if (tempValues.clickupId === settings.customerClickupID) return;
-        
-        const success = await updateSettings({ customerClickupID: tempValues.clickupId });
-        if (!success) {
-            setTempValues(prev => ({ ...prev, clickupId: settings.customerClickupID }));
-        }
-    };
-
-    const handleMetaIdUpdate = async () => {
-        if (tempValues.countryId === settings.customerMetaID) return;
-        
-        const success = await updateSettings({ customerMetaID: tempValues.countryId });
-        if (!success) {
-            setTempValues(prev => ({ ...prev, countryId: settings.customerMetaID }));
-        }
-    };
-
-    const handleExcludeCountriesUpdate = async () => {
-        if (tempValues.excludeCountries === settings.customerMetaIDExclude) return;
-        
-        const success = await updateSettings({ customerMetaIDExclude: tempValues.excludeCountries });
-        if (!success) {
-            setTempValues(prev => ({ ...prev, excludeCountries: settings.customerMetaIDExclude }));
-        }
-    };
-
-    const getCurrentCurrencyCode = () => {
-        return settings.customerValutaCode || "DKK";
-    };
+    if (loading) {
+        return (
+            <div className="animate-pulse">
+                <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i}>
+                            <div className="h-4 bg-[var(--color-light-natural)] rounded w-1/3 mb-2"></div>
+                            <div className="h-10 bg-[var(--color-light-natural)] rounded"></div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="mt-6">
-            <h3 className="font-semibold text-lg mb-4 text-zinc-800">General Settings</h3>
-            <div className="overflow-auto border border-zinc-200 rounded bg-white shadow-solid-l">
-                <table className="min-w-full text-sm">
-                    <thead className="bg-gray-50 border-b border-zinc-200 text-left">
-                        <tr className="text-zinc-600">
-                            <th className="px-4 py-3 font-medium">Setting</th>
-                            <th className="px-4 py-3 font-medium">Value</th>
-                            <th className="px-4 py-3 font-medium">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="text-zinc-700">
-                        <tr className="border-b border-zinc-100">
-                            <td className="px-4 py-3">Metric Preference</td>
-                            <td className="px-4 py-3">
-                                {settings.metricPreference}
-                            </td>
-                            <td className="px-4 py-3">
-                                <div className="flex gap-2">
+        <div>
+            <h3 className="font-semibold text-base text-[var(--color-dark-green)] mb-6">General Settings</h3>
+            
+            <form onSubmit={handleSave} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Parent Customer Section */}
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Parent Customer (Optional)</label>
+                        <div className="space-y-3">
+                            <select
+                                value={settings?.parentCustomer || ""}
+                                onChange={(e) => setSettings({ ...settings, parentCustomer: e.target.value })}
+                                className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                            >
+                                <option value="">No parent customer</option>
+                                {parentCustomers.map(parent => (
+                                    <option key={parent._id} value={parent._id}>
+                                        {parent.name}
+                                    </option>
+                                ))}
+                            </select>
+                            
+                            <button
+                                type="button"
+                                onClick={() => setShowNewParentForm(!showNewParentForm)}
+                                className="text-sm text-[var(--color-dark-green)] hover:text-[var(--color-green)] transition-colors underline"
+                            >
+                                {showNewParentForm ? "Cancel" : "Create new parent customer"}
+                            </button>
+                            
+                            {showNewParentForm && (
+                                <div className="border border-[var(--color-dark-natural)] rounded-lg p-4 space-y-3 bg-gray-50">
+                                    <h4 className="font-medium text-[var(--color-dark-green)]">Create New Parent Customer</h4>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-medium text-[var(--color-dark-green)] mb-1">Name *</label>
+                                            <input
+                                                type="text"
+                                                value={newParentData.name}
+                                                onChange={(e) => setNewParentData({ ...newParentData, name: e.target.value })}
+                                                className="w-full border border-[var(--color-dark-natural)] rounded px-2 py-1 text-sm"
+                                                placeholder="e.g., Pompdelux"
+                                                required
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-medium text-[var(--color-dark-green)] mb-1">Industry</label>
+                                            <input
+                                                type="text"
+                                                value={newParentData.industry}
+                                                onChange={(e) => setNewParentData({ ...newParentData, industry: e.target.value })}
+                                                className="w-full border border-[var(--color-dark-natural)] rounded px-2 py-1 text-sm"
+                                                placeholder="e.g., E-commerce"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-medium text-[var(--color-dark-green)] mb-1">Headquarters</label>
+                                            <input
+                                                type="text"
+                                                value={newParentData.headquarters}
+                                                onChange={(e) => setNewParentData({ ...newParentData, headquarters: e.target.value })}
+                                                className="w-full border border-[var(--color-dark-natural)] rounded px-2 py-1 text-sm"
+                                                placeholder="e.g., Copenhagen, Denmark"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-medium text-[var(--color-dark-green)] mb-1">Website</label>
+                                            <input
+                                                type="url"
+                                                value={newParentData.website}
+                                                onChange={(e) => setNewParentData({ ...newParentData, website: e.target.value })}
+                                                className="w-full border border-[var(--color-dark-natural)] rounded px-2 py-1 text-sm"
+                                                placeholder="https://example.com"
+                                            />
+                                        </div>
+                                        
+                                        <div className="md:col-span-2">
+                                            <label className="block text-xs font-medium text-[var(--color-dark-green)] mb-1">Description</label>
+                                            <textarea
+                                                value={newParentData.description}
+                                                onChange={(e) => setNewParentData({ ...newParentData, description: e.target.value })}
+                                                className="w-full border border-[var(--color-dark-natural)] rounded px-2 py-1 text-sm"
+                                                rows="2"
+                                                placeholder="Brief description of the parent company"
+                                            />
+                                        </div>
+                                    </div>
+                                    
                                     <button
-                                        onClick={() => handleToggle("ROAS/POAS")}
-                                        disabled={loading || settings.metricPreference === "ROAS/POAS"}
-                                        className={`py-1 px-3 rounded text-sm ${settings.metricPreference === "ROAS/POAS"
-                                            ? "bg-zinc-700 text-white"
-                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                            }`}
+                                        type="button"
+                                        onClick={handleCreateParentCustomer}
+                                        className="bg-[var(--color-dark-green)] text-white py-1 px-3 rounded text-sm font-medium hover:bg-[var(--color-green)] transition-colors"
                                     >
-                                        ROAS/POAS
-                                    </button>
-                                    <button
-                                        onClick={() => handleToggle("Spendshare")}
-                                        disabled={loading || settings.metricPreference === "Spendshare"}
-                                        className={`py-1 px-3 rounded text-sm ${settings.metricPreference === "Spendshare"
-                                            ? "bg-zinc-700 text-white"
-                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                            }`}
-                                    >
-                                        Spendshare
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr className="border-b border-zinc-100">
-                            <td className="px-4 py-3">Backend/Store Currency</td>
-                            <td className="px-4 py-3">
-                                {settings.customerValuta} ({getCurrentCurrencyCode()})
-                            </td>
-                            <td className="px-4 py-3">
-                                <div className="flex gap-2">
-                                    <select
-                                        value={getCurrentCurrencyCode()}
-                                        onChange={handleCurrencyChange}
-                                        disabled={loading}
-                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
-                                    >
-                                        {currencies.map(currency => (
-                                            <option key={currency.code} value={currency.code}>
-                                                {currency.code} - {currency.name} ({currency.symbol_native})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {loading && <span className="text-xs italic">Updating...</span>}
-                                </div>
-                            </td>
-                        </tr>
-                        <tr className="border-b border-zinc-100">
-                            <td className="px-4 py-3">Clickup ID</td>
-                            <td className="px-4 py-3">
-                                {settings.customerClickupID || "Not set"}
-                            </td>
-                            <td className="px-4 py-3">
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={tempValues.clickupId}
-                                        onChange={(e) => setTempValues(prev => ({ ...prev, clickupId: e.target.value }))}
-                                        placeholder="Enter Clickup ID"
-                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
-                                    />
-                                    <button
-                                        onClick={handleClickupIdUpdate}
-                                        disabled={loading || tempValues.clickupId === settings.customerClickupID}
-                                        className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
-                                    >
-                                        {loading ? "Updating..." : "Update"}
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr className="border-b border-zinc-100">
-                            <td className="px-4 py-3">Meta Customer Country</td>
-                            <td className="px-4 py-3">
-                                {settings.customerMetaID || "Not set"}
-                            </td>
-                            <td className="px-4 py-3">
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={tempValues.countryId}
-                                        onChange={(e) => setTempValues(prev => ({ ...prev, countryId: e.target.value }))}
-                                        placeholder="Enter Country ID (e.g., DK, UK)"
-                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
-                                    />
-                                    <button
-                                        onClick={handleMetaIdUpdate}
-                                        disabled={loading || tempValues.countryId === settings.customerMetaID}
-                                        className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
-                                    >
-                                        {loading ? "Updating..." : "Update"}
+                                        Create Parent Customer
                                     </button>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr className="border-b border-zinc-100">
-                            <td className="px-4 py-3">Exclude Meta Countries</td>
-                            <td className="px-4 py-3">
-                                {settings.customerMetaIDExclude || "Not set"}
-                            </td>
-                            <td className="px-4 py-3">
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={tempValues.excludeCountries}
-                                        onChange={(e) => setTempValues(prev => ({ ...prev, excludeCountries: e.target.value }))}
-                                        placeholder="Enter countries to exclude (e.g., DE,DK,NO)"
-                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
-                                    />
-                                    <button
-                                        onClick={handleExcludeCountriesUpdate}
-                                        disabled={loading || tempValues.excludeCountries === settings.customerMetaIDExclude}
-                                        className="py-1 px-3 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-800 disabled:bg-gray-300 disabled:text-gray-500"
-                                    >
-                                        {loading ? "Updating..." : "Update"}
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Existing fields */}
+                    <div>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Metric Preference</label>
+                        <input
+                            type="text"
+                            value={settings?.metricPreference || ""}
+                            onChange={(e) => setSettings({ ...settings, metricPreference: e.target.value })}
+                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                            placeholder="Enter metric preference"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Backend/Store Currency</label>
+                        <select
+                            value={settings?.backendStoreCurrency || "DKK"}
+                            onChange={(e) => setSettings({ ...settings, backendStoreCurrency: e.target.value })}
+                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                        >
+                            <option value="DKK">Danish Krone (DKK)</option>
+                            <option value="EUR">Euro (EUR)</option>
+                            <option value="USD">US Dollar (USD)</option>
+                            <option value="GBP">British Pound (GBP)</option>
+                            <option value="SEK">Swedish Krona (SEK)</option>
+                            <option value="NOK">Norwegian Krone (NOK)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Clickup ID</label>
+                        <input
+                            type="text"
+                            value={settings?.clickupId || ""}
+                            onChange={(e) => setSettings({ ...settings, clickupId: e.target.value })}
+                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                            placeholder="Enter Clickup ID"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Meta Customer Country</label>
+                        <input
+                            type="text"
+                            value={settings?.metaCustomerCountry || ""}
+                            onChange={(e) => setSettings({ ...settings, metaCustomerCountry: e.target.value })}
+                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                            placeholder="Enter Meta customer country"
+                        />
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Exclude Meta Countries</label>
+                        <textarea
+                            value={settings?.excludeMetaCountries || ""}
+                            onChange={(e) => setSettings({ ...settings, excludeMetaCountries: e.target.value })}
+                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                            placeholder="Enter countries to exclude (comma-separated)"
+                            rows="3"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                    <button
+                        type="submit"
+                        disabled={saving}
+                        className="bg-[var(--color-dark-green)] text-white py-2 px-6 rounded-lg text-sm font-medium hover:bg-[var(--color-green)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {saving ? "Saving..." : "Save Settings"}
+                    </button>
+                </div>
+            </form>
         </div>
     );
 }

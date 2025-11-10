@@ -5,8 +5,41 @@ import Image from "next/image";
 import { Tooltip } from "react-tooltip";
 import { FaInfoCircle } from "react-icons/fa";
 import Subheading from "@/app/components/UI/Utility/Subheading";
+import currencyExchangeData from "@/lib/static-data/currencyApiValues.json";
 
-export default function PnLDashboard({ customerId, customerName, initialData }) {
+// Currency conversion utility
+const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
+    if (!amount || fromCurrency === toCurrency) return amount;
+    
+    const exchangeData = currencyExchangeData.data;
+    
+    if (!exchangeData[fromCurrency] || !exchangeData[toCurrency]) {
+        console.warn(`Currency conversion failed: ${fromCurrency} to ${toCurrency}`);
+        return amount;
+    }
+    
+    // Convert from source currency to USD, then to target currency
+    const amountInUSD = amount / exchangeData[fromCurrency].value;
+    const convertedAmount = amountInUSD * exchangeData[toCurrency].value;
+    
+    return convertedAmount;
+};
+
+// Apply currency conversion to a data row
+const convertDataRow = (row, fromCurrency) => {
+    if (fromCurrency === "DKK") return row;
+    
+    const convertedRow = { ...row };
+    
+    // Convert net_sales field
+    if (convertedRow.net_sales !== undefined && convertedRow.net_sales !== null) {
+        convertedRow.net_sales = convertCurrency(convertedRow.net_sales, fromCurrency);
+    }
+    
+    return convertedRow;
+};
+
+export default function PnLDashboard({ customerId, customerName, customerValutaCode, initialData }) {
     const [isClient, setIsClient] = useState(false);
     const [showAllMetrics, setShowAllMetrics] = useState(false);
     
@@ -34,8 +67,8 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
     const filteredMetricsByDate = useMemo(() => {
         const filtered = metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
-        return filtered;
-    }, [metrics_by_date, startDate, endDate]);
+        return filtered.map(row => convertDataRow(row, customerValutaCode));
+    }, [metrics_by_date, startDate, endDate, customerValutaCode]);
 
     const metrics = useMemo(() => {
         const aggregated = filteredMetricsByDate.reduce(
@@ -153,7 +186,8 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
     const comparisonMetrics = useMemo(() => {
         const comparisonData = metrics_by_date?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
-        const aggregated = comparisonData.reduce(
+        const convertedComparisonData = comparisonData.map(row => convertDataRow(row, customerValutaCode));
+        const aggregated = convertedComparisonData.reduce(
             (acc, row) => ({
                 net_sales: acc.net_sales + (Number(row.net_sales) || 0),
                 orders: acc.orders + (Number(row.orders) || 0),
@@ -223,7 +257,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
             total_costs,
         };
         return resultMetrics;
-    }, [metrics_by_date, compStart, compEnd, staticExpenses]);
+    }, [metrics_by_date, compStart, compEnd, staticExpenses, customerValutaCode]);
 
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;
@@ -289,12 +323,30 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
     ];
 
     if (!metrics_by_date || !staticExpenses) {
-        return <div className="p-4 text-center">No data available for {customerId}</div>;
+        return (
+            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
+                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                    <Image
+                        width={1920}
+                        height={1080}
+                        src="/images/shape-dotted-light.svg"
+                        alt="bg"
+                        className="w-full h-full"
+                    />
+                </div>
+                <div className="px-0 md:px-20 mx-auto z-10 relative">
+                    <div className="flex justify-center items-center p-10 bg-white rounded-lg shadow-sm border border-[var(--color-natural)]">
+                        <p className="text-[var(--color-dark-green)] text-lg">No data available for {customerId}</p>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
                     width={1920}
@@ -308,50 +360,57 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
                     <Subheading headingText={customerName} />
-                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">P&L</h1>
-                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
+                    <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] xl:text-[44px]">P&L Dashboard</h1>
+                    <p className="text-[var(--color-green)] max-w-2xl text-sm md:text-base">
                         Overview of profit and loss metrics including net turnover, direct costs, marketing expenses, and financial results.
                     </p>
                 </div>
 
-                <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center mb-6 md:mb-10 justify-start md:justify-end">
-                    <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
-                        <select
-                            value={comparison}
-                            onChange={(e) => setComparison(e.target.value)}
-                            className="border px-4 py-2 rounded text-sm bg-white w-full md:w-auto"
-                        >
-                            <option>Previous Year</option>
-                            <option>Previous Period</option>
-                        </select>
-                        
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
-                            />
-                            <span className="text-gray-400 hidden md:inline">→</span>
-                            <span className="text-gray-400 md:hidden">to</span>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
-                            />
+                {/* Controls Section */}
+                <div className="bg-white rounded-lg shadow-sm border border-[var(--color-natural)] p-4 md:p-6 mb-6 md:mb-8">
+                    <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center justify-end">
+                        <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
+                            <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Comparison:</label>
+                            <select
+                                value={comparison}
+                                onChange={(e) => setComparison(e.target.value)}
+                                className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent w-full md:w-auto transition-colors"
+                            >
+                                <option>Previous Year</option>
+                                <option>Previous Period</option>
+                            </select>
+                            
+                            <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Date Range:</label>
+                                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    />
+                                    <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
+                                    <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Mobile Metrics View */}
                 <div className="md:hidden mb-6">
-                    <div className="bg-white border border-zinc-200 rounded shadow-sm">
-                        <div className="grid grid-cols-2 gap-px bg-gray-100">
+                    <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm">
+                        <div className="grid grid-cols-2 gap-px bg-[var(--color-natural)]">
                             {metricsDisplay.slice(0, showAllMetrics ? metricsDisplay.length : 4).map((item, i) => (
                                 <div key={i} className="bg-white p-4">
-                                    <p className="text-xs text-gray-500">{item.label}</p>
-                                    <p className="text-xl font-bold text-zinc-800">
+                                    <p className="text-xs font-medium text-[var(--color-green)] mb-1">{item.label}</p>
+                                    <p className="text-xl font-bold text-[var(--color-dark-green)]">
                                         {item.label === "Orders" ? (
                                             <span>{item.value}</span>
                                         ) : (
@@ -359,7 +418,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                         )}
                                     </p>
                                     {item.delta && (
-                                        <p className={`text-xs font-medium ${item.positive ? "text-green-600" : "text-red-500"}`}>
+                                        <p className={`text-xs font-semibold ${item.positive ? "text-green-600" : "text-red-500"}`}>
                                             {item.delta}
                                         </p>
                                     )}
@@ -369,7 +428,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                         {metricsDisplay.length > 4 && (
                             <button 
                                 onClick={() => setShowAllMetrics(!showAllMetrics)}
-                                className="w-full py-2 text-sm text-blue-600 border-t border-gray-100"
+                                className="w-full py-2 text-sm text-[var(--color-lime)] border-t border-[var(--color-light-natural)] hover:text-[var(--color-green)] transition-colors font-medium"
                             >
                                 {showAllMetrics ? "Show Less" : `Show ${metricsDisplay.length - 4} More Metrics`}
                             </button>
@@ -383,9 +442,9 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                         {/* Metric Cards (Desktop only) */}
                         <div className="hidden md:hidden md:grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
                             {metricsDisplay.map((item, i) => (
-                                <div key={i} className="bg-white border border-zinc-200 rounded p-4">
-                                    <p className="text-sm text-gray-500">{item.label}</p>
-                                    <p className="text-2xl font-bold text-zinc-800">
+                                <div key={i} className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-4">
+                                    <p className="text-sm font-medium text-[var(--color-green)]">{item.label}</p>
+                                    <p className="text-2xl font-bold text-[var(--color-dark-green)]">
                                         {item.label === "Orders" ? (
                                             <span>{item.value}</span>
                                         ) : (
@@ -393,7 +452,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                         )}
                                     </p>
                                     {item.delta && (
-                                        <p className={`text-sm font-medium ${item.positive ? "text-green-600" : "text-red-500"}`}>
+                                        <p className={`text-sm font-semibold ${item.positive ? "text-green-600" : "text-red-500"}`}>
                                             {item.delta}
                                         </p>
                                     )}
@@ -402,11 +461,11 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                         </div>
 
                         {/* Section: Nettoomsætning */}
-                        <div className="border border-zinc-200 rounded bg-white">
-                            <div className="bg-gray-100 px-4 py-2 font-medium flex items-center justify-between">
+                        <div className="border border-[var(--color-light-natural)] rounded-lg bg-white shadow-sm">
+                            <div className="bg-[var(--color-natural)] px-4 py-2 font-semibold text-[var(--color-dark-green)] flex items-center justify-between">
                                 <span>Net turnover (turnover - discount & return)</span>
                                 {isClient && (
-                                    <span className="text-gray-500 text-sm md:hidden" data-tooltip-id="net-sales-tooltip">
+                                    <span className="text-[var(--color-green)] text-sm md:hidden" data-tooltip-id="net-sales-tooltip">
                                         <FaInfoCircle />
                                     </span>
                                 )}
@@ -416,18 +475,18 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                     Net sales represents total revenue minus discounts and returns
                                 </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t text-sm md:text-base">
-                                <span>Netsales</span>
-                                <span>kr. {Math.round(metrics.net_sales).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base">
+                                <span className="text-[var(--color-dark-green)]">Netsales</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.net_sales).toLocaleString('en-US')}</span>
                             </div>
                         </div>
 
                         {/* Section: DB1 */}
-                        <div className="border border-zinc-200 rounded bg-white">
-                            <div className="bg-gray-100 px-4 py-2 font-medium flex items-center justify-between">
+                        <div className="border border-[var(--color-light-natural)] rounded-lg bg-white shadow-sm">
+                            <div className="bg-[var(--color-natural)] px-4 py-2 font-semibold text-[var(--color-dark-green)] flex items-center justify-between">
                                 <span>DB1 (turnover - cost of goods sold)</span>
                                 {isClient && (
-                                    <span className="text-gray-500 text-sm md:hidden" data-tooltip-id="db1-tooltip">
+                                    <span className="text-[var(--color-green)] text-sm md:hidden" data-tooltip-id="db1-tooltip">
                                         <FaInfoCircle />
                                     </span>
                                 )}
@@ -438,9 +497,9 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                 COGS is calculated as {(staticExpenses.cogs_percentage * 100).toFixed(1)}% of Net Sales
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t text-sm md:text-base" data-tooltip-id="cogs-calc-tooltip">
-                                <span>COGS</span>
-                                <span>kr. {Math.round(metrics.cogs).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="cogs-calc-tooltip">
+                                <span className="text-[var(--color-dark-green)]">COGS</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.cogs).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="cogs-calc-tooltip" place="top">
@@ -448,9 +507,9 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                 = kr. {Math.round(metrics.net_sales).toLocaleString('en-US')} × {(staticExpenses.cogs_percentage * 100).toFixed(1)}%
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t font-medium text-sm md:text-base" data-tooltip-id="db1-total-tooltip">
-                                <span>Total, DB1</span>
-                                <span>kr. {Math.round(metrics.db1).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] font-semibold text-sm md:text-base" data-tooltip-id="db1-total-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Total, DB1</span>
+                                <span className="text-[var(--color-dark-green)]">kr. {Math.round(metrics.db1).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="db1-total-tooltip" place="top">
@@ -461,11 +520,11 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                         </div>
 
                         {/* Section: DB2 */}
-                        <div className="border border-zinc-200 rounded bg-white">
-                            <div className="bg-gray-100 px-4 py-2 font-medium flex items-center justify-between">
+                        <div className="border border-[var(--color-light-natural)] rounded-lg bg-white shadow-sm">
+                            <div className="bg-[var(--color-natural)] px-4 py-2 font-semibold text-[var(--color-dark-green)] flex items-center justify-between">
                                 <span>DB2 (DB1 - direct selling costs)</span>
                                 {isClient && (
-                                    <span className="text-gray-500 text-sm md:hidden" data-tooltip-id="db2-tooltip">
+                                    <span className="text-[var(--color-green)] text-sm md:hidden" data-tooltip-id="db2-tooltip">
                                         <FaInfoCircle />
                                     </span>
                                 )}
@@ -476,9 +535,9 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                 Direct selling costs are the expenses directly related to selling each product
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t text-sm md:text-base" data-tooltip-id="shipping-tooltip">
-                                <span>Shipping</span>
-                                <span>kr. {Math.round(metrics.shipping_cost).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="shipping-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Shipping</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.shipping_cost).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="shipping-tooltip" place="top">
@@ -486,9 +545,9 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                 = {metrics.orders.toLocaleString('en-US')} × kr. {staticExpenses.shipping_cost_per_order.toLocaleString('en-US')}
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t text-sm md:text-base" data-tooltip-id="transaction-tooltip">
-                                <span>Transaction Costs</span>
-                                <span>kr. {Math.round(metrics.transaction_cost).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="transaction-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Transaction Costs</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.transaction_cost).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="transaction-tooltip" place="top">
@@ -496,9 +555,9 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                 = kr. {Math.round(metrics.net_sales).toLocaleString('en-US')} × {(staticExpenses.transaction_cost_percentage * 100).toFixed(1)}%
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t font-medium text-sm md:text-base" data-tooltip-id="db2-total-tooltip">
-                                <span>Total, DB2</span>
-                                <span>kr. {Math.round(metrics.db2).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] font-semibold text-sm md:text-base" data-tooltip-id="db2-total-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Total, DB2</span>
+                                <span className="text-[var(--color-dark-green)]">kr. {Math.round(metrics.db2).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="db2-total-tooltip" place="top">
@@ -509,11 +568,11 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                         </div>
 
                         {/* Section: DB3 */}
-                        <div className="border border-zinc-200 rounded bg-white">
-                            <div className="bg-gray-100 px-4 py-2 font-medium flex items-center justify-between">
+                        <div className="border border-[var(--color-light-natural)] rounded-lg bg-white shadow-sm">
+                            <div className="bg-[var(--color-natural)] px-4 py-2 font-semibold text-[var(--color-dark-green)] flex items-center justify-between">
                                 <span>DB3 (DB2 - marketing costs)</span>
                                 {isClient && (
-                                    <span className="text-gray-500 text-sm md:hidden" data-tooltip-id="db3-tooltip">
+                                    <span className="text-[var(--color-green)] text-sm md:hidden" data-tooltip-id="db3-tooltip">
                                         <FaInfoCircle />
                                     </span>
                                 )}
@@ -524,36 +583,36 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                 This represents margin after marketing expenses
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t text-sm md:text-base" data-tooltip-id="marketing-spend-tooltip">
-                                <span>Marketing Spend</span>
-                                <span>kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="marketing-spend-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Marketing Spend</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="marketing-spend-tooltip" place="top">
                                 Marketing Spend = Total ad spend from Facebook and Google campaigns
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t text-sm md:text-base" data-tooltip-id="bureau-tooltip">
-                                <span>Marketing Bureau</span>
-                                <span>kr. {Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="bureau-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Marketing Bureau</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="bureau-tooltip" place="top">
                                 Marketing Bureau = Fixed cost for marketing agency services
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t text-sm md:text-base" data-tooltip-id="tooling-tooltip">
-                                <span>Marketing Tooling</span>
-                                <span>kr. {Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="tooling-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Marketing Tooling</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="tooling-tooltip" place="top">
                                 Marketing Tooling = Cost for marketing tools and software
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t font-medium text-sm md:text-base" data-tooltip-id="db3-total-tooltip">
-                                <span>Total, DB3</span>
-                                <span>kr. {Math.round(metrics.db3).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] font-semibold text-sm md:text-base" data-tooltip-id="db3-total-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Total, DB3</span>
+                                <span className="text-[var(--color-dark-green)]">kr. {Math.round(metrics.db3).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="db3-total-tooltip" place="top">
@@ -564,11 +623,11 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                         </div>
 
                         {/* Section: Resultat */}
-                        <div className="border border-zinc-200 rounded bg-white">
-                            <div className="bg-gray-100 px-4 py-2 font-medium flex items-center justify-between">
+                        <div className="border border-[var(--color-light-natural)] rounded-lg bg-white shadow-sm">
+                            <div className="bg-[var(--color-natural)] px-4 py-2 font-semibold text-[var(--color-dark-green)] flex items-center justify-between">
                                 <span>Result</span>
                                 {isClient && (
-                                    <span className="text-gray-500 text-sm md:hidden" data-tooltip-id="result-tooltip">
+                                    <span className="text-[var(--color-green)] text-sm md:hidden" data-tooltip-id="result-tooltip">
                                         <FaInfoCircle />
                                     </span>
                                 )}
@@ -579,18 +638,18 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                 This represents the profit after all expenses
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t text-sm md:text-base" data-tooltip-id="fixed-expenses-tooltip">
-                                <span>Fixed Expenses</span>
-                                <span>kr. {Math.round(metrics.fixed_expenses).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="fixed-expenses-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Fixed Expenses</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.fixed_expenses).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="fixed-expenses-tooltip" place="top">
                                 Fixed Expenses = Costs that remain constant regardless of sales volume
                             </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t font-medium text-sm md:text-base" data-tooltip-id="final-result-tooltip">
-                                <span>Result</span>
-                                <span>kr. {Math.round(metrics.result).toLocaleString('en-US')}</span>
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] font-semibold text-sm md:text-base" data-tooltip-id="final-result-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Result</span>
+                                <span className="text-[var(--color-dark-green)]">kr. {Math.round(metrics.result).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="final-result-tooltip" place="top">
@@ -601,10 +660,10 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                         </div>
 
                         {/* Section: ROAS */}
-                        <div className="grid grid-cols-2 border border-zinc-200 rounded divide-x divide-gray-300 text-center z-10 bg-white">
+                        <div className="grid grid-cols-2 border border-[var(--color-light-natural)] rounded-lg divide-x divide-[var(--color-light-natural)] text-center z-10 bg-white shadow-sm">
                             <div className="px-4 py-3 md:py-5" data-tooltip-id="realized-roas-tooltip">
-                                <p className="font-medium text-zinc-500 text-xs md:text-base mb-1 md:mb-2">Realized ROAS</p>
-                                <p className="text-zinc-800 text-2xl md:text-4xl font-bold">{metrics.realized_roas.toFixed(2)}</p>
+                                <p className="font-semibold text-[var(--color-green)] text-xs md:text-base mb-1 md:mb-2">Realized ROAS</p>
+                                <p className="text-[var(--color-dark-green)] text-2xl md:text-4xl font-bold">{metrics.realized_roas.toFixed(2)}</p>
                             </div>
                             {isClient && (
                             <Tooltip id="realized-roas-tooltip" place="top">
@@ -613,8 +672,8 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                             </Tooltip>
                             )}
                             <div className="px-4 py-3 md:py-5" data-tooltip-id="breakeven-roas-tooltip">
-                                <p className="font-medium text-zinc-400 text-xs md:text-base mb-1 md:mb-2">Break-even ROAS</p>
-                                <p className="text-zinc-800 text-2xl md:text-4xl font-bold">{metrics.break_even_roas.toFixed(2)}</p>
+                                <p className="font-semibold text-[var(--color-green)] text-xs md:text-base mb-1 md:mb-2">Break-even ROAS</p>
+                                <p className="text-[var(--color-dark-green)] text-2xl md:text-4xl font-bold">{metrics.break_even_roas.toFixed(2)}</p>
                             </div>
                             {isClient && (
                             <Tooltip id="breakeven-roas-tooltip" place="top">
@@ -628,10 +687,10 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
 
                     {/* Right: DB Andel Circles */}
                     <div className="space-y-4 md:space-y-6">
-                        <div className="border border-zinc-200 rounded text-center py-2 bg-gray-100 font-medium flex justify-center items-center gap-1" data-tooltip-id="db-share-tooltip">
+                        <div className="border border-[var(--color-light-natural)] rounded-lg text-center py-2 bg-[var(--color-natural)] font-semibold text-[var(--color-dark-green)] flex justify-center items-center gap-1" data-tooltip-id="db-share-tooltip">
                             <span className="text-sm md:text-base">DB share of total expenses</span>
                             {isClient && (
-                                <span className="text-gray-500 text-sm md:hidden" data-tooltip-id="db-share-tooltip">
+                                <span className="text-[var(--color-green)] text-sm md:hidden" data-tooltip-id="db-share-tooltip">
                                     <FaInfoCircle />
                                 </span>
                             )}
@@ -649,8 +708,8 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                 { label: "DB2", percentage: metrics.db_percentages.db2, description: "DB1 - Fragt - Transaction Fees" },
                                 { label: "DB3", percentage: metrics.db_percentages.db3, description: "DB2 - Marketing Costs" }
                             ].map((item, i) => (
-                                <div key={i} className="bg-white border border-zinc-200 rounded-lg p-2 md:p-6 text-center" data-tooltip-id={`db-circle-${i}-tooltip`}>
-                                    <div className="flex justify-between text-xs md:text-sm text-gray-500 mb-1 md:mb-2 px-1 md:px-4">
+                                <div key={i} className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-2 md:p-6 text-center" data-tooltip-id={`db-circle-${i}-tooltip`}>
+                                    <div className="flex justify-between text-xs md:text-sm text-[var(--color-green)] mb-1 md:mb-2 px-1 md:px-4">
                                         <span>{item.label}</span>
                                         <span className="text-[10px] md:text-xs hidden md:block">{item.description}</span>
                                     </div>
@@ -660,7 +719,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                                 cx={28}
                                                 cy={28}
                                                 r={25}
-                                                stroke="#E5E7EB"
+                                                stroke="var(--color-light-natural)"
                                                 strokeWidth="5"
                                                 fill="transparent"
                                                 className="md:hidden"
@@ -669,7 +728,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                                 cx={28}
                                                 cy={28}
                                                 r={25}
-                                                stroke="#1E2B2B"
+                                                stroke="var(--color-dark-green)"
                                                 strokeWidth="5"
                                                 strokeDasharray={25 * 2 * Math.PI}
                                                 strokeDashoffset={25 * 2 * Math.PI * (1 - (item.percentage / 100))}
@@ -680,7 +739,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                                 cx={56}
                                                 cy={56}
                                                 r={50}
-                                                stroke="#E5E7EB"
+                                                stroke="var(--color-light-natural)"
                                                 strokeWidth="10"
                                                 fill="transparent"
                                                 className="hidden md:block"
@@ -689,7 +748,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                                 cx={56}
                                                 cy={56}
                                                 r={50}
-                                                stroke="#1E2B2B"
+                                                stroke="var(--color-dark-green)"
                                                 strokeWidth="10"
                                                 strokeDasharray="314"
                                                 strokeDashoffset={314 * (1 - (item.percentage / 100))}
@@ -697,7 +756,7 @@ export default function PnLDashboard({ customerId, customerName, initialData }) 
                                                 className="hidden md:block"
                                             />
                                         </svg>
-                                        <div className="absolute text-base md:text-xl font-semibold text-gray-800">{Math.round(item.percentage)}%</div>
+                                        <div className="absolute text-base md:text-xl font-semibold text-[var(--color-dark-green)]">{Math.round(item.percentage)}%</div>
                                     </div>
                                     {isClient && (
                                     <Tooltip id={`db-circle-${i}-tooltip`} place="top">

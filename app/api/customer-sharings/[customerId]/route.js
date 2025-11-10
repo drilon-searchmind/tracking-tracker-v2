@@ -178,3 +178,53 @@ export async function GET(request, { params }) {
         return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });
     }
 }
+
+export async function DELETE(req, { params }) {
+    try {
+        const resolvedParams = await params;
+        const customerId = resolvedParams.customerId;
+        const body = await req.json();
+        const { sharingId } = body;
+
+        console.log("DELETE request - Customer ID:", customerId);
+        console.log("DELETE request - Sharing ID:", sharingId);
+
+        if (!sharingId) {
+            return new Response(JSON.stringify({ 
+                message: "Sharing ID is required" 
+            }), { status: 400 });
+        }
+
+        await dbConnect();
+
+        // Find and delete the specific sharing
+        const deletedSharing = await CustomerSharings.findOneAndDelete({
+            _id: sharingId,
+            customer: customerId
+        });
+
+        if (!deletedSharing) {
+            console.log("Sharing not found for deletion");
+            return new Response(JSON.stringify({ 
+                message: "Sharing not found" 
+            }), { status: 404 });
+        }
+
+        console.log("Successfully deleted sharing:", deletedSharing.email);
+
+        return new Response(JSON.stringify({
+            message: "Shared access removed successfully",
+            deletedSharing: {
+                email: deletedSharing.email,
+                sharedWith: deletedSharing.sharedWith
+            }
+        }), { status: 200 });
+
+    } catch (error) {
+        console.error("Error deleting customer sharing:", error);
+        return new Response(JSON.stringify({ 
+            message: "Internal server error", 
+            error: error.message 
+        }), { status: 500 });
+    }
+}

@@ -15,60 +15,60 @@ export default function DashboardMetrics({ currentMetrics, prevMetrics }) {
 
     const metrics = [
         {
-            title: "Revenue",
+            title: "Revenue (Inc VAT)",
             value: `${Math.round(currentMetrics.revenue).toLocaleString('en-US')} DKK`,
             delta: calculateDelta(currentMetrics.revenue, prevMetrics.revenue),
             positive: currentMetrics.revenue >= prevMetrics.revenue,
-            icon: <HiOutlineCurrencyDollar className="text-2xl text-gray-400" />,
+            icon: <HiOutlineCurrencyDollar className="text-2xl text-[var(--color-green)]" />,
         },
         {
             title: "Gross Profit",
             value: `${Math.round(currentMetrics.gross_profit).toLocaleString('en-US')} DKK`,
             delta: calculateDelta(currentMetrics.gross_profit, prevMetrics.gross_profit),
             positive: currentMetrics.gross_profit >= prevMetrics.gross_profit,
-            icon: <FaMoneyCheckAlt className="text-2xl text-gray-400" />,
+            icon: <FaMoneyCheckAlt className="text-2xl text-[var(--color-green)]" />,
         },
         {
             title: "Orders",
             value: Math.round(currentMetrics.orders).toLocaleString('en-US'),
             delta: calculateDelta(currentMetrics.orders, prevMetrics.orders),
             positive: currentMetrics.orders >= prevMetrics.orders,
-            icon: <HiOutlineShoppingCart className="text-2xl text-gray-400" />,
+            icon: <HiOutlineShoppingCart className="text-2xl text-[var(--color-green)]" />,
         },
         {
             title: "Cost",
             value: `${Math.round(currentMetrics.cost).toLocaleString('en-US')} DKK`,
             delta: calculateDelta(currentMetrics.cost, prevMetrics.cost),
             positive: currentMetrics.cost <= prevMetrics.cost,
-            icon: <HiOutlineChartBar className="text-2xl text-gray-400" />,
+            icon: <HiOutlineChartBar className="text-2xl text-[var(--color-green)]" />,
         },
         {
-            title: "ROAS (incl. moms)",
+            title: "ROAS (Inc VAT)",
             value: currentMetrics.roas.toFixed(2),
             delta: calculateDelta(currentMetrics.roas, prevMetrics.roas),
             positive: currentMetrics.roas >= prevMetrics.roas,
-            icon: <HiOutlineArrowTrendingUp className="text-2xl text-gray-400" />,
+            icon: <HiOutlineArrowTrendingUp className="text-2xl text-[var(--color-green)]" />,
         },
         {
-            title: "POAS",
+            title: "POAS (Inc VAT)",
             value: currentMetrics.poas.toFixed(2),
             delta: calculateDelta(currentMetrics.poas, prevMetrics.poas),
             positive: currentMetrics.poas >= prevMetrics.poas,
-            icon: <HiOutlineArrowTrendingUp className="text-2xl text-gray-400" />,
+            icon: <HiOutlineArrowTrendingUp className="text-2xl text-[var(--color-green)]" />,
         },
         {
             title: "AOV",
             value: `${Math.round(currentMetrics.aov).toLocaleString('en-US')} DKK`,
             delta: calculateDelta(currentMetrics.aov, prevMetrics.aov),
             positive: currentMetrics.aov >= prevMetrics.aov,
-            icon: <HiOutlineChartBar className="text-2xl text-gray-400" />,
+            icon: <HiOutlineChartBar className="text-2xl text-[var(--color-green)]" />,
         },
         {
             title: "Impressions",
             value: Math.round(currentMetrics.impressions).toLocaleString('en-US'),
             delta: calculateDelta(currentMetrics.impressions, prevMetrics.impressions),
             positive: currentMetrics.impressions >= prevMetrics.impressions,
-            icon: <HiOutlineChartBar className="text-2xl text-gray-400" />,
+            icon: <HiOutlineChartBar className="text-2xl text-[var(--color-green)]" />,
         },
     ];
 
@@ -77,11 +77,11 @@ export default function DashboardMetrics({ currentMetrics, prevMetrics }) {
             {metrics.map((metric, i) => (
                 <div
                     key={i}
-                    className="bg-white border border-zinc-200 rounded-lg p-4 md:p-5 flex flex-col gap-2"
+                    className="bg-white border border-[var(--color-natural)] rounded-lg p-4 md:p-5 flex flex-col gap-2 shadow-sm"
                 >
                     <div className="flex items-center gap-2">
                         {metric.icon}
-                        <p className="text-xs text-gray-500 uppercase">
+                        <p className="text-xs text-[var(--color-green)] uppercase font-medium">
                             {metric.title}
                             {metric.title === "Gross Profit" && (
                                 <span className="text-xs text-red-500 ml-1 font-bold">(TBU)</span>
@@ -89,10 +89,10 @@ export default function DashboardMetrics({ currentMetrics, prevMetrics }) {
                         </p>
                     </div>
                     <div className="flex items-center justify-between">
-                        <span className={`text-xl md:text-2xl font-semibold ${metric.title === "Gross Profit" ? "text-red-500 line-through" : "text-black"}`}>{metric.value}</span>
+                        <span className={`text-xl md:text-2xl font-semibold ${metric.title === "Gross Profit" ? "text-red-500 line-through" : "text-[var(--color-dark-green)]"}`}>{metric.value}</span>
                         {metric.delta && (
                             <span
-                                className={`text-xs md:text-sm font-medium ${metric.positive ? "text-green-600" : "text-red-500"}`}
+                                className={`text-xs md:text-sm font-medium px-2 py-1 rounded-md ${metric.positive ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}`}
                             >
                                 {metric.delta}
                             </span>

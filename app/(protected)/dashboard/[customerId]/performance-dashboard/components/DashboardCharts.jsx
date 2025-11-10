@@ -15,9 +15,9 @@ export default function DashboardCharts({
     const [activeChartIndex, setActiveChartIndex] = useState(0);
 
     const colors = {
-        primary: "#1C398E",
-        hue1: "#2E4CA8",
-        hue2: "#4963BE",
+        primary: "var(--color-dark-green)",
+        hue1: "var(--color-green)",
+        hue2: "var(--color-lime)",
         hue3: "#6E82D0",
         hue4: "#9BABE1",
     };
@@ -50,7 +50,7 @@ export default function DashboardCharts({
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
-                    borderDash: [5, 5],
+                    borderDash: [2, 5],
                 },
             ],
         };
@@ -89,7 +89,7 @@ export default function DashboardCharts({
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
-                    borderDash: [5, 5],
+                    borderDash: [2, 5],
                 },
             ],
         };
@@ -178,12 +178,15 @@ export default function DashboardCharts({
                     type: viewMode === "YTD" ? "category" : "time",
                     time: viewMode === "YTD" ? undefined : { unit: "day" },
                     grid: { display: false },
-                    ticks: { font: { size: 10 } },
+                    ticks: { font: { size: 10 }, color: "var(--color-green)" },
                 },
                 y: {
                     beginAtZero: true,
-                    grid: { color: "rgba(0, 0, 0, 0.05)" },
-                    ticks: { font: { size: 10 } },
+                    grid: { 
+                        color: "#e5e7eb", // Light gray color
+                        lineWidth: 0.5 // Make lines thinner and more subtle
+                    },
+                    ticks: { font: { size: 10 }, color: "var(--color-green)" },
                 },
             },
             plugins: {
@@ -191,7 +194,7 @@ export default function DashboardCharts({
                     display: false,
                 },
                 tooltip: {
-                    backgroundColor: "rgba(0, 0, 0, 0.7)",
+                    backgroundColor: "var(--color-dark-green)",
                     titleFont: { size: 12 },
                     bodyFont: { size: 10 },
                     padding: 8,
@@ -217,10 +220,11 @@ export default function DashboardCharts({
                 labels: {
                     font: { size: 10 },
                     padding: 10,
+                    color: "var(--color-dark-green)",
                 },
             },
             tooltip: {
-                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                backgroundColor: "var(--color-dark-green)",
                 titleFont: { size: 12 },
                 bodyFont: { size: 10 },
                 padding: 8,
@@ -250,20 +254,25 @@ export default function DashboardCharts({
         scales: {
             x: {
                 beginAtZero: true,
-                grid: { color: "rgba(0, 0, 0, 0.05)" },
+                grid: { 
+                    color: "#e5e7eb", // Light gray color
+                    lineWidth: 0.5 // Make lines thinner and more subtle
+                },
                 ticks: {
                     font: { size: 10 },
+                    color: "var(--color-green)",
                     callback: (value) => value.toLocaleString('en-US')
                 },
                 title: {
                     display: true,
                     text: "Sessions",
                     font: { size: 12 },
+                    color: "var(--color-dark-green)",
                 },
             },
             y: {
                 grid: { display: false },
-                ticks: { font: { size: 10 } },
+                ticks: { font: { size: 10 }, color: "var(--color-green)" },
             },
         },
         plugins: {
@@ -271,7 +280,7 @@ export default function DashboardCharts({
                 display: false,
             },
             tooltip: {
-                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                backgroundColor: "var(--color-dark-green)",
                 titleFont: { size: 12 },
                 bodyFont: { size: 10 },
                 padding: 8,
@@ -341,7 +350,7 @@ export default function DashboardCharts({
         <div className="flex items-center">
             <button
                 onClick={() => setViewMode(viewMode === "YTD" ? "Period" : "YTD")}
-                className="flex items-center text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded ml-2"
+                className="flex items-center text-xs px-3 py-1.5 bg-[var(--color-natural)] hover:bg-[var(--color-lime)] text-[var(--color-dark-green)] hover:text-white rounded-md ml-2 transition-colors duration-200"
                 title={viewMode === "YTD" ? "Switch to Period view" : "Switch to YTD view"}
             >
                 <HiOutlineCalendar className="mr-1" />
@@ -354,9 +363,9 @@ export default function DashboardCharts({
         <>
             {/* Desktop Charts - Hidden on mobile */}
             <div className="hidden md:grid md:grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
+                <div className="bg-white border border-[var(--color-natural)] rounded-lg p-6 h-[300px] shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <p className="font-semibold">Revenue</p>
+                        <p className="font-semibold text-[var(--color-dark-green)]">Revenue (Inc VAT)</p>
                         <ViewModeToggle viewMode={revenueViewMode} setViewMode={setRevenueViewMode} />
                     </div>
                     <div className="w-full h-[calc(100%-2rem)]">
@@ -364,9 +373,9 @@ export default function DashboardCharts({
                     </div>
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
+                <div className="bg-white border border-[var(--color-natural)] rounded-lg p-6 h-[300px] shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <p className="font-semibold">Spend Allocation</p>
+                        <p className="font-semibold text-[var(--color-dark-green)]">Spend Allocation</p>
                         <ViewModeToggle viewMode={spendViewMode} setViewMode={setSpendViewMode} />
                     </div>
                     <div className="w-full h-[calc(100%-2rem)]">
@@ -376,9 +385,9 @@ export default function DashboardCharts({
             </div>
 
             <div className="hidden md:grid md:grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
+                <div className="bg-white border border-[var(--color-natural)] rounded-lg p-6 h-[300px] shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <p className="font-semibold">Average Order Value</p>
+                        <p className="font-semibold text-[var(--color-dark-green)]">Average Order Value</p>
                         <ViewModeToggle viewMode={aovViewMode} setViewMode={setAovViewMode} />
                     </div>
                     <div className="w-full h-[calc(100%-2rem)]">
@@ -386,9 +395,9 @@ export default function DashboardCharts({
                     </div>
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded-lg p-6 h-[300px]">
+                <div className="bg-white border border-[var(--color-natural)] rounded-lg p-6 h-[300px] shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <p className="font-semibold">Sessions Per Channel Group</p>
+                        <p className="font-semibold text-[var(--color-dark-green)]">Sessions Per Channel Group</p>
                         <ViewModeToggle viewMode={sessionsViewMode} setViewMode={setSessionsViewMode} />
                     </div>
                     <div className="w-full h-[calc(100%-2rem)]">
@@ -399,9 +408,9 @@ export default function DashboardCharts({
 
             {/* Mobile Chart Carousel */}
             <div className="md:hidden mb-8">
-                <div className="bg-white border border-zinc-200 rounded-lg p-4 h-[300px]">
+                <div className="bg-white border border-[var(--color-natural)] rounded-lg p-4 h-[300px] shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <p className="font-semibold">{chartComponents[activeChartIndex].title}</p>
+                        <p className="font-semibold text-[var(--color-dark-green)]">{chartComponents[activeChartIndex].title}</p>
                         <div className="flex gap-2 items-center">
                             <ViewModeToggle
                                 viewMode={chartComponents[activeChartIndex].viewMode}
@@ -409,13 +418,13 @@ export default function DashboardCharts({
                             />
                             <button
                                 onClick={() => navigateChart('prev')}
-                                className="text-sm bg-gray-100 w-7 h-7 rounded-full flex items-center justify-center"
+                                className="text-sm bg-[var(--color-natural)] hover:bg-[var(--color-lime)] text-[var(--color-dark-green)] hover:text-white w-7 h-7 rounded-full flex items-center justify-center transition-colors duration-200"
                             >
                                 &larr;
                             </button>
                             <button
                                 onClick={() => navigateChart('next')}
-                                className="text-sm bg-gray-100 w-7 h-7 rounded-full flex items-center justify-center"
+                                className="text-sm bg-[var(--color-natural)] hover:bg-[var(--color-lime)] text-[var(--color-dark-green)] hover:text-white w-7 h-7 rounded-full flex items-center justify-center transition-colors duration-200"
                             >
                                 &rarr;
                             </button>
@@ -429,7 +438,7 @@ export default function DashboardCharts({
                     {chartComponents.map((_, index) => (
                         <span
                             key={index}
-                            className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
+                            className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-[var(--color-lime)]' : 'bg-[var(--color-natural)]'}`}
                         />
                     ))}
                 </div>

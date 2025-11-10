@@ -3,114 +3,106 @@
 import { useState, useEffect } from "react";
 
 export default function ConfigCustomerSharings({ customerId, baseUrl }) {
-    const [sharingsData, setSharingsData] = useState([]);
+    const [sharings, setSharings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [removeLoading, setRemoveLoading] = useState(false);
-
-    const fetchSharings = async () => {
-        try {
-            setLoading(true);
-            console.log(`Fetching from: ${baseUrl}/api/customer-sharings/${customerId}`);
-            const response = await fetch(`${baseUrl}/api/customer-sharings/${customerId}`);
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`API error (${response.status}):`, errorText);
-                throw new Error(`API request failed with status ${response.status}`);
-            }
-
-            const text = await response.text();
-            console.log("Raw API response:", text);
-
-            if (text && text.trim()) {
-                const result = JSON.parse(text);
-                console.log("Parsed API result:", result);
-
-                if (result.data) {
-                    setSharingsData(result.data);
-                } else {
-                    setSharingsData([]);
-                }
-            } else {
-                console.warn("Empty response from API");
-                setSharingsData([]);
-            }
-        } catch (error) {
-            console.error("Error fetching customer sharings:", error);
-            setSharingsData([]);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     useEffect(() => {
-        if (customerId) {
-            fetchSharings();
-        }
-    }, [customerId, baseUrl]);
-
-    const handleRemoveSharing = async (sharingId) => {
-        if (window.confirm("Are you sure you want to remove this sharing?")) {
+        async function fetchData() {
+            console.log("Fetching sharings data for customer ID:", customerId);
+            
             try {
-                setRemoveLoading(true);
-                const response = await fetch(`${baseUrl}/api/customer-sharings/${customerId}?sharingId=${sharingId}`, {
-                    method: 'DELETE',
-                });
-
+                const response = await fetch(`/api/customer-sharings/${customerId}`);
+                
+                console.log("Sharings response status:", response.status);
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-
-                await fetchSharings();
+                
+                const sharingsData = await response.json();
+                console.log("Fetched sharings data:", sharingsData);
+                
+                setSharings(sharingsData.data || sharingsData || []);
             } catch (error) {
-                console.error("Error removing sharing:", error);
-                alert("Failed to remove sharing. Please try again.");
+                console.error("Error fetching sharings data:", error);
+                setSharings([]);
             } finally {
-                setRemoveLoading(false);
+                setLoading(false);
             }
+        }
+        
+        if (customerId) {
+            fetchData();
+        }
+    }, [customerId]);
+
+    const handleRemoveAccess = async (sharingId) => {
+        try {
+            console.log("Removing access for sharing ID:", sharingId);
+            
+            const response = await fetch(`/api/customer-sharings/${customerId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ sharingId }),
+            });
+
+            console.log("Remove access response status:", response.status);
+
+            if (response.ok) {
+                setSharings(sharings.filter(sharing => sharing._id !== sharingId));
+                alert("User access removed successfully!");
+            } else {
+                const errorText = await response.text();
+                console.error("Remove access error:", errorText);
+                alert("Failed to remove user access.");
+            }
+        } catch (error) {
+            console.error("Error removing access:", error);
+            alert("An error occurred while removing user access.");
         }
     };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="animate-pulse">
+                <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="h-10 bg-[var(--color-light-natural)] rounded"></div>
+                    ))}
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="overflow-auto border border-zinc-200 rounded bg-white shadow-solid-l">
-            <table className="min-w-full text-sm">
-                <thead className="bg-gray-50 border-b border-zinc-200 text-left">
-                    <tr className="text-zinc-600">
-                        <th className="px-4 py-3 font-medium">Shared With</th>
-                        <th className="px-4 py-3 font-medium">Email</th>
-                        <th className="px-4 py-3 font-medium">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sharingsData.length > 0 ? (
-                        sharingsData.map((sharing) => (
-                            <tr key={sharing._id} className="border-b border-zinc-200">
-                                <td className="px-4 py-3">{sharing.sharedWith}</td>
-                                <td className="px-4 py-3">{sharing.email}</td>
-                                <td className="px-4 py-3">
-                                    <button
-                                        className="text-red-700 hover:text-red-800 text-xs"
-                                        onClick={() => handleRemoveSharing(sharing._id)}
-                                        disabled={removeLoading}
-                                    >
-                                        {removeLoading ? "Removing..." : "Remove"}
-                                    </button>
-                                </td>
-                            </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="3" className="px-4 py-3 text-center text-gray-500">
-                                No sharings found for this customer
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+        <div>
+            <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-3">Shared Access</label>
+            {sharings.length === 0 ? (
+                <p className="text-[var(--color-green)] text-sm italic">No users have access to this customer.</p>
+            ) : (
+                <div className="space-y-2">
+                    {sharings.map(sharing => (
+                        <div key={sharing._id} className="flex items-center justify-between p-3 bg-white border border-[var(--color-light-natural)] rounded-lg">
+                            <div>
+                                <p className="font-medium text-sm text-[var(--color-dark-green)]">
+                                    {sharing.sharedWith || "Unknown User"}
+                                </p>
+                                <p className="text-xs text-[var(--color-green)]">
+                                    {sharing.email || "No email"}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => handleRemoveAccess(sharing._id)}
+                                className="text-red-600 hover:text-red-800 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded px-2 py-1"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

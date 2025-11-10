@@ -342,20 +342,20 @@ export default function CampaignDetailsModal({
 
     return (
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-[99999999]">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-3xl relative max-h-[80vh] overflow-y-auto">
-                <span className="flex justify-between items-start mb-5">
+            <div className="bg-white rounded-xl shadow-solid-l p-8 w-full max-w-4xl relative max-h-[90vh] overflow-y-auto border border-gray-200 mt-40">
+                <span className="flex justify-between items-start mb-6">
                     <span>
                         <div>
                             <div className="">
                                 {!isClickupUsersLoaded ? (
                                     <div className="flex items-center space-x-2">
-                                        <div className="w-4 h-4 border-2 border-gray-300 border-t-zinc-700 rounded-full animate-spin"></div>
-                                        <span className="text-sm text-gray-500">Loading team data...</span>
+                                        <div className="w-4 h-4 border-2 border-gray-300 border-t-[var(--color-lime)] rounded-full animate-spin"></div>
+                                        <span className="text-sm text-[var(--color-green)]">Loading team data...</span>
                                     </div>
                                 ) : serviceUser ? (
                                     <div className="flex items-center gap-3">
                                         {serviceUser.profilePicture ? (
-                                            <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+                                            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[var(--color-lime)]">
                                                 <Image
                                                     src={serviceUser.profilePicture}
                                                     alt={serviceUser.username}
@@ -365,48 +365,48 @@ export default function CampaignDetailsModal({
                                                 />
                                             </div>
                                         ) : (
-                                            <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-600 rounded-full font-medium">
+                                            <div className="w-10 h-10 flex items-center justify-center bg-[var(--color-light-green)] text-white rounded-full font-medium">
                                                 {serviceUser.initials || serviceUser.username?.charAt(0)}
                                             </div>
                                         )}
                                         <div>
-                                            <p className="font-medium">{serviceUser.username}</p>
-                                            <p className="text-sm text-gray-500">{serviceUser.email}</p>
-                                            <div className="mt-1 text-xs inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                                            <p className="font-medium text-[var(--color-dark-green)]">{serviceUser.username}</p>
+                                            <p className="text-sm text-[var(--color-green)]">{serviceUser.email}</p>
+                                            <div className="mt-1 text-xs inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]">
                                                 {serviceUser.service}
                                             </div>
                                         </div>
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500">No team member assigned for {displayedCampaign.service}</p>
+                                    <p className="text-[var(--color-green)]">No team member assigned for {displayedCampaign.service}</p>
                                 )}
                             </div>
                         </div>
                     </span>
-                    <button onClick={handleClose} className="text-gray-500 hover:text-gray-700 text-lg">
+                    <button onClick={handleClose} className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] text-lg transition-colors">
                         <IoMdClose className="text-2xl" />
                     </button>
                 </span>
 
-                <hr className="mb-5 border-[0.1rem] border-gray-100 border-w-" />
+                <hr className="mb-6 border border-[var(--color-light-natural)]" />
 
-                <span className="flex justify-between items-end mb-5">
-                    <h4 className="text-xl font-semibold">
+                <span className="flex justify-between items-end mb-6">
+                    <h4 className="text-xl font-bold text-[var(--color-dark-green)]">
                         {isEditing ? "Edit Campaign" : "Campaign Details"}
                     </h4>
-                    <div className="flex justify-end gap-2 mb-0">
+                    <div className="flex justify-end gap-3 mb-0">
                         {isEditing ? (
                             <>
                                 <button
                                     onClick={() => setIsEditing(false)}
-                                    className="px-4 py-2 border border-zinc-700 text-zinc-700 rounded hover:bg-zinc-50 text-sm"
+                                    className="px-4 py-2 border-2 border-[var(--color-dark-green)] text-[var(--color-dark-green)] rounded-lg hover:bg-[var(--color-dark-green)] hover:text-white text-sm font-medium transition-colors"
                                     disabled={isSaving}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleSave}
-                                    className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-800 text-sm"
+                                    className="px-4 py-2 bg-[var(--color-dark-green)] text-white rounded-lg hover:bg-[var(--color-green)] text-sm font-medium transition-colors"
                                     disabled={isSaving}
                                 >
                                     {isSaving ? "Saving..." : "Save Changes"}
@@ -415,7 +415,7 @@ export default function CampaignDetailsModal({
                         ) : (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-800 text-sm"
+                                className="px-4 py-2 bg-[var(--color-dark-green)] text-white rounded-lg hover:bg-[var(--color-green)] text-sm font-medium transition-colors"
                             >
                                 Edit Campaign
                             </button>
@@ -423,34 +423,34 @@ export default function CampaignDetailsModal({
                     </div>
                 </span>
 
-                <div className="grid grid-cols-2 gap-6 mb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
                     <div>
-                        <h4 className="font-medium text-lg mb-4 text-gray-700">Basic Information</h4>
+                        <h4 className="font-semibold text-lg mb-4 text-[var(--color-dark-green)]">Basic Information</h4>
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Campaign Name</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Campaign Name</label>
                                 {isEditing ? (
                                     <input
                                         type="text"
                                         name="campaignName"
                                         value={editedCampaign.campaignName}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                         required
                                     />
                                 ) : (
-                                    <p className="text-base text-gray-900">{displayedCampaign.campaignName}</p>
+                                    <p className="text-base text-[var(--color-dark-green)]">{displayedCampaign.campaignName}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Parent Campaign</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Parent Campaign</label>
                                 {isEditing ? (
                                     <select
                                         name="parentCampaignId"
                                         value={editedCampaign.parentCampaignId || ""}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                     >
                                         <option value="">No Parent Campaign</option>
                                         {parentCampaigns.map(parent => (
@@ -460,7 +460,7 @@ export default function CampaignDetailsModal({
                                         ))}
                                     </select>
                                 ) : (
-                                    <p className="text-base text-gray-900">
+                                    <p className="text-base text-[var(--color-dark-green)]">
                                         {parentCampaignName || "No parent campaign"}
                                     </p>
                                 )}
@@ -468,9 +468,9 @@ export default function CampaignDetailsModal({
 
                             {/* Add Assigned Users Field */}
                             <div className="hidden">
-                                <label className="text-sm text-gray-600 block mb-1">Assigned Users</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Assigned Users</label>
                                 {isLoadingUsers ? (
-                                    <p className="text-base text-gray-500">Loading users...</p>
+                                    <p className="text-base text-[var(--color-green)]">Loading users...</p>
                                 ) : isEditing ? (
                                     <Select
                                         name="assignedUsers"
@@ -481,6 +481,22 @@ export default function CampaignDetailsModal({
                                         placeholder="Select users to assign..."
                                         isMulti
                                         isClearable
+                                        styles={{
+                                            control: (base) => ({
+                                                ...base,
+                                                border: '1px solid #d1d5db',
+                                                borderRadius: '0.5rem',
+                                                padding: '0.25rem',
+                                                '&:hover': {
+                                                    borderColor: 'var(--color-lime)'
+                                                }
+                                            }),
+                                            option: (base, state) => ({
+                                                ...base,
+                                                backgroundColor: state.isSelected ? 'var(--color-lime)' : state.isFocused ? 'var(--color-natural)' : 'white',
+                                                color: 'var(--color-dark-green)'
+                                            })
+                                        }}
                                     />
                                 ) : (
                                     <div className="flex flex-wrap gap-2">
@@ -488,26 +504,26 @@ export default function CampaignDetailsModal({
                                             selectedUserOptions.map(user => (
                                                 <span
                                                     key={user.value}
-                                                    className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm"
+                                                    className="bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] px-3 py-1 rounded-full text-sm border border-[var(--color-lime)]"
                                                 >
                                                     {user.label}
                                                 </span>
                                             ))
                                         ) : (
-                                            <p className="text-base text-gray-900">No users assigned</p>
+                                            <p className="text-base text-[var(--color-dark-green)]">No users assigned</p>
                                         )}
                                     </div>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Service</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Service</label>
                                 {isEditing ? (
                                     <select
                                         name="service"
                                         value={editedCampaign.service}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                         required
                                     >
                                         <option value="Paid Social">Paid Social</option>
@@ -516,18 +532,18 @@ export default function CampaignDetailsModal({
                                         <option value="SEO">SEO</option>
                                     </select>
                                 ) : (
-                                    <p className="text-base text-gray-900">{displayedCampaign.service}</p>
+                                    <p className="text-base text-[var(--color-dark-green)]">{displayedCampaign.service}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Media</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Media</label>
                                 {isEditing ? (
                                     <select
                                         name="media"
                                         value={editedCampaign.media}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                         required
                                     >
                                         <option value="META">META</option>
@@ -541,18 +557,18 @@ export default function CampaignDetailsModal({
                                         <option value="Other">Other</option>
                                     </select>
                                 ) : (
-                                    <p className="text-base text-gray-900">{displayedCampaign.media}</p>
+                                    <p className="text-base text-[var(--color-dark-green)]">{displayedCampaign.media}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Format</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Format</label>
                                 {isEditing ? (
                                     <select
                                         name="campaignFormat"
                                         value={editedCampaign.campaignFormat}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                         required
                                     >
                                         <option value="Video">Video</option>
@@ -566,12 +582,12 @@ export default function CampaignDetailsModal({
                                         <option value="Collection">Collection</option>
                                     </select>
                                 ) : (
-                                    <p className="text-base text-gray-900">{displayedCampaign.campaignFormat}</p>
+                                    <p className="text-base text-[var(--color-dark-green)]">{displayedCampaign.campaignFormat}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Country</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Country</label>
                                 {isEditing ? (
                                     <Select
                                         name="countryCode"
@@ -581,68 +597,84 @@ export default function CampaignDetailsModal({
                                         className="w-full"
                                         placeholder="Search for a country..."
                                         isClearable
+                                        styles={{
+                                            control: (base) => ({
+                                                ...base,
+                                                border: '1px solid #d1d5db',
+                                                borderRadius: '0.5rem',
+                                                padding: '0.25rem',
+                                                '&:hover': {
+                                                    borderColor: 'var(--color-lime)'
+                                                }
+                                            }),
+                                            option: (base, state) => ({
+                                                ...base,
+                                                backgroundColor: state.isSelected ? 'var(--color-lime)' : state.isFocused ? 'var(--color-natural)' : 'white',
+                                                color: 'var(--color-dark-green)'
+                                            })
+                                        }}
                                     />
                                 ) : (
-                                    <p className="text-base text-gray-900">{displayedCampaign.countryCode}</p>
+                                    <p className="text-base text-[var(--color-dark-green)]">{displayedCampaign.countryCode}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Type</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Type</label>
                                 {isEditing ? (
                                     <select
                                         name="b2bOrB2c"
                                         value={editedCampaign.b2bOrB2c}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                         required
                                     >
                                         <option value="B2B">B2B</option>
                                         <option value="B2C">B2C</option>
                                     </select>
                                 ) : (
-                                    <p className="text-base text-gray-900">{displayedCampaign.b2bOrB2c}</p>
+                                    <p className="text-base text-[var(--color-dark-green)]">{displayedCampaign.b2bOrB2c}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Budget</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Budget</label>
                                 {isEditing ? (
                                     <input
                                         type="number"
                                         name="budget"
                                         value={editedCampaign.budget}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                         min="0"
                                         step="0.01"
                                         required
                                     />
                                 ) : (
-                                    <p className="text-base text-gray-900">{displayedCampaign.budget.toLocaleString()} DKK</p>
+                                    <p className="text-base text-[var(--color-dark-green)]">{displayedCampaign.budget.toLocaleString()} DKK</p>
                                 )}
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <h4 className="font-medium text-lg mb-4 text-gray-700">Additional Information</h4>
+                        <h4 className="font-semibold text-lg mb-4 text-[var(--color-dark-green)]">Additional Information</h4>
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Campaign Type</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Campaign Type</label>
                                 {isEditing ? (
                                     <select
                                         name="campaignType"
                                         value={editedCampaign.campaignType || ""}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                     >
                                         <option value="">None</option>
                                         <option value="Always On">Always On</option>
                                         <option value="Conversion">Conversion</option>
                                     </select>
                                 ) : (
-                                    <p className="text-base text-gray-900">
+                                    <p className="text-base text-[var(--color-dark-green)]">
                                         {displayedCampaign.campaignType || "Not specified"}
                                     </p>
                                 )}
@@ -651,18 +683,18 @@ export default function CampaignDetailsModal({
                             {!(isEditing && editedCampaign.campaignType === "Always On") && (
                                 <>
                                     <div>
-                                        <label className="text-sm text-gray-600 block mb-1">Start Date</label>
+                                        <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Start Date</label>
                                         {isEditing ? (
                                             <input
                                                 type="date"
                                                 name="startDate"
                                                 value={editedCampaign.startDate}
                                                 onChange={handleInputChange}
-                                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                                className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                                 required={editedCampaign.campaignType !== "Always On"}
                                             />
                                         ) : (
-                                            <p className="text-base text-gray-900">
+                                            <p className="text-base text-[var(--color-dark-green)]">
                                                 {displayedCampaign.campaignType === "Always On"
                                                     ? "Always On"
                                                     : formatDate(displayedCampaign.startDate)}
@@ -671,18 +703,18 @@ export default function CampaignDetailsModal({
                                     </div>
 
                                     <div>
-                                        <label className="text-sm text-gray-600 block mb-1">End Date</label>
+                                        <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">End Date</label>
                                         {isEditing ? (
                                             <input
                                                 type="date"
                                                 name="endDate"
                                                 value={editedCampaign.endDate}
                                                 onChange={handleInputChange}
-                                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                                className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                                 required={editedCampaign.campaignType !== "Always On"}
                                             />
                                         ) : (
-                                            <p className="text-base text-gray-900">
+                                            <p className="text-base text-[var(--color-dark-green)]">
                                                 {displayedCampaign.campaignType === "Always On"
                                                     ? "Always On"
                                                     : formatDate(displayedCampaign.endDate)}
@@ -693,13 +725,13 @@ export default function CampaignDetailsModal({
                             )}
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Status</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Status</label>
                                 {isEditing ? (
                                     <select
                                         name="status"
                                         value={editedCampaign.status || "Pending"}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                     >
                                         <option value="Pending">Pending</option>
                                         <option value="Pending Customer Approval">Pending Customer Approval</option>
@@ -708,154 +740,154 @@ export default function CampaignDetailsModal({
                                         <option value="Ended">Ended</option>
                                     </select>
                                 ) : (
-                                    <p className="text-base text-gray-900">{displayedCampaign.status || "Draft"}</p>
+                                    <p className="text-base text-[var(--color-dark-green)]">{displayedCampaign.status || "Draft"}</p>
                                 )}
                             </div>
 
                             <div className="hidden">
-                                <label className="text-sm text-gray-600 block mb-1">Ready for Approval</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Ready for Approval</label>
                                 {isEditing ? (
                                     <input
                                         type="checkbox"
                                         name="readyForApproval"
                                         checked={editedCampaign.readyForApproval || false}
                                         onChange={handleInputChange}
-                                        className="h-4 w-4 text-zinc-700 border-gray-300 rounded focus:ring-zinc-500"
+                                        className="h-4 w-4 text-[var(--color-lime)] border-gray-300 rounded focus:ring-[var(--color-lime)]"
                                     />
                                 ) : (
-                                    <p className="text-base text-gray-900">
+                                    <p className="text-base text-[var(--color-dark-green)]">
                                         {displayedCampaign.readyForApproval ? "Yes" : "No"}
                                     </p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Landingpage</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Landing Page</label>
                                 {isEditing ? (
                                     <input
                                         type="text"
                                         name="landingpage"
                                         value={editedCampaign.landingpage || ""}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                     />
                                 ) : (
-                                    <p className="text-base text-gray-900">
+                                    <p className="text-base text-[var(--color-dark-green)]">
                                         {displayedCampaign.landingpage || "Not specified"}
                                     </p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Campaign Dimensions</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Campaign Dimensions</label>
                                 {isEditing ? (
                                     <input
                                         type="text"
                                         name="campaignDimensions"
                                         value={editedCampaign.campaignDimensions || ""}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                     />
                                 ) : (
-                                    <p className="text-base text-gray-900">
+                                    <p className="text-base text-[var(--color-dark-green)]">
                                         {displayedCampaign.campaignDimensions || "Not specified"}
                                     </p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Campaign Variation</label>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Campaign Variation</label>
                                 {isEditing ? (
                                     <input
                                         type="text"
                                         name="campaignVariation"
                                         value={editedCampaign.campaignVariation || ""}
                                         onChange={handleInputChange}
-                                        className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                        className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                     />
                                 ) : (
-                                    <p className="text-base text-gray-900">
+                                    <p className="text-base text-[var(--color-dark-green)]">
                                         {displayedCampaign.campaignVariation || "Not specified"}
                                     </p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-600 block mb-1">Created At</label>
-                                <p className="text-base text-gray-900">{formatDate(displayedCampaign.createdAt)}</p>
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Created At</label>
+                                <p className="text-base text-[var(--color-dark-green)]">{formatDate(displayedCampaign.createdAt)}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="col-span-2">
-                        <label className="text-sm text-gray-600 block mb-1">Message/Brief</label>
+                    <div className="lg:col-span-2">
+                        <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Message/Brief</label>
                         {isEditing ? (
                             <textarea
                                 name="messageBrief"
                                 value={editedCampaign.messageBrief || ""}
                                 onChange={handleInputChange}
-                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                 rows="4"
                             />
                         ) : (
-                            <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
+                            <div className="border border-[var(--color-light-natural)] rounded-lg bg-[var(--color-natural)] p-4 text-[var(--color-dark-green)]">
                                 {displayedCampaign.messageBrief || "No message/brief provided."}
                             </div>
                         )}
                     </div>
 
-                    <div className="col-span-2">
-                        <label className="text-sm text-gray-600 block mb-1">Material from Customer</label>
+                    <div className="lg:col-span-2">
+                        <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Material from Customer</label>
                         {isEditing ? (
                             <textarea
                                 name="materialFromCustomer"
                                 value={editedCampaign.materialFromCustomer || ""}
                                 onChange={handleInputChange}
-                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                 rows="4"
                             />
                         ) : (
-                            <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
+                            <div className="border border-[var(--color-light-natural)] rounded-lg bg-[var(--color-natural)] p-4 text-[var(--color-dark-green)]">
                                 {displayedCampaign.materialFromCustomer || "No materials provided."}
                             </div>
                         )}
                     </div>
 
-                    <div className="col-span-2">
-                        <label className="text-sm text-gray-600 block mb-1">Text to Creative</label>
+                    <div className="lg:col-span-2">
+                        <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Text to Creative</label>
                         {isEditing ? (
                             <textarea
                                 name="campaignTextToCreative"
                                 value={editedCampaign.campaignTextToCreative || ""}
                                 onChange={handleInputChange}
-                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                 rows="4"
                             />
                         ) : (
-                            <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
+                            <div className="border border-[var(--color-light-natural)] rounded-lg bg-[var(--color-natural)] p-4 text-[var(--color-dark-green)]">
                                 {displayedCampaign.campaignTextToCreative || "No text to creative provided."}
                             </div>
                         )}
                     </div>
 
-                    <div className="col-span-2">
-                        <label className="text-sm text-gray-600 block mb-1">Text to Creative Translation</label>
+                    <div className="lg:col-span-2">
+                        <label className="text-sm font-medium text-[var(--color-dark-green)] block mb-2">Text to Creative Translation</label>
                         {isEditing ? (
                             <textarea
                                 name="campaignTextToCreativeTranslation"
                                 value={editedCampaign.campaignTextToCreativeTranslation || ""}
                                 onChange={handleInputChange}
-                                className="border border-gray-300 px-4 py-2 rounded w-full text-sm"
+                                className="border border-gray-300 px-4 py-3 rounded-lg w-full text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors text-[var(--color-dark-green)]"
                                 rows="4"
                             />
                         ) : (
-                            <div className="border border-gray-200 rounded bg-gray-50 p-4 text-gray-900">
+                            <div className="border border-[var(--color-light-natural)] rounded-lg bg-[var(--color-natural)] p-4 text-[var(--color-dark-green)]">
                                 {displayedCampaign.campaignTextToCreativeTranslation || "No translation provided."}
                             </div>
                         )}
                     </div>
 
-                    <div className="col-span-2 mt-6 border-t border-gray-200 pt-6">
+                    <div className="lg:col-span-2 mt-6 border-t border-[var(--color-light-natural)] pt-6">
                         <CommentSection campaignId={campaign._id} />
                     </div>
                 </div>

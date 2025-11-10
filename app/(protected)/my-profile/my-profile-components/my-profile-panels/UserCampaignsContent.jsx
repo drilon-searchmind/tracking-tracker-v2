@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/app/contexts/ToastContext';
-import { FaExternalLinkAlt, FaFilter } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaFilter, FaSearch, FaCalendarAlt, FaUser, FaTasks, FaChartLine } from 'react-icons/fa';
 
 export default function UserCampaignsContent() {
     const { data: session } = useSession();
@@ -46,20 +46,6 @@ export default function UserCampaignsContent() {
         }
     };
 
-    const fetchCustomers = async () => {
-        try {
-            const mockCustomers = {
-                '101': 'Acme Corporation',
-                '102': 'TechVision Inc.',
-                '103': 'Nordic Retail Group'
-            };
-
-            setCustomerMap(mockCustomers);
-        } catch (error) {
-            console.error("Failed to fetch customers:", error);
-        }
-    };
-
     const formatDate = (dateString) => {
         if (!dateString) return 'Always On';
         const date = new Date(dateString);
@@ -73,15 +59,15 @@ export default function UserCampaignsContent() {
     const getStatusBadgeClass = (status) => {
         switch (status) {
             case 'Live':
-                return 'bg-green-100 text-green-800';
+                return 'bg-green-100 text-green-700 border border-green-200';
             case 'Pending Customer Approval':
-                return 'bg-yellow-100 text-yellow-800';
+                return 'bg-yellow-100 text-yellow-700 border border-yellow-200';
             case 'Approved':
-                return 'bg-blue-100 text-blue-800';
+                return 'bg-blue-100 text-blue-700 border border-blue-200';
             case 'Ended':
-                return 'bg-gray-100 text-gray-800';
+                return 'bg-gray-100 text-gray-700 border border-gray-200';
             default:
-                return 'bg-gray-100 text-gray-800';
+                return 'bg-gray-100 text-gray-700 border border-gray-200';
         }
     };
 
@@ -108,6 +94,7 @@ export default function UserCampaignsContent() {
         });
 
         return ['All', ...months.sort((a, b) => {
+            if (a === 'All' || b === 'All') return 0;
             const [monthA, yearA] = a.split(' ');
             const [monthB, yearB] = b.split(' ');
 
@@ -141,101 +128,194 @@ export default function UserCampaignsContent() {
 
     const filteredCampaigns = filterCampaigns();
 
-    return (
-        <div>
-            <h2 className="text-2xl font-semibold mb-6">My Assigned Campaigns</h2>
+    const getCampaignStats = () => {
+        const totalCampaigns = campaigns.length;
+        const activeCampaigns = campaigns.filter(c => c.status === 'Live').length;
+        const pendingCampaigns = campaigns.filter(c => c.status === 'Pending Customer Approval').length;
+        const endedCampaigns = campaigns.filter(c => c.status === 'Ended').length;
 
-            <div className="mb-6 flex justify-between items-center">
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Search campaigns..."
-                        className="w-64 px-4 py-2 border border-gray-300 rounded text-sm"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+        return { totalCampaigns, activeCampaigns, pendingCampaigns, endedCampaigns };
+    };
+
+    const stats = getCampaignStats();
+
+    return (
+        <div className="space-y-8">
+            {/* Header */}
+            <div className="border-b border-[var(--color-dark-natural)] pb-4">
+                <h2 className="text-2xl font-bold text-[var(--color-dark-green)] mb-2">My Assigned Campaigns</h2>
+                <p className="text-[var(--color-green)]">View and manage campaigns you've been assigned to work on</p>
+            </div>
+
+            {/* Campaign Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-[var(--color-natural)] rounded-xl p-6 border border-[var(--color-dark-natural)]">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-[var(--color-green)]">Total Campaigns</p>
+                            <p className="text-2xl font-bold text-[var(--color-dark-green)] mt-1">{stats.totalCampaigns}</p>
+                        </div>
+                        <div className="p-3 bg-[var(--color-lime)]/20 rounded-lg">
+                            <FaTasks className="text-[var(--color-dark-green)] text-xl" />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-sm">
-                        <FaFilter className="text-zinc-500" />
-                        <span className="text-zinc-600">Filter by:</span>
+                <div className="bg-[var(--color-natural)] rounded-xl p-6 border border-[var(--color-dark-natural)]">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-[var(--color-green)]">Active</p>
+                            <p className="text-2xl font-bold text-green-600 mt-1">{stats.activeCampaigns}</p>
+                        </div>
+                        <div className="p-3 bg-green-100 rounded-lg">
+                            <FaChartLine className="text-green-600 text-xl" />
+                        </div>
                     </div>
+                </div>
 
-                    <select
-                        className="border border-gray-300 rounded px-3 py-2 text-sm bg-white"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                        {getUniqueStatuses().map(status => (
-                            <option key={status} value={status}>{status}</option>
-                        ))}
-                    </select>
+                <div className="bg-[var(--color-natural)] rounded-xl p-6 border border-[var(--color-dark-natural)]">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-[var(--color-green)]">Pending Approval</p>
+                            <p className="text-2xl font-bold text-yellow-600 mt-1">{stats.pendingCampaigns}</p>
+                        </div>
+                        <div className="p-3 bg-yellow-100 rounded-lg">
+                            <FaCalendarAlt className="text-yellow-600 text-xl" />
+                        </div>
+                    </div>
+                </div>
 
-                    <select
-                        className="border border-gray-300 rounded px-3 py-2 text-sm bg-white"
-                        value={monthFilter}
-                        onChange={(e) => setMonthFilter(e.target.value)}
-                    >
-                        {getUniqueMonths().map(month => (
-                            <option key={month} value={month}>{month}</option>
-                        ))}
-                    </select>
+                <div className="bg-[var(--color-natural)] rounded-xl p-6 border border-[var(--color-dark-natural)]">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-[var(--color-green)]">Ended</p>
+                            <p className="text-2xl font-bold text-gray-600 mt-1">{stats.endedCampaigns}</p>
+                        </div>
+                        <div className="p-3 bg-gray-100 rounded-lg">
+                            <FaUser className="text-gray-600 text-xl" />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {loading ? (
-                <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-zinc-700 mx-auto"></div>
-                    <p className="mt-3 text-gray-600">Loading campaigns...</p>
+            {/* Filters and Search */}
+            <div className="bg-white rounded-xl p-6 border border-[var(--color-dark-natural)] shadow-solid-11">
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                    <div className="relative flex-1 max-w-md">
+                        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)] text-sm" />
+                        <input
+                            type="text"
+                            placeholder="Search campaigns or customers..."
+                            className="w-full pl-10 pr-4 py-3 border border-[var(--color-dark-natural)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="flex items-center gap-2 text-sm">
+                            <FaFilter className="text-[var(--color-green)]" />
+                            <span className="text-[var(--color-dark-green)] font-medium">Filter by:</span>
+                        </div>
+
+                        <select
+                            className="border border-[var(--color-dark-natural)] rounded-lg px-4 py-2 text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            {getUniqueStatuses().map(status => (
+                                <option key={status} value={status}>{status}</option>
+                            ))}
+                        </select>
+
+                        <select
+                            className="border border-[var(--color-dark-natural)] rounded-lg px-4 py-2 text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent"
+                            value={monthFilter}
+                            onChange={(e) => setMonthFilter(e.target.value)}
+                        >
+                            {getUniqueMonths().map(month => (
+                                <option key={month} value={month}>{month}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
-            ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-50 border-b border-zinc-200 text-left">
-                            <tr className="text-zinc-600">
-                                <th className="px-4 py-3 font-medium">Campaign Name</th>
-                                <th className="px-4 py-3 font-medium">Customer</th>
-                                <th className="px-4 py-3 font-medium">Start Date</th>
-                                <th className="px-4 py-3 font-medium">End Date</th>
-                                <th className="px-4 py-3 font-medium">Status</th>
-                                <th className="px-4 py-3 font-medium">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-zinc-700 divide-y divide-zinc-100">
-                            {filteredCampaigns.length > 0 ? (
-                                filteredCampaigns.map(campaign => (
-                                    <tr key={campaign._id} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3 font-medium">{campaign.campaignName}</td>
-                                        <td className="px-4 py-3">{customerMap[campaign.customerId] || 'Unknown Customer'}</td>
-                                        <td className="px-4 py-3">{formatDate(campaign.startDate)}</td>
-                                        <td className="px-4 py-3">{formatDate(campaign.endDate)}</td>
-                                        <td className="px-4 py-3">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(campaign.status)}`}>
-                                                {campaign.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <a
-                                                href={`/dashboard/${campaign.customerId}/tools/kampagneplan?campaignId=${campaign._id}`}
-                                                className="bg-zinc-700 text-white py-1 px-3 rounded text-sm hover:bg-zinc-800 inline-flex items-center gap-2"
-                                            >
-                                                View <FaExternalLinkAlt size={12} />
-                                            </a>
+            </div>
+
+            {/* Campaigns Table */}
+            <div className="bg-white rounded-xl border border-[var(--color-dark-natural)] shadow-solid-11 overflow-hidden">
+                {loading ? (
+                    <div className="text-center py-16">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-lime)] mx-auto"></div>
+                        <p className="mt-4 text-[var(--color-green)]">Loading campaigns...</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                            <thead className="bg-[var(--color-natural)] border-b border-[var(--color-dark-natural)]">
+                                <tr className="text-[var(--color-dark-green)]">
+                                    <th className="px-6 py-4 text-left text-sm font-semibold">Campaign Name</th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold">Customer</th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold">Start Date</th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold">End Date</th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-[var(--color-dark-green)] divide-y divide-[var(--color-dark-natural)]">
+                                {filteredCampaigns.length > 0 ? (
+                                    filteredCampaigns.map(campaign => (
+                                        <tr key={campaign._id} className="hover:bg-[var(--color-natural)]/50 transition-colors">
+                                            <td className="px-6 py-4 font-medium text-sm">{campaign.campaignName}</td>
+                                            <td className="px-6 py-4 text-sm text-[var(--color-green)]">
+                                                {customerMap[campaign.customerId] || 'Unknown Customer'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-[var(--color-green)]">{formatDate(campaign.startDate)}</td>
+                                            <td className="px-6 py-4 text-sm text-[var(--color-green)]">{formatDate(campaign.endDate)}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(campaign.status)}`}>
+                                                    {campaign.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <a
+                                                    href={`/dashboard/${campaign.customerId}/tools/kampagneplan?campaignId=${campaign._id}`}
+                                                    className="inline-flex items-center gap-2 bg-[var(--color-dark-green)] hover:bg-[var(--color-green)] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                                >
+                                                    View Campaign
+                                                    <FaExternalLinkAlt className="text-xs" />
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="6" className="px-6 py-16 text-center">
+                                            <div className="flex flex-col items-center">
+                                                <FaTasks className="text-4xl text-[var(--color-green)]/30 mb-4" />
+                                                <p className="text-[var(--color-green)] text-lg font-medium mb-2">
+                                                    {searchQuery || statusFilter !== 'All' || monthFilter !== 'All'
+                                                        ? "No campaigns match your filters"
+                                                        : "No campaigns assigned"}
+                                                </p>
+                                                <p className="text-sm text-[var(--color-green)]/80">
+                                                    {searchQuery || statusFilter !== 'All' || monthFilter !== 'All'
+                                                        ? "Try adjusting your search criteria or filters"
+                                                        : "You haven't been assigned to any campaigns yet"}
+                                                </p>
+                                            </div>
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="6" className="px-4 py-8 text-center text-gray-500">
-                                        {searchQuery || statusFilter !== 'All' || monthFilter !== 'All'
-                                            ? "No campaigns match your filters"
-                                            : "No campaigns found"}
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* Results Summary */}
+            {!loading && filteredCampaigns.length > 0 && (
+                <div className="text-sm text-[var(--color-green)] text-center">
+                    Showing {filteredCampaigns.length} of {campaigns.length} campaigns
                 </div>
             )}
         </div>

@@ -9,8 +9,9 @@ export function ModalProvider({ children }) {
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
     const [isParentCampaignModalOpen, setIsParentCampaignModalOpen] = useState(false);
+    const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
 
-    const isAnyModalOpen = isCampaignModalOpen || isDetailsModalOpen || isCalendarModalOpen || isParentCampaignModalOpen;
+    const isAnyModalOpen = isCampaignModalOpen || isDetailsModalOpen || isCalendarModalOpen || isParentCampaignModalOpen || isCustomerModalOpen;
 
     return (
         <ModalContext.Provider
@@ -23,6 +24,8 @@ export function ModalProvider({ children }) {
                 setIsCalendarModalOpen,
                 isParentCampaignModalOpen,
                 setIsParentCampaignModalOpen,
+                isCustomerModalOpen,
+                setIsCustomerModalOpen,
                 isAnyModalOpen
             }}
         >

@@ -9,18 +9,17 @@ import { useState, useEffect } from "react";
 import { useModalContext } from "@/app/contexts/CampaignModalContext";
 
 export default function DashboardLayout({ children }) {
-    const segments = useSelectedLayoutSegments()
+    const segments = useSelectedLayoutSegments();
     const customerId = segments[0] || null;
     const [showModalShare, setShowModalShare] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const pathname = usePathname()
+    const pathname = usePathname();
     const { isAnyModalOpen } = useModalContext();
     const [customerName, setCustomerName] = useState("");
 
     const isActive = (path) => {
         const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
         const cleanPathname = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
-
         return cleanPathname === cleanPath;
     };
 
@@ -57,23 +56,26 @@ export default function DashboardLayout({ children }) {
     return (
         <section id="DashboardLayout" className="relative">
             <nav
-                className="flex justify-between items-center pt-6 pb-3 border-t border-gray-200 mb-5 bg-white sticky top-0 px-4 md:px-0"
-                style={{ zIndex: isAnyModalOpen ? 1 : 50 }}
+                data-dashboard-nav
+                className="flex justify-between items-center pt-6 pb-3 border-t border-gray-100 mb-5 bg-white sticky top-0 px-4 md:px-0"
+                style={{ zIndex: isAnyModalOpen ? 1 : 10 }}
             >
-                {/* Mobile Menu Button */}
                 <button
-                    className="md:hidden text-gray-700 text-xl flex items-center"
+                    className="md:hidden text-[var(--color-dark-green)] text-xl flex items-center p-2 hover:bg-[var(--color-natural)] rounded-lg transition-colors"
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 >
                     {mobileMenuOpen ? <FaTimes /> : <FaBars />}
                 </button>
 
-                {/* Desktop Navigation */}
-                <ul className="hidden md:flex gap-5 relative items-baseline">
+                <ul className="hidden md:flex gap-2 relative items-center">
                     <li>
                         <a
                             href={`/dashboard/${customerId}`}
-                            className={`hover:text-blue-500 text-sm ${isActive(`/dashboard/${customerId}`) ? "text-black font-bold" : ""}`}
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                                isActive(`/dashboard/${customerId}`) 
+                                    ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
+                                    : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
+                            }`}
                         >
                             Overview
                         </a>
@@ -82,7 +84,11 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}/performance-dashboard`}
-                            className={`hover:text-blue-500 text-sm ${isActive(`/dashboard/${customerId}/performance-dashboard`) ? "text-black font-bold" : ""}`}
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                                isActive(`/dashboard/${customerId}/performance-dashboard`) 
+                                    ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
+                                    : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
+                            }`}
                         >
                             Performance Dashboard
                         </a>
@@ -91,26 +97,35 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}/tools/kampagneplan`}
-                            className={`hover:text-blue-500 text-sm ${isActive(`/dashboard/${customerId}/tools/kampagneplan`) ? "text-black font-bold" : ""}`}
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                                isActive(`/dashboard/${customerId}/tools/kampagneplan`) 
+                                    ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
+                                    : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
+                            }`}
                         >
                             Campaign Planner
                         </a>
                     </li>
 
                     <li className="relative group">
-                        <div className={`flex items-center gap-2 cursor-pointer text-sm hover:text-blue-500 ${isServiceActive ? "text-black font-bold" : ""}`}>
-                            <a href={`#`}>Service Dashboard</a>
-                            <PiCaretDownThin />
+                        <div className={`flex items-center gap-1 cursor-pointer text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                            isServiceActive 
+                                ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
+                                : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
+                        }`}>
+                            Service Dashboard
+                            <PiCaretDownThin className="text-xs" />
                         </div>
-                        <ul className="absolute left-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 origin-top z-20">
+                        <ul className="absolute left-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-solid-11 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 origin-top z-20">
                             {["seo", "ppc", "ps"].map((slug) => (
                                 <li key={slug}>
                                     <a
                                         href={`/dashboard/${customerId}/service-dashboard/${slug}`}
-                                        className={`block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 ${pathname === `/dashboard/${customerId}/service-dashboard/${slug}`
-                                            ? "text-black font-bold bg-blue-50"
-                                            : "text-gray-700"
-                                            }`}
+                                        className={`block px-4 py-3 text-xs hover:bg-[var(--color-natural)] transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                                            pathname === `/dashboard/${customerId}/service-dashboard/${slug}`
+                                                ? "text-[var(--color-dark-green)] font-semibold bg-[var(--color-natural)]"
+                                                : "text-[var(--color-green)]"
+                                        }`}
                                     >
                                         {slug.toUpperCase()}
                                     </a>
@@ -120,24 +135,27 @@ export default function DashboardLayout({ children }) {
                     </li>
 
                     <li className="relative group">
-                        <div className={`flex items-center gap-2 cursor-pointer text-sm hover:text-blue-500 ${isToolsActive ? "text-black font-bold" : ""}`}>
-                            <a href={`#`}>Tools</a>
-                            <PiCaretDownThin />
+                        <div className={`flex items-center gap-1 cursor-pointer text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                            isToolsActive 
+                                ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
+                                : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
+                        }`}>
+                            Tools
+                            <PiCaretDownThin className="text-xs" />
                         </div>
-                        <ul className="absolute left-0 mt-2 w-52 bg-white border border-gray-200 rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 origin-top z-20">
+                        <ul className="absolute left-0 mt-1 w-52 bg-white border border-gray-200 rounded-lg shadow-solid-11 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 origin-top z-20">
                             {[
                                 { slug: "pnl", label: "P&L" },
                                 { slug: "pace-report", label: "Pace Report" },
-                                // { slug: "aarshjul", label: "Year Wheel" },
-                                // { slug: "share-of-search", label: "Share of Search" },
                             ].map(({ slug, label }) => (
                                 <li key={slug}>
                                     <a
                                         href={`/dashboard/${customerId}/tools/${slug}`}
-                                        className={`block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 ${pathname === `/dashboard/${customerId}/tools/${slug}` && !pathname.includes("kampagneplan")
-                                                ? "text-black font-bold bg-blue-50"
-                                                : "text-gray-700"
-                                            }`}
+                                        className={`block px-4 py-3 text-xs hover:bg-[var(--color-natural)] transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                                            pathname === `/dashboard/${customerId}/tools/${slug}` && !pathname.includes("kampagneplan")
+                                                ? "text-[var(--color-dark-green)] font-semibold bg-[var(--color-natural)]"
+                                                : "text-[var(--color-green)]"
+                                        }`}
                                     >
                                         {label}
                                     </a>
@@ -149,37 +167,44 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}/config`}
-                            className={`hover:text-blue-500 text-sm ${pathname === `/dashboard/${customerId}/config` ? "text-black font-bold" : ""
-                                }`}
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                                pathname === `/dashboard/${customerId}/config` 
+                                    ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
+                                    : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
+                            }`}
                         >
                             Config
                         </a>
                     </li>
                 </ul>
 
-                {/* Customer info and share button */}
-                <div className="flex items-center gap-2 md:gap-4">
-                    <div className="text-center text-xs border border-zinc-200 rounded px-2 md:px-4 py-2 bg-zinc-50 text-zinc-700 flex items-center gap-1 md:gap-2">
+                <div className="flex items-center gap-3">
+                    <div className="text-xs border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 bg-[var(--color-natural)] text-[var(--color-dark-green)] flex items-center gap-2 font-medium">
                         <span className="hidden sm:inline">{customerName}</span>
                         <span className="sm:hidden">{customerName.substring(0, 10)}{customerName.length > 10 ? "..." : ""}</span>
-                        <CiUser />
+                        <CiUser className="text-sm" />
                     </div>
-                    <button onClick={() => setShowModalShare(true)} className="text-center text-xs bg-zinc-700 py-2 px-2 md:px-4 rounded text-white hover:bg-zinc-800 flex items-center gap-1 md:gap-2 hover:cursor-pointer">
+                    <button 
+                        onClick={() => setShowModalShare(true)} 
+                        className="text-xs bg-[var(--color-dark-green)] py-2 px-3 rounded-lg text-white hover:bg-[var(--color-green)] flex items-center gap-2 transition-colors font-medium"
+                    >
                         <span className="hidden sm:inline">Share Report</span>
                         <span className="sm:hidden">Share</span>
-                        <CiShare2 />
+                        <CiShare2 className="text-sm" />
                     </button>
                 </div>
             </nav>
 
-            {/* Mobile Menu Dropdown */}
-            <div className={`md:hidden fixed top-[150px] left-0 right-0 bg-white border-b border-gray-200 shadow-md z-40 transition-all duration-300 ${mobileMenuOpen ? 'translate-y-0 opacity-100 visible' : 'translate-y-full opacity-0 invisible'}`}>
-
+            <div className={`md:hidden fixed top-[150px] left-0 right-0 bg-white border-b border-gray-100 shadow-solid-11 z-40 transition-all duration-300 ${mobileMenuOpen ? 'translate-y-0 opacity-100 visible' : 'translate-y-full opacity-0 invisible'}`}>
                 <ul className="flex flex-col px-4 py-2">
                     <li className="py-3 border-b border-gray-100">
                         <a
                             href={`/dashboard/${customerId}`}
-                            className={`block text-sm ${isActive(`/dashboard/${customerId}`) ? "text-black font-bold" : "text-gray-700"}`}
+                            className={`block text-sm font-medium ${
+                                isActive(`/dashboard/${customerId}`) 
+                                    ? "text-[var(--color-dark-green)]" 
+                                    : "text-[var(--color-green)]"
+                            }`}
                         >
                             Overview
                         </a>
@@ -187,13 +212,21 @@ export default function DashboardLayout({ children }) {
                     <li className="py-3 border-b border-gray-100">
                         <a
                             href={`/dashboard/${customerId}/performance-dashboard`}
-                            className={`block text-sm ${isActive(`/dashboard/${customerId}/performance-dashboard`) ? "text-black font-bold" : "text-gray-700"}`}
+                            className={`block text-sm font-medium ${
+                                isActive(`/dashboard/${customerId}/performance-dashboard`) 
+                                    ? "text-[var(--color-dark-green)]" 
+                                    : "text-[var(--color-green)]"
+                            }`}
                         >
                             Performance Dashboard
                         </a>
                     </li>
                     <li className="py-3 border-b border-gray-100">
-                        <div className={`flex justify-between items-center text-sm ${isServiceActive ? "text-black font-bold" : "text-gray-700"}`}>
+                        <div className={`flex justify-between items-center text-sm font-medium ${
+                            isServiceActive 
+                                ? "text-[var(--color-dark-green)]" 
+                                : "text-[var(--color-green)]"
+                        }`}>
                             <span>Service Dashboard</span>
                             <PiCaretDownThin className="text-lg" />
                         </div>
@@ -202,7 +235,11 @@ export default function DashboardLayout({ children }) {
                                 <li key={slug} className="py-2">
                                     <a
                                         href={`/dashboard/${customerId}/service-dashboard/${slug}`}
-                                        className={`block text-sm ${pathname === `/dashboard/${customerId}/service-dashboard/${slug}` ? "text-blue-600 font-bold" : "text-gray-600"}`}
+                                        className={`block text-sm ${
+                                            pathname === `/dashboard/${customerId}/service-dashboard/${slug}` 
+                                                ? "text-[var(--color-dark-green)] font-semibold" 
+                                                : "text-[var(--color-green)]"
+                                        }`}
                                     >
                                         {slug.toUpperCase()}
                                     </a>
@@ -211,7 +248,11 @@ export default function DashboardLayout({ children }) {
                         </ul>
                     </li>
                     <li className="py-3 border-b border-gray-100">
-                        <div className={`flex justify-between items-center text-sm ${isToolsActive ? "text-black font-bold" : "text-gray-700"}`}>
+                        <div className={`flex justify-between items-center text-sm font-medium ${
+                            isToolsActive 
+                                ? "text-[var(--color-dark-green)]" 
+                                : "text-[var(--color-green)]"
+                        }`}>
                             <span>Tools</span>
                             <PiCaretDownThin className="text-lg" />
                         </div>
@@ -220,8 +261,6 @@ export default function DashboardLayout({ children }) {
                                 { slug: "pnl", label: "P&L" },
                                 { slug: "pace-report", label: "Pace Report" },
                                 { slug: "kampagneplan", label: "Campaign Planner" },
-                                // { slug: "aarshjul", label: "Year Wheel" },
-                                // { slug: "share-of-search", label: "Share of Search" },
                             ].map(({ slug, label }) => (
                                 <li key={slug} className="py-2">
                                     <a

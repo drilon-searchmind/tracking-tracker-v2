@@ -298,3 +298,6 @@ a {
     border-spacing: 0; /* Remove extra spacing */
 }
 
+.text-white-important {
+	color: white !important;
+}

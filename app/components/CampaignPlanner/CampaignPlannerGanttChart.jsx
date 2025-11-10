@@ -98,15 +98,15 @@ export default function CampaignPlannerGanttChart({ campaigns, customerId, onVie
     ];
 
     return (
-        <div className="bg-white border border-zinc-200 rounded-lg shadow-solid-l overflow-hidden mb-12">
-            <div className="p-6 border-b border-zinc-200 bg-[#f8fafc] flex justify-between items-center">
-                <h3 className="font-medium text-gray-800">Campaign Gantt Chart</h3>
+        <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-solid-l overflow-hidden">
+            <div className="p-6 border-b border-[var(--color-light-natural)] bg-[var(--color-natural)] flex justify-between items-center">
+                <h3 className="font-semibold text-[var(--color-dark-green)]">Campaign Gantt Chart</h3>
                 <div className="flex items-center">
-                    <span className="text-sm text-gray-600 mr-2">Year:</span>
+                    <span className="text-sm text-[var(--color-green)] mr-2">Year:</span>
                     <select
                         value={currentYear}
                         onChange={(e) => handleYearChange(e.target.value)}
-                        className="border border-gray-300 rounded px-3 py-1 text-sm"
+                        className="border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                     >
                         {availableYears.map(year => (
                             <option key={year} value={year}>{year}</option>
@@ -117,15 +117,15 @@ export default function CampaignPlannerGanttChart({ campaigns, customerId, onVie
 
             <div className="overflow-x-auto">
                 <div className="min-w-full">
-                    <div className="flex border-b border-zinc-200">
-                        <div className="w-64 min-w-[16rem] p-3 bg-gray-50 border-r border-zinc-200 font-medium text-gray-700">
+                    <div className="flex border-b border-[var(--color-light-natural)]">
+                        <div className="w-64 min-w-[16rem] p-4 bg-[var(--color-natural)] border-r border-[var(--color-light-natural)] font-medium text-[var(--color-dark-green)]">
                             Campaign
                         </div>
                         <div className="flex-1 flex">
                             {months.map((month, index) => (
                                 <div
                                     key={index}
-                                    className="flex-1 p-3 text-center text-sm font-medium text-gray-700 border-r border-zinc-200 last:border-r-0"
+                                    className="flex-1 p-4 text-center text-sm font-medium text-[var(--color-dark-green)] border-r border-[var(--color-light-natural)] last:border-r-0"
                                 >
                                     {format(month, 'MMM')}
                                 </div>
@@ -135,7 +135,17 @@ export default function CampaignPlannerGanttChart({ campaigns, customerId, onVie
 
                     <div>
                         {campaignsWithDates.length === 0 ? (
-                            <div className="p-6 text-center text-gray-500">No campaigns available for this year</div>
+                            <div className="p-8 text-center">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-16 h-16 bg-[var(--color-natural)] rounded-full flex items-center justify-center mb-4">
+                                        <svg className="w-8 h-8 text-[var(--color-green)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-[var(--color-green)] text-lg font-medium mb-2">No campaigns available</p>
+                                    <p className="text-[var(--color-green)] text-sm">No campaigns found for {currentYear}</p>
+                                </div>
+                            </div>
                         ) : (
                             campaignsWithDates.map((campaign) => {
                                 if (!isCampaignInYear(campaign.startDate, campaign.endDate)) {
@@ -151,26 +161,26 @@ export default function CampaignPlannerGanttChart({ campaigns, customerId, onVie
                                 const barWidth = calculateWidth(campaign.startDate, campaign.endDate);
 
                                 return (
-                                    <div key={campaign._id} className="flex border-b border-zinc-200 hover:bg-gray-50">
+                                    <div key={campaign._id} className="flex border-b border-[var(--color-light-natural)] hover:bg-[var(--color-natural)]/30 transition-colors">
                                         <div
-                                            className="w-64 min-w-[16rem] p-3 border-r border-zinc-200 truncate cursor-pointer hover:text-blue-600"
+                                            className="w-64 min-w-[16rem] p-4 border-r border-[var(--color-light-natural)] truncate cursor-pointer hover:text-[var(--color-light-green)] transition-colors"
                                             onClick={() => handleCampaignClick(campaign)}
                                         >
-                                            <div className="font-medium">{campaign.campaignName}</div>
-                                            <div className="text-xs text-gray-500 mt-1">
+                                            <div className="font-medium text-[var(--color-dark-green)]">{campaign.campaignName}</div>
+                                            <div className="text-xs text-[var(--color-green)] mt-1">
                                                 {format(campaign.startDate, 'MMM d')} - {format(campaign.endDate, 'MMM d, yyyy')}
                                             </div>
                                         </div>
                                         <div className="flex-1 relative" style={{ height: '60px' }}>
                                             <div
-                                                className="absolute h-8 rounded-md flex items-center justify-center text-xs text-white font-medium top-3"
+                                                className="absolute h-8 rounded-lg flex items-center justify-center text-xs text-white font-medium top-3 cursor-pointer hover:opacity-90 transition-opacity"
                                                 style={{
                                                     left: `${startPercentage}%`,
                                                     width: `${barWidth}%`,
                                                     backgroundColor: campaign.color,
                                                     minWidth: '40px',
                                                     maxWidth: `calc(100% - ${startPercentage}%)`,
-                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
+                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                                 }}
                                                 title={`${campaign.campaignName}: ${format(campaign.startDate, 'MMM d')} - ${format(campaign.endDate, 'MMM d')}`}
                                                 onClick={() => handleCampaignClick(campaign)}
@@ -186,13 +196,13 @@ export default function CampaignPlannerGanttChart({ campaigns, customerId, onVie
                 </div>
             </div>
 
-            <div className="p-4 border-t border-zinc-200 bg-[#f8fafc]">
-                <p className="text-sm font-medium text-gray-500 mb-2">Campaign Types</p>
-                <div className="flex flex-wrap gap-4">
+            <div className="p-6 border-t border-[var(--color-light-natural)] bg-[var(--color-natural)]">
+                <p className="text-sm font-medium text-[var(--color-green)] mb-3">Campaign Types</p>
+                <div className="flex flex-wrap gap-6">
                     {Object.entries(colors).filter(([key]) => key !== 'default').map(([type, color]) => (
                         <div key={type} className="flex items-center gap-2">
                             <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: color }}></div>
-                            <span className="text-sm text-gray-700">{type}</span>
+                            <span className="text-sm text-[var(--color-dark-green)]">{type}</span>
                         </div>
                     ))}
                 </div>

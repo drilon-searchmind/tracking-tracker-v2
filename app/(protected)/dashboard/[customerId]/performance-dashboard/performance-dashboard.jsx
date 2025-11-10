@@ -22,6 +22,47 @@ import DashboardMetrics from "./components/DashboardMetrics";
 import DashboardCharts from "./components/DashboardCharts";
 import ServiceDashboards from "./components/ServiceDashboards";
 import Subheading from "@/app/components/UI/Utility/Subheading";
+import currencyExchangeData from "@/lib/static-data/currencyApiValues.json";
+
+// Currency conversion utility
+const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
+    if (!amount || fromCurrency === toCurrency) return amount;
+    
+    const exchangeData = currencyExchangeData.data;
+    
+    if (!exchangeData[fromCurrency] || !exchangeData[toCurrency]) {
+        console.warn(`Currency conversion failed: ${fromCurrency} to ${toCurrency}`);
+        return amount;
+    }
+    
+    // Convert from source currency to USD, then to target currency
+    const amountInUSD = amount / exchangeData[fromCurrency].value;
+    const convertedAmount = amountInUSD * exchangeData[toCurrency].value;
+    
+    return convertedAmount;
+};
+
+// Apply currency conversion to a data row
+const convertDataRow = (row, fromCurrency) => {
+    if (fromCurrency === "DKK") return row;
+    
+    const revenueFields = ['revenue', 'gross_profit'];
+    const convertedRow = { ...row };
+    
+    revenueFields.forEach(field => {
+        if (convertedRow[field] !== undefined && convertedRow[field] !== null) {
+            convertedRow[field] = convertCurrency(convertedRow[field], fromCurrency);
+        }
+    });
+    
+    // Recalculate ROAS and POAS using converted revenue values
+    const totalCost = convertedRow.cost || 0;
+    convertedRow.roas = totalCost > 0 ? convertedRow.revenue / totalCost : 0;
+    convertedRow.poas = totalCost > 0 ? convertedRow.gross_profit / totalCost : 0;
+    convertedRow.aov = (convertedRow.orders || 0) > 0 ? convertedRow.revenue / convertedRow.orders : 0;
+    
+    return convertedRow;
+};
 
 ChartJS.register(
     LineElement,
@@ -37,7 +78,7 @@ ChartJS.register(
     ChartDataLabels,
 );
 
-export default function PerformanceDashboard({ customerId, customerName, initialData }) {
+export default function PerformanceDashboard({ customerId, customerName, customerValutaCode, initialData }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -61,7 +102,7 @@ export default function PerformanceDashboard({ customerId, customerName, initial
     const [aovViewMode, setAovViewMode] = useState("YTD");
     const [sessionsViewMode, setSessionsViewMode] = useState("YTD");
 
-    const data = Array.isArray(initialData) ? initialData : [];
+    const data = Array.isArray(initialData) ? initialData.map(row => convertDataRow(row, customerValutaCode)) : [];
 
     useEffect(() => {
         if (initialData) {
@@ -257,19 +298,53 @@ export default function PerformanceDashboard({ customerId, customerName, initial
     );
 
     if (isLoading && !initialLoadComplete) {
-        return <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary-searchmind)] mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading performance dashboard data...</p>
-        </div>;
+        return (
+            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
+                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                    <Image
+                        width={1920}
+                        height={1080}
+                        src="/images/shape-dotted-light.svg"
+                        alt="bg"
+                        className="w-full h-full"
+                    />
+                </div>
+                <div className="px-0 md:px-20 mx-auto z-10 relative">
+                    <div className="text-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-lime)] mx-auto"></div>
+                        <p className="mt-4 text-[var(--color-dark-green)]">Loading performance dashboard data...</p>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (!data.length) {
-        return <div className="flex justify-center items-center p-10">No data available for {customerId}</div>;
+        return (
+            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
+                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                    <Image
+                        width={1920}
+                        height={1080}
+                        src="/images/shape-dotted-light.svg"
+                        alt="bg"
+                        className="w-full h-full"
+                    />
+                </div>
+                <div className="px-0 md:px-20 mx-auto z-10 relative">
+                    <div className="flex justify-center items-center p-10 bg-white rounded-lg shadow-sm border border-[var(--color-natural)]">
+                        <p className="text-[var(--color-dark-green)] text-lg">No data available for {customerId}</p>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
                     width={1920}
@@ -283,38 +358,45 @@ export default function PerformanceDashboard({ customerId, customerName, initial
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
                     <Subheading headingText={customerName} />
-                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black md:pr-16 xl:text-[44px] inline-grid z-10">Performance Dashboard</h1>
-                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
-                        Rhoncus morbi et augue nec, in id ullamcorper at sit. Condimentum sit nunc in eros scelerisque sed. Commodo in viv...
+                    <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] xl:text-[44px]">Performance Dashboard</h1>
+                    <p className="text-[var(--color-green)] max-w-2xl text-sm md:text-base">
+                        Comprehensive performance analytics and insights for your marketing campaigns and business metrics across all channels.
                     </p>
                 </div>
 
-                <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center mb-6 md:mb-10 md:justify-end">
-                    <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
-                        <select
-                            value={comparison}
-                            onChange={(e) => setComparison(e.target.value)}
-                            className="border px-4 py-2 rounded text-sm bg-white w-full md:w-auto"
-                        >
-                            <option>Previous Year</option>
-                            <option>Previous Period</option>
-                        </select>
+                {/* Controls Section */}
+                <div className="bg-white rounded-lg shadow-sm border border-[var(--color-natural)] p-4 md:p-6 mb-6 md:mb-8">
+                    <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center justify-end">
+                        <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3 ">
+                            <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Comparison:</label>
+                            <select
+                                value={comparison}
+                                onChange={(e) => setComparison(e.target.value)}
+                                className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent w-full md:w-auto transition-colors"
+                            >
+                                <option>Previous Year</option>
+                                <option>Previous Period</option>
+                            </select>
 
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
-                            <input
-                                type="date"
-                                value={dateStart}
-                                onChange={(e) => setDateStart(e.target.value)}
-                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
-                            />
-                            <span className="text-gray-400 hidden md:inline">→</span>
-                            <span className="text-gray-400 md:hidden">to</span>
-                            <input
-                                type="date"
-                                value={dateEnd}
-                                onChange={(e) => setDateEnd(e.target.value)}
-                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
-                            />
+                            <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Date Range:</label>
+                                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                    <input
+                                        type="date"
+                                        value={dateStart}
+                                        onChange={(e) => setDateStart(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    />
+                                    <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
+                                    <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
+                                    <input
+                                        type="date"
+                                        value={dateEnd}
+                                        onChange={(e) => setDateEnd(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -45,7 +45,7 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
     const [comparison, setComparison] = useState("Previous Year");
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
     const [endDate, setEndDate] = useState(formatDate(yesterday));
-    const [selectedMetric, setSelectedMetric] = useState("Conversions");
+    const [selectedMetric, setSelectedMetric] = useState("Ad Spend");
     const [cpcMetric, setCpcMetric] = useState("CPC");
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [expandedCampaigns, setExpandedCampaigns] = useState({});
@@ -140,11 +140,15 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
         if (!compData) return null;
 
         switch (metricName) {
-            case "Conversions": return compData.conversions || 0;
+            case "Conv. Value": return compData.conversions_value || 0;
             case "Ad Spend": return compData.ad_spend || 0;
             case "ROAS": return compData.roas || 0;
-            case "CPC": return compData.cpc || 0;
+            case "AOV": return compData.aov || 0;
+            case "Conversions": return compData.conversions || 0;
+            case "Impressions": return compData.impressions || 0;
+            case "Clicks": return compData.clicks || 0;
             case "CTR": return compData.ctr || 0;
+            case "CPC": return compData.cpc || 0;
             case "Conv. Rate": return compData.conv_rate || 0;
             default: return 0;
         }
@@ -313,6 +317,20 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                             return row.ad_spend || 0;
                         case "ROAS":
                             return row.roas || 0;
+                        case "Conv. Value":
+                            return row.conversions_value || 0;
+                        case "AOV":
+                            return row.aov || 0;
+                        case "Impressions":
+                            return row.impressions || 0;
+                        case "Clicks":
+                            return row.clicks || 0;
+                        case "CTR":
+                            return row.ctr || 0;
+                        case "CPC":
+                            return row.cpc || 0;
+                        case "Conv. Rate":
+                            return row.conv_rate || 0;
                         default:
                             return 0;
                     }
@@ -456,9 +474,16 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                     onChange={(e) => setSelectedMetric(e.target.value)}
                     className="border px-2 py-1 rounded text-xs"
                 >
-                    <option>Conversions</option>
+                    <option>Conv. Value</option>
                     <option>Ad Spend</option>
                     <option>ROAS</option>
+                    <option>AOV</option>
+                    <option>Conversions</option>
+                    <option>Impressions</option>
+                    <option>Clicks</option>
+                    <option>CTR</option>
+                    <option>CPC</option>
+                    <option>Conv. Rate</option>
                 </select>
             )
         },
@@ -508,12 +533,30 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
     }, [startDate, endDate]);
 
     if (!metrics_by_date || !top_campaigns || !campaigns_by_date) {
-        return <div className="p-4 text-center">No data available for {customerId}</div>;
+        return (
+            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
+                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                    <Image
+                        width={1920}
+                        height={1080}
+                        src="/images/shape-dotted-light.svg"
+                        alt="bg"
+                        className="w-full h-full"
+                    />
+                </div>
+                <div className="px-0 md:px-20 mx-auto z-10 relative">
+                    <div className="flex justify-center items-center p-10 bg-white rounded-lg shadow-sm border border-[var(--color-natural)]">
+                        <p className="text-[var(--color-dark-green)] text-lg">No data available for {customerId}</p>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
                     width={1920}
@@ -527,54 +570,85 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
                     <Subheading headingText={customerName} />
-                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">Google Ads Dashboard</h1>
-                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
+                    <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] xl:text-[44px]">Google Ads Dashboard</h1>
+                    <p className="text-[var(--color-green)] max-w-2xl text-sm md:text-base">
                         Overview of key Google Ads metrics including conversions, ad spend, and campaign performance.
                     </p>
                 </div>
 
-                <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center mb-6 md:mb-10 justify-start md:justify-end">
-                    <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
-                        <select
-                            value={comparison}
-                            onChange={(e) => setComparison(e.target.value)}
-                            className="border px-4 py-2 rounded text-sm bg-white w-full md:w-auto"
-                        >
-                            <option>Previous Year</option>
-                            <option>Previous Period</option>
-                        </select>
+                {/* Controls Section */}
+                <div className="bg-white rounded-lg shadow-sm border border-[var(--color-natural)] p-4 md:p-6 mb-6 md:mb-8">
+                    <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center justify-end">
+                        <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
+                            <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Comparison:</label>
+                            <select
+                                value={comparison}
+                                onChange={(e) => setComparison(e.target.value)}
+                                className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent w-full md:w-auto transition-colors"
+                            >
+                                <option>Previous Year</option>
+                                <option>Previous Period</option>
+                            </select>
 
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
-                            />
-                            <span className="text-gray-400 hidden md:inline">→</span>
-                            <span className="text-gray-400 md:hidden">to</span>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
-                            />
+                            <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Date Range:</label>
+                                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    />
+                                    <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
+                                    <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Mobile Metrics View */}
                 <div className="md:hidden mb-6">
-                    <div className="bg-white border border-zinc-200 rounded shadow-sm">
-                        <div className="grid grid-cols-2 gap-px bg-gray-100">
+                    <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm">
+                        <div className="grid grid-cols-2 gap-px bg-[var(--color-natural)]">
                             {ppcMetrics.slice(0, showAllMetrics ? ppcMetrics.length : 4).map((item, i) => (
-                                <div key={i} className="bg-white p-4">
-                                    <p className="text-xs text-gray-500">{item.label}</p>
-                                    <p className="text-xl font-bold text-zinc-800">{item.value}</p>
+                                <div 
+                                    key={i} 
+                                    className={`p-4 transition-all duration-200 cursor-pointer ${
+                                        selectedMetric === item.label 
+                                            ? 'bg-[var(--color-primary-searchmind)]' 
+                                            : 'bg-white hover:bg-[var(--color-natural)]'
+                                    }`}
+                                    onClick={() => setSelectedMetric(item.label)}
+                                >
+                                    <p className={`text-xs font-medium mb-1 ${
+                                        selectedMetric === item.label 
+                                            ? 'text-white-important' 
+                                            : 'text-[var(--color-green)]'
+                                    }`}>
+                                        {item.label}
+                                    </p>
+                                    <p className={`text-xl font-bold ${
+                                        selectedMetric === item.label 
+                                            ? 'text-white-important' 
+                                            : 'text-[var(--color-dark-green)]'
+                                    }`}>
+                                        {item.value}
+                                    </p>
                                     {item.delta && (
-                                        <p className={`text-xs font-medium ${item.positive ? "text-green-600" : "text-red-500"}`}>
+                                        <h6 className={`text-xs font-semibold ${
+                                            selectedMetric === item.label 
+                                                ? (item.positive ? "text-green-200" : "text-red-200")
+                                                : (item.positive ? "text-green-600" : "text-red-500")
+                                        }`}>
                                             {item.delta}
-                                        </p>
+                                        </h6>
                                     )}
                                 </div>
                             ))}
@@ -582,7 +656,7 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                         {ppcMetrics.length > 4 && (
                             <button
                                 onClick={() => setShowAllMetrics(!showAllMetrics)}
-                                className="w-full py-2 text-sm text-blue-600 border-t border-gray-100"
+                                className="w-full py-2 text-sm text-[var(--color-lime)] border-t border-[var(--color-light-natural)] hover:text-[var(--color-green)] transition-colors font-medium"
                             >
                                 {showAllMetrics ? "Show Less" : `Show ${ppcMetrics.length - 4} More Metrics`}
                             </button>
@@ -591,37 +665,102 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* Desktop Metrics Grid */}
-                <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+                <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 md:mb-8">
                     {ppcMetrics.map((item, i) => (
-                        <div key={i} className="bg-white border border-zinc-200 rounded p-4">
-                            <p className="text-sm text-gray-500">{item.label}</p>
-                            <p className="text-2xl font-bold text-zinc-800">{item.value}</p>
-                            {item.delta && (
-                                <p className={`text-sm font-medium ${item.positive ? "text-green-600" : "text-red-500"}`}>
-                                    {item.delta}
+                        <div 
+                            key={i} 
+                            className={`border rounded-lg shadow-sm p-6 transition-all duration-200 cursor-pointer hover:shadow-md ${
+                                selectedMetric === item.label 
+                                    ? 'bg-[var(--color-primary-searchmind)] border-[var(--color-primary-searchmind)]' 
+                                    : 'bg-white border-[var(--color-light-natural)] hover:border-[var(--color-green)]'
+                            }`}
+                            onClick={() => setSelectedMetric(item.label)}
+                        >
+                            <div className="flex flex-col">
+                                <p className={`text-sm font-medium mb-2 ${
+                                    selectedMetric === item.label 
+                                        ? 'text-white-important' 
+                                        : 'text-[var(--color-green)]'
+                                }`}>
+                                    {item.label}
                                 </p>
-                            )}
+                                <div className="flex items-baseline justify-between">
+                                    <p className={`text-2xl md:text-3xl font-bold ${
+                                        selectedMetric === item.label 
+                                            ? 'text-white-important' 
+                                            : 'text-[var(--color-dark-green)]'
+                                    }`}>
+                                        {item.value}
+                                    </p>
+                                    {item.delta && (
+                                        <div className="flex flex-col items-end">
+                                            <h6 className={`text-sm font-semibold ${
+                                                selectedMetric === item.label 
+                                                    ? (item.positive ? "text-green-200" : "text-red-200")
+                                                    : (item.positive ? "text-green-600" : "text-red-500")
+                                            }`}>
+                                                {item.delta}
+                                            </h6>
+                                            <h6 className={`text-xs mt-1 ${
+                                                selectedMetric === item.label 
+                                                    ? 'text-white-important opacity-80' 
+                                                    : 'text-[var(--color-green)]'
+                                            }`}>
+                                                vs prev period
+                                            </h6>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     ))}
                 </div>
 
                 {/* Mobile Chart Carousel */}
                 <div className="md:hidden mb-8">
-                    <div className="bg-white border border-zinc-200 rounded p-4 h-[280px]">
+                    <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-4 h-[280px]">
                         <div className="flex items-center justify-between mb-4">
-                            <p className="font-semibold text-sm">{chartComponents[activeChartIndex].title}</p>
+                            <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">{chartComponents[activeChartIndex].title}</h3>
                             <div className="flex items-center gap-2">
-                                {chartComponents[activeChartIndex].selector}
+                                {activeChartIndex === 0 && (
+                                    <select
+                                        value={selectedMetric}
+                                        onChange={(e) => setSelectedMetric(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
+                                    >
+                                        <option>Conv. Value</option>
+                                        <option>Ad Spend</option>
+                                        <option>ROAS</option>
+                                        <option>AOV</option>
+                                        <option>Conversions</option>
+                                        <option>Impressions</option>
+                                        <option>Clicks</option>
+                                        <option>CTR</option>
+                                        <option>CPC</option>
+                                        <option>Conv. Rate</option>
+                                    </select>
+                                )}
+                                {activeChartIndex === 2 && (
+                                    <select
+                                        value={cpcMetric}
+                                        onChange={(e) => setCpcMetric(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
+                                    >
+                                        <option>CPC</option>
+                                        <option>CTR</option>
+                                        <option>Conv. Rate</option>
+                                    </select>
+                                )}
                                 <div className="flex gap-1">
                                     <button
                                         onClick={() => navigateChart('prev')}
-                                        className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                        className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
                                     >
                                         <FaChevronLeft size={12} />
                                     </button>
                                     <button
                                         onClick={() => navigateChart('next')}
-                                        className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                        className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
                                     >
                                         <FaChevronRight size={12} />
                                     </button>
@@ -636,24 +775,31 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                         {chartComponents.map((_, index) => (
                             <span
                                 key={index}
-                                className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
+                                className={`block w-2 h-2 rounded-full transition-colors ${index === activeChartIndex ? 'bg-[var(--color-lime)]' : 'bg-[var(--color-light-natural)]'}`}
                             />
                         ))}
                     </div>
                 </div>
 
                 {/* Desktop Charts - First Chart */}
-                <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 mb-10 shadow-solid-l">
-                    <div className="flex justify-between items-center mb-4">
-                        <p className="font-semibold">{selectedMetric}</p>
+                <div className="hidden md:block bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mb-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">{selectedMetric}</h3>
                         <select
                             value={selectedMetric}
                             onChange={(e) => setSelectedMetric(e.target.value)}
-                            className="border px-3 py-1 rounded text-sm"
+                            className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                         >
-                            <option>Conversions</option>
+                            <option>Conv. Value</option>
                             <option>Ad Spend</option>
                             <option>ROAS</option>
+                            <option>AOV</option>
+                            <option>Conversions</option>
+                            <option>Impressions</option>
+                            <option>Clicks</option>
+                            <option>CTR</option>
+                            <option>CPC</option>
+                            <option>Conv. Rate</option>
                         </select>
                     </div>
                     <div className="w-full h-[300px]">
@@ -662,38 +808,38 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* Desktop Campaigns Table and Chart */}
-                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-zinc-200 rounded p-6 mb-8 shadow-solid-l">
+                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mb-8">
                     <div className="overflow-auto">
-                        <div className="flex justify-between items-center mb-10">
-                            <p className="font-semibold">Top Performance Campaigns</p>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Top Performance Campaigns</h3>
                             <div className="relative">
                                 <input
                                     type="text"
                                     placeholder="Search campaigns..."
                                     value={campaignSearch}
                                     onChange={(e) => setCampaignSearch(e.target.value)}
-                                    className="border px-3 py-1 rounded text-sm pr-8"
+                                    className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm pr-8 w-48 text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                 />
-                                <FaSearch className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                                <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)]" size={14} />
                             </div>
                         </div>
                         <div className="max-h-[500px] overflow-y-auto">
                             <table className="min-w-full text-sm">
-                                <thead className="bg-gray-50 border-b text-zinc-600 text-left">
+                                <thead className="bg-[var(--color-natural)] border-b text-[var(--color-dark-green)] text-left sticky top-0">
                                     <tr>
-                                        <th className="px-4 py-2">Campaign Name</th>
-                                        <th className="px-4 py-2">Clicks</th>
-                                        <th className="px-4 py-2">Impr</th>
-                                        <th className="px-4 py-2">CTR</th>
+                                        <th className="px-4 py-3 font-semibold">Campaign Name</th>
+                                        <th className="px-4 py-3 font-semibold">Clicks</th>
+                                        <th className="px-4 py-3 font-semibold">Impr</th>
+                                        <th className="px-4 py-3 font-semibold">CTR</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredTopCampaigns.map((row, i) => (
-                                        <tr key={i} className="border-b">
-                                            <td className="px-4 py-2 whitespace-nowrap">{row.campaign_name}</td>
-                                            <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
-                                            <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
-                                            <td className="px-4 py-2">{(row.ctr * 100).toFixed(2)}%</td>
+                                        <tr key={i} className="border-b border-[var(--color-light-natural)] hover:bg-[var(--color-natural)] transition-colors">
+                                            <td className="px-4 py-3 whitespace-nowrap text-[var(--color-dark-green)] font-medium">{row.campaign_name}</td>
+                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.clicks).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.impressions).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{(row.ctr * 100).toFixed(2)}%</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -702,16 +848,23 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                     </div>
 
                     <div className="flex flex-col h-full">
-                        <div className="flex justify-between items-center mb-10">
-                            <p className="font-semibold">Campaigns Over Time</p>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Campaigns Over Time</h3>
                             <select
-                                className="border px-3 py-1 rounded text-sm"
+                                className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                 value={selectedMetric}
                                 onChange={(e) => setSelectedMetric(e.target.value)}
                             >
-                                <option>Conversions</option>
+                                <option>Conv. Value</option>
                                 <option>Ad Spend</option>
                                 <option>ROAS</option>
+                                <option>AOV</option>
+                                <option>Conversions</option>
+                                <option>Impressions</option>
+                                <option>Clicks</option>
+                                <option>CTR</option>
+                                <option>CPC</option>
+                                <option>Conv. Rate</option>
                             </select>
                         </div>
                         <div className="flex-1 w-full h-[calc(100%-2rem)] min-h-[300px] max-h-[500px] overflow-y-auto">
@@ -721,50 +874,50 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* Mobile Campaigns Section */}
-                <div className="md:hidden bg-white border border-zinc-200 rounded mb-6 shadow-solid-l">
-                    <div className="p-4 border-b border-gray-100">
-                        <p className="font-semibold text-sm">Top Performance Campaigns</p>
+                <div className="md:hidden bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm mb-6">
+                    <div className="flex justify-between items-center p-4 border-b border-[var(--color-light-natural)]">
+                        <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">Top Performance Campaigns</h3>
                     </div>
-                    <div className="p-4 border-b">
+                    <div className="p-4 border-b border-[var(--color-light-natural)]">
                         <div className="relative">
                             <input
                                 type="text"
                                 placeholder="Search campaigns..."
                                 value={campaignSearch}
                                 onChange={(e) => setCampaignSearch(e.target.value)}
-                                className="border w-full px-3 py-2 rounded text-sm pr-8"
+                                className="border border-[var(--color-dark-natural)] w-full px-3 py-2 rounded-lg text-sm pr-8 text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                             />
-                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)]" size={14} />
                         </div>
                     </div>
                     <div className="p-1">
                         {filteredTopCampaigns.map((row, i) => (
-                            <div key={i} className="border-b border-gray-100 last:border-b-0">
+                            <div key={i} className="border-b border-[var(--color-light-natural)] last:border-b-0">
                                 <div
-                                    className="p-3 flex justify-between items-center"
+                                    className="p-3 flex justify-between items-center hover:bg-[var(--color-natural)] transition-colors cursor-pointer"
                                     onClick={() => toggleCampaignExpansion(i)}
                                 >
                                     <div className="truncate pr-2 w-4/5">
-                                        <span className="font-medium text-xs">{row.campaign_name}</span>
+                                        <span className="font-medium text-xs text-[var(--color-dark-green)]">{row.campaign_name}</span>
                                     </div>
                                     <FaChevronRight
-                                        className={`text-gray-400 transition-transform ${expandedCampaigns[i] ? 'rotate-90' : ''}`}
+                                        className={`text-[var(--color-green)] transition-transform ${expandedCampaigns[i] ? 'rotate-90' : ''}`}
                                         size={12}
                                     />
                                 </div>
                                 {expandedCampaigns[i] && (
-                                    <div className="px-4 pb-3 grid grid-cols-3 gap-1 text-xs">
+                                    <div className="px-4 pb-3 grid grid-cols-3 gap-1 text-xs bg-[var(--color-natural)]">
                                         <div>
-                                            <span className="text-gray-500 block">Clicks</span>
-                                            <span className="font-medium">{Math.round(row.clicks).toLocaleString('en-US')}</span>
+                                            <span className="text-[var(--color-green)] block font-medium">Clicks</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(row.clicks).toLocaleString('en-US')}</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 block">Impressions</span>
-                                            <span className="font-medium">{Math.round(row.impressions).toLocaleString('en-US')}</span>
+                                            <span className="text-[var(--color-green)] block font-medium">Impressions</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(row.impressions).toLocaleString('en-US')}</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 block">CTR</span>
-                                            <span className="font-medium">{(row.ctr * 100).toFixed(2)}%</span>
+                                            <span className="text-[var(--color-green)] block font-medium">CTR</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{(row.ctr * 100).toFixed(2)}%</span>
                                         </div>
                                     </div>
                                 )}
@@ -774,13 +927,13 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* Desktop CPC Chart */}
-                <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 shadow-solid-l">
-                    <div className="flex justify-between items-center mb-4">
-                        <p className="font-semibold">{cpcMetric}</p>
+                <div className="hidden md:block bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">{cpcMetric}</h3>
                         <select
                             value={cpcMetric}
                             onChange={(e) => setCpcMetric(e.target.value)}
-                            className="border px-3 py-1 rounded text-sm"
+                            className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                         >
                             <option>CPC</option>
                             <option>CTR</option>

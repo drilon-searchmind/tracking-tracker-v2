@@ -386,12 +386,30 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     }, [dateStart, dateEnd]);
 
     if (!impressions_data || !top_keywords || !top_urls || !urls_by_date || !keywords_by_date) {
-        return <div className="p-4 text-center">No data available for {customerId}</div>;
+        return (
+            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
+                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                    <Image
+                        width={1920}
+                        height={1080}
+                        src="/images/shape-dotted-light.svg"
+                        alt="bg"
+                        className="w-full h-full"
+                    />
+                </div>
+                <div className="px-0 md:px-20 mx-auto z-10 relative">
+                    <div className="flex justify-center items-center p-10 bg-white rounded-lg shadow-sm border border-[var(--color-natural)]">
+                        <p className="text-[var(--color-dark-green)] text-lg">No data available for {customerId}</p>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[#f8fafc] rounded-lg z-1"></div>
+        <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
                     width={1920}
@@ -405,63 +423,79 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
                     <Subheading headingText={customerName} />
-                    <h1 className="mb-3 md:mb-5 text-2xl md:text-3xl font-bold text-black xl:text-[44px]">SEO Dashboard</h1>
-                    <p className="text-gray-600 max-w-2xl text-sm md:text-base">
+                    <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] xl:text-[44px]">SEO Dashboard</h1>
+                    <p className="text-[var(--color-green)] max-w-2xl text-sm md:text-base">
                         Overview of clicks, impressions, CTR, and position based on Google Search Console data.
                     </p>
                 </div>
 
-                <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center mb-6 md:mb-10 justify-start md:justify-end">
-                    <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
-                        <select
-                            value={comparison}
-                            onChange={(e) => setComparison(e.target.value)}
-                            className="border px-4 py-2 rounded text-sm bg-white w-full md:w-auto"
-                        >
-                            <option>Previous Year</option>
-                            <option>Previous Period</option>
-                        </select>
+                {/* Controls Section */}
+                <div className="bg-white rounded-lg shadow-sm border border-[var(--color-natural)] p-4 md:p-6 mb-6 md:mb-8">
+                    <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center justify-end">
+                        <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
+                            <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Comparison:</label>
+                            <select
+                                value={comparison}
+                                onChange={(e) => setComparison(e.target.value)}
+                                className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent w-full md:w-auto transition-colors"
+                            >
+                                <option>Previous Year</option>
+                                <option>Previous Period</option>
+                            </select>
 
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
-                            <input
-                                type="date"
-                                value={dateStart}
-                                onChange={(e) => setDateStart(e.target.value)}
-                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
-                            />
-                            <span className="text-gray-400 hidden md:inline">→</span>
-                            <span className="text-gray-400 md:hidden">to</span>
-                            <input
-                                type="date"
-                                value={dateEnd}
-                                onChange={(e) => setDateEnd(e.target.value)}
-                                className="border px-2 py-2 rounded text-sm w-full md:w-auto"
-                            />
+                            <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Date Range:</label>
+                                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                    <input
+                                        type="date"
+                                        value={dateStart}
+                                        onChange={(e) => setDateStart(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    />
+                                    <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
+                                    <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
+                                    <input
+                                        type="date"
+                                        value={dateEnd}
+                                        onChange={(e) => setDateEnd(e.target.value)}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 md:mb-10">
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 md:mb-8">
                     {seoMetrics.map((item, i) => (
-                        <div key={i} className="bg-white border border-zinc-200 rounded p-4">
-                            <p className="text-sm text-gray-500">{item.label}</p>
-                            <p className="text-xl md:text-2xl font-bold text-zinc-800">{item.value}</p>
-                            {item.delta && (
-                                <p className={`text-sm font-medium ${item.positive ? "text-green-600" : "text-red-500"}`}>
-                                    {item.delta}
-                                </p>
-                            )}
+                        <div key={i} className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6">
+                            <div className="flex flex-col">
+                                <p className="text-sm font-medium text-[var(--color-green)] mb-2">{item.label}</p>
+                                <div className="flex items-baseline justify-between">
+                                    <p className="text-2xl md:text-3xl font-bold text-[var(--color-dark-green)]">{item.value}</p>
+                                    {item.delta && (
+                                        <div className="flex flex-col items-end">
+                                            <p className={`text-sm font-semibold ${item.positive ? "text-green-600" : "text-red-500"}`}>
+                                                {item.delta}
+                                            </p>
+                                            <p className="text-xs text-[var(--color-green)] mt-1">vs prev period</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="hidden md:block bg-white border border-zinc-200 rounded p-6 mb-10">
-                    <div className="flex justify-between items-center mb-4">
-                        <p className="font-semibold">Impressions</p>
+                {/* Desktop Charts */}
+                <div className="hidden md:block bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mb-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Impressions Overview</h3>
                         <select
                             value={metric}
                             onChange={(e) => setMetric(e.target.value)}
-                            className="border px-3 py-1 rounded text-sm"
+                            className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                         >
                             <option>Impressions</option>
                             <option>Clicks</option>
@@ -473,15 +507,16 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     </div>
                 </div>
 
+                {/* Mobile Charts */}
                 <div className="md:hidden mb-8">
-                    <div className="bg-white border border-zinc-200 rounded p-4 h-[280px]">
+                    <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-4 h-[280px]">
                         <div className="flex items-center justify-between mb-4">
-                            <p className="font-semibold text-sm">{chartComponents[activeChartIndex].title}</p>
+                            <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">{chartComponents[activeChartIndex].title}</h3>
                             <div className="flex items-center gap-2">
                                 <select
                                     value={metric}
                                     onChange={(e) => setMetric(e.target.value)}
-                                    className="border px-2 py-1 rounded text-xs"
+                                    className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
                                 >
                                     <option>Impressions</option>
                                     <option>Clicks</option>
@@ -490,13 +525,13 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                 <div className="flex gap-1">
                                     <button
                                         onClick={() => navigateChart('prev')}
-                                        className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                        className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
                                     >
                                         <FaChevronLeft size={12} />
                                     </button>
                                     <button
                                         onClick={() => navigateChart('next')}
-                                        className="text-sm bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
+                                        className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
                                     >
                                         <FaChevronRight size={12} />
                                     </button>
@@ -511,33 +546,32 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                         {chartComponents.map((_, index) => (
                             <span
                                 key={index}
-                                className={`block w-2 h-2 rounded-full ${index === activeChartIndex ? 'bg-blue-600' : 'bg-gray-300'}`}
+                                className={`block w-2 h-2 rounded-full transition-colors ${index === activeChartIndex ? 'bg-[var(--color-lime)]' : 'bg-[var(--color-light-natural)]'}`}
                             />
                         ))}
                     </div>
                 </div>
 
-                {/* Updated Keywords Section - Desktop */}
-                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-zinc-200 rounded p-6 mb-8 shadow-solid-l">
+                {/* Keywords Section - Desktop */}
+                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mb-8">
                     <div className="overflow-auto">
-                        <div className="flex justify-between items-center mb-4">
-                            <p className="font-semibold">Top Performance Keywords</p>
-                            <div className="flex items-center gap-2">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Top Performance Keywords</h3>
+                            <div className="flex items-center gap-3">
                                 <div className="relative">
-                                    {/* New search input for keywords */}
                                     <input
                                         type="text"
                                         placeholder="Search keywords..."
                                         value={keywordSearch}
                                         onChange={(e) => setKeywordSearch(e.target.value)}
-                                        className="border px-3 py-1 rounded text-sm pr-8"
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm pr-8 w-48 text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
-                                    <FaSearch className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                                    <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)]" size={14} />
                                 </div>
                                 <select
                                     value={filter}
                                     onChange={(e) => setFilter(e.target.value)}
-                                    className="border px-3 py-1 rounded text-sm"
+                                    className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                 >
                                     <option>Med brand</option>
                                     <option>Uden brand</option>
@@ -546,23 +580,23 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                         </div>
                         <div className="max-h-[500px] overflow-y-auto">
                             <table className="min-w-full text-sm">
-                                <thead className="bg-gray-50 border-b text-zinc-600 text-left">
+                                <thead className="bg-[var(--color-natural)] border-b text-[var(--color-dark-green)] text-left sticky top-0">
                                     <tr>
-                                        <th className="px-4 py-2">#</th>
-                                        <th className="px-4 py-2">Keyword</th>
-                                        <th className="px-4 py-2">Click</th>
-                                        <th className="px-4 py-2">Impr</th>
-                                        <th className="px-4 py-2">Position</th>
+                                        <th className="px-4 py-3 font-semibold">#</th>
+                                        <th className="px-4 py-3 font-semibold">Keyword</th>
+                                        <th className="px-4 py-3 font-semibold">Click</th>
+                                        <th className="px-4 py-3 font-semibold">Impr</th>
+                                        <th className="px-4 py-3 font-semibold">Position</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredTopKeywords.map((row, i) => (
-                                        <tr key={i} className="border-b">
-                                            <td className="px-4 py-2">{i + 1}</td>
-                                            <td className="px-4 py-2">{row.keyword}</td>
-                                            <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
-                                            <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
-                                            <td className="px-4 py-2">{row.position.toFixed(0)}</td>
+                                        <tr key={i} className="border-b border-[var(--color-light-natural)] hover:bg-[var(--color-natural)] transition-colors">
+                                            <td className="px-4 py-3 text-[var(--color-green)]">{i + 1}</td>
+                                            <td className="px-4 py-3 text-[var(--color-dark-green)] font-medium">{row.keyword}</td>
+                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.clicks).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.impressions).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{row.position.toFixed(0)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -571,10 +605,10 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     </div>
 
                     <div className="flex flex-col h-full">
-                        <div className="flex justify-between items-center mb-2">
-                            <p className="font-semibold">Keywords Over Time</p>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Keywords Over Time</h3>
                             <select
-                                className="border px-3 py-1 rounded text-sm"
+                                className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                 value={metric}
                                 onChange={(e) => setMetric(e.target.value)}
                             >
@@ -590,59 +624,59 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* Keywords Section - Mobile */}
-                <div className="md:hidden bg-white border border-zinc-200 rounded mb-6 shadow-solid-l">
-                    <div className="flex justify-between items-center p-4 border-b">
-                        <p className="font-semibold text-sm">Top Performance Keywords</p>
+                <div className="md:hidden bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm mb-6">
+                    <div className="flex justify-between items-center p-4 border-b border-[var(--color-light-natural)]">
+                        <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">Top Performance Keywords</h3>
                         <select
                             value={filter}
                             onChange={(e) => setFilter(e.target.value)}
-                            className="border px-2 py-1 rounded text-xs"
+                            className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
                         >
                             <option>Med brand</option>
                             <option>Uden brand</option>
                         </select>
                     </div>
-                    <div className="p-4 border-b">
+                    <div className="p-4 border-b border-[var(--color-light-natural)]">
                         <div className="relative">
                             <input
                                 type="text"
                                 placeholder="Search keywords..."
                                 value={keywordSearch}
                                 onChange={(e) => setKeywordSearch(e.target.value)}
-                                className="border w-full px-3 py-2 rounded text-sm pr-8"
+                                className="border border-[var(--color-dark-natural)] w-full px-3 py-2 rounded-lg text-sm pr-8 text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                             />
-                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)]" size={14} />
                         </div>
                     </div>
                     <div className="p-1">
                         {filteredTopKeywords.map((row, i) => (
-                            <div key={i} className="border-b border-gray-100 last:border-b-0">
+                            <div key={i} className="border-b border-[var(--color-light-natural)] last:border-b-0">
                                 <div
-                                    className="p-3 flex justify-between items-center"
+                                    className="p-3 flex justify-between items-center hover:bg-[var(--color-natural)] transition-colors cursor-pointer"
                                     onClick={() => toggleKeywordExpansion(i)}
                                 >
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs text-gray-500 w-5">{i + 1}.</span>
-                                        <span className="font-medium text-sm">{row.keyword}</span>
+                                        <span className="text-xs text-[var(--color-green)] w-5 font-medium">{i + 1}.</span>
+                                        <span className="font-medium text-sm text-[var(--color-dark-green)]">{row.keyword}</span>
                                     </div>
                                     <FaChevronRight
-                                        className={`text-gray-400 transition-transform ${expandedKeywords[i] ? 'rotate-90' : ''}`}
+                                        className={`text-[var(--color-green)] transition-transform ${expandedKeywords[i] ? 'rotate-90' : ''}`}
                                         size={12}
                                     />
                                 </div>
                                 {expandedKeywords[i] && (
-                                    <div className="px-4 pb-3 grid grid-cols-3 gap-1 text-xs">
+                                    <div className="px-4 pb-3 grid grid-cols-3 gap-1 text-xs bg-[var(--color-natural)]">
                                         <div>
-                                            <span className="text-gray-500 block">Clicks</span>
-                                            <span className="font-medium">{Math.round(row.clicks).toLocaleString('en-US')}</span>
+                                            <span className="text-[var(--color-green)] block font-medium">Clicks</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(row.clicks).toLocaleString('en-US')}</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 block">Impressions</span>
-                                            <span className="font-medium">{Math.round(row.impressions).toLocaleString('en-US')}</span>
+                                            <span className="text-[var(--color-green)] block font-medium">Impressions</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(row.impressions).toLocaleString('en-US')}</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 block">Position</span>
-                                            <span className="font-medium">{row.position.toFixed(0)}</span>
+                                            <span className="text-[var(--color-green)] block font-medium">Position</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{row.position.toFixed(0)}</span>
                                         </div>
                                     </div>
                                 )}
@@ -651,39 +685,39 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     </div>
                 </div>
 
-                {/* Desktop URLs Section - With search functionality */}
-                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-zinc-200 rounded p-6 mt-10 shadow-solid-10">
+                {/* URLs Section - Desktop */}
+                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mt-8">
                     <div className="overflow-auto">
-                        <div className="flex justify-between items-center mb-4">
-                            <p className="font-semibold">Top Performance URLs</p>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Top Performance URLs</h3>
                             <div className="relative">
                                 <input
                                     type="text"
                                     placeholder="Search URLs..."
                                     value={urlSearch}
                                     onChange={(e) => setUrlSearch(e.target.value)}
-                                    className="border px-3 py-1 rounded text-sm pr-8"
+                                    className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm pr-8 w-48 text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                 />
-                                <FaSearch className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                                <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)]" size={14} />
                             </div>
                         </div>
                         <div className="max-h-[500px] overflow-y-auto">
                             <table className="min-w-full text-sm">
-                                <thead className="bg-gray-50 border-b text-zinc-600 text-left">
+                                <thead className="bg-[var(--color-natural)] border-b text-[var(--color-dark-green)] text-left sticky top-0">
                                     <tr>
-                                        <th className="px-4 py-2">URL</th>
-                                        <th className="px-4 py-2">Click</th>
-                                        <th className="px-4 py-2">Impr</th>
-                                        <th className="px-4 py-2">CTR</th>
+                                        <th className="px-4 py-3 font-semibold">URL</th>
+                                        <th className="px-4 py-3 font-semibold">Click</th>
+                                        <th className="px-4 py-3 font-semibold">Impr</th>
+                                        <th className="px-4 py-3 font-semibold">CTR</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredTopUrls.map((row, i) => (
-                                        <tr key={i} className="border-b">
-                                            <td className="px-4 py-2 whitespace-nowrap">{row.url}</td>
-                                            <td className="px-4 py-2">{Math.round(row.clicks).toLocaleString('en-US')}</td>
-                                            <td className="px-4 py-2">{Math.round(row.impressions).toLocaleString('en-US')}</td>
-                                            <td className="px-4 py-2">{(row.ctr * 100).toFixed(2)}%</td>
+                                        <tr key={i} className="border-b border-[var(--color-light-natural)] hover:bg-[var(--color-natural)] transition-colors">
+                                            <td className="px-4 py-3 whitespace-nowrap text-[var(--color-dark-green)] font-medium">{row.url}</td>
+                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.clicks).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.impressions).toLocaleString('en-US')}</td>
+                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{(row.ctr * 100).toFixed(2)}%</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -692,10 +726,10 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     </div>
 
                     <div className="flex flex-col h-full">
-                        <div className="flex justify-between items-center mb-2">
-                            <p className="font-semibold">URLs Over Time</p>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">URLs Over Time</h3>
                             <select
-                                className="border px-3 py-1 rounded text-sm"
+                                className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                 value={metric}
                                 onChange={(e) => setMetric(e.target.value)}
                             >
@@ -710,57 +744,57 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     </div>
                 </div>
 
-                {/* Mobile URLs Section - With search functionality */}
-                <div className="md:hidden bg-white border border-zinc-200 rounded mt-6 shadow-solid-10">
-                    <div className="flex justify-between items-center p-4 border-b">
-                        <p className="font-semibold text-sm">Top Performance URLs</p>
+                {/* URLs Section - Mobile */}
+                <div className="md:hidden bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm mt-6">
+                    <div className="flex justify-between items-center p-4 border-b border-[var(--color-light-natural)]">
+                        <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">Top Performance URLs</h3>
                         <button
                             onClick={() => setShowMobileUrlDetails(!showMobileUrlDetails)}
-                            className="text-xs bg-gray-100 px-2 py-1 rounded"
+                            className="text-xs bg-[var(--color-natural)] text-[var(--color-dark-green)] px-3 py-1 rounded-lg hover:bg-[var(--color-light-natural)] transition-colors font-medium"
                         >
                             {showMobileUrlDetails ? 'Show Less' : 'View All'}
                         </button>
                     </div>
-                    <div className="p-4 border-b">
+                    <div className="p-4 border-b border-[var(--color-light-natural)]">
                         <div className="relative">
                             <input
                                 type="text"
                                 placeholder="Search URLs..."
                                 value={urlSearch}
                                 onChange={(e) => setUrlSearch(e.target.value)}
-                                className="border w-full px-3 py-2 rounded text-sm pr-8"
+                                className="border border-[var(--color-dark-natural)] w-full px-3 py-2 rounded-lg text-sm pr-8 text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                             />
-                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)]" size={14} />
                         </div>
                     </div>
                     <div className="p-1">
                         {(showMobileUrlDetails ? filteredTopUrls : filteredTopUrls.slice(0, 5)).map((row, i) => (
-                            <div key={i} className="border-b border-gray-100 last:border-b-0">
+                            <div key={i} className="border-b border-[var(--color-light-natural)] last:border-b-0">
                                 <div
-                                    className="p-3 flex justify-between items-center"
+                                    className="p-3 flex justify-between items-center hover:bg-[var(--color-natural)] transition-colors cursor-pointer"
                                     onClick={() => toggleUrlExpansion(i)}
                                 >
                                     <div className="truncate pr-2 w-4/5">
-                                        <span className="font-medium text-xs">{row.url}</span>
+                                        <span className="font-medium text-xs text-[var(--color-dark-green)]">{row.url}</span>
                                     </div>
                                     <FaChevronRight
-                                        className={`text-gray-400 transition-transform ${expandedUrls[i] ? 'rotate-90' : ''}`}
+                                        className={`text-[var(--color-green)] transition-transform ${expandedUrls[i] ? 'rotate-90' : ''}`}
                                         size={12}
                                     />
                                 </div>
                                 {expandedUrls[i] && (
-                                    <div className="px-4 pb-3 grid grid-cols-3 gap-1 text-xs">
+                                    <div className="px-4 pb-3 grid grid-cols-3 gap-1 text-xs bg-[var(--color-natural)]">
                                         <div>
-                                            <span className="text-gray-500 block">Clicks</span>
-                                            <span className="font-medium">{Math.round(row.clicks).toLocaleString('en-US')}</span>
+                                            <span className="text-[var(--color-green)] block font-medium">Clicks</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(row.clicks).toLocaleString('en-US')}</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 block">Impressions</span>
-                                            <span className="font-medium">{Math.round(row.impressions).toLocaleString('en-US')}</span>
+                                            <span className="text-[var(--color-green)] block font-medium">Impressions</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(row.impressions).toLocaleString('en-US')}</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 block">CTR</span>
-                                            <span className="font-medium">{(row.ctr * 100).toFixed(2)}%</span>
+                                            <span className="text-[var(--color-green)] block font-medium">CTR</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{(row.ctr * 100).toFixed(2)}%</span>
                                         </div>
                                     </div>
                                 )}
@@ -768,10 +802,10 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                         ))}
                     </div>
                     {filteredTopUrls.length > 5 && !showMobileUrlDetails && !urlSearch && (
-                        <div className="p-3 border-t border-gray-100 text-center">
+                        <div className="p-3 border-t border-[var(--color-light-natural)] text-center">
                             <button
                                 onClick={() => setShowMobileUrlDetails(true)}
-                                className="text-blue-600 text-xs font-medium"
+                                className="text-[var(--color-lime)] text-xs font-semibold hover:text-[var(--color-green)] transition-colors"
                             >
                                 Show all {filteredTopUrls.length} URLs
                             </button>

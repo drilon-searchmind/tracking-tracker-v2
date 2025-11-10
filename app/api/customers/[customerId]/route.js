@@ -1,6 +1,7 @@
 import { dbConnect } from "@/lib/dbConnect";
 import Customer from "@/models/Customer";
-import CustomerSettings from "@/models/CustomerSettings"; // Add this import
+import CustomerSettings from "@/models/CustomerSettings";
+import ParentCustomer from "@/models/ParentCustomer"; // Add this import
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
@@ -12,11 +13,14 @@ export async function GET(req, { params }) {
     try {
         await dbConnect();
 
-        const customer = await Customer.findById(customerId, {
-            bigQueryCustomerId: 1,
-            bigQueryProjectId: 1,
-            name: 1,
-        });
+        const customer = await Customer.findById(customerId)
+            .populate('parentCustomer', 'name')
+            .select({
+                bigQueryCustomerId: 1,
+                bigQueryProjectId: 1,
+                name: 1,
+                parentCustomer: 1,
+            });
 
         if (!customer) {
             return new Response(JSON.stringify({ message: "::: Customer not found" }), { status: 404 });
@@ -29,6 +33,7 @@ export async function GET(req, { params }) {
             bigQueryCustomerId: customer.bigQueryCustomerId,
             bigQueryProjectId: customer.bigQueryProjectId,
             name: customer.name,
+            parentCustomer: customer.parentCustomer,
             customerMetaID: customerSettings?.customerMetaID || "",
             metricPreference: customerSettings?.metricPreference || "ROAS/POAS",
             customerValuta: customerSettings?.customerValuta || "DKK",
@@ -52,17 +57,18 @@ export async function PUT(req, { params }) {
         await dbConnect();
 
         const body = await req.json();
-        const { name, bigQueryCustomerId, bigQueryProjectId } = body;
+        const { name, bigQueryCustomerId, bigQueryProjectId, parentCustomer } = body;
 
         const updateData = {};
         if (name) updateData.name = name;
         if (bigQueryCustomerId) updateData.bigQueryCustomerId = bigQueryCustomerId;
         if (bigQueryProjectId) updateData.bigQueryProjectId = bigQueryProjectId;
+        if (parentCustomer !== undefined) updateData.parentCustomer = parentCustomer || null;
         
         updateData.updatedAt = new Date();
 
         if (Object.keys(updateData).length <= 1) { 
-            return new Response(JSON.stringify({ message: "::: At least one field (name, bigQueryCustomerId, or bigQueryProjectId) is required" }), { status: 400 });
+            return new Response(JSON.stringify({ message: "::: At least one field is required for update" }), { status: 400 });
         }
 
         const customer = await Customer.findByIdAndUpdate(
@@ -71,7 +77,7 @@ export async function PUT(req, { params }) {
             {
                 new: true,
             }
-        );
+        ).populate('parentCustomer', 'name');
 
         if (!customer) {
             return new Response(JSON.stringify({ message: "::: Customer not found" }), { status: 404 });
@@ -83,6 +89,7 @@ export async function PUT(req, { params }) {
         return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });
     }
 }
+
 export async function DELETE(req, { params }) {
     const resolvedParams = await params;
     const customerId = resolvedParams.customerId;

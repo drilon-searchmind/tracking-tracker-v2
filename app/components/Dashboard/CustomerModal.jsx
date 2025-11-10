@@ -10,7 +10,9 @@ import Select from "react-select";
 export default function CustomerModal({ closeModal }) {
     const [search, setSearch] = useState("");
     const [customers, setCustomers] = useState([]);
+    const [parentCustomers, setParentCustomers] = useState([]);
     const [filteredCustomers, setFilteredCustomers] = useState([]);
+    const [filteredParentCustomers, setFilteredParentCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddCustomerForm, setShowAddCustomerForm] = useState(false);
     const [newCustomer, setNewCustomer] = useState({
@@ -72,12 +74,19 @@ export default function CustomerModal({ closeModal }) {
                 const userEmail = session?.user?.email || "";
                 const isAdmin = session?.user?.isAdmin || false
 
+                // Fetch all customers with parent customer data
                 const allCustomersResponse = await fetch("/api/customers");
                 const allCustomers = await allCustomersResponse.json();
 
+                // Fetch all parent customers
+                const parentCustomersResponse = await fetch("/api/parent-customers");
+                const allParentCustomers = await parentCustomersResponse.json();
+
                 if (isAdmin) {
                     setCustomers(allCustomers || []);
+                    setParentCustomers(allParentCustomers || []);
                     setFilteredCustomers(allCustomers || []);
+                    setFilteredParentCustomers(allParentCustomers || []);
                     return;
                 }
 
@@ -92,12 +101,28 @@ export default function CustomerModal({ closeModal }) {
                         return customerIds.some(id => id === customerId);
                     });
 
+                    // Filter parent customers that have accessible child customers
+                    const accessibleParentIds = new Set();
+                    accessibleCustomers.forEach(customer => {
+                        if (customer.parentCustomer) {
+                            accessibleParentIds.add(customer.parentCustomer._id || customer.parentCustomer);
+                        }
+                    });
+
+                    const accessibleParentCustomers = allParentCustomers.filter(parent => 
+                        accessibleParentIds.has(parent._id)
+                    );
+
                     setCustomers(accessibleCustomers || []);
+                    setParentCustomers(accessibleParentCustomers || []);
                     setFilteredCustomers(accessibleCustomers || []);
+                    setFilteredParentCustomers(accessibleParentCustomers || []);
                 } else {
                     console.log("No sharings found for this user");
                     setCustomers([]);
+                    setParentCustomers([]);
                     setFilteredCustomers([]);
+                    setFilteredParentCustomers([]);
                 }
             } catch (error) {
                 console.error("Error fetching customers:", error);
@@ -112,12 +137,40 @@ export default function CustomerModal({ closeModal }) {
     }, [session]);
 
     useEffect(() => {
-        const filtered = customers.filter((customer) =>
-            customer.name.toLowerCase().includes(search.toLowerCase())
+        const searchLower = search.toLowerCase();
+        
+        // Filter customers
+        const filteredCusts = customers.filter((customer) =>
+            customer.name.toLowerCase().includes(searchLower)
         );
-        console.log("Filtered customers:", filtered);
-        setFilteredCustomers(filtered);
-    }, [search, customers]);
+        
+        // Filter parent customers (by name or if any of their children match)
+        const filteredParents = parentCustomers.filter(parent => {
+            const parentNameMatches = parent.name.toLowerCase().includes(searchLower);
+            const hasMatchingChildren = customers.some(customer => 
+                customer.parentCustomer && 
+                (customer.parentCustomer._id === parent._id || customer.parentCustomer === parent._id) &&
+                customer.name.toLowerCase().includes(searchLower)
+            );
+            return parentNameMatches || hasMatchingChildren;
+        });
+
+        setFilteredCustomers(filteredCusts);
+        setFilteredParentCustomers(filteredParents);
+    }, [search, customers, parentCustomers]);
+
+    // Group customers by parent
+    const getCustomersByParent = (parentId) => {
+        return filteredCustomers.filter(customer => 
+            customer.parentCustomer && 
+            (customer.parentCustomer._id === parentId || customer.parentCustomer === parentId)
+        );
+    };
+
+    // Get customers without parents
+    const getCustomersWithoutParent = () => {
+        return filteredCustomers.filter(customer => !customer.parentCustomer);
+    };
 
     const handleAddCustomer = async () => {
         if (!newCustomer.name ||
@@ -269,19 +322,64 @@ export default function CustomerModal({ closeModal }) {
                                 <li className="flex justify-center py-4">
                                     <div className="animate-spin rounded h-8 w-8 border-t-2 border-b-2 border-[var(--color-lime)]"></div>
                                 </li>
-                            ) : filteredCustomers.length > 0 ? (
-                                filteredCustomers.map((customer) => (
-                                    <li
-                                        key={customer._id}
-                                        className="cursor-pointer px-4 py-3 mt-2 text-sm rounded-lg hover:bg-[var(--color-natural)] text-[var(--color-dark-green)] border border-gray-100 transition-colors"
-                                        onClick={() => {
-                                            closeModal();
-                                            router.push(`/dashboard/${customer._id}`);
-                                        }}
-                                    >
-                                        {customer.name}
-                                    </li>
-                                ))
+                            ) : filteredParentCustomers.length > 0 || getCustomersWithoutParent().length > 0 ? (
+                                <>
+                                    {filteredParentCustomers.map((parent) => (
+                                        <li key={parent._id} className="mb-4">
+                                            <div 
+                                                className="font-bold text-[var(--color-dark-green)] mb-2 cursor-pointer hover:text-[var(--color-green)] transition-colors flex items-center"
+                                                onClick={() => {
+                                                    closeModal();
+                                                    router.push(`/roll-up/${parent._id}`);
+                                                }}
+                                            >
+                                                {parent.name}
+                                                <span className="ml-2 text-xs text-gray-500 font-normal">
+                                                    ({getCustomersByParent(parent._id).length} customers)
+                                                </span>
+                                            </div>
+                                            <ul className="ml-4">
+                                                {getCustomersByParent(parent._id).map((customer) => (
+                                                    <li
+                                                        key={customer._id}
+                                                        className="cursor-pointer px-3 py-2 mt-1 text-sm rounded-lg hover:bg-[var(--color-natural)] text-[var(--color-dark-green)] border border-gray-100 transition-colors"
+                                                        onClick={() => {
+                                                            closeModal();
+                                                            router.push(`/dashboard/${customer._id}`);
+                                                        }}
+                                                    >
+                                                        <span className="mr-2">↳</span>
+                                                        {customer.name}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </li>
+                                    ))}
+                                    
+                                    {getCustomersWithoutParent().length > 0 && (
+                                        <li className="mb-4">
+                                            {filteredParentCustomers.length > 0 && (
+                                                <div className="font-bold text-[var(--color-dark-green)] mb-2">
+                                                    Independent Customers
+                                                </div>
+                                            )}
+                                            <ul className={filteredParentCustomers.length > 0 ? "ml-4" : ""}>
+                                                {getCustomersWithoutParent().map((customer) => (
+                                                    <li
+                                                        key={customer._id}
+                                                        className="cursor-pointer px-3 py-2 mt-1 text-sm rounded-lg hover:bg-[var(--color-natural)] text-[var(--color-dark-green)] border border-gray-100 transition-colors"
+                                                        onClick={() => {
+                                                            closeModal();
+                                                            router.push(`/dashboard/${customer._id}`);
+                                                        }}
+                                                    >
+                                                        {customer.name}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </li>
+                                    )}
+                                </>
                             ) : (
                                 <li className="text-[var(--color-green)] px-4 py-3 text-center">
                                     No customers found

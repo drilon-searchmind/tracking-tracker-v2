@@ -6,45 +6,114 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
     const [settings, setSettings] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [parentCustomers, setParentCustomers] = useState([]);
+    const [showNewParentForm, setShowNewParentForm] = useState(false);
+    const [newParentData, setNewParentData] = useState({
+        name: "",
+        description: "",
+        industry: "",
+        headquarters: "",
+        website: ""
+    });
 
     useEffect(() => {
-        async function fetchSettings() {
+        async function fetchData() {
             console.log("Fetching settings for customer ID:", customerId);
             
             try {
-                const response = await fetch(`/api/customer-settings/${customerId}`);
-                console.log("Settings response status:", response.status);
+                // Fetch customer settings
+                const settingsResponse = await fetch(`/api/customer-settings/${customerId}`);
+                const settingsData = await settingsResponse.json();
                 
-                const data = await response.json();
-                console.log("Fetched settings data:", data);
+                // Fetch customer info (including parent customer)
+                const customerResponse = await fetch(`/api/customers/${customerId}`);
+                const customerData = await customerResponse.json();
+                
+                // Fetch parent customers
+                const parentCustomersResponse = await fetch('/api/parent-customers');
+                const parentCustomersData = await parentCustomersResponse.json();
                 
                 // Map API response fields to component fields
-                const apiData = data.data || data;
+                const apiData = settingsData.data || settingsData;
                 setSettings({
                     metricPreference: apiData.metricPreference || "",
                     backendStoreCurrency: apiData.customerValutaCode || "DKK",
                     clickupId: apiData.customerClickupID || "",
                     metaCustomerCountry: apiData.customerMetaID || "",
-                    excludeMetaCountries: apiData.customerMetaIDExclude || ""
+                    excludeMetaCountries: apiData.customerMetaIDExclude || "",
+                    parentCustomer: customerData.parentCustomer?._id || ""
                 });
+                
+                setParentCustomers(parentCustomersData || []);
             } catch (error) {
-                console.error("Error fetching settings:", error);
+                console.error("Error fetching data:", error);
                 setSettings({
                     metricPreference: "",
                     backendStoreCurrency: "DKK",
                     clickupId: "",
                     metaCustomerCountry: "",
-                    excludeMetaCountries: ""
+                    excludeMetaCountries: "",
+                    parentCustomer: ""
                 });
+                setParentCustomers([]);
             } finally {
                 setLoading(false);
             }
         }
         
         if (customerId) {
-            fetchSettings();
+            fetchData();
         }
     }, [customerId]);
+
+    const handleCreateParentCustomer = async () => {
+        if (!newParentData.name.trim()) {
+            alert("Parent customer name is required");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/parent-customers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newParentData),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                const createdParent = result.parentCustomer;
+                
+                // Add to parent customers list
+                setParentCustomers(prev => [...prev, createdParent]);
+                
+                // Select the newly created parent
+                setSettings(prev => ({
+                    ...prev,
+                    parentCustomer: createdParent._id
+                }));
+                
+                // Reset form and hide it
+                setNewParentData({
+                    name: "",
+                    description: "",
+                    industry: "",
+                    headquarters: "",
+                    website: ""
+                });
+                setShowNewParentForm(false);
+                
+                alert("Parent customer created successfully!");
+            } else {
+                const errorData = await response.json();
+                alert(`Failed to create parent customer: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error("Error creating parent customer:", error);
+            alert("An error occurred while creating parent customer.");
+        }
+    };
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -52,10 +121,9 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
         
         try {
             console.log("Saving settings for customer ID:", customerId);
-            console.log("Settings data to save:", settings);
             
-            // Map component fields back to API fields
-            const apiPayload = {
+            // Save customer settings
+            const settingsPayload = {
                 metricPreference: settings.metricPreference,
                 customerValutaCode: settings.backendStoreCurrency,
                 customerClickupID: settings.clickupId,
@@ -63,24 +131,31 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                 customerMetaIDExclude: settings.excludeMetaCountries
             };
             
-            console.log("API payload:", apiPayload);
-            
-            const response = await fetch(`/api/customer-settings/${customerId}`, {
+            const settingsResponse = await fetch(`/api/customer-settings/${customerId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(apiPayload),
+                body: JSON.stringify(settingsPayload),
             });
 
-            console.log("Save settings response status:", response.status);
+            // Save customer parent relationship
+            const customerPayload = {
+                parentCustomer: settings.parentCustomer || null
+            };
+            
+            const customerResponse = await fetch(`/api/customers/${customerId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(customerPayload),
+            });
 
-            if (response.ok) {
+            if (settingsResponse.ok && customerResponse.ok) {
                 alert("Settings updated successfully!");
             } else {
-                const errorText = await response.text();
-                console.error("Save settings error:", errorText);
-                alert("Failed to update settings.");
+                alert("Failed to update some settings.");
             }
         } catch (error) {
             console.error("Error updating settings:", error);
@@ -111,6 +186,106 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
             
             <form onSubmit={handleSave} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Parent Customer Section */}
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Parent Customer (Optional)</label>
+                        <div className="space-y-3">
+                            <select
+                                value={settings?.parentCustomer || ""}
+                                onChange={(e) => setSettings({ ...settings, parentCustomer: e.target.value })}
+                                className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                            >
+                                <option value="">No parent customer</option>
+                                {parentCustomers.map(parent => (
+                                    <option key={parent._id} value={parent._id}>
+                                        {parent.name}
+                                    </option>
+                                ))}
+                            </select>
+                            
+                            <button
+                                type="button"
+                                onClick={() => setShowNewParentForm(!showNewParentForm)}
+                                className="text-sm text-[var(--color-dark-green)] hover:text-[var(--color-green)] transition-colors underline"
+                            >
+                                {showNewParentForm ? "Cancel" : "Create new parent customer"}
+                            </button>
+                            
+                            {showNewParentForm && (
+                                <div className="border border-[var(--color-dark-natural)] rounded-lg p-4 space-y-3 bg-gray-50">
+                                    <h4 className="font-medium text-[var(--color-dark-green)]">Create New Parent Customer</h4>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-medium text-[var(--color-dark-green)] mb-1">Name *</label>
+                                            <input
+                                                type="text"
+                                                value={newParentData.name}
+                                                onChange={(e) => setNewParentData({ ...newParentData, name: e.target.value })}
+                                                className="w-full border border-[var(--color-dark-natural)] rounded px-2 py-1 text-sm"
+                                                placeholder="e.g., Pompdelux"
+                                                required
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-medium text-[var(--color-dark-green)] mb-1">Industry</label>
+                                            <input
+                                                type="text"
+                                                value={newParentData.industry}
+                                                onChange={(e) => setNewParentData({ ...newParentData, industry: e.target.value })}
+                                                className="w-full border border-[var(--color-dark-natural)] rounded px-2 py-1 text-sm"
+                                                placeholder="e.g., E-commerce"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-medium text-[var(--color-dark-green)] mb-1">Headquarters</label>
+                                            <input
+                                                type="text"
+                                                value={newParentData.headquarters}
+                                                onChange={(e) => setNewParentData({ ...newParentData, headquarters: e.target.value })}
+                                                className="w-full border border-[var(--color-dark-natural)] rounded px-2 py-1 text-sm"
+                                                placeholder="e.g., Copenhagen, Denmark"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-medium text-[var(--color-dark-green)] mb-1">Website</label>
+                                            <input
+                                                type="url"
+                                                value={newParentData.website}
+                                                onChange={(e) => setNewParentData({ ...newParentData, website: e.target.value })}
+                                                className="w-full border border-[var(--color-dark-natural)] rounded px-2 py-1 text-sm"
+                                                placeholder="https://example.com"
+                                            />
+                                        </div>
+                                        
+                                        <div className="md:col-span-2">
+                                            <label className="block text-xs font-medium text-[var(--color-dark-green)] mb-1">Description</label>
+                                            <textarea
+                                                value={newParentData.description}
+                                                onChange={(e) => setNewParentData({ ...newParentData, description: e.target.value })}
+                                                className="w-full border border-[var(--color-dark-natural)] rounded px-2 py-1 text-sm"
+                                                rows="2"
+                                                placeholder="Brief description of the parent company"
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <button
+                                        type="button"
+                                        onClick={handleCreateParentCustomer}
+                                        className="bg-[var(--color-dark-green)] text-white py-1 px-3 rounded text-sm font-medium hover:bg-[var(--color-green)] transition-colors"
+                                    >
+                                        Create Parent Customer
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Existing fields */}
                     <div>
                         <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Metric Preference</label>
                         <input

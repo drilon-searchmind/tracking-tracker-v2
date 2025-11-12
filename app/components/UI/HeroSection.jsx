@@ -112,11 +112,11 @@ const HeroSection = () => {
                         {/* Stats */}
                         <div className="grid grid-cols-3 gap-8">
                             <div>
-                                <div className="text-2xl font-bold text-[var(--color-dark-green)]">500+</div>
-                                <div className="text-sm text-[var(--color-green)]">Active Campaigns</div>
+                                <div className="text-2xl font-bold text-[var(--color-dark-green)]">100+</div>
+                                <div className="text-sm text-[var(--color-green)]">Available Source Connections</div>
                             </div>
                             <div>
-                                <div className="text-2xl font-bold text-[var(--color-dark-green)]">98%</div>
+                                <div className="text-2xl font-bold text-[var(--color-dark-green)]">100%</div>
                                 <div className="text-sm text-[var(--color-green)]">Data Accuracy</div>
                             </div>
                             <div>

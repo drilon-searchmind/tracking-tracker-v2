@@ -8,7 +8,8 @@ export default function RollUpChildCustomers({
     customer_metrics: initialCustomerMetrics, 
     parentCustomerId,
     initialStartDate,
-    initialEndDate 
+    initialEndDate,
+    onDataUpdate
 }) {
     const [startDate, setStartDate] = useState(initialStartDate);
     const [endDate, setEndDate] = useState(initialEndDate);
@@ -54,7 +55,13 @@ export default function RollUpChildCustomers({
 
             if (response.ok) {
                 const data = await response.json();
-                setCustomerMetrics(data.customer_metrics || []);
+                const metrics = data.customer_metrics || [];
+                setCustomerMetrics(metrics);
+                
+                // Call the callback to update parent component
+                if (onDataUpdate) {
+                    onDataUpdate(metrics);
+                }
             } else {
                 console.error('Failed to fetch filtered roll-up data');
             }
@@ -68,6 +75,13 @@ export default function RollUpChildCustomers({
     useEffect(() => {
         fetchFilteredData(startDate, endDate);
     }, [startDate, endDate]);
+
+    // Also call onDataUpdate when childCustomers change (initial load)
+    useEffect(() => {
+        if (customerMetrics.length > 0 && onDataUpdate) {
+            onDataUpdate(customerMetrics);
+        }
+    }, [customerMetrics, onDataUpdate]);
 
     return (
         <div className="bg-white rounded-xl shadow-solid-l border border-gray-100 p-6 mb-8">

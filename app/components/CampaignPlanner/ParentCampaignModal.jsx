@@ -33,6 +33,7 @@ export default function ParentCampaignModal({
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedServices, setSelectedServices] = useState([]);
+    const [budgetDistribution, setBudgetDistribution] = useState({});
 
     const countryOptions = countryCodes.map(country => ({
         value: country.code,
@@ -91,10 +92,72 @@ export default function ParentCampaignModal({
 
     const handleServiceChange = (selectedOptions) => {
         setSelectedServices(selectedOptions);
+        const services = selectedOptions ? selectedOptions.map(option => option.value) : [];
+        
         setFormData((prev) => ({
             ...prev,
-            service: selectedOptions ? selectedOptions.map(option => option.value) : [],
+            service: services,
         }));
+
+        // Initialize budget distribution equally
+        if (services.length > 0) {
+            const equalPercentage = Math.floor(100 / services.length);
+            const remainder = 100 - (equalPercentage * services.length);
+            
+            const newDistribution = {};
+            services.forEach((service, index) => {
+                // Give the remainder to the first service to ensure 100% total
+                newDistribution[service] = index === 0 ? equalPercentage + remainder : equalPercentage;
+            });
+            setBudgetDistribution(newDistribution);
+        } else {
+            setBudgetDistribution({});
+        }
+    };
+
+    const handleBudgetDistributionChange = (service, percentage) => {
+        setBudgetDistribution(prev => {
+            const newDistribution = { ...prev };
+            const oldPercentage = newDistribution[service] || 0;
+            const difference = percentage - oldPercentage;
+            
+            // Update the changed service
+            newDistribution[service] = percentage;
+            
+            // Calculate total of other services
+            const otherServices = Object.keys(newDistribution).filter(s => s !== service);
+            const otherServicesTotal = otherServices.reduce((sum, s) => sum + newDistribution[s], 0);
+            
+            // If total would exceed 100%, proportionally reduce other services
+            if (percentage + otherServicesTotal > 100) {
+                const excessPercentage = (percentage + otherServicesTotal) - 100;
+                const adjustmentRatio = excessPercentage / otherServicesTotal;
+                
+                otherServices.forEach(s => {
+                    newDistribution[s] = Math.max(0, Math.round(newDistribution[s] - (newDistribution[s] * adjustmentRatio)));
+                });
+            }
+            
+            // Ensure total is exactly 100%
+            const currentTotal = Object.values(newDistribution).reduce((sum, val) => sum + val, 0);
+            if (currentTotal !== 100 && otherServices.length > 0) {
+                const adjustment = 100 - currentTotal;
+                // Add/subtract the difference to/from the first other service
+                newDistribution[otherServices[0]] = Math.max(0, newDistribution[otherServices[0]] + adjustment);
+            }
+            
+            return newDistribution;
+        });
+    };
+
+    const getTotalDistribution = () => {
+        return Object.values(budgetDistribution).reduce((sum, percentage) => sum + percentage, 0);
+    };
+
+    const getServiceBudget = (service) => {
+        const totalBudget = parseFloat(formData.budget) || 0;
+        const percentage = budgetDistribution[service] || 0;
+        return (totalBudget * percentage / 100).toFixed(2);
     };
 
     const handleSubmit = async (e) => {
@@ -105,13 +168,27 @@ export default function ParentCampaignModal({
             return;
         }
 
+        // Validate budget distribution if services are selected
+        if (formData.service.length > 0 && formData.budget) {
+            const totalDistribution = getTotalDistribution();
+            if (totalDistribution !== 100) {
+                showToast("Budget distribution must total exactly 100%", "error");
+                return;
+            }
+        }
+
         try {
             setIsSubmitting(true);
+
+            const requestData = {
+                ...formData,
+                budgetDistribution: budgetDistribution
+            };
 
             const response = await fetch(`/api/parent-campaigns/${customerId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(requestData),
             });
 
             if (response.ok) {
@@ -131,6 +208,7 @@ export default function ParentCampaignModal({
                     materialLinks: ""
                 });
                 setSelectedServices([]);
+                setBudgetDistribution({});
                 onSuccess?.();
                 handleClose();
             } else {
@@ -199,6 +277,27 @@ export default function ParentCampaignModal({
                             }}
                         />
                     </div>
+
+                    {selectedServices.length > 0 && (
+                        <div>
+                            <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Budget Distribution</label>
+                            {selectedServices.map(service => (
+                                <div key={service.value} className="mb-4">
+                                    <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-1">
+                                        {service.label} ({budgetDistribution[service.value] || 0}% - {getServiceBudget(service.value)}) DKK
+                                    </label>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={budgetDistribution[service.value] || 0}
+                                        onChange={(e) => handleBudgetDistributionChange(service.value, parseInt(e.target.value))}
+                                        className="w-full"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     <div>
                         <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Country Code</label>

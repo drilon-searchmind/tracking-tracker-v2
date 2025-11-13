@@ -1,0 +1,254 @@
+[
+  {
+    "first_name": "Admin",
+    "last_name": "Searchmind",
+    "email": "admin@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Alexander",
+    "last_name": "Reuter",
+    "email": "alre@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Alexander",
+    "last_name": "Achenza",
+    "email": "aa@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Amalie",
+    "last_name": "Adelgaard",
+    "email": "aad@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Anders",
+    "last_name": "Kunnerup",
+    "email": "ak@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Anders",
+    "last_name": "Fabricius Thomsen",
+    "email": "at@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Anders",
+    "last_name": "Bjerre",
+    "email": "anders@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Anders",
+    "last_name": "Bisgaard",
+    "email": "abi@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Anders",
+    "last_name": "Schneider",
+    "email": "asc@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Andreas",
+    "last_name": "Selling Petersen",
+    "email": "asp@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Andreas",
+    "last_name": "Stausholm",
+    "email": "anst@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Annesofie",
+    "last_name": "Bjørnstad",
+    "email": "anbj@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Asger",
+    "last_name": "Kallehauge",
+    "email": "akal@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Aske",
+    "last_name": "Warming",
+    "email": "aw@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Brian",
+    "last_name": "Ahle",
+    "email": "brian@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Christian",
+    "last_name": "Grøtner",
+    "email": "christian@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Drilon",
+    "last_name": "Braha",
+    "email": "dbr@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Ida",
+    "last_name": "Boraghi",
+    "email": "ibo@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Info",
+    "last_name": "Searchmind",
+    "email": "info@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Jacob",
+    "last_name": "Struve",
+    "email": "jst@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Jakob",
+    "last_name": "Bøgh",
+    "email": "jabo@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Jonas",
+    "last_name": "Sandbjerg Hansen",
+    "email": "jsh@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Karsten",
+    "last_name": "Hansen",
+    "email": "kh@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Kasper",
+    "last_name": "Mathiesen",
+    "email": "km@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Linnea",
+    "last_name": "Harken",
+    "email": "lha@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Magnus",
+    "last_name": "Elmstrøm",
+    "email": "mael@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Magnus",
+    "last_name": "Rønnest France",
+    "email": "mrf@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Marcus",
+    "last_name": "Michaelsen",
+    "email": "mmi@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Maria",
+    "last_name": "Østergaard",
+    "email": "moe@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Martin",
+    "last_name": "Hansen",
+    "email": "mh@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Mette",
+    "last_name": "Pej Stensballe",
+    "email": "mps@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Mikkel",
+    "last_name": "Mathias Dideriksen",
+    "email": "mmd@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Nanna",
+    "last_name": "Gøbel",
+    "email": "ngo@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Nicholai",
+    "last_name": "Bach",
+    "email": "nb@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Nicolai",
+    "last_name": "Damgaard",
+    "email": "nicolai@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Nicoline Britt Tordrup",
+    "last_name": "Lage",
+    "email": "nbl@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Nikolaj",
+    "last_name": "Ølgaard",
+    "email": "niol@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Oliver",
+    "last_name": "Hædersdal Ib",
+    "email": "ohi@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Oskar",
+    "last_name": "Sylvest",
+    "email": "osy@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Rasmus",
+    "last_name": "Sahlholdt",
+    "email": "rs@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Rasmus",
+    "last_name": "Kønig Lund",
+    "email": "rkl@searchmind.dk",
+    "status": "Active"
+  },
+  {
+    "first_name": "Simon",
+    "last_name": "Pagh Kristensen",
+    "email": "spk@searchmind.dk",
+    "status": "Active"
+  }
+]

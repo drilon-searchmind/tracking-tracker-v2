@@ -57,6 +57,7 @@ export async function POST(req, { params }) {
             endDate: body.endDate || null,
             b2bOrB2c: body.b2bOrB2c || "",
             budget: body.budget ? parseFloat(body.budget) : undefined,
+            budgetDistribution: body.budgetDistribution || {},
             materialFromCustomer: body.materialFromCustomer || "",
             materialLinks: body.materialLinks || "",
             childCampaigns: []
@@ -66,7 +67,21 @@ export async function POST(req, { params }) {
 
         const childCampaignIds = [];
         if (body.service && body.service.length > 0) {
+            const totalBudget = body.budget ? parseFloat(body.budget) : 0;
+            const budgetDistribution = body.budgetDistribution || {};
+            
             const childCampaignPromises = body.service.map(async (service) => {
+                // Calculate budget for this service based on distribution percentage
+                let serviceBudget = 0;
+                if (totalBudget > 0) {
+                    if (budgetDistribution[service]) {
+                        serviceBudget = (totalBudget * budgetDistribution[service]) / 100;
+                    } else {
+                        // Fallback to equal distribution if no distribution specified
+                        serviceBudget = totalBudget / body.service.length;
+                    }
+                }
+                
                 const childCampaign = new Campaign({
                     customerId,
                     service: service,
@@ -78,7 +93,7 @@ export async function POST(req, { params }) {
                     campaignName: `${body.parentCampaignName}: ${service}`,
                     messageBrief: body.campaignBrief || "",
                     b2bOrB2c: body.b2bOrB2c || "B2B", 
-                    budget: body.budget ? parseFloat(body.budget) / body.service.length : 0,
+                    budget: serviceBudget,
                     materialFromCustomer: body.materialFromCustomer || "",
                     parentCampaignId: parentCampaign._id,
                     campaignType: (!body.startDate && !body.endDate) ? "Always On" : "Conversion",

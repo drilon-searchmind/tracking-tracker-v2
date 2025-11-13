@@ -1,103 +1,24 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { queryBigQueryRollUpMetrics } from "@/lib/bigQueryConnect";
 import RollUpChildCustomers from "./components/RollUpChildCustomers";
 import Subheading from "@/app/components/UI/Utility/Subheading";
 
-async function fetchParentCustomerData(parentCustomerId) {
-    try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/parent-customers`, {
-            cache: 'no-store'
-        });
-        
-        if (response.ok) {
-            const parentCustomers = await response.json();
-            return parentCustomers.find(pc => pc._id === parentCustomerId);
-        }
-    } catch (error) {
-        console.error("Error fetching parent customer:", error);
-    }
-    return null;
-}
-
-async function fetchChildCustomersWithSettings(parentCustomerId) {
-    try {
-        const customersResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/customers`, {
-            cache: 'no-store'
-        });
-        
-        if (customersResponse.ok) {
-            const allCustomers = await customersResponse.json();
-            // Filter customers that have this parent
-            const childCustomers = allCustomers.filter(customer => 
-                customer.parentCustomer && 
-                (customer.parentCustomer._id === parentCustomerId || customer.parentCustomer === parentCustomerId)
-            );
-
-            // Fetch settings for each child customer
-            const customersWithSettings = await Promise.all(
-                childCustomers.map(async (customer) => {
-                    try {
-                        const settingsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/customer-settings/${customer._id}`, {
-                            cache: 'no-store'
-                        });
-                        
-                        if (settingsResponse.ok) {
-                            const settings = await settingsResponse.json();
-                            return {
-                                ...customer,
-                                customerMetaID: settings.customerMetaID || "",
-                                customerMetaIDExclude: settings.customerMetaIDExclude || "",
-                                customerValutaCode: settings.customerValutaCode || "DKK"
-                            };
-                        }
-                    } catch (error) {
-                        console.error(`Error fetching settings for customer ${customer._id}:`, error);
-                    }
-                    
-                    // Return customer with default settings if fetch fails
-                    return {
-                        ...customer,
-                        customerMetaID: "",
-                        customerMetaIDExclude: "",
-                        customerValutaCode: "DKK"
-                    };
-                })
-            );
-
-            return customersWithSettings;
-        }
-    } catch (error) {
-        console.error("Error fetching child customers:", error);
-    }
-    return [];
-}
-
-export default async function RollUpPage({ params }) {
-    const resolvedParams = await params;
-    const parentCustomerId = resolvedParams.parentCustomerId;
-
-    console.log("::: Fetching roll-up data for parent customer:", parentCustomerId);
-
-    // Fetch real data
-    const parentCustomer = await fetchParentCustomerData(parentCustomerId);
-    const childCustomers = await fetchChildCustomersWithSettings(parentCustomerId);
-    
-    const parentCustomerName = parentCustomer?.name || "Parent Customer";
-
-    // Fetch BigQuery metrics for all child customers
-    let rollUpMetrics = { totals: {}, customer_metrics: [] };
-    
-    if (childCustomers.length > 0) {
-        try {
-            console.log(`::: Fetching BigQuery roll-up metrics for ${childCustomers.length} customers`);
-            rollUpMetrics = await queryBigQueryRollUpMetrics({ childCustomers });
-        } catch (error) {
-            console.error("Error fetching roll-up metrics:", error);
-            // Continue with empty metrics if BigQuery fails
-        }
-    }
-
-    const { totals, customer_metrics } = rollUpMetrics;
+// Move server functions inside useEffect or separate API calls
+export default function RollUpPage({ params }) {
+    const [parentCustomer, setParentCustomer] = useState(null);
+    const [childCustomers, setChildCustomers] = useState([]);
+    const [summaryData, setSummaryData] = useState({
+        total_revenue: 0,
+        total_ad_spend: 0,
+        total_orders: 0,
+        overall_roas: 0,
+        aov: 0,
+        customer_metrics: []
+    });
+    const [loading, setLoading] = useState(true);
+    const [parentCustomerId, setParentCustomerId] = useState(null);
 
     // Format currency values
     const formatCurrency = (value, currency = 'DKK') => {
@@ -125,6 +46,117 @@ export default async function RollUpPage({ params }) {
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const formatDate = (date) => date.toISOString().split("T")[0];
 
+    // Function to handle data updates from RollUpChildCustomers
+    const handleDataUpdate = (customerMetrics) => {
+        if (!customerMetrics || customerMetrics.length === 0) {
+            setSummaryData({
+                total_revenue: 0,
+                total_ad_spend: 0,
+                total_orders: 0,
+                overall_roas: 0,
+                aov: 0,
+                customer_metrics: []
+            });
+            return;
+        }
+
+        // Aggregate the data from all customers
+        const aggregated = customerMetrics.reduce((acc, customer) => {
+            return {
+                total_revenue: acc.total_revenue + (customer.revenue || 0),
+                total_ad_spend: acc.total_ad_spend + (customer.total_ad_spend || 0),
+                total_orders: acc.total_orders + (customer.orders || 0),
+            };
+        }, { total_revenue: 0, total_ad_spend: 0, total_orders: 0 });
+
+        // Calculate derived metrics
+        const overall_roas = aggregated.total_ad_spend > 0 ? aggregated.total_revenue / aggregated.total_ad_spend : 0;
+        const aov = aggregated.total_orders > 0 ? aggregated.total_revenue / aggregated.total_orders : 0;
+
+        setSummaryData({
+            ...aggregated,
+            overall_roas,
+            aov,
+            customer_metrics: customerMetrics
+        });
+    };
+
+    useEffect(() => {
+        const initializePage = async () => {
+            try {
+                const resolvedParams = await params;
+                const id = resolvedParams.parentCustomerId;
+                setParentCustomerId(id);
+
+                // Fetch parent customer data
+                const parentResponse = await fetch(`/api/parent-customers`);
+                if (parentResponse.ok) {
+                    const parentCustomers = await parentResponse.json();
+                    const parent = parentCustomers.find(pc => pc._id === id);
+                    setParentCustomer(parent);
+                }
+
+                // Fetch child customers with settings
+                const customersResponse = await fetch(`/api/customers`);
+                if (customersResponse.ok) {
+                    const allCustomers = await customersResponse.json();
+                    const children = allCustomers.filter(customer => 
+                        customer.parentCustomer && 
+                        (customer.parentCustomer._id === id || customer.parentCustomer === id)
+                    );
+
+                    // Fetch settings for each child customer
+                    const customersWithSettings = await Promise.all(
+                        children.map(async (customer) => {
+                            try {
+                                const settingsResponse = await fetch(`/api/customer-settings/${customer._id}`);
+                                if (settingsResponse.ok) {
+                                    const settings = await settingsResponse.json();
+                                    return {
+                                        ...customer,
+                                        customerMetaID: settings.customerMetaID || "",
+                                        customerMetaIDExclude: settings.customerMetaIDExclude || "",
+                                        customerValutaCode: settings.customerValutaCode || "DKK"
+                                    };
+                                }
+                            } catch (error) {
+                                console.error(`Error fetching settings for customer ${customer._id}:`, error);
+                            }
+                            
+                            return {
+                                ...customer,
+                                customerMetaID: "",
+                                customerMetaIDExclude: "",
+                                customerValutaCode: "DKK"
+                            };
+                        })
+                    );
+
+                    setChildCustomers(customersWithSettings);
+                }
+            } catch (error) {
+                console.error("Error initializing page:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initializePage();
+    }, [params]);
+
+    const parentCustomerName = parentCustomer?.name || "Parent Customer";
+
+    if (loading) {
+        return (
+            <div className="py-6 md:py-20 px-4 md:px-0 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-lime)] mx-auto"></div>
+                    <p className="mt-4 text-[var(--color-green)]">Loading roll-up dashboard...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
@@ -149,48 +181,49 @@ export default async function RollUpPage({ params }) {
                     </p>
                 </div>
 
-                {/* Summary cards with real data - reduced to 6 cards */}
+                {/* Summary cards with filtered data */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 xl:grid-cols-6 gap-6 mb-8">
                     <div className="border rounded-lg shadow-sm p-6 transition-all duration-200 cursor-pointer hover:shadow-md bg-[var(--color-primary-searchmind)] border-[var(--color-primary-searchmind)] col-span-2">
                         <h3 className="text-lg font-semibold text-white-important mb-2">Combined Revenue</h3>
                         <p className="text-3xl font-bold text-white-important mb-2">
-                            {formatCurrency(totals?.total_revenue)}
+                            {formatCurrency(summaryData.total_revenue)}
                         </p>
-                        <p className="text-sm text-white-important">Total across all properties all time</p>
+                        <p className="text-sm text-white-important">Total across all properties for selected period</p>
                     </div>
 
                     <div className="bg-white p-6 rounded-xl shadow-solid-l border border-gray-100 col-span-2">
                         <h3 className="text-lg font-semibold text-[var(--color-dark-green)] mb-2">Total Ad Spend</h3>
                         <p className="text-3xl font-bold text-[var(--color-dark-green)] mb-2">
-                            {formatCurrency(totals?.total_ad_spend)}
+                            {formatCurrency(summaryData.total_ad_spend)}
                         </p>
-                        <p className="text-sm text-gray-600">Combined advertising costs all time</p>
+                        <p className="text-sm text-gray-600">Combined advertising costs for selected period</p>
                     </div>
 
                     <div className="bg-white p-6 rounded-xl shadow-solid-l border border-gray-100">
                         <h3 className="text-lg font-semibold text-[var(--color-dark-green)] mb-2">Total Orders</h3>
                         <p className="text-3xl font-bold text-[var(--color-dark-green)] mb-2">
-                            {totals?.total_orders?.toLocaleString() || '0'}
+                            {summaryData.total_orders?.toLocaleString() || '0'}
                         </p>
-                        <p className="text-sm text-gray-600">Orders across all customers all time</p>
+                        <p className="text-sm text-gray-600">Orders across all customers for selected period</p>
                     </div>
 
                     <div className="bg-white p-6 rounded-xl shadow-solid-l border border-gray-100">
                         <h3 className="text-lg font-semibold text-[var(--color-dark-green)] mb-2">Combined ROAS</h3>
                         <p className="text-3xl font-bold text-[var(--color-dark-green)] mb-2">
-                            {formatNumber(totals?.overall_roas)}x
+                            {formatNumber(summaryData.overall_roas)}x
                         </p>
-                        <p className="text-sm text-gray-600">Weighted average performance all time</p>
+                        <p className="text-sm text-gray-600">Weighted average performance for selected period</p>
                     </div>
                 </div>
 
                 {/* Child customers list with real metrics and date picker */}
                 <RollUpChildCustomers 
                     childCustomers={childCustomers}
-                    customer_metrics={customer_metrics}
+                    customer_metrics={[]}
                     parentCustomerId={parentCustomerId}
                     initialStartDate={formatDate(firstDayOfMonth)}
                     initialEndDate={formatDate(yesterday)}
+                    onDataUpdate={handleDataUpdate}
                 />
 
                 {/* Parent Customer Info Card - moved below child customers */}
@@ -231,41 +264,50 @@ export default async function RollUpPage({ params }) {
                     </div>
                 )}
 
-                {/* Performance Overview Chart Placeholder */}
+                {/* Performance Overview with filtered data */}
                 <div className="mt-8 bg-white rounded-xl shadow-solid-l border border-gray-100 p-6">
                     <h2 className="text-xl font-semibold text-[var(--color-dark-green)] mb-4">Performance Metrics Overview</h2>
-                    {totals?.total_revenue > 0 ? (
+                    {summaryData.total_revenue > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-4">
                                 <h3 className="font-semibold text-[var(--color-dark-green)]">Key Performance Indicators</h3>
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                                         <span className="text-sm text-gray-600">Combined Revenue:</span>
-                                        <span className="font-medium text-[var(--color-dark-green)]">{formatCurrency(totals.total_revenue)}</span>
+                                        <span className="font-medium text-[var(--color-dark-green)]">{formatCurrency(summaryData.total_revenue)}</span>
                                     </div>
                                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                                         <span className="text-sm text-gray-600">Total Ad Spend:</span>
-                                        <span className="font-medium text-[var(--color-dark-green)]">{formatCurrency(totals.total_ad_spend)}</span>
+                                        <span className="font-medium text-[var(--color-dark-green)]">{formatCurrency(summaryData.total_ad_spend)}</span>
                                     </div>
                                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                                         <span className="text-sm text-gray-600">Overall ROAS:</span>
-                                        <span className="font-medium text-[var(--color-dark-green)]">{formatNumber(totals.overall_roas)}x</span>
+                                        <span className="font-medium text-[var(--color-dark-green)]">{formatNumber(summaryData.overall_roas)}x</span>
                                     </div>
                                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                                         <span className="text-sm text-gray-600">Total Orders:</span>
-                                        <span className="font-medium text-[var(--color-dark-green)]">{totals.total_orders?.toLocaleString()}</span>
+                                        <span className="font-medium text-[var(--color-dark-green)]">{summaryData.total_orders?.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                        <span className="text-sm text-gray-600">Average Order Value:</span>
+                                        <span className="font-medium text-[var(--color-dark-green)]">{formatCurrency(summaryData.aov)}</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="space-y-4">
                                 <h3 className="font-semibold text-[var(--color-dark-green)]">Customer Performance Distribution</h3>
                                 <div className="space-y-2">
-                                    {customer_metrics?.slice(0, 5).map((customerMetric, index) => (
+                                    {summaryData.customer_metrics?.slice(0, 5).map((customerMetric, index) => (
                                         <div key={customerMetric.customer_id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
                                             <span className="text-sm text-gray-600">{customerMetric.customer_name}:</span>
                                             <span className="font-medium text-[var(--color-dark-green)]">{formatCurrency(customerMetric.revenue)}</span>
                                         </div>
                                     ))}
+                                    {summaryData.customer_metrics?.length === 0 && (
+                                        <div className="flex justify-center items-center p-3 bg-gray-50 rounded">
+                                            <span className="text-sm text-gray-500">No customer data available for selected period</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -273,7 +315,7 @@ export default async function RollUpPage({ params }) {
                         <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
                             <div className="text-center">
                                 <p className="text-gray-500 mb-2">No performance data available</p>
-                                <p className="text-sm text-gray-400">Data will appear here once BigQuery metrics are available for the child customers</p>
+                                <p className="text-sm text-gray-400">Select a date range to view aggregated metrics for all child customers</p>
                             </div>
                         </div>
                     )}

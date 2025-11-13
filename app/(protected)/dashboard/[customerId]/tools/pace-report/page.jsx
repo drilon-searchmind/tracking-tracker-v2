@@ -37,62 +37,61 @@ export default async function PacePage({ params }) {
         const facebookWhereClause = buildFacebookWhereClause();
 
         const dashboardQuery = `
-            WITH orders_by_date AS (
-                SELECT
-                    DATE(created_at) AS date,
-                    SUM(CAST(total_price AS FLOAT64)) AS gross_sales,
-                    COUNT(*) AS order_count,
-                    presentment_currency AS currency
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
-                WHERE presentment_currency = "${customerValutaCode}"
-                GROUP BY DATE(created_at), presentment_currency
-            ),
-            refunds_by_date AS (
-                SELECT
-                    DATE(created_at) AS date,
-                    SUM(
-                        (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(transaction, '$.amount') AS FLOAT64))
-                        FROM UNNEST(JSON_EXTRACT_ARRAY(transactions)) AS transaction
-                        WHERE JSON_EXTRACT_SCALAR(transaction, '$.kind') = 'refund'
-                        )
-                    ) AS total_refunds
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
-                GROUP BY DATE(created_at)
-            ),
-            shopify_data AS (
-                SELECT
-                    CAST(o.date AS STRING) AS date,
-                    o.gross_sales - COALESCE(r.total_refunds, 0) AS revenue,
-                    o.order_count AS orders
-                FROM orders_by_date o
-                LEFT JOIN refunds_by_date r ON o.date = r.date
-            ),
-            facebook_data AS (
-                SELECT
-                    CAST(date_start AS STRING) AS date,
-                    SUM(COALESCE(spend, 0)) AS ps_cost
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-                ${facebookWhereClause}
-                GROUP BY date_start
-            ),
-            google_ads_data AS (
-                SELECT
-                    CAST(segments_date AS STRING) AS date,
-                    SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS ppc_cost
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
-                WHERE segments_date IS NOT NULL
-                GROUP BY segments_date
-            ),
-            combined_data AS (
+            WITH combined_data AS (
                 SELECT
                     COALESCE(s.date, f.date, g.date) AS date,
                     COALESCE(s.orders, 0) AS orders,
                     COALESCE(s.revenue, 0) AS revenue,
                     COALESCE(f.ps_cost, 0) AS ps_cost,
                     COALESCE(g.ppc_cost, 0) AS ppc_cost
-                FROM shopify_data s
-                FULL OUTER JOIN facebook_data f ON s.date = f.date
-                FULL OUTER JOIN google_ads_data g ON s.date = g.date
+                FROM (
+                    WITH orders AS (
+                        SELECT
+                            DATE(created_at) AS date,
+                            SUM(CAST(total_price AS FLOAT64)) AS gross_sales,
+                            COUNT(*) AS order_count,
+                            presentment_currency AS currency
+                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
+                        WHERE presentment_currency = "${customerValutaCode}"
+                        GROUP BY DATE(created_at), presentment_currency
+                    ),
+                    refunds AS (
+                        SELECT
+                            DATE(created_at) AS date,
+                            SUM(
+                                (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(transaction, '$.amount') AS FLOAT64))
+                                FROM UNNEST(JSON_EXTRACT_ARRAY(transactions)) AS transaction
+                                WHERE JSON_EXTRACT_SCALAR(transaction, '$.kind') = 'refund'
+                                )
+                            ) AS total_refunds
+                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
+                        GROUP BY DATE(created_at)
+                    )
+                    SELECT
+                        CAST(o.date AS STRING) AS date,
+                        o.gross_sales - COALESCE(r.total_refunds, 0) AS revenue,
+                        o.order_count AS orders
+                    FROM
+                        orders o
+                    LEFT JOIN
+                        refunds r ON o.date = r.date
+                ) s
+                FULL OUTER JOIN (
+                    SELECT
+                        CAST(date_start AS STRING) AS date,
+                        SUM(COALESCE(spend, 0)) AS ps_cost
+                    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
+                    ${facebookWhereClause}
+                    GROUP BY date_start
+                ) f ON s.date = f.date
+                FULL OUTER JOIN (
+                    SELECT
+                        CAST(segments_date AS STRING) AS date,
+                        SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS ppc_cost
+                    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
+                    WHERE segments_date IS NOT NULL
+                    GROUP BY segments_date
+                ) g ON COALESCE(s.date, f.date) = g.date
                 WHERE COALESCE(s.date, f.date, g.date) IS NOT NULL
             )
             SELECT

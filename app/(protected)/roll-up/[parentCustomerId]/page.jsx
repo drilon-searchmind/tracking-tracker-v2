@@ -228,7 +228,7 @@ export default function RollUpPage({ params }) {
 
                 {/* Parent Customer Info Card - moved below child customers */}
                 {parentCustomer && (
-                    <div className="bg-white rounded-xl shadow-solid-l border border-gray-100 p-6 mb-8">
+                    <div className="bg-white rounded-xl shadow-solid-l border border-gray-100 p-6 mb-8 hidden">
                         <h2 className="text-xl font-semibold text-[var(--color-dark-green)] mb-4">Parent Customer Information</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>

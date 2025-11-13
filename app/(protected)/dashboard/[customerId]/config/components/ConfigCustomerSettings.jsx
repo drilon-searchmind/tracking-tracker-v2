@@ -25,6 +25,7 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
     }));
 
     const frequentCountries = [
+        { value: "", label: "None" },
         { value: "DK", label: "Denmark (DK)" },
         { value: "DE", label: "Germany (DE)" },
         { value: "NL", label: "Netherlands (NL)" },
@@ -372,6 +373,7 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                             <option value="GBP">British Pound (GBP)</option>
                             <option value="SEK">Swedish Krona (SEK)</option>
                             <option value="NOK">Norwegian Krone (NOK)</option>
+                            <option value="CHF">Swiss Franc (CHF)</option>
                         </select>
                     </div>
 

@@ -43,8 +43,8 @@ const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
 };
 
 // Apply currency conversion to a data row
-const convertDataRow = (row, fromCurrency) => {
-    if (fromCurrency === "DKK") return row;
+const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
+    if (fromCurrency === "DKK" || !shouldConvertCurrency) return row;
     
     const revenueFields = ['revenue', 'gross_profit'];
     const convertedRow = { ...row };
@@ -96,13 +96,32 @@ export default function PerformanceDashboard({ customerId, customerName, custome
     const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
     const [isLoading, setIsLoading] = useState(true);
     const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+    const [changeCurrency, setChangeCurrency] = useState(true);
 
     const [revenueViewMode, setRevenueViewMode] = useState("YTD");
     const [spendViewMode, setSpendViewMode] = useState("YTD");
     const [aovViewMode, setAovViewMode] = useState("YTD");
     const [sessionsViewMode, setSessionsViewMode] = useState("YTD");
 
-    const data = Array.isArray(initialData) ? initialData.map(row => convertDataRow(row, customerValutaCode)) : [];
+    useEffect(() => {
+        const fetchCustomerSettings = async () => {
+            try {
+                const response = await fetch(`/api/customer-settings/${customerId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setChangeCurrency(data.changeCurrency ?? true);
+                }
+            } catch (error) {
+                console.error("Error fetching customer settings:", error);
+            }
+        }
+
+        fetchCustomerSettings()
+    }, [customerId]);
+
+    const data = useMemo(() => {
+        return Array.isArray(initialData) ? initialData.map(row => convertDataRow(row, customerValutaCode, changeCurrency)) : [];
+    }, [initialData, customerValutaCode, changeCurrency]);
 
     useEffect(() => {
         if (initialData) {
@@ -221,6 +240,7 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                 };
             }
 
+            // Use the already converted values from the data array (converted by convertDataRow)
             groupedData[yearMonth].revenue += row.revenue || 0;
             groupedData[yearMonth].gross_profit += row.gross_profit || 0;
             groupedData[yearMonth].orders += row.orders || 0;

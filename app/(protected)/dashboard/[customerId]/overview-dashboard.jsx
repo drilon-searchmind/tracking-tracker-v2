@@ -25,8 +25,8 @@ const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
 };
 
 // Apply currency conversion to a data row
-const convertDataRow = (row, fromCurrency) => {
-    if (fromCurrency === "DKK") return row;
+const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
+    if (fromCurrency === "DKK" || !shouldConvertCurrency) return row;
     
     const revenueFields = ['revenue', 'revenue_ex_tax'];
     const convertedRow = { ...row };
@@ -53,6 +53,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
     const [expandedRows, setExpandedRows] = useState({});
     const [expandedLastYearRows, setExpandedLastYearRows] = useState({});
     const [loading, setLoading] = useState(true);
+    const [changeCurrency, setChangeCurrency] = useState(true);
 
     useEffect(() => {
         if (initialData) {
@@ -64,19 +65,20 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
     }, [initialData]);
 
     useEffect(() => {
-        const fetchMetricPreference = async () => {
+        const fetchCustomerSettings = async () => {
             try {
                 const response = await fetch(`/api/customer-settings/${customerId}`);
                 if (response.ok) {
                     const data = await response.json();
                     setMetricView(data.metricPreference || "ROAS/POAS");
+                    setChangeCurrency(data.changeCurrency ?? true);
                 }
             } catch (error) {
-                console.error("Error fetching metric preference:", error);
+                console.error("Error fetching customer settings:", error);
             }
         }
 
-        fetchMetricPreference()
+        fetchCustomerSettings()
     }, [customerId])
 
     const toggleRowExpansion = (index) => {
@@ -107,7 +109,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
             .sort((a, b) => a.date.localeCompare(b.date))
             .map(row => {
                 // First convert currency for revenue fields
-                const convertedRow = convertDataRow(row, customerValutaCode);
+                const convertedRow = convertDataRow(row, customerValutaCode, changeCurrency);
                 
                 // Then calculate metrics using converted revenue values
                 return {
@@ -120,7 +122,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                     aov: convertedRow.orders > 0 ? convertedRow.revenue / convertedRow.orders : 0,
                 };
             });
-    }, [overview_metrics, startDate, endDate, customerValutaCode]);
+    }, [overview_metrics, startDate, endDate, customerValutaCode, changeCurrency]);
 
     const filteredTotals = useMemo(() => {
         return filteredMetrics.reduce(
@@ -170,7 +172,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
             .filter((row) => row.date >= lastYearStart && row.date <= lastYearEnd)
             .map(row => {
                 // First convert currency for revenue fields
-                const convertedRow = convertDataRow(row, customerValutaCode);
+                const convertedRow = convertDataRow(row, customerValutaCode, changeCurrency);
                 
                 // Then calculate metrics using converted revenue values
                 return {
@@ -223,7 +225,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
         });
 
         return Object.values(groupedByDate).sort((a, b) => a.date.localeCompare(b.date));
-    }, [overview_metrics, lastYearStart, lastYearEnd, customerValutaCode]);
+    }, [overview_metrics, lastYearStart, lastYearEnd, customerValutaCode, changeCurrency]);
 
     const filteredLastYearTotals = useMemo(() => {
         return lastYearMetrics.reduce(

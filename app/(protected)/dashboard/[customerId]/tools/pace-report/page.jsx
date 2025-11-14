@@ -62,6 +62,7 @@ export default async function PacePage({ params }) {
                                 (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(transaction, '$.amount') AS FLOAT64))
                                 FROM UNNEST(JSON_EXTRACT_ARRAY(transactions)) AS transaction
                                 WHERE JSON_EXTRACT_SCALAR(transaction, '$.kind') = 'refund'
+                                    AND JSON_EXTRACT_SCALAR(transaction, '$.currency') = "${customerValutaCode}"
                                 )
                             ) AS total_refunds
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`

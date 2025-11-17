@@ -336,7 +336,7 @@ export default function SEOSettings({ customerId }) {
                                                     keywords: e.target.value
                                                 })}
                                                 className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
-                                                placeholder="pompdelux, children clothes, kids fashion, baby wear"
+                                                placeholder="keyword1, keyword2, keyword3..."
                                                 rows="3"
                                             />
                                             <p className="text-xs text-[var(--color-green)] mt-1">

@@ -55,6 +55,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     const [keywordSearch, setKeywordSearch] = useState("");
     const [urlSearch, setUrlSearch] = useState("");
     const [keywordGroups, setKeywordGroups] = useState([]);
+    const [exactKeywordGroups, setExactKeywordGroups] = useState([]);
     const [brandKeywords, setBrandKeywords] = useState([]);
     const [selectedKeywordGroup, setSelectedKeywordGroup] = useState("all");
 
@@ -180,6 +181,14 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         );
     };
 
+    const matchesExactKeywords = (keyword, exactKeywords) => {
+        if (!exactKeywords.length) return false;
+        const keywordLower = keyword.toLowerCase().trim();
+        return exactKeywords.some(exactKeyword => 
+            keywordLower === exactKeyword.toLowerCase().trim()
+        );
+    };
+
     const filteredTopKeywords = useMemo(() => {
         let filtered = allKeywords;
 
@@ -194,18 +203,28 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         } else if (selectedKeywordGroup === "without-brand") {
             filtered = filtered.filter(item => !containsBrandKeywords(item.keyword));
         } else if (selectedKeywordGroup && selectedKeywordGroup !== "all") {
-            const selectedGroup = keywordGroups.find(group => group._id === selectedKeywordGroup);
-            if (selectedGroup) {
-                filtered = filtered.filter(item =>
-                    selectedGroup.keywords.some(groupKeyword => 
-                        item.keyword.toLowerCase().includes(groupKeyword.toLowerCase())
-                    )
-                );
+            if (selectedKeywordGroup.startsWith("exact-")) {
+                const exactGroupId = selectedKeywordGroup.replace("exact-", "");
+                const selectedExactGroup = exactKeywordGroups.find(group => group._id === exactGroupId);
+                if (selectedExactGroup) {
+                    filtered = filtered.filter(item =>
+                        matchesExactKeywords(item.keyword, selectedExactGroup.keywords)
+                    );
+                }
+            } else {
+                const selectedGroup = keywordGroups.find(group => group._id === selectedKeywordGroup);
+                if (selectedGroup) {
+                    filtered = filtered.filter(item =>
+                        selectedGroup.keywords.some(groupKeyword => 
+                            item.keyword.toLowerCase().includes(groupKeyword.toLowerCase())
+                        )
+                    );
+                }
             }
         }
 
         return filtered.slice(0, keywordSearch || selectedKeywordGroup !== "all" ? undefined : 10);
-    }, [allKeywords, keywordSearch, selectedKeywordGroup, keywordGroups, brandKeywords]);
+    }, [allKeywords, keywordSearch, selectedKeywordGroup, keywordGroups, exactKeywordGroups, brandKeywords]);
 
     const allUrls = useMemo(() => {
         const urlMap = filteredUrlsByDate.reduce((acc, row) => {
@@ -439,6 +458,18 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
             }
         };
 
+        const fetchExactKeywordGroups = async () => {
+            try {
+                const response = await fetch(`/api/seo-exact-keyword-groups?customerId=${customerId}`);
+                if (response.ok) {
+                    const groups = await response.json();
+                    setExactKeywordGroups(groups);
+                }
+            } catch (error) {
+                console.error("Error fetching exact keyword groups:", error);
+            }
+        };
+
         const fetchBrandKeywords = async () => {
             try {
                 const response = await fetch(`/api/seo-brand-keywords?customerId=${customerId}`);
@@ -453,6 +484,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
 
         if (customerId) {
             fetchKeywordGroups();
+            fetchExactKeywordGroups();
             fetchBrandKeywords();
         }
     }, [customerId]);
@@ -648,12 +680,22 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                     <option value="all">All Keywords</option>
                                     <option value="with-brand">With Brand</option>
                                     <option value="without-brand">Without Brand</option>
+                                    {exactKeywordGroups.length > 0 && (
+                                        <>
+                                            <option disabled>──── Exact Match Groups ────</option>
+                                            {exactKeywordGroups.map(group => (
+                                                <option key={`exact-${group._id}`} value={`exact-${group._id}`}>
+                                                    📍 {group.name} ({group.keywords.length} exact)
+                                                </option>
+                                            ))}
+                                        </>
+                                    )}
                                     {keywordGroups.length > 0 && (
                                         <>
-                                            <option disabled>──── Custom Groups ────</option>
+                                            <option disabled>──── Partial Match Groups ────</option>
                                             {keywordGroups.map(group => (
                                                 <option key={group._id} value={group._id}>
-                                                    {group.name} ({group.keywords.length} keywords)
+                                                    🔍 {group.name} ({group.keywords.length} partial)
                                                 </option>
                                             ))}
                                         </>
@@ -719,12 +761,22 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                             <option value="all">All</option>
                             <option value="with-brand">With Brand</option>
                             <option value="without-brand">Without Brand</option>
+                            {exactKeywordGroups.length > 0 && (
+                                <>
+                                    <option disabled>────</option>
+                                    {exactKeywordGroups.map(group => (
+                                        <option key={`exact-${group._id}`} value={`exact-${group._id}`}>
+                                            📍 {group.name}
+                                        </option>
+                                    ))}
+                                </>
+                            )}
                             {keywordGroups.length > 0 && (
                                 <>
                                     <option disabled>────</option>
                                     {keywordGroups.map(group => (
                                         <option key={group._id} value={group._id}>
-                                            {group.name}
+                                            🔍 {group.name}
                                         </option>
                                     ))}
                                 </>

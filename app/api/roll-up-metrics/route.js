@@ -22,8 +22,8 @@ const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
 };
 
 // Apply currency conversion to a data row
-const convertDataRow = (row, fromCurrency) => {
-    if (fromCurrency === "DKK") return row;
+const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
+    if (fromCurrency === "DKK" || !shouldConvertCurrency) return row;
     
     const revenueFields = ['revenue', 'revenue_ex_tax'];
     const convertedRow = { ...row };
@@ -49,34 +49,40 @@ export async function POST(req) {
             return new Response(JSON.stringify({ error: "Both startDate and endDate must be provided" }), { status: 400 });
         }
 
-        const rollUpMetrics = await queryBigQueryRollUpMetrics({ childCustomers, startDate, endDate });
-
         // Connect to database
         await dbConnect();
         
-        // Create a map of customer ID to currency code
-        const customerCurrencyMap = {};
+        // Create a map of customer ID to currency code and changeCurrency setting
+        const customerSettingsMap = {};
         for (const customer of childCustomers) {
             try {
                 const customerSettings = await CustomerSettings.findOne({ 
                     customer: customer._id 
                 });
-                customerCurrencyMap[customer._id] = customerSettings?.customerValutaCode || "DKK";
+                customerSettingsMap[customer._id] = {
+                    currencyCode: customerSettings?.customerValutaCode || "DKK",
+                    changeCurrency: customerSettings?.changeCurrency ?? true
+                };
             } catch (error) {
-                console.warn(`Could not fetch currency for customer ${customer._id}:`, error);
-                customerCurrencyMap[customer._id] = "DKK";
+                console.warn(`Could not fetch settings for customer ${customer._id}:`, error);
+                customerSettingsMap[customer._id] = {
+                    currencyCode: "DKK",
+                    changeCurrency: true
+                };
             }
         }
+
+        const rollUpMetrics = await queryBigQueryRollUpMetrics({ childCustomers, startDate, endDate, customerSettingsMap });
 
         // Aggregate the daily data by customer with currency conversion
         const customerAggregations = {};
         
         rollUpMetrics.forEach(row => {
             const customerId = row.customer_id;
-            const customerCurrency = customerCurrencyMap[customerId] || "DKK";
+            const customerSettings = customerSettingsMap[customerId] || { currencyCode: "DKK", changeCurrency: true };
             
             // Convert the row data if needed
-            const convertedRow = convertDataRow(row, customerCurrency);
+            const convertedRow = convertDataRow(row, customerSettings.currencyCode, customerSettings.changeCurrency);
             
             if (!customerAggregations[customerId]) {
                 customerAggregations[customerId] = {

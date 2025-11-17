@@ -8,6 +8,7 @@ const CustomerSettingsSchema = new mongoose.Schema({
     customerClickupID: { type: String, default: "" },
     customerMetaID: { type: String, default: "" },
     customerMetaIDExclude: { type: String, default: "" },
+    changeCurrency: { type: Boolean, default: true },
 }, { timestamps: true })
 
 export default mongoose.models.CustomerSettings || mongoose.model("CustomerSettings", CustomerSettingsSchema);

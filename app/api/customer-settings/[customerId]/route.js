@@ -15,7 +15,8 @@ export async function PUT(req, { params }) {
             customerValutaCode,
             customerClickupID,
             customerMetaID,
-            customerMetaIDExclude
+            customerMetaIDExclude,
+            changeCurrency
         } = body;
 
         if (metricPreference && !["ROAS/POAS", "Spendshare"].includes(metricPreference)) {
@@ -29,6 +30,7 @@ export async function PUT(req, { params }) {
         if (customerClickupID !== undefined) updateData.customerClickupID = customerClickupID;
         if (customerMetaID !== undefined) updateData.customerMetaID = customerMetaID;
         if (customerMetaIDExclude !== undefined) updateData.customerMetaIDExclude = customerMetaIDExclude;
+        if (changeCurrency !== undefined) updateData.changeCurrency = changeCurrency;
 
         updateData.updatedAt = new Date();
 
@@ -62,7 +64,8 @@ export async function GET(req, { params }) {
                 customerValutaCode: "DKK",
                 customerClickupID: "",
                 customerMetaID: "",
-                customerMetaIDExclude: ""
+                customerMetaIDExclude: "",
+                changeCurrency: true
             };
             return new Response(JSON.stringify(defaultSettings), { status: 200 });
         }

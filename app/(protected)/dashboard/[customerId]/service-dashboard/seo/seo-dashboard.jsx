@@ -17,6 +17,7 @@ import {
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import Subheading from "@/app/components/UI/Utility/Subheading";
+import SEOSettings from "./components/SEOSettings";
 
 ChartJS.register(
     LineElement,
@@ -51,9 +52,12 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     const [showMobileUrlDetails, setShowMobileUrlDetails] = useState(false);
     const [expandedKeywords, setExpandedKeywords] = useState({});
     const [expandedUrls, setExpandedUrls] = useState({});
-
     const [keywordSearch, setKeywordSearch] = useState("");
     const [urlSearch, setUrlSearch] = useState("");
+    const [keywordGroups, setKeywordGroups] = useState([]);
+    const [exactKeywordGroups, setExactKeywordGroups] = useState([]);
+    const [brandKeywords, setBrandKeywords] = useState([]);
+    const [selectedKeywordGroup, setSelectedKeywordGroup] = useState("all");
 
     const { impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = initialData || {};
 
@@ -138,34 +142,89 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     }, [impressions_data, compStart, compEnd]);
 
     const allKeywords = useMemo(() => {
-        const keywordMap = filteredKeywordsByDate.reduce((acc, row) => {
+        const keywordClicksInDateRange = filteredKeywordsByDate.reduce((acc, row) => {
             acc[row.keyword] = {
                 clicks: (acc[row.keyword]?.clicks || 0) + (row.clicks || 0),
                 impressions: (acc[row.keyword]?.impressions || 0) + (row.impressions || 0),
-                position: (acc[row.keyword]?.position || 0) + (row.position || 0),
-                count: (acc[row.keyword]?.count || 0) + 1,
             };
             return acc;
         }, {});
-        return Object.entries(keywordMap)
-            .map(([keyword, data]) => ({
-                keyword,
-                clicks: data.clicks,
-                impressions: data.impressions,
-                position: data.count > 0 ? data.position / data.count : 0,
-            }))
+
+        return top_keywords
+            .map(topKeyword => {
+                const dateRangeData = keywordClicksInDateRange[topKeyword.keyword];
+                if (dateRangeData) {
+                    return {
+                        keyword: topKeyword.keyword,
+                        clicks: dateRangeData.clicks,
+                        impressions: dateRangeData.impressions,
+                        position: topKeyword.position,
+                    };
+                } else {
+                    return {
+                        keyword: topKeyword.keyword,
+                        clicks: 0,
+                        impressions: 0,
+                        position: topKeyword.position,
+                    };
+                }
+            })
+            .filter(item => item.clicks > 0 || item.impressions > 0)
             .sort((a, b) => b.clicks - a.clicks);
-    }, [filteredKeywordsByDate]);
+    }, [filteredKeywordsByDate, top_keywords]);
+
+    const containsBrandKeywords = (keyword) => {
+        if (!brandKeywords.length) return false;
+        const lowerKeyword = keyword.toLowerCase();
+        return brandKeywords.some(brandTerm => 
+            lowerKeyword.includes(brandTerm.toLowerCase())
+        );
+    };
+
+    const matchesExactKeywords = (keyword, exactKeywords) => {
+        if (!exactKeywords.length) return false;
+        const keywordLower = keyword.toLowerCase().trim();
+        return exactKeywords.some(exactKeyword => 
+            keywordLower === exactKeyword.toLowerCase().trim()
+        );
+    };
 
     const filteredTopKeywords = useMemo(() => {
-        return allKeywords
-            .filter(item =>
-                keywordSearch ?
-                    item.keyword.toLowerCase().includes(keywordSearch.toLowerCase()) :
-                    true
-            )
-            .slice(0, keywordSearch ? undefined : 10);
-    }, [allKeywords, keywordSearch]);
+        let filtered = allKeywords;
+
+        if (keywordSearch) {
+            filtered = filtered.filter(item =>
+                item.keyword.toLowerCase().includes(keywordSearch.toLowerCase())
+            );
+        }
+
+        if (selectedKeywordGroup === "with-brand") {
+            filtered = filtered.filter(item => containsBrandKeywords(item.keyword));
+        } else if (selectedKeywordGroup === "without-brand") {
+            filtered = filtered.filter(item => !containsBrandKeywords(item.keyword));
+        } else if (selectedKeywordGroup && selectedKeywordGroup !== "all") {
+            if (selectedKeywordGroup.startsWith("exact-")) {
+                const exactGroupId = selectedKeywordGroup.replace("exact-", "");
+                const selectedExactGroup = exactKeywordGroups.find(group => group._id === exactGroupId);
+                if (selectedExactGroup) {
+                    filtered = filtered.filter(item =>
+                        matchesExactKeywords(item.keyword, selectedExactGroup.keywords)
+                    );
+                }
+            } else {
+                const selectedGroup = keywordGroups.find(group => group._id === selectedKeywordGroup);
+                if (selectedGroup) {
+                    filtered = filtered.filter(item =>
+                        selectedGroup.keywords.some(groupKeyword => 
+                            item.keyword.toLowerCase().includes(groupKeyword.toLowerCase())
+                        )
+                    );
+                }
+            }
+        }
+
+        return filtered.slice(0, keywordSearch || selectedKeywordGroup !== "all" ? undefined : 10);
+    }, [allKeywords, keywordSearch, selectedKeywordGroup, keywordGroups, exactKeywordGroups, brandKeywords]);
 
     const allUrls = useMemo(() => {
         const urlMap = filteredUrlsByDate.reduce((acc, row) => {
@@ -297,27 +356,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         },
     };
 
-    const urlChartData = {
-        labels: [...new Set(filteredUrlsByDate.map((row) => row.date))].sort(),
-        datasets: selectedUrls.map((url, i) => ({
-            label: url,
-            data: filteredUrlsByDate
-                .filter((row) => row.url === url)
-                .map((row) => ({
-                    x: row.date,
-                    y: metric === "Clicks" ? row.clicks || 0 :
-                        metric === "Impressions" ? row.impressions || 0 :
-                            row.ctr || 0
-                })),
-            borderColor: colors[`hue${i % 5}`] || colors.primary,
-            backgroundColor: colors[`hue${i % 5}`] || colors.primary,
-            borderWidth: 1,
-            pointRadius: 2,
-            pointHoverRadius: 4,
-            fill: false,
-        })),
-    };
-
     const keywordChartData = {
         labels: [...new Set(filteredKeywordsByDate.map((row) => row.date))].sort(),
         datasets: selectedKeywords.map((keyword, i) => ({
@@ -328,7 +366,29 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     x: row.date,
                     y: metric === "Clicks" ? row.clicks || 0 :
                         metric === "Impressions" ? row.impressions || 0 :
-                            row.ctr || 0
+                        metric === "Position" ? row.avg_position || 0 :
+                            (row.ctr * 100) || 0
+                })),
+            borderColor: colors[`hue${i % 5}`] || colors.primary,
+            backgroundColor: colors[`hue${i % 5}`] || colors.primary,
+            borderWidth: 1,
+            pointRadius: 2,
+            pointHoverRadius: 4,
+            fill: false,
+        })),
+    };
+
+    const urlChartData = {
+        labels: [...new Set(filteredUrlsByDate.map((row) => row.date))].sort(),
+        datasets: selectedUrls.map((url, i) => ({
+            label: url,
+            data: filteredUrlsByDate
+                .filter((row) => row.url === url)
+                .map((row) => ({
+                    x: row.date,
+                    y: metric === "Clicks" ? row.clicks || 0 :
+                        metric === "Impressions" ? row.impressions || 0 :
+                            (row.ctr * 100) || 0
                 })),
             borderColor: colors[`hue${i % 5}`] || colors.primary,
             backgroundColor: colors[`hue${i % 5}`] || colors.primary,
@@ -384,6 +444,50 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         setExpandedKeywords({});
         setExpandedUrls({});
     }, [dateStart, dateEnd]);
+
+    useEffect(() => {
+        const fetchKeywordGroups = async () => {
+            try {
+                const response = await fetch(`/api/seo-keyword-groups?customerId=${customerId}`);
+                if (response.ok) {
+                    const groups = await response.json();
+                    setKeywordGroups(groups);
+                }
+            } catch (error) {
+                console.error("Error fetching keyword groups:", error);
+            }
+        };
+
+        const fetchExactKeywordGroups = async () => {
+            try {
+                const response = await fetch(`/api/seo-exact-keyword-groups?customerId=${customerId}`);
+                if (response.ok) {
+                    const groups = await response.json();
+                    setExactKeywordGroups(groups);
+                }
+            } catch (error) {
+                console.error("Error fetching exact keyword groups:", error);
+            }
+        };
+
+        const fetchBrandKeywords = async () => {
+            try {
+                const response = await fetch(`/api/seo-brand-keywords?customerId=${customerId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setBrandKeywords(data.keywords || []);
+                }
+            } catch (error) {
+                console.error("Error fetching brand keywords:", error);
+            }
+        };
+
+        if (customerId) {
+            fetchKeywordGroups();
+            fetchExactKeywordGroups();
+            fetchBrandKeywords();
+        }
+    }, [customerId]);
 
     if (!impressions_data || !top_keywords || !top_urls || !urls_by_date || !keywords_by_date) {
         return (
@@ -569,12 +673,33 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                     <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)]" size={14} />
                                 </div>
                                 <select
-                                    value={filter}
-                                    onChange={(e) => setFilter(e.target.value)}
+                                    value={selectedKeywordGroup}
+                                    onChange={(e) => setSelectedKeywordGroup(e.target.value)}
                                     className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                 >
-                                    <option>Med brand</option>
-                                    <option>Uden brand</option>
+                                    <option value="all">All Keywords</option>
+                                    <option value="with-brand">With Brand</option>
+                                    <option value="without-brand">Without Brand</option>
+                                    {exactKeywordGroups.length > 0 && (
+                                        <>
+                                            <option disabled>──── Exact Match Groups ────</option>
+                                            {exactKeywordGroups.map(group => (
+                                                <option key={`exact-${group._id}`} value={`exact-${group._id}`}>
+                                                    📍 {group.name} ({group.keywords.length} exact)
+                                                </option>
+                                            ))}
+                                        </>
+                                    )}
+                                    {keywordGroups.length > 0 && (
+                                        <>
+                                            <option disabled>──── Partial Match Groups ────</option>
+                                            {keywordGroups.map(group => (
+                                                <option key={group._id} value={group._id}>
+                                                    🔍 {group.name} ({group.keywords.length} partial)
+                                                </option>
+                                            ))}
+                                        </>
+                                    )}
                                 </select>
                             </div>
                         </div>
@@ -615,6 +740,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                 <option>Clicks</option>
                                 <option>Impressions</option>
                                 <option>CTR</option>
+                                <option>Position</option>
                             </select>
                         </div>
                         <div className="flex-1 w-full h-[calc(100%-2rem)] min-h-[300px] max-h-[500px] overflow-y-auto">
@@ -628,12 +754,33 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     <div className="flex justify-between items-center p-4 border-b border-[var(--color-light-natural)]">
                         <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">Top Performance Keywords</h3>
                         <select
-                            value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
+                            value={selectedKeywordGroup}
+                            onChange={(e) => setSelectedKeywordGroup(e.target.value)}
                             className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
                         >
-                            <option>Med brand</option>
-                            <option>Uden brand</option>
+                            <option value="all">All</option>
+                            <option value="with-brand">With Brand</option>
+                            <option value="without-brand">Without Brand</option>
+                            {exactKeywordGroups.length > 0 && (
+                                <>
+                                    <option disabled>────</option>
+                                    {exactKeywordGroups.map(group => (
+                                        <option key={`exact-${group._id}`} value={`exact-${group._id}`}>
+                                            📍 {group.name}
+                                        </option>
+                                    ))}
+                                </>
+                            )}
+                            {keywordGroups.length > 0 && (
+                                <>
+                                    <option disabled>────</option>
+                                    {keywordGroups.map(group => (
+                                        <option key={group._id} value={group._id}>
+                                            🔍 {group.name}
+                                        </option>
+                                    ))}
+                                </>
+                            )}
                         </select>
                     </div>
                     <div className="p-4 border-b border-[var(--color-light-natural)]">
@@ -812,6 +959,9 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                         </div>
                     )}
                 </div>
+
+                {/* SEO Settings Section */}
+                <SEOSettings customerId={customerId} />
             </div>
         </div>
     );

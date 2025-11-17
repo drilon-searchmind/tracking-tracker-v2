@@ -1,0 +1,23 @@
+[
+    {
+        "_airbyte_raw_id": "cd2917f0-fe4b-413e-89e0-d24d75af45d9",
+        "_airbyte_extracted_at": "2025-11-14 01:21:40.170000 UTC",
+        "_airbyte_meta": "{\"changes\":[],\"sync_id\":2787}",
+        "_airbyte_generation_id": "0",
+        "id": "1112621252939",
+        "note": null,
+        "duties": "[]",
+        "return": null,
+        "restock": "false",
+        "user_id": "114718671179",
+        "order_id": "11777819148619",
+        "shop_url": "ctrhj2-v0",
+        "created_at": "2025-11-13 10:37:07.000000 UTC",
+        "processed_at": "2025-11-13T11:37:07+01:00",
+        "transactions": "[{\"admin_graphql_api_id\":\"gid://shopify/OrderTransaction/13286532940107\",\"amount\":\"774.00\",\"authorization\":\"ch_3SKGxkPHIbJIRLbR0f5AZwkD\",\"created_at\":\"2025-11-13T11:37:06+01:00\",\"currency\":\"NOK\",\"device_id\":null,\"error_code\":null,\"gateway\":\"shopify_payments\",\"id\":13286532940107,\"kind\":\"refund\",\"location_id\":null,\"message\":null,\"order_id\":11777819148619,\"parent_id\":13053667639627,\"payment_details\":{\"avs_result_code\":\"U\",\"buyer_action_info\":null,\"credit_card_bin\":\"540123\",\"credit_card_company\":\"Mastercard\",\"credit_card_expiration_month\":5,\"credit_card_expiration_year\":2027,\"credit_card_name\":\"Lasse Eriksen\",\"credit_card_number\":\"•••• •••• •••• 9891\",\"credit_card_wallet\":null,\"cvv_result_code\":\"M\",\"payment_method_name\":\"master\"},\"payment_id\":\"zBVEBaCrgeAmN1FfnRVFr0o9c\",\"payments_refund_attributes\":{\"acquirer_reference_number\":null,\"status\":\"deferred\"},\"processed_at\":\"2025-11-13T11:37:06+01:00\",\"receipt\":{\"refund_id\":\"zBVEBaCrgeAmN1FfnRVFr0o9c\"},\"source_name\":\"1830279\",\"status\":\"pending\",\"test\":false,\"user_id\":null}]",
+        "total_duties_set": "{\"presentment_money\":{\"amount\":0,\"currency_code\":\"NOK\"},\"shop_money\":{\"amount\":0,\"currency_code\":\"DKK\"}}",
+        "order_adjustments": "[{\"amount\":\"495.18\",\"amount_set\":{\"presentment_money\":{\"amount\":\"774.00\",\"currency_code\":\"NOK\"},\"shop_money\":{\"amount\":\"495.18\",\"currency_code\":\"DKK\"}},\"id\":511828721995,\"kind\":\"refund_discrepancy\",\"order_id\":11777819148619,\"reason\":\"Refund discrepancy\",\"refund_id\":1112621252939,\"tax_amount\":\"0.00\",\"tax_amount_set\":{\"presentment_money\":{\"amount\":\"0.00\",\"currency_code\":\"NOK\"},\"shop_money\":{\"amount\":\"0.00\",\"currency_code\":\"DKK\"}}}]",
+        "refund_line_items": "[{\"id\":1019594703179,\"line_item\":{\"admin_graphql_api_id\":\"gid://shopify/LineItem/35035271397707\",\"attributed_staffs\":[],\"current_quantity\":0,\"discount_allocations\":[],\"duties\":[],\"fulfillable_quantity\":0,\"fulfillment_service\":\"manual\",\"fulfillment_status\":\"fulfilled\",\"gift_card\":false,\"grams\":1060,\"id\":35035271397707,\"name\":\"NOA, Overliggerrør 35 mm 2,0 m\",\"price\":492.75,\"price_set\":{\"presentment_money\":{\"amount\":774,\"currency_code\":\"NOK\"},\"shop_money\":{\"amount\":492.75,\"currency_code\":\"DKK\"}},\"product_exists\":true,\"product_id\":10312514797899,\"properties\":[],\"quantity\":1,\"requires_shipping\":true,\"sku\":\"1042281\",\"tax_lines\":[{\"channel_liable\":false,\"price\":98.55,\"price_set\":{\"presentment_money\":{\"amount\":154.8,\"currency_code\":\"NOK\"},\"shop_money\":{\"amount\":98.55,\"currency_code\":\"DKK\"}},\"rate\":0.25,\"title\":\"VAT\"}],\"taxable\":true,\"title\":\"NOA, Overliggerrør 35 mm 2,0 m\",\"total_discount\":0,\"total_discount_set\":{\"presentment_money\":{\"amount\":0,\"currency_code\":\"NOK\"},\"shop_money\":{\"amount\":0,\"currency_code\":\"DKK\"}},\"variant_id\":50769541464395,\"variant_inventory_management\":\"shopify\",\"variant_title\":null,\"vendor\":\"NOA\"},\"line_item_id\":35035271397707,\"location_id\":null,\"quantity\":1,\"restock_type\":\"no_restock\",\"subtotal\":492.75,\"subtotal_set\":{\"presentment_money\":{\"amount\":774,\"currency_code\":\"NOK\"},\"shop_money\":{\"amount\":492.75,\"currency_code\":\"DKK\"}},\"total_tax\":98.55,\"total_tax_set\":{\"presentment_money\":{\"amount\":154.8,\"currency_code\":\"NOK\"},\"shop_money\":{\"amount\":98.55,\"currency_code\":\"DKK\"}}}]",
+        "admin_graphql_api_id": "gid://shopify/Refund/1112621252939"
+    }
+]

@@ -104,7 +104,8 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     clickupId: apiData.customerClickupID || "",
                     metaCustomerCountry: apiData.customerMetaID || "",
                     excludeMetaCountries: apiData.customerMetaIDExclude || "",
-                    parentCustomer: customerData.parentCustomer?._id || ""
+                    parentCustomer: customerData.parentCustomer?._id || "",
+                    changeCurrency: apiData.changeCurrency !== undefined ? apiData.changeCurrency : true
                 });
                 
                 setParentCustomers(parentCustomersData || []);
@@ -116,7 +117,8 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     clickupId: "",
                     metaCustomerCountry: "",
                     excludeMetaCountries: "",
-                    parentCustomer: ""
+                    parentCustomer: "",
+                    changeCurrency: true
                 });
                 setParentCustomers([]);
             } finally {
@@ -191,8 +193,12 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                 customerValutaCode: settings.backendStoreCurrency,
                 customerClickupID: settings.clickupId,
                 customerMetaID: settings.metaCustomerCountry,
-                customerMetaIDExclude: settings.excludeMetaCountries
+                customerMetaIDExclude: settings.excludeMetaCountries,
+                changeCurrency: settings.changeCurrency ?? true // Default to true if undefined
             };
+            
+            console.log("Frontend: Current settings state:", settings);
+            console.log("Frontend: Payload being sent:", settingsPayload);
             
             const settingsResponse = await fetch(`/api/customer-settings/${customerId}`, {
                 method: "PUT",
@@ -375,6 +381,36 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                             <option value="NOK">Norwegian Krone (NOK)</option>
                             <option value="CHF">Swiss Franc (CHF)</option>
                         </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Change Currency</label>
+                        <div className="flex items-center space-x-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const currentValue = settings?.changeCurrency ?? true; // Default to true if undefined
+                                    const newValue = !currentValue; // Toggle it
+                                    console.log("Toggle clicked: current =", currentValue, "new =", newValue);
+                                    setSettings({ ...settings, changeCurrency: newValue });
+                                }}
+                                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:ring-offset-2 ${
+                                    (settings?.changeCurrency ?? true) ? 'bg-[var(--color-dark-green)]' : 'bg-gray-200'
+                                }`}
+                            >
+                                <span
+                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                        (settings?.changeCurrency ?? true) ? 'translate-x-5' : 'translate-x-0'
+                                    }`}
+                                />
+                            </button>
+                            <span className="text-sm text-[var(--color-green)]">
+                                {(settings?.changeCurrency ?? true) ? 'Yes' : 'No'}
+                            </span>
+                        </div>
+                        <p className="text-xs text-[var(--color-green)] mt-1">
+                            Enable automatic currency conversion for dashboard views
+                        </p>
                     </div>
 
                     <div>

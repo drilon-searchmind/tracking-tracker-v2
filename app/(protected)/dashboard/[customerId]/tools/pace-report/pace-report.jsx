@@ -46,8 +46,8 @@ const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
 };
 
 // Apply currency conversion to a data row
-const convertDataRow = (row, fromCurrency) => {
-    if (fromCurrency === "DKK") return row;
+const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
+    if (fromCurrency === "DKK" || !shouldConvertCurrency) return row;
     
     const convertedRow = { ...row };
     
@@ -80,9 +80,26 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
     const [endDate, setEndDate] = useState(formatDate(yesterday));
     const [activeChartIndex, setActiveChartIndex] = useState(0);
+    const [changeCurrency, setChangeCurrency] = useState(true);
 
     const end = new Date(endDate);
     const daysInMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
+
+    useEffect(() => {
+        const fetchCustomerSettings = async () => {
+            try {
+                const response = await fetch(`/api/customer-settings/${customerId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setChangeCurrency(data.changeCurrency ?? true);
+                }
+            } catch (error) {
+                console.error("Error fetching customer settings:", error);
+            }
+        }
+
+        fetchCustomerSettings()
+    }, [customerId]);
 
     if (!initialData || !initialData.daily_metrics) {
         return (
@@ -111,10 +128,10 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     const filteredMetrics = useMemo(() => {
         const filtered = daily_metrics
             .filter(row => row.date >= startDate && row.date <= endDate)
-            .map(row => convertDataRow(row, customerValutaCode))
+            .map(row => convertDataRow(row, customerValutaCode, changeCurrency))
             .sort((a, b) => a.date.localeCompare(b.date));
         return filtered;
-    }, [daily_metrics, startDate, endDate, customerValutaCode]);
+    }, [daily_metrics, startDate, endDate, customerValutaCode, changeCurrency]);
 
     const cumulativeMetrics = useMemo(() => {
         let cumOrders = 0, cumRevenue = 0, cumAdSpend = 0;
@@ -240,7 +257,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     const comparisonTotals = useMemo(() => {
         const comparisonData = daily_metrics
             .filter(row => row.date >= compStart && row.date <= compEnd)
-            .map(row => convertDataRow(row, customerValutaCode))
+            .map(row => convertDataRow(row, customerValutaCode, changeCurrency))
             .sort((a, b) => a.date.localeCompare(b.date));
         let cumOrders = 0, cumRevenue = 0, cumAdSpend = 0;
         const cumulativeComparison = comparisonData.map(row => {
@@ -266,7 +283,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         };
 
         return result;
-    }, [daily_metrics, compStart, compEnd, customerValutaCode]);
+    }, [daily_metrics, compStart, compEnd, customerValutaCode, changeCurrency]);
 
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;

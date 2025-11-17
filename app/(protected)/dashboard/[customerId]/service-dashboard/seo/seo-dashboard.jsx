@@ -17,6 +17,7 @@ import {
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import Subheading from "@/app/components/UI/Utility/Subheading";
+import SEOSettings from "./components/SEOSettings";
 
 ChartJS.register(
     LineElement,
@@ -51,9 +52,10 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     const [showMobileUrlDetails, setShowMobileUrlDetails] = useState(false);
     const [expandedKeywords, setExpandedKeywords] = useState({});
     const [expandedUrls, setExpandedUrls] = useState({});
-
     const [keywordSearch, setKeywordSearch] = useState("");
     const [urlSearch, setUrlSearch] = useState("");
+    const [keywordGroups, setKeywordGroups] = useState([]);
+    const [selectedKeywordGroup, setSelectedKeywordGroup] = useState("");
 
     const { impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = initialData || {};
 
@@ -138,8 +140,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     }, [impressions_data, compStart, compEnd]);
 
     const allKeywords = useMemo(() => {
-        // Use the top_keywords data directly since it contains position information
-        // Filter by date range using the keywords_by_date for the date filtering
         const keywordClicksInDateRange = filteredKeywordsByDate.reduce((acc, row) => {
             acc[row.keyword] = {
                 clicks: (acc[row.keyword]?.clicks || 0) + (row.clicks || 0),
@@ -148,20 +148,17 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
             return acc;
         }, {});
 
-        // Combine with top_keywords data which has position information
         return top_keywords
             .map(topKeyword => {
                 const dateRangeData = keywordClicksInDateRange[topKeyword.keyword];
                 if (dateRangeData) {
-                    // Use data from the selected date range but keep position from top_keywords
                     return {
                         keyword: topKeyword.keyword,
                         clicks: dateRangeData.clicks,
                         impressions: dateRangeData.impressions,
-                        position: topKeyword.position, // Use position from top_keywords which has the correct data
+                        position: topKeyword.position,
                     };
                 } else {
-                    // If no data in date range, return with 0 clicks/impressions but keep position
                     return {
                         keyword: topKeyword.keyword,
                         clicks: 0,
@@ -170,19 +167,32 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     };
                 }
             })
-            .filter(item => item.clicks > 0 || item.impressions > 0) // Only show keywords with activity in date range
+            .filter(item => item.clicks > 0 || item.impressions > 0)
             .sort((a, b) => b.clicks - a.clicks);
     }, [filteredKeywordsByDate, top_keywords]);
 
     const filteredTopKeywords = useMemo(() => {
-        return allKeywords
-            .filter(item =>
-                keywordSearch ?
-                    item.keyword.toLowerCase().includes(keywordSearch.toLowerCase()) :
-                    true
-            )
-            .slice(0, keywordSearch ? undefined : 10);
-    }, [allKeywords, keywordSearch]);
+        let filtered = allKeywords;
+
+        if (keywordSearch) {
+            filtered = filtered.filter(item =>
+                item.keyword.toLowerCase().includes(keywordSearch.toLowerCase())
+            );
+        }
+
+        if (selectedKeywordGroup && selectedKeywordGroup !== "all") {
+            const selectedGroup = keywordGroups.find(group => group._id === selectedKeywordGroup);
+            if (selectedGroup) {
+                filtered = filtered.filter(item =>
+                    selectedGroup.keywords.some(groupKeyword => 
+                        item.keyword.toLowerCase().includes(groupKeyword.toLowerCase())
+                    )
+                );
+            }
+        }
+
+        return filtered.slice(0, keywordSearch || selectedKeywordGroup !== "all" ? undefined : 10);
+    }, [allKeywords, keywordSearch, selectedKeywordGroup, keywordGroups]);
 
     const allUrls = useMemo(() => {
         const urlMap = filteredUrlsByDate.reduce((acc, row) => {
@@ -403,6 +413,24 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         setExpandedUrls({});
     }, [dateStart, dateEnd]);
 
+    useEffect(() => {
+        const fetchKeywordGroups = async () => {
+            try {
+                const response = await fetch(`/api/seo-keyword-groups?customerId=${customerId}`);
+                if (response.ok) {
+                    const groups = await response.json();
+                    setKeywordGroups(groups);
+                }
+            } catch (error) {
+                console.error("Error fetching keyword groups:", error);
+            }
+        };
+
+        if (customerId) {
+            fetchKeywordGroups();
+        }
+    }, [customerId]);
+
     if (!impressions_data || !top_keywords || !top_urls || !urls_by_date || !keywords_by_date) {
         return (
             <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
@@ -587,12 +615,23 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                     <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)]" size={14} />
                                 </div>
                                 <select
-                                    value={filter}
-                                    onChange={(e) => setFilter(e.target.value)}
+                                    value={selectedKeywordGroup}
+                                    onChange={(e) => setSelectedKeywordGroup(e.target.value)}
                                     className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                 >
-                                    <option>Med brand</option>
-                                    <option>Uden brand</option>
+                                    <option value="all">All Keywords</option>
+                                    <option value="">Med brand</option>
+                                    <option value="">Uden brand</option>
+                                    {keywordGroups.length > 0 && (
+                                        <>
+                                            <option disabled>──── Custom Groups ────</option>
+                                            {keywordGroups.map(group => (
+                                                <option key={group._id} value={group._id}>
+                                                    {group.name} ({group.keywords.length} keywords)
+                                                </option>
+                                            ))}
+                                        </>
+                                    )}
                                 </select>
                             </div>
                         </div>
@@ -647,12 +686,23 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     <div className="flex justify-between items-center p-4 border-b border-[var(--color-light-natural)]">
                         <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">Top Performance Keywords</h3>
                         <select
-                            value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
+                            value={selectedKeywordGroup}
+                            onChange={(e) => setSelectedKeywordGroup(e.target.value)}
                             className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
                         >
-                            <option>Med brand</option>
-                            <option>Uden brand</option>
+                            <option value="all">All</option>
+                            <option value="">Med brand</option>
+                            <option value="">Uden brand</option>
+                            {keywordGroups.length > 0 && (
+                                <>
+                                    <option disabled>────</option>
+                                    {keywordGroups.map(group => (
+                                        <option key={group._id} value={group._id}>
+                                            {group.name}
+                                        </option>
+                                    ))}
+                                </>
+                            )}
                         </select>
                     </div>
                     <div className="p-4 border-b border-[var(--color-light-natural)]">
@@ -831,6 +881,9 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                         </div>
                     )}
                 </div>
+
+                {/* SEO Settings Section */}
+                <SEOSettings customerId={customerId} />
             </div>
         </div>
     );

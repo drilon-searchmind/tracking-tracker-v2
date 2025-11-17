@@ -22,6 +22,7 @@ import DashboardMetrics from "./components/DashboardMetrics";
 import DashboardCharts from "./components/DashboardCharts";
 import ServiceDashboards from "./components/ServiceDashboards";
 import Subheading from "@/app/components/UI/Utility/Subheading";
+import CustomerAssignedUsers from "@/app/components/CampaignPlanner/CustomerAssignedUsers";
 import currencyExchangeData from "@/lib/static-data/currencyApiValues.json";
 
 // Currency conversion utility
@@ -377,11 +378,21 @@ export default function PerformanceDashboard({ customerId, customerName, custome
 
             <div className="px-0 md:px-20 mx-auto z-10 relative">
                 <div className="mb-6 md:mb-8">
-                    <Subheading headingText={customerName} />
-                    <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] xl:text-[44px]">Performance Dashboard</h1>
-                    <p className="text-[var(--color-green)] max-w-2xl text-sm md:text-base">
-                        Comprehensive performance analytics and insights for your marketing campaigns and business metrics across all channels.
-                    </p>
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:gap-8">
+                        <div className="flex-1">
+                            <Subheading headingText={customerName} />
+                            <h1 className="mb-3 md:mb-5 pr-0 md:pr-16 text-2xl md:text-3xl font-bold text-[var(--color-dark-green)] xl:text-[44px]">Performance Dashboard</h1>
+                            <p className="text-[var(--color-green)] max-w-2xl text-sm md:text-base">
+                                Comprehensive performance analytics and insights for your marketing campaigns and business metrics across all channels.
+                            </p>
+                        </div>
+                        
+                        <div className="lg:w-80 xl:w-96 mt-6 lg:mt-0">
+                            <div className="bg-white rounded-lg shadow-sm border border-[var(--color-light-natural)] p-4">
+                                <CustomerAssignedUsers customerId={customerId} />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Controls Section */}

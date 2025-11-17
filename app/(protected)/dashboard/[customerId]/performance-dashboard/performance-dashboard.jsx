@@ -438,6 +438,7 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                     <DashboardMetrics
                         currentMetrics={currentMetrics}
                         prevMetrics={prevMetrics}
+                        customerId={customerId}
                     />
 
                     {/* Charts */}

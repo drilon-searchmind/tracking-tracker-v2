@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
     HiOutlineCurrencyDollar,
     HiOutlineChartBar,
@@ -6,11 +7,48 @@ import {
 } from "react-icons/hi2";
 import { FaMoneyCheckAlt } from "react-icons/fa";
 
-export default function DashboardMetrics({ currentMetrics, prevMetrics }) {
+export default function DashboardMetrics({ currentMetrics, prevMetrics, customerId }) {
+    const [cogsPercentage, setCogsPercentage] = useState(0);
+
+    useEffect(() => {
+        console.log("Fetching COGS percentage for customer ID:", customerId);
+        
+        async function fetchStaticExpenses() {
+            try {
+                const apiUrl = `/api/config-static-expenses/${customerId}`;
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log({result})
+                if (result?.data?.cogs_percentage !== undefined) {
+                    setCogsPercentage(result.data.cogs_percentage);
+                } else {
+                    console.warn("COGS percentage not found in response, defaulting to 0.");
+                    setCogsPercentage(0);
+                }
+            } catch (error) {
+                console.error("Error fetching static expenses:", error);
+                setCogsPercentage(0);
+            }
+        }
+
+        if (customerId) {
+            fetchStaticExpenses();
+        }
+    }, [customerId]);
+
     const calculateDelta = (current, prev) => {
         if (!prev || prev === 0) return null;
         const delta = ((current - prev) / prev * 100).toFixed(1);
         return `${delta > 0 ? "+" : ""}${delta.toLocaleString('en-US')}%`;
+    };
+
+    const calculateGrossProfit = (revenueExTax, totalCost) => {
+        return totalCost > 0 ? (((revenueExTax * cogsPercentage) - totalCost)) : 0;
     };
 
     const metrics = [
@@ -23,9 +61,13 @@ export default function DashboardMetrics({ currentMetrics, prevMetrics }) {
         },
         {
             title: "Gross Profit",
-            value: `${Math.round(currentMetrics.gross_profit).toLocaleString('en-US')} DKK`,
-            delta: calculateDelta(currentMetrics.gross_profit, prevMetrics.gross_profit),
-            positive: currentMetrics.gross_profit >= prevMetrics.gross_profit,
+            value: `${Math.round(calculateGrossProfit(currentMetrics.revenue, currentMetrics.cost)).toLocaleString('en-US')} DKK`,
+            delta: calculateDelta(
+                calculateGrossProfit(currentMetrics.revenue, currentMetrics.cost),
+                calculateGrossProfit(prevMetrics.revenue, prevMetrics.cost)
+            ),
+            positive: calculateGrossProfit(currentMetrics.revenue, currentMetrics.cost) >=
+                      calculateGrossProfit(prevMetrics.revenue, prevMetrics.cost),
             icon: <FaMoneyCheckAlt className="text-2xl text-[var(--color-green)]" />,
         },
         {
@@ -64,10 +106,10 @@ export default function DashboardMetrics({ currentMetrics, prevMetrics }) {
             icon: <HiOutlineChartBar className="text-2xl text-[var(--color-green)]" />,
         },
         {
-            title: "Impressions",
-            value: Math.round(currentMetrics.impressions).toLocaleString('en-US'),
-            delta: calculateDelta(currentMetrics.impressions, prevMetrics.impressions),
-            positive: currentMetrics.impressions >= prevMetrics.impressions,
+            title: "CAC",
+            value: `${Math.round(currentMetrics.cost / currentMetrics.orders).toLocaleString('en-US')} DKK`,
+            delta: calculateDelta(currentMetrics.cost / currentMetrics.orders, prevMetrics.cost / prevMetrics.orders),
+            positive: (currentMetrics.cost / currentMetrics.orders) <= (prevMetrics.cost / prevMetrics.orders),
             icon: <HiOutlineChartBar className="text-2xl text-[var(--color-green)]" />,
         },
     ];
@@ -83,13 +125,10 @@ export default function DashboardMetrics({ currentMetrics, prevMetrics }) {
                         {metric.icon}
                         <p className="text-xs text-[var(--color-green)] uppercase font-medium">
                             {metric.title}
-                            {metric.title === "Gross Profit" && (
-                                <span className="text-xs text-red-500 ml-1 font-bold">(TBU)</span>
-                            )}
                         </p>
                     </div>
                     <div className="flex items-center justify-between">
-                        <span className={`text-xl md:text-2xl font-semibold ${metric.title === "Gross Profit" ? "text-red-500 line-through" : "text-[var(--color-dark-green)]"}`}>{metric.value}</span>
+                        <span className="text-xl md:text-2xl font-semibold text-[var(--color-dark-green)]">{metric.value}</span>
                         {metric.delta && (
                             <span
                                 className={`text-xs md:text-sm font-medium px-2 py-1 rounded-md ${metric.positive ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}`}

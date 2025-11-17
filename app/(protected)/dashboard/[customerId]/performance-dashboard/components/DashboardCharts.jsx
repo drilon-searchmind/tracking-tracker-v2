@@ -108,6 +108,14 @@ export default function DashboardCharts({
         ],
     };
 
+    const spendAllocationPercentages = useMemo(() => {
+        const totalSpend = (currentMetrics.google_ads_cost || 0) + (currentMetrics.meta_spend || 0);
+        return {
+            google: totalSpend > 0 ? ((currentMetrics.google_ads_cost || 0) / totalSpend) * 100 : 0,
+            meta: totalSpend > 0 ? ((currentMetrics.meta_spend || 0) / totalSpend) * 100 : 0,
+        };
+    }, [currentMetrics.google_ads_cost, currentMetrics.meta_spend]);
+
     const sessionsChartData = useMemo(() => {
         const entries = Object.entries(currentMetrics.channel_sessions || {})
             .sort((a, b) => b[1] - a[1]);
@@ -140,9 +148,11 @@ export default function DashboardCharts({
 
     const spendAllocationLineChartData = useMemo(() => {
         const sourceData = spendViewMode === "YTD" ? monthlyYTDData : validChartData;
-    
+
         const labels = sourceData.map((row) => spendViewMode === "YTD" ? formatMonthLabel(row.date) : row.date);
-    
+
+        const totalSpend = sourceData.map((row) => (row.google_ads_cost || 0) + (row.meta_spend || 0));
+
         return {
             labels,
             datasets: [
@@ -155,6 +165,15 @@ export default function DashboardCharts({
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const total = totalSpend[context.dataIndex];
+                                const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(2) : 0;
+                                return `${context.raw.toLocaleString('en-US')} DKK (${percentage}%)`;
+                            },
+                        },
+                    },
                 },
                 {
                     label: `Meta${spendViewMode === "YTD" ? " (YTD)" : ""}`,
@@ -165,7 +184,16 @@ export default function DashboardCharts({
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
-                }
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const total = totalSpend[context.dataIndex];
+                                const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(2) : 0;
+                                return `${context.raw.toLocaleString('en-US')} DKK (${percentage}%)`;
+                            },
+                        },
+                    },
+                },
             ],
         };
     }, [spendViewMode, monthlyYTDData, validChartData, colors, formatMonthLabel]);

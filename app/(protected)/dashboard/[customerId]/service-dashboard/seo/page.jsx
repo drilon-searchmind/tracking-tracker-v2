@@ -79,7 +79,8 @@ export default async function SEODashboardPage({ params }) {
                             WHEN SUM(r.impressions) > 0 THEN SUM(r.clicks) / SUM(r.impressions)
                             ELSE 0
                         END AS FLOAT64
-                    ) AS ctr
+                    ) AS ctr,
+                    CAST(AVG(CAST(r.position AS FLOAT64)) AS FLOAT64) AS avg_position
                 FROM raw_data r
                 INNER JOIN top_urls t
                     ON r.page = t.url
@@ -97,7 +98,8 @@ export default async function SEODashboardPage({ params }) {
                             WHEN SUM(r.impressions) > 0 THEN SUM(r.clicks) / SUM(r.impressions)
                             ELSE 0
                         END AS FLOAT64
-                    ) AS ctr
+                    ) AS ctr,
+                    CAST(AVG(CAST(r.position AS FLOAT64)) AS FLOAT64) AS avg_position
                 FROM raw_data r
                 INNER JOIN top_keywords t
                     ON r.query = t.keyword
@@ -108,8 +110,8 @@ export default async function SEODashboardPage({ params }) {
                 (SELECT ARRAY_AGG(STRUCT(date, impressions, clicks, ctr, avg_position)) FROM impressions_by_date) AS impressions_data,
                 (SELECT ARRAY_AGG(STRUCT(keyword, clicks, impressions, position)) FROM top_keywords) AS top_keywords,
                 (SELECT ARRAY_AGG(STRUCT(url, clicks, impressions, ctr)) FROM top_urls) AS top_urls,
-                (SELECT ARRAY_AGG(STRUCT(date, url, clicks, impressions, ctr)) FROM urls_by_date) AS urls_by_date,
-                (SELECT ARRAY_AGG(STRUCT(date, keyword, clicks, impressions, ctr)) FROM keywords_by_date) AS keywords_by_date
+                (SELECT ARRAY_AGG(STRUCT(date, url, clicks, impressions, ctr, avg_position)) FROM urls_by_date) AS urls_by_date,
+                (SELECT ARRAY_AGG(STRUCT(date, keyword, clicks, impressions, ctr, avg_position)) FROM keywords_by_date) AS keywords_by_date
         `;
 
         const data = await queryBigQuerySEODashboardMetrics({

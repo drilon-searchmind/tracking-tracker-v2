@@ -138,24 +138,41 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     }, [impressions_data, compStart, compEnd]);
 
     const allKeywords = useMemo(() => {
-        const keywordMap = filteredKeywordsByDate.reduce((acc, row) => {
+        // Use the top_keywords data directly since it contains position information
+        // Filter by date range using the keywords_by_date for the date filtering
+        const keywordClicksInDateRange = filteredKeywordsByDate.reduce((acc, row) => {
             acc[row.keyword] = {
                 clicks: (acc[row.keyword]?.clicks || 0) + (row.clicks || 0),
                 impressions: (acc[row.keyword]?.impressions || 0) + (row.impressions || 0),
-                position: (acc[row.keyword]?.position || 0) + (row.position || 0),
-                count: (acc[row.keyword]?.count || 0) + 1,
             };
             return acc;
         }, {});
-        return Object.entries(keywordMap)
-            .map(([keyword, data]) => ({
-                keyword,
-                clicks: data.clicks,
-                impressions: data.impressions,
-                position: data.count > 0 ? data.position / data.count : 0,
-            }))
+
+        // Combine with top_keywords data which has position information
+        return top_keywords
+            .map(topKeyword => {
+                const dateRangeData = keywordClicksInDateRange[topKeyword.keyword];
+                if (dateRangeData) {
+                    // Use data from the selected date range but keep position from top_keywords
+                    return {
+                        keyword: topKeyword.keyword,
+                        clicks: dateRangeData.clicks,
+                        impressions: dateRangeData.impressions,
+                        position: topKeyword.position, // Use position from top_keywords which has the correct data
+                    };
+                } else {
+                    // If no data in date range, return with 0 clicks/impressions but keep position
+                    return {
+                        keyword: topKeyword.keyword,
+                        clicks: 0,
+                        impressions: 0,
+                        position: topKeyword.position,
+                    };
+                }
+            })
+            .filter(item => item.clicks > 0 || item.impressions > 0) // Only show keywords with activity in date range
             .sort((a, b) => b.clicks - a.clicks);
-    }, [filteredKeywordsByDate]);
+    }, [filteredKeywordsByDate, top_keywords]);
 
     const filteredTopKeywords = useMemo(() => {
         return allKeywords
@@ -297,27 +314,6 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         },
     };
 
-    const urlChartData = {
-        labels: [...new Set(filteredUrlsByDate.map((row) => row.date))].sort(),
-        datasets: selectedUrls.map((url, i) => ({
-            label: url,
-            data: filteredUrlsByDate
-                .filter((row) => row.url === url)
-                .map((row) => ({
-                    x: row.date,
-                    y: metric === "Clicks" ? row.clicks || 0 :
-                        metric === "Impressions" ? row.impressions || 0 :
-                            row.ctr || 0
-                })),
-            borderColor: colors[`hue${i % 5}`] || colors.primary,
-            backgroundColor: colors[`hue${i % 5}`] || colors.primary,
-            borderWidth: 1,
-            pointRadius: 2,
-            pointHoverRadius: 4,
-            fill: false,
-        })),
-    };
-
     const keywordChartData = {
         labels: [...new Set(filteredKeywordsByDate.map((row) => row.date))].sort(),
         datasets: selectedKeywords.map((keyword, i) => ({
@@ -328,7 +324,29 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                     x: row.date,
                     y: metric === "Clicks" ? row.clicks || 0 :
                         metric === "Impressions" ? row.impressions || 0 :
-                            row.ctr || 0
+                        metric === "Position" ? row.avg_position || 0 :
+                            (row.ctr * 100) || 0
+                })),
+            borderColor: colors[`hue${i % 5}`] || colors.primary,
+            backgroundColor: colors[`hue${i % 5}`] || colors.primary,
+            borderWidth: 1,
+            pointRadius: 2,
+            pointHoverRadius: 4,
+            fill: false,
+        })),
+    };
+
+    const urlChartData = {
+        labels: [...new Set(filteredUrlsByDate.map((row) => row.date))].sort(),
+        datasets: selectedUrls.map((url, i) => ({
+            label: url,
+            data: filteredUrlsByDate
+                .filter((row) => row.url === url)
+                .map((row) => ({
+                    x: row.date,
+                    y: metric === "Clicks" ? row.clicks || 0 :
+                        metric === "Impressions" ? row.impressions || 0 :
+                            (row.ctr * 100) || 0
                 })),
             borderColor: colors[`hue${i % 5}`] || colors.primary,
             backgroundColor: colors[`hue${i % 5}`] || colors.primary,
@@ -615,6 +633,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                 <option>Clicks</option>
                                 <option>Impressions</option>
                                 <option>CTR</option>
+                                <option>Position</option>
                             </select>
                         </div>
                         <div className="flex-1 w-full h-[calc(100%-2rem)] min-h-[300px] max-h-[500px] overflow-y-auto">

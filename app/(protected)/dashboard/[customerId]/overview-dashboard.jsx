@@ -283,6 +283,29 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
         aov: filteredTotals.aov - filteredLastYearTotals.aov,
     }), [filteredTotals, filteredLastYearTotals]);
 
+    const calculateIndex = (current, lastYear) => {
+        if (lastYear === 0 || lastYear === null || lastYear === undefined) {
+            return 0;
+        }
+        return (current / lastYear) * 100;
+    };
+
+    const indexMetrics = useMemo(() => {
+        return {
+            orders: calculateIndex(filteredTotals.orders, filteredLastYearTotals.orders),
+            revenue: calculateIndex(filteredTotals.revenue, filteredLastYearTotals.revenue),
+            revenue_ex_tax: calculateIndex(filteredTotals.revenue_ex_tax, filteredLastYearTotals.revenue_ex_tax),
+            ppc_cost: calculateIndex(filteredTotals.ppc_cost, filteredLastYearTotals.ppc_cost),
+            ps_cost: calculateIndex(filteredTotals.ps_cost, filteredLastYearTotals.ps_cost),
+            roas: calculateIndex(filteredTotals.roas, filteredLastYearTotals.roas),
+            poas: calculateIndex(filteredTotals.poas, filteredLastYearTotals.poas),
+            spendshare: calculateIndex(filteredTotals.spendshare, filteredLastYearTotals.spendshare),
+            spendshare_db: calculateIndex(filteredTotals.spendshare_db, filteredLastYearTotals.spendshare_db),
+            gp: calculateIndex(filteredTotals.gp, filteredLastYearTotals.gp),
+            aov: calculateIndex(filteredTotals.aov, filteredLastYearTotals.aov),
+        };
+    }, [filteredTotals, filteredLastYearTotals]);
+
     const metricRanges = useMemo(() => {
         const ranges = {
             orders: { min: Infinity, max: -Infinity },
@@ -517,6 +540,18 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                 <td className={`px-2 py-2 ${differences.gp >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.gp).toLocaleString()}</td>
                                                 <td className={`px-2 py-2 ${differences.aov >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.aov).toLocaleString()}</td>
                                             </tr>
+                                            <tr className="bg-gradient-to-r from-[var(--color-lime)]/20 to-[var(--color-natural)] font-semibold text-xs border-t border-[var(--color-lime)]/50">
+                                                <td className="px-2 py-2 text-[var(--color-dark-green)] font-bold">Index</td>
+                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.orders)}</td>
+                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.revenue)}</td>
+                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.revenue_ex_tax)}</td>
+                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.ppc_cost)}</td>
+                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.ps_cost)}</td>
+                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.roas)}</td>
+                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.poas)}</td>
+                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.gp)}</td>
+                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.aov)}</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -590,6 +625,30 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                 <div className="flex justify-between">
                                                     <span className="text-[var(--color-green)]">GP:</span>
                                                     <span className={`font-semibold ${differences.gp >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.gp).toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="border-b border-gray-100">
+                                        <div className="px-6 py-4 bg-gradient-to-r from-[var(--color-lime)]/20 to-[var(--color-natural)]">
+                                            <div className="text-sm font-bold text-[var(--color-dark-green)] mb-2">Index</div>
+                                            <div className="grid grid-cols-2 gap-3 text-sm">
+                                                <div className="flex justify-between">
+                                                    <span className="text-[var(--color-green)]">Orders:</span>
+                                                    <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(indexMetrics.orders)}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-[var(--color-green)]">Revenue:</span>
+                                                    <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(indexMetrics.revenue)}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
+                                                    <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(indexMetrics.roas)}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-[var(--color-green)]">GP:</span>
+                                                    <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(indexMetrics.gp)}</span>
                                                 </div>
                                             </div>
                                         </div>

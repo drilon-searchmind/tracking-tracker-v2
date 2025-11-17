@@ -15,10 +15,15 @@ export default function SEOSettings({ customerId }) {
         keywords: ""
     });
 
-    // Fetch keyword groups when component mounts or accordion opens
+    const [brandKeywords, setBrandKeywords] = useState([]);
+    const [brandKeywordsText, setBrandKeywordsText] = useState("");
+    const [brandKeywordsLoading, setBrandKeywordsLoading] = useState(false);
+
+    // Fetch keyword groups and brand keywords when component mounts or accordion opens
     useEffect(() => {
         if (isOpen && customerId) {
             fetchKeywordGroups();
+            fetchBrandKeywords();
         }
     }, [isOpen, customerId]);
 
@@ -36,6 +41,24 @@ export default function SEOSettings({ customerId }) {
             console.error("Error fetching keyword groups:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchBrandKeywords = async () => {
+        setBrandKeywordsLoading(true);
+        try {
+            const response = await fetch(`/api/seo-brand-keywords?customerId=${customerId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setBrandKeywords(data.keywords || []);
+                setBrandKeywordsText(data.keywords ? data.keywords.join(', ') : '');
+            } else {
+                console.error("Failed to fetch brand keywords");
+            }
+        } catch (error) {
+            console.error("Error fetching brand keywords:", error);
+        } finally {
+            setBrandKeywordsLoading(false);
         }
     };
 
@@ -146,6 +169,41 @@ export default function SEOSettings({ customerId }) {
         }
     };
 
+    const handleUpdateBrandKeywords = async () => {
+        setSaving(true);
+        try {
+            const keywords = brandKeywordsText
+                .split(',')
+                .map(k => k.trim())
+                .filter(k => k);
+
+            const response = await fetch('/api/seo-brand-keywords', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    keywords: keywords,
+                    customerId: customerId
+                }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                setBrandKeywords(result.keywords);
+                alert("Brand keywords updated successfully!");
+            } else {
+                const error = await response.json();
+                alert(error.error || "Failed to update brand keywords");
+            }
+        } catch (error) {
+            console.error("Error updating brand keywords:", error);
+            alert("An error occurred while updating brand keywords");
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const startEditing = (group) => {
         setEditingGroup({
             ...group,
@@ -180,6 +238,67 @@ export default function SEOSettings({ customerId }) {
             {isOpen && (
                 <div className="p-6">
                     <div className="mb-6">
+                        <h4 className="text-base font-semibold text-[var(--color-dark-green)] mb-2">
+                            Brand Keywords
+                        </h4>
+                        <p className="text-sm text-[var(--color-green)] mb-4">
+                            Define your brand keywords to enable "With Brand" and "Without Brand" filtering. 
+                            Keywords matching these terms will be considered brand-related searches.
+                        </p>
+                        
+                        {brandKeywordsLoading ? (
+                            <div className="flex items-center gap-2 p-4 bg-[var(--color-natural)] rounded-lg">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--color-lime)]"></div>
+                                <span className="text-sm text-[var(--color-green)]">Loading brand keywords...</span>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 mb-8">
+                                <div>
+                                    <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">
+                                        Brand Keywords (comma-separated) *
+                                    </label>
+                                    <textarea
+                                        value={brandKeywordsText}
+                                        onChange={(e) => setBrandKeywordsText(e.target.value)}
+                                        className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                        placeholder="your-brand, another brand, company name..."
+                                        rows="3"
+                                        disabled={saving}
+                                    />
+                                    <p className="text-xs text-[var(--color-green)] mt-1">
+                                        Enter your brand terms separated by commas. These will be used to filter "With Brand" vs "Without Brand" keywords.
+                                    </p>
+                                </div>
+                                
+                                {brandKeywords.length > 0 && (
+                                    <div className="p-3 bg-gray-50 rounded-lg border">
+                                        <span className="text-xs font-medium text-[var(--color-green)] mb-2 block">Current brand keywords:</span>
+                                        <div className="flex flex-wrap gap-2">
+                                            {brandKeywords.map((keyword, index) => (
+                                                <span 
+                                                    key={index}
+                                                    className="inline-flex items-center px-2 py-1 bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] text-xs rounded-md border border-[var(--color-lime)]/50"
+                                                >
+                                                    {keyword}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <button
+                                    onClick={handleUpdateBrandKeywords}
+                                    disabled={saving}
+                                    className="bg-[var(--color-dark-green)] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[var(--color-green)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                    <FaSave size={12} />
+                                    {saving ? "Updating..." : "Update Brand Keywords"}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mb-6 border-t border-[var(--color-light-natural)] pt-6">
                         <h4 className="text-base font-semibold text-[var(--color-dark-green)] mb-2">
                             Keyword Groups
                         </h4>

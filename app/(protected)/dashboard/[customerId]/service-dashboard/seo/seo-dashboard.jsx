@@ -55,7 +55,8 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     const [keywordSearch, setKeywordSearch] = useState("");
     const [urlSearch, setUrlSearch] = useState("");
     const [keywordGroups, setKeywordGroups] = useState([]);
-    const [selectedKeywordGroup, setSelectedKeywordGroup] = useState("");
+    const [brandKeywords, setBrandKeywords] = useState([]);
+    const [selectedKeywordGroup, setSelectedKeywordGroup] = useState("all");
 
     const { impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = initialData || {};
 
@@ -171,6 +172,14 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
             .sort((a, b) => b.clicks - a.clicks);
     }, [filteredKeywordsByDate, top_keywords]);
 
+    const containsBrandKeywords = (keyword) => {
+        if (!brandKeywords.length) return false;
+        const lowerKeyword = keyword.toLowerCase();
+        return brandKeywords.some(brandTerm => 
+            lowerKeyword.includes(brandTerm.toLowerCase())
+        );
+    };
+
     const filteredTopKeywords = useMemo(() => {
         let filtered = allKeywords;
 
@@ -180,7 +189,11 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
             );
         }
 
-        if (selectedKeywordGroup && selectedKeywordGroup !== "all") {
+        if (selectedKeywordGroup === "with-brand") {
+            filtered = filtered.filter(item => containsBrandKeywords(item.keyword));
+        } else if (selectedKeywordGroup === "without-brand") {
+            filtered = filtered.filter(item => !containsBrandKeywords(item.keyword));
+        } else if (selectedKeywordGroup && selectedKeywordGroup !== "all") {
             const selectedGroup = keywordGroups.find(group => group._id === selectedKeywordGroup);
             if (selectedGroup) {
                 filtered = filtered.filter(item =>
@@ -192,7 +205,7 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         }
 
         return filtered.slice(0, keywordSearch || selectedKeywordGroup !== "all" ? undefined : 10);
-    }, [allKeywords, keywordSearch, selectedKeywordGroup, keywordGroups]);
+    }, [allKeywords, keywordSearch, selectedKeywordGroup, keywordGroups, brandKeywords]);
 
     const allUrls = useMemo(() => {
         const urlMap = filteredUrlsByDate.reduce((acc, row) => {
@@ -426,8 +439,21 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
             }
         };
 
+        const fetchBrandKeywords = async () => {
+            try {
+                const response = await fetch(`/api/seo-brand-keywords?customerId=${customerId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setBrandKeywords(data.keywords || []);
+                }
+            } catch (error) {
+                console.error("Error fetching brand keywords:", error);
+            }
+        };
+
         if (customerId) {
             fetchKeywordGroups();
+            fetchBrandKeywords();
         }
     }, [customerId]);
 
@@ -620,8 +646,8 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                     className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                 >
                                     <option value="all">All Keywords</option>
-                                    <option value="">Med brand</option>
-                                    <option value="">Uden brand</option>
+                                    <option value="with-brand">With Brand</option>
+                                    <option value="without-brand">Without Brand</option>
                                     {keywordGroups.length > 0 && (
                                         <>
                                             <option disabled>──── Custom Groups ────</option>
@@ -691,8 +717,8 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                             className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
                         >
                             <option value="all">All</option>
-                            <option value="">Med brand</option>
-                            <option value="">Uden brand</option>
+                            <option value="with-brand">With Brand</option>
+                            <option value="without-brand">Without Brand</option>
                             {keywordGroups.length > 0 && (
                                 <>
                                     <option disabled>────</option>

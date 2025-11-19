@@ -107,6 +107,12 @@ export default function PerformanceDashboard({ customerId, customerName, custome
     const [aovViewMode, setAovViewMode] = useState("YTD");
     const [sessionsViewMode, setSessionsViewMode] = useState("YTD");
 
+    // Period granularity states (for when viewMode is "Period")
+    const [revenuePeriodGranularity, setRevenuePeriodGranularity] = useState("Daily");
+    const [spendPeriodGranularity, setSpendPeriodGranularity] = useState("Daily");
+    const [aovPeriodGranularity, setAovPeriodGranularity] = useState("Daily");
+    const [sessionsPeriodGranularity, setSessionsPeriodGranularity] = useState("Daily");
+
     useEffect(() => {
         const fetchCustomerSettings = async () => {
             try {
@@ -454,6 +460,14 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                         setAovViewMode={setAovViewMode}
                         sessionsViewMode={sessionsViewMode}
                         setSessionsViewMode={setSessionsViewMode}
+                        revenuePeriodGranularity={revenuePeriodGranularity}
+                        setRevenuePeriodGranularity={setRevenuePeriodGranularity}
+                        spendPeriodGranularity={spendPeriodGranularity}
+                        setSpendPeriodGranularity={setSpendPeriodGranularity}
+                        aovPeriodGranularity={aovPeriodGranularity}
+                        setAovPeriodGranularity={setAovPeriodGranularity}
+                        sessionsPeriodGranularity={sessionsPeriodGranularity}
+                        setSessionsPeriodGranularity={setSessionsPeriodGranularity}
                         monthlyYTDData={monthlyYTDData}
                         monthlyYTDComparisonData={monthlyYTDComparisonData}
                         validChartData={validChartData}

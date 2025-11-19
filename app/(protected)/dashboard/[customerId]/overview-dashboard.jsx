@@ -47,7 +47,12 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const formatDate = (date) => date.toISOString().split("T")[0];
+    const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
 
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
     const [endDate, setEndDate] = useState(formatDate(yesterday));

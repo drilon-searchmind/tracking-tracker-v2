@@ -25,10 +25,12 @@ export default withAuth(
             if (customerMatch) {
                 const customerId = customerMatch[1];
                 
-                if (!token.isAdmin) {
+                if (!token.isAdmin && token.isExternal === true) {
                     const accessibleCustomers = token.accessibleCustomers || [];
                     const hasAccess = accessibleCustomers.includes(customerId);
                     
+                    console.log(`User ${token.email} accessing customer ${customerId}. isExternal: ${token.isExternal}`);
+
                     if (!hasAccess) {
                         console.log(`Access denied: User ${token.email} attempted to access unauthorized customer ${customerId}`);
                         return NextResponse.redirect(new URL("/unauthorized", req.url));

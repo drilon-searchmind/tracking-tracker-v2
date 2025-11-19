@@ -73,6 +73,7 @@ export default function CustomerModal({ closeModal }) {
             try {
                 const userEmail = session?.user?.email || "";
                 const isAdmin = session?.user?.isAdmin || false
+                const isExternal = session?.user?.isExternal || false
 
                 // Fetch all customers with parent customer data
                 const allCustomersResponse = await fetch("/api/customers");
@@ -82,7 +83,7 @@ export default function CustomerModal({ closeModal }) {
                 const parentCustomersResponse = await fetch("/api/parent-customers");
                 const allParentCustomers = await parentCustomersResponse.json();
 
-                if (isAdmin) {
+                if (isAdmin || !isExternal) {
                     setCustomers(allCustomers || []);
                     setParentCustomers(allParentCustomers || []);
                     setFilteredCustomers(allCustomers || []);

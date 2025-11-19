@@ -6,6 +6,11 @@ import format from "date-fns/format";
 import parse from "date-fns/parse";
 import startOfWeek from "date-fns/startOfWeek";
 import getDay from "date-fns/getDay";
+import addDays from "date-fns/addDays";
+import startOfMonth from "date-fns/startOfMonth";
+import endOfMonth from "date-fns/endOfMonth";
+import isSameDay from "date-fns/isSameDay";
+import isWithinInterval from "date-fns/isWithinInterval";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 const locales = {
@@ -101,6 +106,120 @@ export default function CampaignCalendar({
 		}
 	};
 
+	// Custom month view that shows all events
+	const CustomMonthView = () => {
+		const [currentDate, setCurrentDate] = useState(new Date());
+		
+		const monthStart = startOfMonth(currentDate);
+		const monthEnd = endOfMonth(currentDate);
+		const startDate = startOfWeek(monthStart);
+		const endDate = addDays(startOfWeek(addDays(monthEnd, 6)), 6);
+
+		const dateFormat = "d";
+		const rows = [];
+		let days = [];
+		let day = startDate;
+
+		// Create calendar grid
+		while (day <= endDate) {
+			for (let i = 0; i < 7; i++) {
+				const cloneDay = day;
+				const dayEvents = events.filter(event => {
+					const eventStart = new Date(event.start);
+					const eventEnd = new Date(event.end);
+					return isWithinInterval(cloneDay, { start: eventStart, end: eventEnd });
+				});
+
+				const isToday = isSameDay(day, new Date());
+				const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+
+				days.push(
+					<div
+						key={day.toString()}
+						className={`border border-gray-200 p-2 ${
+							isCurrentMonth ? 'bg-white' : 'bg-gray-50'
+						} ${isToday ? 'bg-blue-50' : ''}`}
+						style={{ minHeight: Math.max(120, dayEvents.length * 25 + 40) + 'px' }}
+					>
+						<div className={`text-sm font-medium mb-2 ${
+							isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+						} ${isToday ? 'text-blue-600' : ''}`}>
+							{format(cloneDay, dateFormat)}
+						</div>
+						<div className="space-y-1">
+							{dayEvents.map((event) => {
+								const style = eventStyleGetter(event).style;
+								return (
+									<div
+										key={event.id}
+										onClick={() => handleEventSelect(event)}
+										className="cursor-pointer text-xs p-1 rounded truncate"
+										style={style}
+										title={event.title}
+									>
+										{event.title}
+									</div>
+								);
+							})}
+						</div>
+					</div>
+				);
+				day = addDays(day, 1);
+			}
+			rows.push(
+				<div key={day.toString()} className="grid grid-cols-7">
+					{days}
+				</div>
+			);
+			days = [];
+		}
+
+		const nextMonth = () => {
+			setCurrentDate(addDays(monthStart, 32));
+		};
+
+		const prevMonth = () => {
+			setCurrentDate(addDays(monthStart, -1));
+		};
+
+		return (
+			<div className="h-full flex flex-col">
+				{/* Header */}
+				<div className="flex items-center justify-between p-4 border-b">
+					<button
+						onClick={prevMonth}
+						className="px-4 py-3 bg-black text-white hover:bg-gray-800 rounded-lg text-lg font-bold transition-colors"
+					>
+						‹
+					</button>
+					<h2 className="text-lg font-semibold">
+						{format(currentDate, 'MMMM yyyy')}
+					</h2>
+					<button
+						onClick={nextMonth}
+						className="px-4 py-3 bg-black text-white hover:bg-gray-800 rounded-lg text-lg font-bold transition-colors"
+					>
+						›
+					</button>
+				</div>
+
+				{/* Day headers */}
+				<div className="grid grid-cols-7 border-b">
+					{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+						<div key={day} className="p-3 text-center font-medium text-gray-600 bg-gray-50">
+							{day}
+						</div>
+					))}
+				</div>
+
+				{/* Calendar grid */}
+				<div className="flex-1 overflow-auto">
+					{rows}
+				</div>
+			</div>
+		);
+	};
+
 	const calendarCustomizations = {
 		dayPropGetter: (date) => {
 			const today = new Date();
@@ -120,7 +239,7 @@ export default function CampaignCalendar({
 
 	return (
 		<div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-solid-l overflow-hidden">
-			<div className="flex justify-between items-center p-6 border-b border-[var(--color-light-natural)] bg-[var(--color-natural)]">
+			<div className="flex justify-between items-center p-6 border-b border-[var(--color-light-natural)] bg-[var(--color-natural)] hidden">
 				<div className="flex gap-2 hidden">
 					<button
 						onClick={() => handleViewChange("month")}
@@ -144,24 +263,28 @@ export default function CampaignCalendar({
 			</div>
 
 			<div className="h-[600px] px-6 pt-4">
-				<Calendar
-					localizer={localizer}
-					events={events}
-					startAccessor="start"
-					endAccessor="end"
-					style={{ height: "100%" }}
-					view={view}
-					onView={handleViewChange}
-					views={["month", "week"]}
-					eventPropGetter={eventStyleGetter}
-					onSelectEvent={handleEventSelect}
-					dayPropGetter={calendarCustomizations.dayPropGetter}
-					formats={{
-						dayHeaderFormat: date => format(date, 'EEE')
-					}}
-					popup
-					className="campaign-calendar"
-				/>
+				{view === "month" ? (
+					<CustomMonthView />
+				) : (
+					<Calendar
+						localizer={localizer}
+						events={events}
+						startAccessor="start"
+						endAccessor="end"
+						style={{ height: "100%" }}
+						view={view}
+						onView={handleViewChange}
+						views={["week"]}
+						eventPropGetter={eventStyleGetter}
+						onSelectEvent={handleEventSelect}
+						dayPropGetter={calendarCustomizations.dayPropGetter}
+						formats={{
+							dayHeaderFormat: date => format(date, 'EEE')
+						}}
+						popup
+						className="campaign-calendar"
+					/>
+				)}
 			</div>
 
 			<div className="p-6 border-t border-[var(--color-light-natural)] bg-[var(--color-natural)] mt-4">

@@ -490,11 +490,11 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                     <td className="px-2 py-1" style={getHeatmapStyle(row.ps_cost, 'ps_cost')}>
                                                         kr. {Math.round(row.ps_cost).toLocaleString()}
                                                     </td>
-                                                    <td className="px-2 py-1" style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare')}>
-                                                        {metricView === "roas" ? row.roas.toFixed(2) : `${(row.spendshare * 100).toFixed(2)}%`}
+                                                    <td className="px-2 py-1" style={getHeatmapStyle(metricView === "ROAS/POAS" ? row.roas : row.spendshare, metricView === "ROAS/POAS" ? 'roas' : 'spendshare')}>
+                                                        {metricView === "ROAS/POAS" ? `${row.roas.toFixed(2)}` : `${(row.spendshare * 100).toFixed(2)}%`}
                                                     </td>
-                                                    <td className="px-2 py-1" style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db')}>
-                                                        {metricView === "roas" ? row.poas.toFixed(2) : `${(row.spendshare_db * 100).toFixed(2)}%`}
+                                                    <td className="px-2 py-1" style={getHeatmapStyle(metricView === "ROAS/POAS" ? row.poas : row.spendshare_db, metricView === "ROAS/POAS" ? 'poas' : 'spendshare_db')}>
+                                                        {metricView === "ROAS/POAS" ? `${row.poas.toFixed(2)}` : `${(row.spendshare_db * 100).toFixed(2)}%`}
                                                     </td>
                                                     <td className="px-2 py-1" style={getHeatmapStyle(row.gp, 'gp')}>
                                                         kr. {Math.round(row.gp).toLocaleString()}

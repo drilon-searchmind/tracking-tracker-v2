@@ -1,0 +1,737 @@
+{
+    id: '4cm4p4b',
+    custom_id: null,
+    custom_item_id: 0,
+    name: 'pompdelux.dk',
+    text_content: '',
+    description: '',
+    status: {
+      id: 'subcat210313781_subcat193100629_subcat163311947_subcat49304097_subcat36940364_subcat25019803_subcat43266278_subcat43264547_sc13740925_QTMA3IoZ',
+      status: 'Open',
+      color: '#656f7d',
+      orderindex: 0,
+      type: 'open'
+    },
+    orderindex: '33716810.00000000000000000000000000000000',
+    date_created: '1532597760000',
+    date_updated: '1755502210618',
+    date_closed: null,
+    date_done: null,
+    archived: false,
+    creator: {
+      id: 32492350,
+      username: 'Christian Grøtner',
+      color: '#5d4037',
+      email: 'christian@searchmind.dk',
+      profilePicture: 'https: //attachments.clickup.com/profilePictures/32492350_fvc.jpg'
+    },
+    assignees: [],
+    group_assignees: [],
+    watchers: [
+        {
+        id: -1,
+        username: 'ClickBot',
+        color: '#827718',
+        initials: 'C',
+        email: 'clickbot@clickup.com',
+        profilePicture: 'https: //attachments.clickup.com/t1242830/995c776f-cdb7-4dc0-87ab-d65221824835/clickbot.svg'
+        },
+        {
+        id: 32492225,
+        username: 'Brian Ahle',
+        color: '#388d3c',
+        initials: 'BA',
+        email: 'brian@searchmind.dk',
+        profilePicture: 'https: //attachments.clickup.com/profilePictures/32492225_HCN.jpg'
+        },
+        {
+        id: 32492350,
+        username: 'Christian Grøtner',
+        color: '#5d4037',
+        initials: 'CG',
+        email: 'christian@searchmind.dk',
+        profilePicture: 'https: //attachments.clickup.com/profilePictures/32492350_fvc.jpg'
+        },
+        {
+        id: 43792062,
+        username: 'Annesofie Bjørnstad',
+        color: '#3e2724',
+        initials: 'AB',
+        email: 'anbj@searchmind.dk',
+        profilePicture: 'https: //attachments.clickup.com/profilePictures/43792062_WIB.jpg'
+        },
+        {
+        id: 43792065,
+        username: 'Nanna Gøbel',
+        color: '#b388ff',
+        initials: 'NG',
+        email: 'ngo@searchmind.dk',
+        profilePicture: 'https: //attachments.clickup.com/profilePictures/43792065_85V.jpg'
+        },
+        {
+        id: 43795621,
+        username: 'Jonas Sandbjerg Hansen',
+        color: '#536cfe',
+        initials: 'JH',
+        email: 'jsh@searchmind.dk',
+        profilePicture: null
+        },
+        {
+        id: 43795622,
+        username: 'Anna Sophie Fokdal Christensen',
+        color: '#1b5e20',
+        initials: 'AC',
+        email: 'afc@searchmind.dk',
+        profilePicture: 'https: //attachments.clickup.com/profilePictures/43795622_8ca.jpg'
+        },
+        {
+        id: 49518139,
+        username: 'Nicolai Damgaard',
+        color: '#5d4037',
+        initials: 'ND',
+        email: 'nicolai@searchmind.dk',
+        profilePicture: 'https: //attachments.clickup.com/profilePictures/49518139_LmM.jpg'
+        }
+    ],
+    checklists: [],
+    tags: [],
+    parent: null,
+    top_level_parent: null,
+    priority: null,
+    due_date: null,
+    start_date: null,
+    points: null,
+    time_estimate: null,
+    time_spent: 0,
+    custom_fields: [
+        {
+        id: 'e402b0ba-ed90-4275-bf4a-7cdc1d57e7a7',
+        name: '⭐ ️ Client',
+        type: 'drop_down',
+        type_config: [Object
+            ],
+        date_created: '1661759562211',
+        hide_from_guests: true,
+        value: 108,
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '9a49e6ba-07aa-4fc5-8a2e-623c9028875d',
+        name: '⭐️ Budget Month',
+        type: 'drop_down',
+        type_config: [Object
+            ],
+        date_created: '1661759562211',
+        hide_from_guests: false,
+        value: 40,
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: 'bf118bd1-90bf-4e8b-af6a-a4ef137fcb65',
+        name: '⭐️ Progress',
+        type: 'automatic_progress',
+        type_config: [Object
+            ],
+        date_created: '1661759857457',
+        hide_from_guests: false,
+        value: [Object
+            ],
+        required: null
+        },
+        {
+        id: '0e7f32d0-91e9-4e5b-89d1-31ef2bd0265c',
+        name: 'Files',
+        type: 'attachment',
+        type_config: {},
+        date_created: '1665987979435',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '29191222-377a-4443-8b2c-0cc8d189e5c7',
+        name: '🤝 Slutdato',
+        type: 'date',
+        type_config: {},
+        date_created: '1661759559113',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '799ec7c6-e81e-4691-a5bd-7bf09475b815',
+        name: '🤝 Service(s)',
+        type: 'labels',
+        type_config: [Object
+            ],
+        date_created: '1661759559113',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '0bd3f9ef-d7a3-46c8-bac2-230e47dd8ed5',
+        name: '🤝 Aftale type',
+        type: 'drop_down',
+        type_config: [Object
+            ],
+        date_created: '1666003899281',
+        hide_from_guests: false,
+        value: 0,
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: 'a0b954e3-39f6-4fa3-bf8d-a875fa3245de',
+        name: '🤝 Opsigelsesdato',
+        type: 'date',
+        type_config: {},
+        date_created: '1661759559113',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '91658659-8fcc-4712-a96f-7b65925b17c7',
+        name: '🤝 Opsigelsesgrund',
+        type: 'labels',
+        type_config: [Object
+            ],
+        date_created: '1668522215279',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '77f465da-0a12-42db-a824-31b78ca63ced',
+        name: '🤝 Opsigelsesgrund - Uddybning ',
+        type: 'text',
+        type_config: {},
+        date_created: '1665659277902',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '91b50c4a-912f-47b9-9be9-82e4d4574b87',
+        name: '💸 Opsalg',
+        type: 'list_relationship',
+        type_config: [Object
+            ],
+        date_created: '1664955257755',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        required: false
+        },
+        {
+        id: 'fa9684fc-ddeb-4b5e-b2d1-a453f30bb629',
+        name: '🗃 Google Drive',
+        type: 'url',
+        type_config: {},
+        date_created: '1664181101078',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '46e307a7-0c1b-4f6a-947c-ad74cd876dbc',
+        name: '💻 CMS',
+        type: 'list_relationship',
+        type_config: [Object
+            ],
+        date_created: '1663840727113',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        required: false
+        },
+        {
+        id: 'f462c2b2-79fa-472d-b4a0-09d5d42ac0a1',
+        name: '📃 Abonnement (AHLE)',
+        type: 'drop_down',
+        type_config: [Object
+            ],
+        date_created: '1663839325254',
+        hide_from_guests: false,
+        value: 0,
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '0652e439-5998-43c0-9000-fcbc0ed811e9',
+        name: '📃 Abonnement Web (AHLE)',
+        type: 'drop_down',
+        type_config: [Object
+            ],
+        date_created: '1751399510406',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '4dfd92a0-9485-4fe1-b091-a82093ed3d3c',
+        name: '👥 Kontaktperson',
+        type: 'list_relationship',
+        type_config: [Object
+            ],
+        date_created: '1665496956965',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        required: false
+        },
+        {
+        id: '16bfe7cf-ad42-4314-bf61-1e0b8d3254f9',
+        name: '🤝 Virksomhedstype',
+        type: 'labels',
+        type_config: [Object
+            ],
+        date_created: '1667908473422',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '34969aea-0fb2-413e-8eb0-0c79fe9825ab',
+        name: '🤝 Levetid (Mdr)',
+        type: 'formula',
+        type_config: [Object
+            ],
+        date_created: '1661759559113',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '5c9a58fc-7709-4b9b-964e-d55c671ab18b',
+        name: '🤝Lead Source',
+        type: 'drop_down',
+        type_config: [Object
+            ],
+        date_created: '1661759559113',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '7d1d7438-a11d-41a7-9807-daf9bc682044',
+        name: '📝 Kontrakt',
+        type: 'list_relationship',
+        type_config: [Object
+            ],
+        date_created: '1663839784957',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '17676314-46be-42d1-9c3d-576b28ca0b91',
+        name: '🤝 1.CP - Ansvarlig',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1666691962997',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '51ed563e-4a2c-489b-9506-be385c49a354',
+        name: '🤝 2.SEO - Ansvarlig',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1665658137852',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: 'bee4b7c5-c9d0-4808-8a4f-b00ee6df311e',
+        name: '🤝 3.PPC - Ansvarlig',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1665658122438',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '77e13fb5-b151-402a-8658-997ccb5f2201',
+        name: '🤝 PPC - Support',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1667894600421',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '2df85265-d5eb-4e86-a111-5d55623851fa',
+        name: '🤝 4.PS - Ansvarlig',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1665658149063',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: 'd17ef78a-00ce-4cf3-922e-60a59d6c4465',
+        name: '🤝 PS - Support',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1667894588015',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: 'f72c7efc-a4e0-4465-997d-8d50bbf3de0c',
+        name: '🤝 5.Content - Ansvarlig',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1665658159798',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '9000efbc-99d0-47fb-a909-0d32cabe29dd',
+        name: '🤝 5.Copywriter',
+        type: 'drop_down',
+        type_config: [Object
+            ],
+        date_created: '1669296443247',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '59292b69-bbe0-4ba1-95da-22fbd60558c8',
+        name: '🤝 6.Creative - Ansvarlig',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1665658173084',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '55b3e92d-5972-4246-8160-73d7ba04401a',
+        name: '🤝 7.EM - Ansvarlig',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1665658182799',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: 'ea6f029e-e1f3-4253-aa84-e545e4249a19',
+        name: '🤝 8. MarTech - Ansvarlig',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1738076245669',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '43a2824b-a988-45ad-b226-0050bcd8fc91',
+        name: '🤝 9. Web - Ansvarlig',
+        type: 'users',
+        type_config: [Object
+            ],
+        date_created: '1738076293060',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: 'b4ba7e92-7293-487d-a7e3-3f6d7ac01135',
+        name: '🤝 Sælger',
+        type: 'drop_down',
+        type_config: [Object
+            ],
+        date_created: '1665659654517',
+        hide_from_guests: false,
+        value: 2,
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '902b157f-a2fc-428d-b2c1-af70561a91f2',
+        name: '🤝 Kundenoter',
+        type: 'text',
+        type_config: {},
+        date_created: '1667296622612',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: 'ca36706e-fd33-443c-98ae-e0d9d79bdf10',
+        name: 'Andre domæner',
+        type: 'tasks',
+        type_config: [Object
+            ],
+        date_created: '1677751794886',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '18042a7e-baef-4422-843a-78271d2a8e99',
+        name: '⭐ CVR',
+        type: 'short_text',
+        type_config: {},
+        date_created: '1702557931812',
+        hide_from_guests: false,
+        value: '29622035',
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '8b643716-b815-4e61-bf4f-44817a224280',
+        name: '⭐ Virksomhedsnavn',
+        type: 'short_text',
+        type_config: {},
+        date_created: '1718880315203',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '939d8fcd-f47e-4629-94f0-8cfafa1de8bb',
+        name: '💡 Kundeinfo',
+        type: 'list_relationship',
+        type_config: [Object
+            ],
+        date_created: '1719215122956',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: 'c2d498b7-ba58-45fe-8c93-815a233731a9',
+        name: '💰 CLV',
+        type: 'formula',
+        type_config: [Object
+            ],
+        date_created: '1732180481242',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: 'd88ea01e-f07c-4688-9475-4bc929f2d209',
+        name: '💸 Budget Manager',
+        type: 'list_relationship',
+        type_config: [Object
+            ],
+        date_created: '1666185477926',
+        hide_from_guests: false,
+        value: [Array
+            ],
+        required: false
+        },
+        {
+        id: '0c48b349-7e75-45b8-b2cf-958cf44c4a7d',
+        name: '📢 NPS',
+        type: 'list_relationship',
+        type_config: [Object
+            ],
+        date_created: '1678358108302',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '28b06356-6f19-4633-bfa4-416c150a562c',
+        name: '⭐️ Client Lead',
+        type: 'drop_down',
+        type_config: [Object
+            ],
+        date_created: '1661759562211',
+        hide_from_guests: false,
+        value: 3,
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '333d5c10-27c3-4ebc-bb71-33c68934f753',
+        name: '💰 Marketing - MRR',
+        type: 'formula',
+        type_config: [Object
+            ],
+        date_created: '1667205050955',
+        hide_from_guests: false,
+        value: '50000',
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '72d633a0-9a5c-42cc-9f4b-c7de604ff00d',
+        name: '💰 Marketing - Start MRR',
+        type: 'currency',
+        type_config: [Object
+            ],
+        date_created: '1663839211746',
+        hide_from_guests: false,
+        value: '50000',
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: '094bc2fe-f8e9-4942-ba1d-29d52ce18f7e',
+        name: '💰 Marketing - Opsalg MRR',
+        type: 'currency',
+        type_config: [Object
+            ],
+        date_created: '1665482992048',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '973dd24d-2def-4422-ac11-539daf280443',
+        name: '💰 Marketing - Opstartspris',
+        type: 'currency',
+        type_config: [Object
+            ],
+        date_created: '1663839226367',
+        hide_from_guests: false,
+        value: '100000',
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: 'cb084c33-826b-4e45-8b23-25add027a7b3',
+        name: '💰 Web - MRR',
+        type: 'currency',
+        type_config: [Object
+            ],
+        date_created: '1748244545923',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '4f2a0d67-6bab-44d4-86d4-b8c97d3e4be0',
+        name: '💰 Web - Engangspris',
+        type: 'currency',
+        type_config: [Object
+            ],
+        date_created: '1748244448678',
+        hide_from_guests: false,
+        required: false
+        },
+        {
+        id: '5e6888c3-576e-41aa-b205-906555dd3e31',
+        name: '💰 Web - Opsalg',
+        type: 'currency',
+        type_config: [Object
+            ],
+        date_created: '1750921590458',
+        hide_from_guests: true,
+        required: false
+        },
+        {
+        id: '09ea16ef-e1ac-4b34-b302-f5893b6fd19b',
+        name: '💰 Web - ARR Opstartsdato',
+        type: 'date',
+        type_config: {},
+        date_created: '1750921784469',
+        hide_from_guests: true,
+        required: false
+        },
+        {
+        id: 'd67f1403-0fcd-45b8-a455-ac2740ab2265',
+        name: '🤝 Status',
+        type: 'drop_down',
+        type_config: [Object
+            ],
+        date_created: '1661759559113',
+        hide_from_guests: false,
+        value: 0,
+        value_richtext: null,
+        required: false
+        },
+        {
+        id: 'effb6ddb-c24c-447e-aa2c-b0abfdf21fc4',
+        name: '🤝 Startdato',
+        type: 'date',
+        type_config: {},
+        date_created: '1661759559113',
+        hide_from_guests: false,
+        value: '1533074400000',
+        value_richtext: null,
+        required: false
+        }
+    ],
+    dependencies: [],
+    linked_tasks: [],
+    locations: [],
+    team_id: '20450769',
+    url: 'https: //app.clickup.com/t/4cm4p4b',
+    sharing: {
+      public: false,
+      public_share_expires_on: null,
+      public_fields: [
+        'assignees',    'priority',
+        'due_date',     'content',
+        'comments',     'attachments',
+        'customFields', 'subtasks',
+        'tags',         'checklists',
+        'coverimage'
+        ],
+      token: null,
+      seo_optimized: false
+    },
+    permission_level: 'create',
+    list: { id: '210313781', name: '🤝 Account Dashboard', access: true
+    },
+    project: { id: '114575057', name: 'hidden', hidden: true, access: true
+    },
+    folder: { id: '114575057', name: 'hidden', hidden: true, access: true
+    },
+    space: { id: '48599244'
+    },
+    attachments: [
+        {
+        id: '9a01b6b6-3b44-4081-a10f-99d7ba699dee.pdf',
+        date: '1666342870468',
+        title: 'Pompdelux.com - Tilbud.pdf',
+        type: 1,
+        source: 1,
+        version: 0,
+        extension: 'pdf',
+        thumbnail_small: null,
+        thumbnail_medium: null,
+        thumbnail_large: null,
+        is_folder: null,
+        mimetype: 'application/pdf',
+        hidden: false,
+        parent_id: '4cm4p4b',
+        size: 513596,
+        total_comments: 0,
+        resolved_comments: 0,
+        user: [Object
+            ],
+        deleted: false,
+        orientation: null,
+        url: 'https: //t20450769.p.clickup-attachments.com/t20450769/9a01b6b6-3b44-4081-a10f-99d7ba699dee/Pompdelux.com%20-%20Tilbud.pdf',
+        email_data: null,
+        workspace_id: null,
+        url_w_query: 'https: //t20450769.p.clickup-attachments.com/t20450769/9a01b6b6-3b44-4081-a10f-99d7ba699dee/Pompdelux.com%20-%20Tilbud.pdf?view=open',
+        url_w_host: 'https: //t20450769.p.clickup-attachments.com/t20450769/9a01b6b6-3b44-4081-a10f-99d7ba699dee/Pompdelux.com%20-%20Tilbud.pdf?host=prod&ngsw-bypass=true'
+        }
+    ]
+}

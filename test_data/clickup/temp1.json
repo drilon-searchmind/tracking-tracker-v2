@@ -1,0 +1,1007 @@
+user: {
+    id: 61563955,
+    username: 'Stina Nilsson',
+    email: 'lisstina@hotmail.com',
+    color: '#ff5251',
+    profilePicture: null,
+    initials: 'SN',
+    role: 4,
+    role_subtype: 2,
+    role_key: 'guest',
+    custom_role: null,
+    last_active: '1736176181670',
+    date_joined: '1685972040165',
+    date_invited: '1685971118278'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  },
+  can_see_time_spent: true,
+  can_see_time_estimated: true,
+  can_see_points_estimated: true,
+  can_edit_tags: false,
+  can_create_views: false
+},
+{
+  user: {
+    id: 49575990,
+    username: 'Anders Bjerre',
+    email: 'anders@searchmind.dk',
+    color: '#d60800',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49575990_42C.jpg',
+    initials: 'AB',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: [Object],
+    last_active: '1763590449505',
+    date_joined: '1685692483354',
+    date_invited: '1685021733559'
+  },
+  invited_by: {
+    id: 32492225,
+    username: 'Brian Ahle',
+    color: '#388d3c',
+    email: 'brian@searchmind.dk',
+    initials: 'BA',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492225_HCN.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 55798762,
+    username: 'Maria Østergaard',
+    email: 'moe@searchmind.dk',
+    color: '#622aea',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/55798762_H3W.jpg',
+    initials: 'MØ',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763638299182',
+    date_joined: '1683202588275',
+    date_invited: '1682947450529'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 55798746,
+    username: 'Jacob Struve',
+    email: 'jst@searchmind.dk',
+    color: '#7b68ee',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/55798746_cD3.jpg',
+    initials: 'JS',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763622957217',
+    date_joined: '1684316767849',
+    date_invited: '1682946907831'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 55631250,
+    username: 'Morten Jeppesen',
+    email: 'mje@rains.com',
+    color: '#d60800',
+    profilePicture: null,
+    initials: 'MJ',
+    role: 4,
+    role_subtype: 2,
+    role_key: 'guest',
+    custom_role: null,
+    last_active: '1761561095202',
+    date_joined: '1676557540955',
+    date_invited: '1676557343246'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  },
+  can_see_time_spent: true,
+  can_see_time_estimated: true,
+  can_see_points_estimated: true,
+  can_edit_tags: false,
+  can_create_views: false
+},
+{
+  user: {
+    id: 55576574,
+    username: 'TEST Karsten Hansen',
+    email: 'karstenhansen123@gmail.com',
+    color: '',
+    profilePicture: null,
+    initials: 'TH',
+    role: 4,
+    role_subtype: 1,
+    role_key: 'readonly_guest',
+    custom_role: null,
+    last_active: '1763128492166',
+    date_joined: '1675023154391',
+    date_invited: '1674657438923'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  },
+  can_see_time_spent: true,
+  can_see_time_estimated: true,
+  can_see_points_estimated: true,
+  can_edit_tags: false,
+  can_create_views: false
+},
+{
+  user: {
+    id: 55522158,
+    username: 'Marcus Glerup Michaelsen',
+    email: 'mmi@searchmind.dk',
+    color: '#4169e1',
+    profilePicture: null,
+    initials: 'MM',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763563811342',
+    date_joined: '1673430458763',
+    date_invited: '1672827034843'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 55522153,
+    username: 'Linnea Harken',
+    email: 'lha@searchmind.dk',
+    color: '#263238',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/55522153_oEL.jpg',
+    initials: 'LH',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763643574983',
+    date_joined: '1673597456666',
+    date_invited: '1672827034639'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49743096,
+    username: 'Nicholai Bach',
+    email: 'nb@searchmind.dk',
+    color: '#006063',
+    profilePicture: null,
+    initials: 'NB',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763642219225',
+    date_joined: '1669711021183',
+    date_invited: '1669709913532'
+  },
+  invited_by: {
+    id: 32492225,
+    username: 'Brian Ahle',
+    color: '#388d3c',
+    email: 'brian@searchmind.dk',
+    initials: 'BA',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492225_HCN.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49548987,
+    username: 'Dummy profil',
+    email: 'christiangrotner@gmail.com',
+    color: '#ff00fc',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49548987_h77.jpg',
+    initials: 'DP',
+    role: 4,
+    role_subtype: 2,
+    role_key: 'guest',
+    custom_role: null,
+    last_active: '1701852306172',
+    date_joined: '1666866493155',
+    date_invited: '1666866331501'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  },
+  can_see_time_spent: true,
+  can_see_time_estimated: true,
+  can_see_points_estimated: true,
+  can_edit_tags: false,
+  can_create_views: false
+},
+{
+  user: {
+    id: 49579632,
+    username: 'Amelie Haupt',
+    email: 'amelie.hpt@gmail.com',
+    color: '#f57c01',
+    profilePicture: null,
+    initials: 'AH',
+    role: 4,
+    role_subtype: 2,
+    role_key: 'guest',
+    custom_role: null,
+    last_active: '1763385468392',
+    date_joined: '1664800812060',
+    date_invited: '1664537033768'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  },
+  can_see_time_spent: true,
+  can_see_time_estimated: true,
+  can_see_points_estimated: true,
+  can_edit_tags: false,
+  can_create_views: false
+},
+{
+  user: {
+    id: 49579629,
+    username: 'Håvard Lysklett',
+    email: 'haavardlysklett@gmail.com',
+    color: '#e040fb',
+    profilePicture: null,
+    initials: 'HL',
+    role: 4,
+    role_subtype: 2,
+    role_key: 'guest',
+    custom_role: null,
+    last_active: '1719581626736',
+    date_joined: '1664872110562',
+    date_invited: '1664537006903'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  },
+  can_see_time_spent: true,
+  can_see_time_estimated: true,
+  can_see_points_estimated: true,
+  can_edit_tags: false,
+  can_create_views: false
+},
+{
+  user: {
+    id: 49579623,
+    username: 'Kathrine Hinge Ellehauge',
+    email: 'kathrine@hingedahl.dk',
+    color: null,
+    profilePicture: null,
+    initials: 'KE',
+    role: 4,
+    role_subtype: 2,
+    role_key: 'guest',
+    custom_role: null,
+    last_active: '1691509072668',
+    date_joined: '1664538068901',
+    date_invited: '1664536938805'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  },
+  can_see_time_spent: true,
+  can_see_time_estimated: true,
+  can_see_points_estimated: true,
+  can_edit_tags: false,
+  can_create_views: false
+},
+{
+  user: {
+    id: 49579622,
+    username: 'Laura Marie Lauritsen',
+    email: 'lauramlexi@gmail.com',
+    color: null,
+    profilePicture: null,
+    initials: 'LL',
+    role: 4,
+    role_subtype: 2,
+    role_key: 'guest',
+    custom_role: null,
+    last_active: '1679933578877',
+    date_joined: '1664803504204',
+    date_invited: '1664536920536'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  },
+  can_see_time_spent: true,
+  can_see_time_estimated: true,
+  can_see_points_estimated: true,
+  can_edit_tags: false,
+  can_create_views: false
+},
+{
+  user: {
+    id: 49579617,
+    username: 'Linnea Brix Larsen',
+    email: 'linneabrix@gmail.com',
+    color: null,
+    profilePicture: null,
+    initials: 'LL',
+    role: 4,
+    role_subtype: 2,
+    role_key: 'guest',
+    custom_role: null,
+    last_active: '1763583983231',
+    date_joined: '1664800302662',
+    date_invited: '1664536858919'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  },
+  can_see_time_spent: true,
+  can_see_time_estimated: true,
+  can_see_points_estimated: true,
+  can_edit_tags: true,
+  can_create_views: false
+},
+{
+  user: {
+    id: 49576007,
+    username: 'Simon Pagh Kristensen',
+    email: 'spk@searchmind.dk',
+    color: '#d60800',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49576007_LGq.jpg',
+    initials: 'SK',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763636150771',
+    date_joined: '1664438010728',
+    date_invited: '1664436816398'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49576009,
+    username: 'Oskar Dybdal Sylvest',
+    email: 'osy@searchmind.dk',
+    color: '#5f7c8a',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49576009_XL4.jpg',
+    initials: 'OS',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763635349217',
+    date_joined: '1664438488818',
+    date_invited: '1664436807865'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49576010,
+    username: 'Mette Pej Stensballe',
+    email: 'mps@searchmind.dk',
+    color: '#02bcd4',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49576010_GU0.jpg',
+    initials: 'MS',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763638426178',
+    date_joined: '1664438843247',
+    date_invited: '1664436779198'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49575997,
+    username: 'Andreas Seiling Petersen',
+    email: 'asp@searchmind.dk',
+    color: '#0197a7',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49575997_Gxd.jpg',
+    initials: 'AP',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763642235718',
+    date_joined: '1664538575776',
+    date_invited: '1664436728160'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49575993,
+    username: 'Anders Bisgaard',
+    email: 'abi@searchmind.dk',
+    color: '#4169E1',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49575993_DPh.jpg',
+    initials: 'AB',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763638895533',
+    date_joined: '1664779180862',
+    date_invited: '1664436724383'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49575989,
+    username: 'Anders Schneider',
+    email: 'asc@searchmind.dk',
+    color: '#455963',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49575989_lA7.jpg',
+    initials: 'AS',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763638306769',
+    date_joined: '1664438274806',
+    date_invited: '1664436719903'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49575992,
+    username: 'Anders Fabricius Thomsen',
+    email: 'at@searchmind.dk',
+    color: '#388d3c',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49575992_Nl4.jpg',
+    initials: 'AT',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763626561209',
+    date_joined: '1664439654565',
+    date_invited: '1664436715987'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49575991,
+    username: 'Amalie Adelgaard',
+    email: 'aad@searchmind.dk',
+    color: '#006063',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49575991_PuX.jpg',
+    initials: 'AA',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763633228448',
+    date_joined: '1664438997073',
+    date_invited: '1664436704618'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49573497,
+    username: 'Mikkel Estrup Dideriksen',
+    email: 'mmd@searchmind.dk',
+    color: '#8ac34a',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49573497_01l.jpg',
+    initials: 'MD',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: [Object],
+    last_active: '1763638827461',
+    date_joined: '1664431941737',
+    date_invited: '1664372683618'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49559263,
+    username: 'Alexander Achenza',
+    email: 'aa@searchmind.dk',
+    color: '#0197a7',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49559263_Rxl.jpg',
+    initials: 'AA',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763627928870',
+    date_joined: '1663930635689',
+    date_invited: '1663930579057'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49559261,
+    username: 'Rasmus Sahlholdt',
+    email: 'rs@searchmind.dk',
+    color: '#b388ff',
+    profilePicture: null,
+    initials: 'RS',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763641303647',
+    date_joined: '1664174795396',
+    date_invited: '1663930560020'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49518139,
+    username: 'Nicolai Damgaard',
+    email: 'nicolai@searchmind.dk',
+    color: '#5d4037',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49518139_LmM.jpg',
+    initials: 'ND',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: [Object],
+    last_active: '1763552644288',
+    date_joined: '1662715845494',
+    date_invited: '1662712216789'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 49518010,
+    username: 'Anders Kunnerup',
+    email: 'ak@searchmind.dk',
+    color: '#aa2fff',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/49518010_jJT.jpg',
+    initials: 'AK',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763634223733',
+    date_joined: '1662709644013',
+    date_invited: '1662708622497'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 43795621,
+    username: 'Jonas Sandbjerg Hansen',
+    email: 'jsh@searchmind.dk',
+    color: '#536cfe',
+    profilePicture: null,
+    initials: 'JH',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763638369314',
+    date_joined: '1662098949796',
+    date_invited: '1662039430599'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 43792065,
+    username: 'Nanna Gøbel',
+    email: 'ngo@searchmind.dk',
+    color: '#b388ff',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/43792065_85V.jpg',
+    initials: 'NG',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: [Object],
+    last_active: '1763643047068',
+    date_joined: '1661973065562',
+    date_invited: '1661950481563'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 43792062,
+    username: 'Annesofie Bjørnstad',
+    email: 'anbj@searchmind.dk',
+    color: '#3e2724',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/43792062_WIB.jpg',
+    initials: 'AB',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: [Object],
+    last_active: '1763639761667',
+    date_joined: '1662016392536',
+    date_invited: '1661950456220'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 43791873,
+    username: 'Karsten Hansen',
+    email: 'kh@searchmind.dk',
+    color: '#ff4081',
+    profilePicture: null,
+    initials: 'KH',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763595542429',
+    date_joined: '1662009608727',
+    date_invited: '1661946173385'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 43791874,
+    username: 'Martin Hansen',
+    email: 'mh@searchmind.dk',
+    color: '#afb42b',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/43791874_Xgi.jpg',
+    initials: 'MH',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: [Object],
+    last_active: '1763642074485',
+    date_joined: '1662028359130',
+    date_invited: '1661946173212'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 43791872,
+    username: 'Aske Warming',
+    email: 'aw@searchmind.dk',
+    color: '#b388ff',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/43791872_CKa.jpg',
+    initials: 'AW',
+    role: 3,
+    role_subtype: 0,
+    role_key: 'member',
+    custom_role: null,
+    last_active: '1763638611649',
+    date_joined: '1661946206539',
+    date_invited: '1661946141223'
+  },
+  invited_by: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    color: '#5d4037',
+    email: 'christian@searchmind.dk',
+    initials: 'CG',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 32492350,
+    username: 'Christian Grøtner',
+    email: 'christian@searchmind.dk',
+    color: '#5d4037',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492350_fvc.jpg',
+    initials: 'CG',
+    role: 2,
+    role_subtype: 0,
+    role_key: 'admin',
+    custom_role: [Object],
+    last_active: '1763642708979',
+    date_joined: '1634804396823',
+    date_invited: '1634804316210'
+  },
+  invited_by: {
+    id: 32492225,
+    username: 'Brian Ahle',
+    color: '#388d3c',
+    email: 'brian@searchmind.dk',
+    initials: 'BA',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492225_HCN.jpg',
+    banned_date: null,
+    status: 'active'
+  }
+},
+{
+  user: {
+    id: 32492225,
+    username: 'Brian Ahle',
+    email: 'brian@searchmind.dk',
+    color: '#388d3c',
+    profilePicture: 'https://attachments.clickup.com/profilePictures/32492225_HCN.jpg',
+    initials: 'BA',
+    role: 1,
+    role_subtype: 0,
+    role_key: 'owner',
+    custom_role: null,
+    last_active: '1763640470524',
+    date_joined: '1634800695743',
+    date_invited: '1634800695743'
+  }
+}
+]

@@ -17,7 +17,8 @@ export default function CustomerAssignedUsers({ customerId, onUsersLoaded = null
         { key: "SEO", label: "SEO", color: "#ff7800" },
         { key: "PPC", label: "PPC", color: "#f9d900" },
         { key: "PS", label: "PS", color: "#0231E8" },
-        { key: "EM", label: "EM", color: "#3397dd" }
+        { key: "EM", label: "EM", color: "#3397dd" },
+        { key: "Client Lead", label: "Client Lead", color: "#34c759" },
     ];
 
     useEffect(() => {
@@ -74,6 +75,7 @@ export default function CustomerAssignedUsers({ customerId, onUsersLoaded = null
                     "bee4b7c5-c9d0-4808-8a4f-b00ee6df311e", // PPC
                     "2df85265-d5eb-4e86-a111-5d55623851fa", // PS
                     "55b3e92d-5972-4246-8160-73d7ba04401a", // EM
+                    "28b06356-6f19-4633-bfa4-416c150a562c", // Client Lead
                 ];
 
                 const users = [];
@@ -81,7 +83,7 @@ export default function CustomerAssignedUsers({ customerId, onUsersLoaded = null
 
                 if (clickupData.custom_fields) {
                     clickupData.custom_fields.forEach(field => {
-                        if (userFields.includes(field.id) && field.value && field.value.length > 0) {
+                        if (userFields.includes(field.id) && field.value) {
                             let serviceLabel = "";
 
                             if (field.id === "51ed563e-4a2c-489b-9506-be385c49a354") {
@@ -92,13 +94,45 @@ export default function CustomerAssignedUsers({ customerId, onUsersLoaded = null
                                 serviceLabel = "PS";
                             } else if (field.id === "55b3e92d-5972-4246-8160-73d7ba04401a") {
                                 serviceLabel = "EM";
+                            } else if (field.id === "28b06356-6f19-4633-bfa4-416c150a562c") {
+                                serviceLabel = "Client Lead";
+                                const matchedOption = field.type_config?.options?.find(option => option.orderindex === field.value);
+                                if (matchedOption) {
+                                    const userData = {
+                                        id: matchedOption.id,
+                                        username: matchedOption.name,
+                                        service: serviceLabel
+                                    };
+
+                                    users.push(userData);
+
+                                    if (!serviceUsers[serviceLabel]) {
+                                        serviceUsers[serviceLabel] = [];
+                                    }
+                                    serviceUsers[serviceLabel].push(userData);
+                                }
                             } else {
                                 serviceLabel = field.name.split(".")[1]?.split(" -")[0] || "";
                             }
 
-                            field.value.forEach(user => {
+                            if (Array.isArray(field.value)) {
+                                field.value.forEach(user => {
+                                    const userData = {
+                                        ...user,
+                                        service: serviceLabel
+                                    };
+
+                                    users.push(userData);
+
+                                    if (!serviceUsers[serviceLabel]) {
+                                        serviceUsers[serviceLabel] = [];
+                                    }
+                                    serviceUsers[serviceLabel].push(userData);
+                                });
+                            } else if (field.id !== "28b06356-6f19-4633-bfa4-416c150a562c") {
                                 const userData = {
-                                    ...user,
+                                    id: field.value,
+                                    username: field.name,
                                     service: serviceLabel
                                 };
 
@@ -108,12 +142,12 @@ export default function CustomerAssignedUsers({ customerId, onUsersLoaded = null
                                     serviceUsers[serviceLabel] = [];
                                 }
                                 serviceUsers[serviceLabel].push(userData);
-                            });
+                            }
                         }
                     });
                 }
 
-                console.log("Fetched clickup users by service:", serviceUsers);
+                console.log("Final users by service:", serviceUsers);
                 setAssignedUsers(users);
                 setUsersByService(serviceUsers);
                 setDataFetched(true);
@@ -186,9 +220,6 @@ export default function CustomerAssignedUsers({ customerId, onUsersLoaded = null
             <div className="flex items-center justify-between mb-3">
                 <div>
                     <h3 className="text-xs font-semibold text-[var(--color-dark-green)] mb-1">Customer Team</h3>
-                    <p className="text-xs text-[var(--color-green)]">
-                        {activeServicesCount}/4 services • {totalUsersCount} member{totalUsersCount !== 1 ? 's' : ''}
-                    </p>
                 </div>
                 {activeServicesCount === 0 && (
                     <div className="relative group">

@@ -2,6 +2,8 @@ import { dbConnect } from "@/lib/dbConnect";
 import Customer from "@/models/Customer";
 import StaticExpenses from "@/models/StaticExpenses";
 import CustomerSettings from "@/models/CustomerSettings";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req) {
     try {
@@ -17,6 +19,15 @@ export async function GET(req) {
 
 export async function POST(req) {
     try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.isAdmin) {
+            return new Response(JSON.stringify({ message: "Not authorized" }), {
+                status: 403,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
         await dbConnect();
 
         const {

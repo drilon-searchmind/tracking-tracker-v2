@@ -357,13 +357,14 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     {/* Existing fields */}
                     <div>
                         <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Metric Preference</label>
-                        <input
-                            type="text"
-                            value={settings?.metricPreference || ""}
+                        <select
+                            value={settings?.metricPreference || "ROAS/POAS"}
                             onChange={(e) => setSettings({ ...settings, metricPreference: e.target.value })}
                             className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
-                            placeholder="Enter metric preference"
-                        />
+                        >
+                            <option value="ROAS/POAS">ROAS/POAS</option>
+                            <option value="Spendshare">Spendshare</option>
+                        </select>
                     </div>
 
                     <div>

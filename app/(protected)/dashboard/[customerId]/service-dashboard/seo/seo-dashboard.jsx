@@ -30,7 +30,7 @@ ChartJS.register(
     CategoryScale
 );
 
-export default function SEODashboard({ customerId, customerName, initialData }) {
+export default function SEODashboard({ customerId, customerName, initialData, defaultDateRange, projectId, bigQueryCustomerId }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -40,12 +40,20 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
             console.warn('Invalid date encountered:', date);
             return '';
         }
-        return date.toISOString().split("T")[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
 
     const [comparison, setComparison] = useState("Previous Year");
-    const [dateStart, setDateStart] = useState(formatDate(firstDayOfMonth));
-    const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
+    // Use default date range from server if available
+    const [dateStart, setDateStart] = useState(
+        defaultDateRange?.dateStart || formatDate(firstDayOfMonth)
+    );
+    const [dateEnd, setDateEnd] = useState(
+        defaultDateRange?.dateEnd || formatDate(yesterday)
+    );
     const [metric, setMetric] = useState("Impressions");
     const [filter, setFilter] = useState("Med brand");
     const [activeChartIndex, setActiveChartIndex] = useState(0);
@@ -58,8 +66,14 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     const [exactKeywordGroups, setExactKeywordGroups] = useState([]);
     const [brandKeywords, setBrandKeywords] = useState([]);
     const [selectedKeywordGroup, setSelectedKeywordGroup] = useState("all");
+    
+    // Loading states for progressive loading
+    const [isChartsLoading, setIsChartsLoading] = useState(true);
+    const [isTablesLoading, setIsTablesLoading] = useState(true);
+    const [isFetchingAllData, setIsFetchingAllData] = useState(false);
+    const [currentData, setCurrentData] = useState(initialData);
 
-    const { impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date } = initialData || {};
+    const { impressions_data, top_keywords, top_urls, urls_by_date, keywords_by_date, totalMetrics } = currentData || {};
 
     const filteredImpressionsData = useMemo(() => {
         return impressions_data?.filter((row) => row.date >= dateStart && row.date <= dateEnd) || [];
@@ -74,17 +88,28 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     }, [keywords_by_date, dateStart, dateEnd]);
 
     const metrics = useMemo(() => {
+        // Use pre-processed data if available and date range matches
+        if (totalMetrics && 
+            dateStart === defaultDateRange?.dateStart && 
+            dateEnd === defaultDateRange?.dateEnd) {
+            return {
+                ...totalMetrics,
+                ctr: totalMetrics.impressions > 0 ? totalMetrics.clicks / totalMetrics.impressions : 0,
+            };
+        }
+        
+        // Fallback to client-side calculation for different date ranges
         return filteredImpressionsData.reduce(
             (acc, row) => ({
                 clicks: acc.clicks + (row.clicks || 0),
                 impressions: acc.impressions + (row.impressions || 0),
-                ctr: row.impressions > 0 ? acc.clicks / acc.impressions : 0,
+                ctr: acc.impressions > 0 ? acc.clicks / acc.impressions : 0,
                 avg_position: acc.avg_position + (row.avg_position || 0),
                 count: acc.count + 1,
             }),
             { clicks: 0, impressions: 0, ctr: 0, avg_position: 0, count: 0 }
         );
-    }, [filteredImpressionsData]);
+    }, [filteredImpressionsData, totalMetrics, dateStart, dateEnd, defaultDateRange]);
 
     const getComparisonDates = () => {
         try {
@@ -142,32 +167,29 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     }, [impressions_data, compStart, compEnd]);
 
     const allKeywords = useMemo(() => {
-        const keywordClicksInDateRange = filteredKeywordsByDate.reduce((acc, row) => {
-            acc[row.keyword] = {
-                clicks: (acc[row.keyword]?.clicks || 0) + (row.clicks || 0),
-                impressions: (acc[row.keyword]?.impressions || 0) + (row.impressions || 0),
-            };
-            return acc;
-        }, {});
+        // Limit processing to top keywords to improve performance
+        const limitedTopKeywords = (top_keywords || []).slice(0, 100);
+        
+        // Use Map for better performance on large datasets
+        const keywordClicksMap = new Map();
+        
+        filteredKeywordsByDate.forEach(row => {
+            const existing = keywordClicksMap.get(row.keyword) || { clicks: 0, impressions: 0 };
+            keywordClicksMap.set(row.keyword, {
+                clicks: existing.clicks + (row.clicks || 0),
+                impressions: existing.impressions + (row.impressions || 0),
+            });
+        });
 
-        return top_keywords
+        return limitedTopKeywords
             .map(topKeyword => {
-                const dateRangeData = keywordClicksInDateRange[topKeyword.keyword];
-                if (dateRangeData) {
-                    return {
-                        keyword: topKeyword.keyword,
-                        clicks: dateRangeData.clicks,
-                        impressions: dateRangeData.impressions,
-                        position: topKeyword.position,
-                    };
-                } else {
-                    return {
-                        keyword: topKeyword.keyword,
-                        clicks: 0,
-                        impressions: 0,
-                        position: topKeyword.position,
-                    };
-                }
+                const dateRangeData = keywordClicksMap.get(topKeyword.keyword);
+                return {
+                    keyword: topKeyword.keyword,
+                    clicks: dateRangeData?.clicks || 0,
+                    impressions: dateRangeData?.impressions || 0,
+                    position: topKeyword.position,
+                };
             })
             .filter(item => item.clicks > 0 || item.impressions > 0)
             .sort((a, b) => b.clicks - a.clicks);
@@ -227,22 +249,28 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
     }, [allKeywords, keywordSearch, selectedKeywordGroup, keywordGroups, exactKeywordGroups, brandKeywords]);
 
     const allUrls = useMemo(() => {
-        const urlMap = filteredUrlsByDate.reduce((acc, row) => {
-            acc[row.url] = {
-                clicks: (acc[row.url]?.clicks || 0) + (row.clicks || 0),
-                impressions: (acc[row.url]?.impressions || 0) + (row.impressions || 0),
-                ctr: row.impressions > 0 ? (acc[row.url]?.clicks || 0) / (acc[row.url]?.impressions || 1) : 0,
-            };
-            return acc;
-        }, {});
-        return Object.entries(urlMap)
+        // Use Map for better performance
+        const urlMap = new Map();
+        
+        filteredUrlsByDate.forEach(row => {
+            const existing = urlMap.get(row.url) || { clicks: 0, impressions: 0 };
+            const newClicks = existing.clicks + (row.clicks || 0);
+            const newImpressions = existing.impressions + (row.impressions || 0);
+            
+            urlMap.set(row.url, {
+                clicks: newClicks,
+                impressions: newImpressions,
+                ctr: newImpressions > 0 ? newClicks / newImpressions : 0,
+            });
+        });
+        
+        return Array.from(urlMap.entries())
             .map(([url, data]) => ({
                 url,
-                clicks: data.clicks,
-                impressions: data.impressions,
-                ctr: data.impressions > 0 ? data.clicks / data.impressions : 0,
+                ...data,
             }))
-            .sort((a, b) => b.clicks - a.clicks);
+            .sort((a, b) => b.clicks - a.clicks)
+            .slice(0, 50); // Limit to improve performance
     }, [filteredUrlsByDate]);
 
     const filteredTopUrls = useMemo(() => {
@@ -440,10 +468,102 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
         }));
     };
 
+    const fetchAllData = async () => {
+        if (!projectId || !bigQueryCustomerId) {
+            console.error("Missing project ID or BigQuery customer ID");
+            return;
+        }
+
+        setIsFetchingAllData(true);
+        setIsChartsLoading(true);
+        setIsTablesLoading(true);
+
+        try {
+            // Calculate extended range for comparison data
+            const today = new Date();
+            const maxLookback = new Date(today);
+            maxLookback.setMonth(today.getMonth() - 13);
+            const startDate = new Date(Math.min(new Date(dateStart), maxLookback));
+            const endDate = new Date(dateEnd);
+
+            const response = await fetch('/api/seo/fetch-all-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    projectId,
+                    bigQueryCustomerId,
+                    startDate: startDate.toISOString(),
+                    endDate: endDate.toISOString(),
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch all data');
+            }
+
+            const allData = await response.json();
+            setCurrentData(allData);
+            
+            // Reset expanded states since data has changed
+            setExpandedKeywords({});
+            setExpandedUrls({});
+            
+            // Staggered loading for better UX
+            setTimeout(() => setIsChartsLoading(false), 500);
+            setTimeout(() => setIsTablesLoading(false), 1000);
+            
+        } catch (error) {
+            console.error('Error fetching all data:', error);
+            // Reset loading states on error
+            setIsChartsLoading(false);
+            setIsTablesLoading(false);
+        } finally {
+            setIsFetchingAllData(false);
+        }
+    };
+
     useEffect(() => {
         setExpandedKeywords({});
         setExpandedUrls({});
+        
+        // Reset loading states when date changes
+        setIsChartsLoading(true);
+        setIsTablesLoading(true);
+        
+        // Simulate progressive loading - charts load first
+        const chartTimer = setTimeout(() => {
+            setIsChartsLoading(false);
+        }, 100);
+        
+        // Tables load after charts
+        const tableTimer = setTimeout(() => {
+            setIsTablesLoading(false);
+        }, 300);
+        
+        return () => {
+            clearTimeout(chartTimer);
+            clearTimeout(tableTimer);
+        };
     }, [dateStart, dateEnd]);
+
+    // Progressive loading on mount
+    useEffect(() => {
+        // Initial load - metrics are immediately available
+        const initialTimer = setTimeout(() => {
+            setIsChartsLoading(false);
+        }, 50);
+        
+        const tableTimer = setTimeout(() => {
+            setIsTablesLoading(false);
+        }, 200);
+        
+        return () => {
+            clearTimeout(initialTimer);
+            clearTimeout(tableTimer);
+        };
+    }, []);
 
     useEffect(() => {
         const fetchKeywordGroups = async () => {
@@ -565,15 +685,51 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
                                 </div>
+                                
+                                {/* Fetch All Data Button */}
+                                <button
+                                    onClick={fetchAllData}
+                                    disabled={isFetchingAllData}
+                                    className={`px-4 py-2 rounded text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                                        isFetchingAllData
+                                            ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                            : 'bg-[var(--color-primary-searchmind)] text-white hover:bg-[var(--color-primary-searchmind)]/90 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-searchmind)]/50'
+                                    }`}
+                                >
+                                    {isFetchingAllData ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            Fetching...
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            Fetch All Data
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 md:mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 md:mb-8 relative">
+                    {/* Loading overlay for metrics */}
+                    {isFetchingAllData && (
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-8 h-8 border-3 border-[var(--color-primary-searchmind)] border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-sm font-medium text-[var(--color-dark-green)]">
+                                    Updating metrics...
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     {seoMetrics.map((item, i) => (
-                        <div key={i} className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6">
+                        <div key={i} className={`bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 ${isFetchingAllData ? 'opacity-50' : ''}`}>
                             <div className="flex flex-col">
                                 <p className="text-sm font-medium text-[var(--color-green)] mb-2">{item.label}</p>
                                 <div className="flex items-baseline justify-between">
@@ -593,13 +749,37 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* Desktop Charts */}
-                <div className="hidden md:block bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mb-8">
+                <div className="hidden md:block bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mb-8 relative">
+                    {/* Loading overlay for charts */}
+                    {(isFetchingAllData || isChartsLoading) && (
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-8 h-8 border-3 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-sm font-medium text-[var(--color-dark-green)]">
+                                    {isFetchingAllData ? 'Fetching all data...' : 'Loading charts...'}
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Impressions Overview</h3>
+                        <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">
+                            Impressions Overview 
+                            {currentData?.isLimitedData === false && (
+                                <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                    All Data ({currentData?.totalRows?.toLocaleString()} rows)
+                                </span>
+                            )}
+                            {currentData?.isLimitedData !== false && (
+                                <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
+                                    Limited Data (10k rows)
+                                </span>
+                            )}
+                        </h3>
                         <select
                             value={metric}
                             onChange={(e) => setMetric(e.target.value)}
                             className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                            disabled={isFetchingAllData}
                         >
                             <option>Impressions</option>
                             <option>Clicks</option>
@@ -613,14 +793,31 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
 
                 {/* Mobile Charts */}
                 <div className="md:hidden mb-8">
-                    <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-4 h-[280px]">
+                    <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-4 h-[280px] relative">
+                        {/* Loading overlay for mobile charts */}
+                        {(isFetchingAllData || isChartsLoading) && (
+                            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+                                <div className="flex flex-col items-center gap-2">
+                                    <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+                                    <p className="text-xs font-medium text-[var(--color-dark-green)]">
+                                        {isFetchingAllData ? 'Fetching...' : 'Loading...'}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">{chartComponents[activeChartIndex].title}</h3>
+                            <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">
+                                {chartComponents[activeChartIndex].title}
+                                {currentData?.isLimitedData === false && (
+                                    <span className="ml-1 px-1 py-0.5 text-xs bg-green-100 text-green-700 rounded">All</span>
+                                )}
+                            </h3>
                             <div className="flex items-center gap-2">
                                 <select
                                     value={metric}
                                     onChange={(e) => setMetric(e.target.value)}
                                     className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
+                                    disabled={isFetchingAllData}
                                 >
                                     <option>Impressions</option>
                                     <option>Clicks</option>
@@ -629,13 +826,15 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                 <div className="flex gap-1">
                                     <button
                                         onClick={() => navigateChart('prev')}
-                                        className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
+                                        disabled={isFetchingAllData}
+                                        className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors disabled:opacity-50"
                                     >
                                         <FaChevronLeft size={12} />
                                     </button>
                                     <button
                                         onClick={() => navigateChart('next')}
-                                        className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
+                                        disabled={isFetchingAllData}
+                                        className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors disabled:opacity-50"
                                     >
                                         <FaChevronRight size={12} />
                                     </button>
@@ -643,7 +842,13 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                             </div>
                         </div>
                         <div className="w-full h-[210px]">
-                            {chartComponents[activeChartIndex].chart}
+                            {(isChartsLoading || isFetchingAllData) ? (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-lime)]"></div>
+                                </div>
+                            ) : (
+                                chartComponents[activeChartIndex].chart
+                            )}
                         </div>
                     </div>
                     <div className="flex justify-center mt-2 gap-1">
@@ -657,10 +862,33 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* Keywords Section - Desktop */}
-                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mb-8">
+                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mb-8 relative">
+                    {/* Loading overlay for tables */}
+                    {(isFetchingAllData || isTablesLoading) && (
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-8 h-8 border-3 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-sm font-medium text-[var(--color-dark-green)]">
+                                    {isFetchingAllData ? 'Fetching all data...' : 'Loading tables...'}
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     <div className="overflow-auto">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Top Performance Keywords</h3>
+                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">
+                                Top Performance Keywords
+                                {currentData?.isLimitedData === false && (
+                                    <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                        All Data
+                                    </span>
+                                )}
+                                {currentData?.isLimitedData !== false && (
+                                    <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
+                                        Limited
+                                    </span>
+                                )}
+                            </h3>
                             <div className="flex items-center gap-3">
                                 <div className="relative">
                                     <input
@@ -668,14 +896,16 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                         placeholder="Search keywords..."
                                         value={keywordSearch}
                                         onChange={(e) => setKeywordSearch(e.target.value)}
-                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm pr-8 w-48 text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                        disabled={isFetchingAllData}
+                                        className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm pr-8 w-48 text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors disabled:opacity-50"
                                     />
                                     <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)]" size={14} />
                                 </div>
                                 <select
                                     value={selectedKeywordGroup}
                                     onChange={(e) => setSelectedKeywordGroup(e.target.value)}
-                                    className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    disabled={isFetchingAllData}
+                                    className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors disabled:opacity-50"
                                 >
                                     <option value="all">All Keywords</option>
                                     <option value="with-brand">With Brand</option>
@@ -715,15 +945,28 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredTopKeywords.map((row, i) => (
-                                        <tr key={i} className="border-b border-[var(--color-light-natural)] hover:bg-[var(--color-natural)] transition-colors">
-                                            <td className="px-4 py-3 text-[var(--color-green)]">{i + 1}</td>
-                                            <td className="px-4 py-3 text-[var(--color-dark-green)] font-medium">{row.keyword}</td>
-                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.clicks).toLocaleString('en-US')}</td>
-                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.impressions).toLocaleString('en-US')}</td>
-                                            <td className="px-4 py-3 text-[var(--color-dark-green)]">{row.position.toFixed(0)}</td>
+                                    {(isTablesLoading || isFetchingAllData) ? (
+                                        <tr>
+                                            <td colSpan="5" className="px-4 py-8 text-center">
+                                                <div className="flex items-center justify-center">
+                                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--color-lime)]"></div>
+                                                    <span className="ml-2 text-[var(--color-green)]">
+                                                        {isFetchingAllData ? 'Fetching all keywords...' : 'Loading keywords...'}
+                                                    </span>
+                                                </div>
+                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filteredTopKeywords.map((row, i) => (
+                                            <tr key={i} className="border-b border-[var(--color-light-natural)] hover:bg-[var(--color-natural)] transition-colors">
+                                                <td className="px-4 py-3 text-[var(--color-green)]">{i + 1}</td>
+                                                <td className="px-4 py-3 text-[var(--color-dark-green)] font-medium">{row.keyword}</td>
+                                                <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.clicks).toLocaleString('en-US')}</td>
+                                                <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.impressions).toLocaleString('en-US')}</td>
+                                                <td className="px-4 py-3 text-[var(--color-dark-green)]">{row.position.toFixed(0)}</td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -750,12 +993,29 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* Keywords Section - Mobile */}
-                <div className="md:hidden bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm mb-6">
+                <div className="md:hidden bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm mb-6 relative">
+                    {/* Loading overlay for mobile tables */}
+                    {(isFetchingAllData || isTablesLoading) && (
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-xs font-medium text-[var(--color-dark-green)]">
+                                    {isFetchingAllData ? 'Fetching...' : 'Loading...'}
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center p-4 border-b border-[var(--color-light-natural)]">
-                        <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">Top Performance Keywords</h3>
+                        <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">
+                            Top Performance Keywords
+                            {currentData?.isLimitedData === false && (
+                                <span className="ml-1 px-1 py-0.5 text-xs bg-green-100 text-green-700 rounded">All</span>
+                            )}
+                        </h3>
                         <select
                             value={selectedKeywordGroup}
                             onChange={(e) => setSelectedKeywordGroup(e.target.value)}
+                            disabled={isFetchingAllData}
                             className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
                         >
                             <option value="all">All</option>
@@ -833,17 +1093,41 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* URLs Section - Desktop */}
-                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mt-8">
+                <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 gap-8 bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mt-8 relative">
+                    {/* Loading overlay for URLs section */}
+                    {(isFetchingAllData || isTablesLoading) && (
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-8 h-8 border-3 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-sm font-medium text-[var(--color-dark-green)]">
+                                    {isFetchingAllData ? 'Fetching all data...' : 'Loading URLs...'}
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     <div className="overflow-auto">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Top Performance URLs</h3>
+                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">
+                                Top Performance URLs
+                                {currentData?.isLimitedData === false && (
+                                    <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                        All Data
+                                    </span>
+                                )}
+                                {currentData?.isLimitedData !== false && (
+                                    <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
+                                        Limited
+                                    </span>
+                                )}
+                            </h3>
                             <div className="relative">
                                 <input
                                     type="text"
                                     placeholder="Search URLs..."
                                     value={urlSearch}
                                     onChange={(e) => setUrlSearch(e.target.value)}
-                                    className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm pr-8 w-48 text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    disabled={isFetchingAllData}
+                                    className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm pr-8 w-48 text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors disabled:opacity-50"
                                 />
                                 <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-green)]" size={14} />
                             </div>
@@ -859,14 +1143,25 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredTopUrls.map((row, i) => (
+                                    {isTablesLoading ? (
+                                        <tr>
+                                            <td colSpan="5" className="px-4 py-8 text-center">
+                                                <div className="flex items-center justify-center">
+                                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--color-lime)]"></div>
+                                                    <span className="ml-2 text-[var(--color-green)]">Loading URLs...</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredTopUrls.map((row, i) => (
                                         <tr key={i} className="border-b border-[var(--color-light-natural)] hover:bg-[var(--color-natural)] transition-colors">
                                             <td className="px-4 py-3 whitespace-nowrap text-[var(--color-dark-green)] font-medium">{row.url}</td>
                                             <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.clicks).toLocaleString('en-US')}</td>
                                             <td className="px-4 py-3 text-[var(--color-dark-green)]">{Math.round(row.impressions).toLocaleString('en-US')}</td>
                                             <td className="px-4 py-3 text-[var(--color-dark-green)]">{(row.ctr * 100).toFixed(2)}%</td>
                                         </tr>
-                                    ))}
+                                    ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -892,12 +1187,29 @@ export default function SEODashboard({ customerId, customerName, initialData }) 
                 </div>
 
                 {/* URLs Section - Mobile */}
-                <div className="md:hidden bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm mt-6">
+                <div className="md:hidden bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm mt-6 relative">
+                    {/* Loading overlay for mobile URLs */}
+                    {(isFetchingAllData || isTablesLoading) && (
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-xs font-medium text-[var(--color-dark-green)]">
+                                    {isFetchingAllData ? 'Fetching...' : 'Loading...'}
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center p-4 border-b border-[var(--color-light-natural)]">
-                        <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">Top Performance URLs</h3>
+                        <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">
+                            Top Performance URLs
+                            {currentData?.isLimitedData === false && (
+                                <span className="ml-1 px-1 py-0.5 text-xs bg-green-100 text-green-700 rounded">All</span>
+                            )}
+                        </h3>
                         <button
                             onClick={() => setShowMobileUrlDetails(!showMobileUrlDetails)}
-                            className="text-xs bg-[var(--color-natural)] text-[var(--color-dark-green)] px-3 py-1 rounded-lg hover:bg-[var(--color-light-natural)] transition-colors font-medium"
+                            disabled={isFetchingAllData}
+                            className="text-xs bg-[var(--color-natural)] text-[var(--color-dark-green)] px-3 py-1 rounded-lg hover:bg-[var(--color-light-natural)] transition-colors font-medium disabled:opacity-50"
                         >
                             {showMobileUrlDetails ? 'Show Less' : 'View All'}
                         </button>

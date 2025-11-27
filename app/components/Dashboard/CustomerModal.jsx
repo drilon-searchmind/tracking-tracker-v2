@@ -6,6 +6,7 @@ import { IoMdClose } from "react-icons/io";
 import { useSession } from "next-auth/react";
 import currencyData from '@/lib/static-data/commonCurrency.json';
 import Select from "react-select";
+import { FaShopify, FaWordpress, FaQuestionCircle } from "react-icons/fa";
 
 export default function CustomerModal({ closeModal }) {
     const [search, setSearch] = useState("");
@@ -68,6 +69,17 @@ export default function CustomerModal({ closeModal }) {
         });
     };
 
+    const getCustomerIcon = (customerType) => {
+        switch (customerType) {
+            case "Shopify":
+                return <FaShopify className="text-[var(--color-green)] mr-2" />;
+            case "WooCommerce":
+                return <FaWordpress className="text-[var(--color-green)] mr-2" />;
+            default:
+                return <FaQuestionCircle className="text-[var(--color-green)] mr-2" />;
+        }
+    };
+
     useEffect(() => {
         async function fetchCustomers() {
             try {
@@ -110,7 +122,7 @@ export default function CustomerModal({ closeModal }) {
                         }
                     });
 
-                    const accessibleParentCustomers = allParentCustomers.filter(parent => 
+                    const accessibleParentCustomers = allParentCustomers.filter(parent =>
                         accessibleParentIds.has(parent._id)
                     );
 
@@ -139,17 +151,21 @@ export default function CustomerModal({ closeModal }) {
 
     useEffect(() => {
         const searchLower = search.toLowerCase();
-        
+
+        // Sort customers by name
+        const sortedCustomers = [...customers].sort((a, b) => a.name.localeCompare(b.name));
+        const sortedParentCustomers = [...parentCustomers].sort((a, b) => a.name.localeCompare(b.name));
+
         // Filter customers
-        const filteredCusts = customers.filter((customer) =>
+        const filteredCusts = sortedCustomers.filter((customer) =>
             customer.name.toLowerCase().includes(searchLower)
         );
-        
+
         // Filter parent customers (by name or if any of their children match)
-        const filteredParents = parentCustomers.filter(parent => {
+        const filteredParents = sortedParentCustomers.filter((parent) => {
             const parentNameMatches = parent.name.toLowerCase().includes(searchLower);
-            const hasMatchingChildren = customers.some(customer => 
-                customer.parentCustomer && 
+            const hasMatchingChildren = sortedCustomers.some((customer) =>
+                customer.parentCustomer &&
                 (customer.parentCustomer._id === parent._id || customer.parentCustomer === parent._id) &&
                 customer.name.toLowerCase().includes(searchLower)
             );
@@ -162,8 +178,8 @@ export default function CustomerModal({ closeModal }) {
 
     // Group customers by parent
     const getCustomersByParent = (parentId) => {
-        return filteredCustomers.filter(customer => 
-            customer.parentCustomer && 
+        return filteredCustomers.filter(customer =>
+            customer.parentCustomer &&
             (customer.parentCustomer._id === parentId || customer.parentCustomer === parentId)
         );
     };
@@ -222,7 +238,7 @@ export default function CustomerModal({ closeModal }) {
 
     return (
         <div className="fixed inset-0 glassmorph-1 flex items-center justify-center z-100">
-            <div className="bg-white rounded-xl shadow-solid-l p-8 w-full max-w-md relative border border-gray-200">
+            <div className="bg-white rounded-xl shadow-solid-l p-8 w-full max-w-md relative border border-gray-200 min-h-[90vh]">
                 <span className="flex justify-between mb-6">
                     <h4 className="text-xl font-bold text-[var(--color-dark-green)]">Select a customer</h4>
                     <button onClick={closeModal} className="text-[var(--color-green)] hover:text-[var(--color-dark-green)] text-lg transition-colors">
@@ -291,8 +307,20 @@ export default function CustomerModal({ closeModal }) {
                             placeholder="Customer ClickUp ID"
                             value={newCustomer.customerClickupID}
                             onChange={(e) => setNewCustomer({ ...newCustomer, customerClickupID: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-6 focus:border-[var(--color-lime)] focus:outline-none transition-colors"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-3 focus:border-[var(--color-lime)] focus:outline-none transition-colors"
                         />
+                        <div className="mb-10">
+                            <select
+                                id="customerType"
+                                value={newCustomer.customerType || "Shopify"}
+                                onChange={(e) => setNewCustomer({ ...newCustomer, customerType: e.target.value })}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[var(--color-lime)] focus:outline-none transition-colors"
+                            >
+                                <option value="Shopify">Shopify</option>
+                                <option value="WooCommerce">WooCommerce</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
                         <button
                             onClick={handleAddCustomer}
                             disabled={addingCustomer}
@@ -318,7 +346,7 @@ export default function CustomerModal({ closeModal }) {
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:border-[var(--color-lime)] focus:outline-none transition-colors"
                         />
-                        <ul className="max-h-60 overflow-y-auto mb-6">
+                        <ul className="max-h-[60vh] overflow-y-auto mb-6">
                             {loading ? (
                                 <li className="flex justify-center py-4">
                                     <div className="animate-spin rounded h-8 w-8 border-t-2 border-b-2 border-[var(--color-lime)]"></div>
@@ -327,7 +355,7 @@ export default function CustomerModal({ closeModal }) {
                                 <>
                                     {filteredParentCustomers.map((parent) => (
                                         <li key={parent._id} className="mb-4">
-                                            <div 
+                                            <div
                                                 className="font-bold text-[var(--color-dark-green)] mb-2 cursor-pointer hover:text-[var(--color-green)] transition-colors flex items-center"
                                                 onClick={() => {
                                                     closeModal();
@@ -337,6 +365,7 @@ export default function CustomerModal({ closeModal }) {
                                                 {parent.name}
                                                 <span className="ml-2 text-xs text-gray-500 font-normal">
                                                     ({getCustomersByParent(parent._id).length} customers)
+                                                    view all
                                                 </span>
                                             </div>
                                             <ul className="ml-4">
@@ -349,14 +378,17 @@ export default function CustomerModal({ closeModal }) {
                                                             router.push(`/dashboard/${customer._id}`);
                                                         }}
                                                     >
-                                                        <span className="mr-2">↳</span>
-                                                        {customer.name}
+                                                        <span className="flex items-center gap-2">
+                                                            <span className="mr-2">↳</span>
+                                                            {customer.name}
+                                                            {getCustomerIcon(customer.customerType)}
+                                                        </span>
                                                     </li>
                                                 ))}
                                             </ul>
                                         </li>
                                     ))}
-                                    
+
                                     {getCustomersWithoutParent().length > 0 && (
                                         <li className="mb-4">
                                             {filteredParentCustomers.length > 0 && (
@@ -374,7 +406,11 @@ export default function CustomerModal({ closeModal }) {
                                                             router.push(`/dashboard/${customer._id}`);
                                                         }}
                                                     >
-                                                        {customer.name}
+                                                        <span className="flex items-center gap-2">
+                                                            <span className="mr-2">↳</span>
+                                                            {customer.name}
+                                                            {getCustomerIcon(customer.customerType)}
+                                                        </span>
                                                     </li>
                                                 ))}
                                             </ul>

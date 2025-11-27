@@ -9,7 +9,7 @@ export default async function PacePage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude, customerType } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const buildFacebookWhereClause = () => {
@@ -45,6 +45,7 @@ export default async function PacePage({ params }) {
                     COALESCE(f.ps_cost, 0) AS ps_cost,
                     COALESCE(g.ppc_cost, 0) AS ppc_cost
                 FROM (
+                    ${customerType === "Shopify" ? `
                     WITH orders AS (
                         SELECT
                             DATE(created_at) AS date,
@@ -76,6 +77,33 @@ export default async function PacePage({ params }) {
                         orders o
                     LEFT JOIN
                         refunds r ON o.date = r.date
+                    ` : `
+                    WITH orders AS (
+                        SELECT
+                            DATE(TIMESTAMP(date_created)) AS date,
+                            SUM(CAST(total AS FLOAT64)) AS gross_sales,
+                            COUNT(*) AS order_count,
+                            currency AS presentment_currency
+                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.woocommerce_orders\`
+                        WHERE currency = "${customerValutaCode}"
+                        GROUP BY DATE(TIMESTAMP(date_created)), currency
+                    ),
+                    refunds AS (
+                        SELECT
+                            DATE(TIMESTAMP(date_created)) AS date,
+                            SUM(CAST(amount AS FLOAT64)) AS total_refunds
+                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.woocommerce_refunds\`
+                        GROUP BY DATE(TIMESTAMP(date_created))
+                    )
+                    SELECT
+                        CAST(o.date AS STRING) AS date,
+                        o.gross_sales - COALESCE(r.total_refunds, 0) AS revenue,
+                        o.order_count AS orders
+                    FROM
+                        orders o
+                    LEFT JOIN
+                        refunds r ON o.date = r.date
+                    `}
                 ) s
                 FULL OUTER JOIN (
                     SELECT

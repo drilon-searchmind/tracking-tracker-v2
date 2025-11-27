@@ -20,6 +20,7 @@ export async function GET(req, { params }) {
                 bigQueryProjectId: 1,
                 name: 1,
                 parentCustomer: 1,
+                customerType: 1,
             });
 
         if (!customer) {
@@ -40,6 +41,7 @@ export async function GET(req, { params }) {
             customerValutaCode: customerSettings?.customerValutaCode || "DKK",
             customerClickupID: customerSettings?.customerClickupID || "",
             customerMetaIDExclude: customerSettings?.customerMetaIDExclude || "",
+            customerType: customer.customerType || "Shopify",
         };
 
         return new Response(JSON.stringify(responseData), { status: 200 });

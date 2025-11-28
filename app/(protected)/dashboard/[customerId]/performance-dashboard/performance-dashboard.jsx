@@ -479,7 +479,7 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                     />
 
                     {/* Service Dashboards */}
-                    <ServiceDashboards />
+                    {/* <ServiceDashboards /> */}
                 </>
             </div>
         </div>

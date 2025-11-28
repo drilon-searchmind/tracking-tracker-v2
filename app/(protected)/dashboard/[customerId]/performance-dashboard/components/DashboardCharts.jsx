@@ -316,9 +316,9 @@ export default function DashboardCharts({
                     tooltip: {
                         callbacks: {
                             label: (context) => {
-                                const total = totalSpend[context.dataIndex];
-                                const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(2) : 0;
-                                return `${context.raw.toLocaleString('en-US')} DKK (${percentage}%)`;
+                                const datasetLabel = context.dataset.label || "";
+                                const value = context.raw || 0;
+                                return `${datasetLabel}: ${value.toLocaleString('en-US')} DKK`;
                             },
                         },
                     },
@@ -335,9 +335,9 @@ export default function DashboardCharts({
                     tooltip: {
                         callbacks: {
                             label: (context) => {
-                                const total = totalSpend[context.dataIndex];
-                                const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(2) : 0;
-                                return `${context.raw.toLocaleString('en-US')} DKK (${percentage}%)`;
+                                const datasetLabel = context.dataset.label || "";
+                                const value = context.raw || 0;
+                                return `${datasetLabel}: ${value.toLocaleString('en-US')} DKK`;
                             },
                         },
                     },

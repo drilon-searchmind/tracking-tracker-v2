@@ -70,19 +70,6 @@ export default function DashboardLayout({ children }) {
                 <ul className="hidden md:flex gap-2 relative items-center">
                     <li>
                         <a
-                            href={`/dashboard/${customerId}`}
-                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
-                                isActive(`/dashboard/${customerId}`) 
-                                    ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
-                                    : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
-                            }`}
-                        >
-                            Overview
-                        </a>
-                    </li>
-
-                    <li>
-                        <a
                             href={`/dashboard/${customerId}/performance-dashboard`}
                             className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
                                 isActive(`/dashboard/${customerId}/performance-dashboard`) 
@@ -96,14 +83,14 @@ export default function DashboardLayout({ children }) {
 
                     <li>
                         <a
-                            href={`/dashboard/${customerId}/tools/kampagneplan`}
+                            href={`/dashboard/${customerId}`}
                             className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
-                                isActive(`/dashboard/${customerId}/tools/kampagneplan`) 
+                                isActive(`/dashboard/${customerId}`) 
                                     ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
                                     : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
                             }`}
                         >
-                            Campaign Planner
+                            Daily Overview
                         </a>
                     </li>
 
@@ -113,7 +100,7 @@ export default function DashboardLayout({ children }) {
                                 ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
                                 : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
                         }`}>
-                            Service Dashboard
+                            Service Dashboards
                             <PiCaretDownThin className="text-xs" />
                         </div>
                         <ul className="absolute left-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-solid-11 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 origin-top z-20">
@@ -134,34 +121,43 @@ export default function DashboardLayout({ children }) {
                         </ul>
                     </li>
 
-                    <li className="relative group">
-                        <div className={`flex items-center gap-1 cursor-pointer text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
-                            isToolsActive 
-                                ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
-                                : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
-                        }`}>
-                            Tools
-                            <PiCaretDownThin className="text-xs" />
-                        </div>
-                        <ul className="absolute left-0 mt-1 w-52 bg-white border border-gray-200 rounded-lg shadow-solid-11 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 origin-top z-20">
-                            {[
-                                { slug: "pnl", label: "P&L" },
-                                { slug: "pace-report", label: "Pace Report" },
-                            ].map(({ slug, label }) => (
-                                <li key={slug}>
-                                    <a
-                                        href={`/dashboard/${customerId}/tools/${slug}`}
-                                        className={`block px-4 py-3 text-xs hover:bg-[var(--color-natural)] transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                                            pathname === `/dashboard/${customerId}/tools/${slug}` && !pathname.includes("kampagneplan")
-                                                ? "text-[var(--color-dark-green)] font-semibold bg-[var(--color-natural)]"
-                                                : "text-[var(--color-green)]"
-                                        }`}
-                                    >
-                                        {label}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
+                    <li>
+                        <a
+                            href={`/dashboard/${customerId}/tools/pace-report`}
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                                isActive(`/dashboard/${customerId}/tools/pace-report`) 
+                                    ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
+                                    : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
+                            }`}
+                        >
+                            Pace Report
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href={`/dashboard/${customerId}/tools/pnl`}
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                                isActive(`/dashboard/${customerId}/tools/pnl`) 
+                                    ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
+                                    : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
+                            }`}
+                        >
+                            P&L
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href={`/dashboard/${customerId}/tools/kampagneplan`}
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                                isActive(`/dashboard/${customerId}/tools/kampagneplan`) 
+                                    ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
+                                    : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
+                            }`}
+                        >
+                            Campaign Planner
+                        </a>
                     </li>
 
                     <li>
@@ -199,18 +195,6 @@ export default function DashboardLayout({ children }) {
                 <ul className="flex flex-col px-4 py-2">
                     <li className="py-3 border-b border-gray-100">
                         <a
-                            href={`/dashboard/${customerId}`}
-                            className={`block text-sm font-medium ${
-                                isActive(`/dashboard/${customerId}`) 
-                                    ? "text-[var(--color-dark-green)]" 
-                                    : "text-[var(--color-green)]"
-                            }`}
-                        >
-                            Overview
-                        </a>
-                    </li>
-                    <li className="py-3 border-b border-gray-100">
-                        <a
                             href={`/dashboard/${customerId}/performance-dashboard`}
                             className={`block text-sm font-medium ${
                                 isActive(`/dashboard/${customerId}/performance-dashboard`) 
@@ -222,12 +206,24 @@ export default function DashboardLayout({ children }) {
                         </a>
                     </li>
                     <li className="py-3 border-b border-gray-100">
+                        <a
+                            href={`/dashboard/${customerId}`}
+                            className={`block text-sm font-medium ${
+                                isActive(`/dashboard/${customerId}`) 
+                                    ? "text-[var(--color-dark-green)]" 
+                                    : "text-[var(--color-green)]"
+                            }`}
+                        >
+                            Daily Overview
+                        </a>
+                    </li>
+                    <li className="py-3 border-b border-gray-100">
                         <div className={`flex justify-between items-center text-sm font-medium ${
                             isServiceActive 
                                 ? "text-[var(--color-dark-green)]" 
                                 : "text-[var(--color-green)]"
                         }`}>
-                            <span>Service Dashboard</span>
+                            <span>Service Dashboards</span>
                             <PiCaretDownThin className="text-lg" />
                         </div>
                         <ul className="ml-4 mt-2">
@@ -248,33 +244,40 @@ export default function DashboardLayout({ children }) {
                         </ul>
                     </li>
                     <li className="py-3 border-b border-gray-100">
-                        <div className={`flex justify-between items-center text-sm font-medium ${
-                            isToolsActive 
-                                ? "text-[var(--color-dark-green)]" 
-                                : "text-[var(--color-green)]"
-                        }`}>
-                            <span>Tools</span>
-                            <PiCaretDownThin className="text-lg" />
-                        </div>
-                        <ul className="ml-4 mt-2">
-                            {[
-                                { slug: "pnl", label: "P&L" },
-                                { slug: "pace-report", label: "Pace Report" },
-                                { slug: "kampagneplan", label: "Campaign Planner" },
-                            ].map(({ slug, label }) => (
-                                <li key={slug} className="py-2">
-                                    <a
-                                        href={`/dashboard/${customerId}/tools/${slug}`}
-                                        className={`block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 ${pathname === `/dashboard/${customerId}/tools/${slug}` && !pathname.includes("kampagneplan")
-                                                ? "text-black font-bold bg-blue-50"
-                                                : "text-gray-700"
-                                            }`}
-                                    >
-                                        {label}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
+                        <a
+                            href={`/dashboard/${customerId}/tools/pace-report`}
+                            className={`block text-sm font-medium ${
+                                isActive(`/dashboard/${customerId}/tools/pace-report`) 
+                                    ? "text-[var(--color-dark-green)]" 
+                                    : "text-[var(--color-green)]"
+                            }`}
+                        >
+                            Pace Report
+                        </a>
+                    </li>
+                    <li className="py-3 border-b border-gray-100">
+                        <a
+                            href={`/dashboard/${customerId}/tools/pnl`}
+                            className={`block text-sm font-medium ${
+                                isActive(`/dashboard/${customerId}/tools/pnl`) 
+                                    ? "text-[var(--color-dark-green)]" 
+                                    : "text-[var(--color-green)]"
+                            }`}
+                        >
+                            P&L
+                        </a>
+                    </li>
+                    <li className="py-3 border-b border-gray-100">
+                        <a
+                            href={`/dashboard/${customerId}/tools/kampagneplan`}
+                            className={`block text-sm font-medium ${
+                                isActive(`/dashboard/${customerId}/tools/kampagneplan`) 
+                                    ? "text-[var(--color-dark-green)]" 
+                                    : "text-[var(--color-green)]"
+                            }`}
+                        >
+                            Campaign Planner
+                        </a>
                     </li>
                     <li className="py-3">
                         <a

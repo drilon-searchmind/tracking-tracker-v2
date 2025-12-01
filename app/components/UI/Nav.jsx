@@ -25,7 +25,7 @@ export default function Nav() {
 
     return (
         <section id="componentNav" className="bg-white border-b border-gray-100 relative top-0 z-50">
-            <nav className="flex justify-between items-center container mx-auto px-4 md:px-0">
+            <nav className="flex justify-between items-center container mx-auto px-4 md:px-20">
                 <div className="flex items-center gap-3 py-4">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center">

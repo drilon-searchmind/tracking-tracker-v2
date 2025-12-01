@@ -24,7 +24,7 @@ export default function Nav() {
     }, [session, router]);
 
     return (
-        <section id="componentNav" className="bg-white border-b border-gray-100 sticky top-0 z-50">
+        <section id="componentNav" className="bg-white border-b border-gray-100 relative top-0 z-50">
             <nav className="flex justify-between items-center container mx-auto px-4 md:px-0">
                 <div className="flex items-center gap-3 py-4">
                     <div className="flex items-center gap-3">

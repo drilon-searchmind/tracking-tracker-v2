@@ -57,8 +57,8 @@ export default function DashboardLayout({ children }) {
         <section id="DashboardLayout" className="relative">
             <nav
                 data-dashboard-nav
-                className="flex justify-between items-center pt-6 pb-3 border-t border-gray-100 mb-5 bg-white sticky top-0 px-4 md:px-0"
-                style={{ zIndex: isAnyModalOpen ? 1 : 10 }}
+                className="flex justify-between items-center pt-6 pb-6 border-t border-gray-100 mb-5 bg-white sticky top-[0] px-4 md:px-0"
+                style={{ zIndex: isAnyModalOpen ? 20 : 20 }}
             >
                 <button
                     className="md:hidden text-[var(--color-dark-green)] text-xl flex items-center p-2 hover:bg-[var(--color-natural)] rounded-lg transition-colors"

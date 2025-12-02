@@ -181,13 +181,42 @@ export default async function PaidSocialDashboardPage({ params }) {
             return <div>No data available for {customerId}</div>;
         }
 
+        // Sanitize BigQuery data to convert Decimal objects to plain numbers
+        const sanitizeNumericFields = (row) => {
+            if (!row) return row;
+            
+            const sanitized = { ...row };
+            
+            // Convert all potential Decimal fields to plain numbers
+            const numericFields = [
+                'clicks', 'impressions', 'conversions', 'conversion_value', 
+                'ad_spend', 'spend', 'roas', 'aov', 'ctr', 'cpc', 'cpm', 'conv_rate'
+            ];
+            
+            numericFields.forEach(field => {
+                if (sanitized[field] !== undefined && sanitized[field] !== null) {
+                    // Convert Decimal objects or any other numeric types to plain numbers
+                    sanitized[field] = Number(sanitized[field]) || 0;
+                }
+            });
+            
+            return sanitized;
+        };
+
         const { metrics_by_date, top_campaigns, campaigns_by_date } = data[0];
+
+        // Sanitize all data arrays
+        const sanitizedData = {
+            metrics_by_date: Array.isArray(metrics_by_date) ? metrics_by_date.map(sanitizeNumericFields) : [],
+            top_campaigns: Array.isArray(top_campaigns) ? top_campaigns.map(sanitizeNumericFields) : [],
+            campaigns_by_date: Array.isArray(campaigns_by_date) ? campaigns_by_date.map(sanitizeNumericFields) : []
+        };
 
         return (
             <PSDashboard
                 customerId={customerId}
                 customerName={customerName}
-                initialData={{ metrics_by_date, top_campaigns, campaigns_by_date }}
+                initialData={sanitizedData}
             />
         );
     } catch (error) {

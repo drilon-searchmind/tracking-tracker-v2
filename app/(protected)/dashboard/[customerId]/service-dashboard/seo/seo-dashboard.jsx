@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
 import { FaChevronRight, FaChevronLeft, FaSearch } from "react-icons/fa";
+import { HiOutlineCalendar } from "react-icons/hi";
 import {
     Chart as ChartJS,
     LineElement,
@@ -66,6 +67,14 @@ export default function SEODashboard({ customerId, customerName, initialData, de
     const [exactKeywordGroups, setExactKeywordGroups] = useState([]);
     const [brandKeywords, setBrandKeywords] = useState([]);
     const [selectedKeywordGroup, setSelectedKeywordGroup] = useState("all");
+    
+    // View mode and granularity states for charts
+    const [impressionsViewMode, setImpressionsViewMode] = useState("YTD");
+    const [impressionsGranularity, setImpressionsGranularity] = useState("Monthly");
+    const [keywordsViewMode, setKeywordsViewMode] = useState("YTD");
+    const [keywordsGranularity, setKeywordsGranularity] = useState("Monthly");
+    const [urlsViewMode, setUrlsViewMode] = useState("YTD");
+    const [urlsGranularity, setUrlsGranularity] = useState("Monthly");
     
     // Loading states for progressive loading
     const [isChartsLoading, setIsChartsLoading] = useState(true);
@@ -299,6 +308,122 @@ export default function SEODashboard({ customerId, customerName, initialData, de
         hue4: "#9BABE1",
     };
 
+    // Data aggregation utility functions
+    const aggregateDataByWeek = (data, field) => {
+        if (!Array.isArray(data) || data.length === 0) return [];
+        
+        const weekGroups = data.reduce((groups, item) => {
+            if (!item.date || item[field] == null) return groups;
+            
+            const date = new Date(item.date);
+            const startOfWeek = new Date(date);
+            startOfWeek.setDate(date.getDate() - date.getDay());
+            const weekKey = startOfWeek.toISOString().split('T')[0];
+            
+            if (!groups[weekKey]) {
+                groups[weekKey] = {
+                    date: weekKey,
+                    [field]: 0,
+                    count: 0
+                };
+            }
+            
+            groups[weekKey][field] += parseFloat(item[field]) || 0;
+            groups[weekKey].count += 1;
+            
+            return groups;
+        }, {});
+        
+        return Object.values(weekGroups).sort((a, b) => a.date.localeCompare(b.date));
+    };
+
+    const groupDataByMonth = (data, field) => {
+        if (!Array.isArray(data) || data.length === 0) return [];
+        
+        const monthGroups = data.reduce((groups, item) => {
+            if (!item.date || item[field] == null) return groups;
+            
+            const date = new Date(item.date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            
+            if (!groups[monthKey]) {
+                groups[monthKey] = {
+                    date: `${monthKey}-01`,
+                    [field]: 0,
+                    count: 0
+                };
+            }
+            
+            groups[monthKey][field] += parseFloat(item[field]) || 0;
+            groups[monthKey].count += 1;
+            
+            return groups;
+        }, {});
+        
+        return Object.values(monthGroups).sort((a, b) => a.date.localeCompare(b.date));
+    };
+
+    const formatWeekLabel = (dateStr) => {
+        const date = new Date(dateStr);
+        const endDate = new Date(date);
+        endDate.setDate(date.getDate() + 6);
+        return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    };
+
+    const formatMonthLabel = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+    };
+
+    const getChartOptions = (granularity, showLegend = false) => ({
+        maintainAspectRatio: false,
+        responsive: true,
+        scales: {
+            x: {
+                type: "time",
+                time: { unit: granularity === "Weekly" ? "week" : granularity === "Monthly" ? "month" : "day" },
+                grid: { display: false },
+                ticks: {
+                    font: { size: window.innerWidth < 768 ? 8 : 10 },
+                    maxRotation: 45,
+                    minRotation: 45,
+                    callback: function(value, index, values) {
+                        if (granularity === "Weekly") {
+                            return formatWeekLabel(new Date(value));
+                        } else if (granularity === "Monthly") {
+                            return formatMonthLabel(new Date(value));
+                        }
+                        return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }
+                },
+            },
+            y: {
+                beginAtZero: true,
+                grid: { color: "rgba(0, 0, 0, 0.05)" },
+                ticks: { font: { size: window.innerWidth < 768 ? 8 : 10 } },
+            },
+        },
+        plugins: {
+            legend: { 
+                display: showLegend,
+                position: 'top',
+                align: 'end',
+                labels: {
+                    boxWidth: 12,
+                    font: { size: 11 },
+                    padding: 15
+                }
+            },
+            tooltip: {
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                titleFont: { size: 12 },
+                bodyFont: { size: 10 },
+                padding: 8,
+                cornerRadius: 4,
+            },
+        },
+    });
+
     const calculateDelta = (current, prev = 0) => {
         if (!prev || prev === 0) return null;
         const delta = ((current - prev) / prev * 100).toFixed(1);
@@ -332,25 +457,106 @@ export default function SEODashboard({ customerId, customerName, initialData, de
         },
     ];
 
-    const impressionsChartData = {
-        labels: filteredImpressionsData.map((row) => row.date) || [],
-        datasets: [
+    const impressionsChartData = useMemo(() => {
+        if (!filteredImpressionsData || filteredImpressionsData.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        let processedData = filteredImpressionsData;
+        let comparisonData = [];
+
+        // Handle YTD (Year to Date) vs Period
+        if (impressionsViewMode === "YTD") {
+            const currentYear = new Date().getFullYear();
+            const endDate = new Date(dateEnd);
+            const ytdStart = new Date(currentYear, 0, 1); // January 1st of current year
+            const ytdEnd = endDate;
+            
+            processedData = impressions_data?.filter(row => {
+                const date = new Date(row.date);
+                return date >= ytdStart && date <= ytdEnd;
+            }) || [];
+
+            // Get comparison data from previous year (same period)
+            const prevYearStart = new Date(currentYear - 1, 0, 1);
+            const prevYearEnd = new Date(currentYear - 1, endDate.getMonth(), endDate.getDate());
+            comparisonData = impressions_data?.filter(row => {
+                const date = new Date(row.date);
+                return date >= prevYearStart && date <= prevYearEnd;
+            }) || [];
+        } else {
+            // For Period, use filtered data as is
+            processedData = filteredImpressionsData;
+
+            // Get comparison data for previous period
+            const dateRange = new Date(dateEnd).getTime() - new Date(dateStart).getTime();
+            const compStartDate = new Date(new Date(dateStart).getTime() - dateRange);
+            const compEndDate = new Date(new Date(dateStart).getTime() - 1);
+
+            comparisonData = impressions_data?.filter(row => {
+                const date = new Date(row.date);
+                return date >= compStartDate && date <= compEndDate;
+            }) || [];
+        }
+
+        // Apply granularity aggregation
+        if (impressionsGranularity === "Weekly") {
+            const metricField = metric === "Clicks" ? "clicks" : 
+                              metric === "CTR" ? "ctr" : "impressions";
+            processedData = aggregateDataByWeek(processedData, metricField);
+            comparisonData = aggregateDataByWeek(comparisonData, metricField);
+        } else if (impressionsGranularity === "Monthly") {
+            const metricField = metric === "Clicks" ? "clicks" : 
+                              metric === "CTR" ? "ctr" : "impressions";
+            processedData = groupDataByMonth(processedData, metricField);
+            comparisonData = groupDataByMonth(comparisonData, metricField);
+        }
+
+        const datasets = [
             {
-                label: metric,
-                data: filteredImpressionsData.map((row) => {
-                    if (metric === "Clicks") return row.clicks || 0;
-                    if (metric === "CTR") return row.ctr || 0;
-                    return row.impressions || 0;
-                }) || [],
+                label: `${metric} (Current)`,
+                data: processedData.map((row) => ({
+                    x: row.date,
+                    y: metric === "Clicks" ? row.clicks || 0 :
+                        metric === "CTR" ? (row.ctr * 100) || 0 :
+                        row.impressions || 0
+                })),
                 borderColor: colors.primary,
                 backgroundColor: colors.primary,
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                fill: false,
+            }
+        ];
+
+        // Add comparison dataset if we have comparison data
+        if (comparisonData.length > 0) {
+            datasets.push({
+                label: impressionsViewMode === "YTD" ? 
+                    `${metric} (Previous Year)` : 
+                    `${metric} (Previous Period)`,
+                data: comparisonData.map((row) => ({
+                    x: row.date,
+                    y: metric === "Clicks" ? row.clicks || 0 :
+                        metric === "CTR" ? (row.ctr * 100) || 0 :
+                        row.impressions || 0
+                })),
+                borderColor: "rgba(156, 163, 175, 0.6)",
+                backgroundColor: "rgba(156, 163, 175, 0.6)",
                 borderWidth: 1,
+                borderDash: [5, 5],
                 pointRadius: 2,
                 pointHoverRadius: 4,
                 fill: false,
-            },
-        ],
-    };
+            });
+        }
+
+        return {
+            labels: processedData.map(row => row.date),
+            datasets
+        };
+    }, [filteredImpressionsData, impressions_data, metric, impressionsViewMode, impressionsGranularity, dateStart, dateEnd, colors]);
 
     const chartOptions = {
         maintainAspectRatio: false,
@@ -384,11 +590,79 @@ export default function SEODashboard({ customerId, customerName, initialData, de
         },
     };
 
-    const keywordChartData = {
-        labels: [...new Set(filteredKeywordsByDate.map((row) => row.date))].sort(),
-        datasets: selectedKeywords.map((keyword, i) => ({
+    const keywordChartData = useMemo(() => {
+        if (!filteredKeywordsByDate || filteredKeywordsByDate.length === 0 || selectedKeywords.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        let processedData = filteredKeywordsByDate;
+
+        // Handle YTD (Year to Date) vs Period
+        if (keywordsViewMode === "YTD") {
+            const currentYear = new Date().getFullYear();
+            const endDate = new Date(dateEnd);
+            const ytdStart = new Date(currentYear, 0, 1); // January 1st of current year
+            const ytdEnd = endDate;
+            
+            processedData = keywords_by_date?.filter(row => {
+                const date = new Date(row.date);
+                return date >= ytdStart && date <= ytdEnd;
+            }) || [];
+        } else {
+            // For Period, use filtered data as is
+            processedData = filteredKeywordsByDate;
+        }
+
+        // Apply granularity aggregation for keywords
+        if (keywordsGranularity === "Weekly" || keywordsGranularity === "Monthly") {
+            const keywordGroups = {};
+            
+            selectedKeywords.forEach(keyword => {
+                const keywordData = processedData.filter(row => row.keyword === keyword && row.impressions > 0);
+                
+                if (keywordsGranularity === "Weekly") {
+                    const metricField = metric === "Clicks" ? "clicks" : 
+                                      metric === "Impressions" ? "impressions" :
+                                      metric === "Position" ? "avg_position" : "ctr";
+                    keywordGroups[keyword] = aggregateDataByWeek(keywordData, metricField);
+                } else {
+                    const metricField = metric === "Clicks" ? "clicks" : 
+                                      metric === "Impressions" ? "impressions" :
+                                      metric === "Position" ? "avg_position" : "ctr";
+                    keywordGroups[keyword] = groupDataByMonth(keywordData, metricField);
+                }
+            });
+
+            const datasets = selectedKeywords.map((keyword, i) => {
+                const data = keywordGroups[keyword] || [];
+                return {
+                    label: keyword,
+                    data: data.map((row) => ({
+                        x: row.date,
+                        y: metric === "Clicks" ? row.clicks || 0 :
+                            metric === "Impressions" ? row.impressions || 0 :
+                            metric === "Position" ? row.avg_position || 0 :
+                            (row.ctr * 100) || 0
+                    })),
+                    borderColor: colors[`hue${(i + 1) % 5}`] || colors.primary,
+                    backgroundColor: colors[`hue${(i + 1) % 5}`] || colors.primary,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    fill: false,
+                };
+            });
+
+            return {
+                labels: [...new Set(Object.values(keywordGroups).flat().map(row => row.date))].sort(),
+                datasets
+            };
+        }
+
+        // Daily granularity (default)
+        const datasets = selectedKeywords.map((keyword, i) => ({
             label: keyword,
-            data: filteredKeywordsByDate
+            data: processedData
                 .filter((row) => row.keyword === keyword && row.impressions > 0)
                 .map((row) => ({
                     x: row.date,
@@ -397,20 +671,90 @@ export default function SEODashboard({ customerId, customerName, initialData, de
                         metric === "Position" ? row.avg_position || 0 :
                             (row.ctr * 100) || 0
                 })),
-            borderColor: colors[`hue${i % 5}`] || colors.primary,
-            backgroundColor: colors[`hue${i % 5}`] || colors.primary,
-            borderWidth: 1,
-            pointRadius: 2,
-            pointHoverRadius: 4,
+            borderColor: colors[`hue${(i + 1) % 5}`] || colors.primary,
+            backgroundColor: colors[`hue${(i + 1) % 5}`] || colors.primary,
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5,
             fill: false,
-        })),
-    };
+        }));
 
-    const urlChartData = {
-        labels: [...new Set(filteredUrlsByDate.map((row) => row.date))].sort(),
-        datasets: selectedUrls.map((url, i) => ({
+        return {
+            labels: [...new Set(processedData.map((row) => row.date))].sort(),
+            datasets
+        };
+    }, [filteredKeywordsByDate, keywords_by_date, selectedKeywords, metric, keywordsViewMode, keywordsGranularity, dateStart, dateEnd, colors]);
+
+    const urlChartData = useMemo(() => {
+        if (!filteredUrlsByDate || filteredUrlsByDate.length === 0 || selectedUrls.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        let processedData = filteredUrlsByDate;
+
+        // Handle YTD (Year to Date) vs Period
+        if (urlsViewMode === "YTD") {
+            const currentYear = new Date().getFullYear();
+            const endDate = new Date(dateEnd);
+            const ytdStart = new Date(currentYear, 0, 1); // January 1st of current year
+            const ytdEnd = endDate;
+            
+            processedData = urls_by_date?.filter(row => {
+                const date = new Date(row.date);
+                return date >= ytdStart && date <= ytdEnd;
+            }) || [];
+        } else {
+            // For Period, use filtered data as is
+            processedData = filteredUrlsByDate;
+        }
+
+        // Apply granularity aggregation for URLs
+        if (urlsGranularity === "Weekly" || urlsGranularity === "Monthly") {
+            const urlGroups = {};
+            
+            selectedUrls.forEach(url => {
+                const urlData = processedData.filter(row => row.url === url);
+                
+                if (urlsGranularity === "Weekly") {
+                    const metricField = metric === "Clicks" ? "clicks" : 
+                                      metric === "Impressions" ? "impressions" : "ctr";
+                    urlGroups[url] = aggregateDataByWeek(urlData, metricField);
+                } else {
+                    const metricField = metric === "Clicks" ? "clicks" : 
+                                      metric === "Impressions" ? "impressions" : "ctr";
+                    urlGroups[url] = groupDataByMonth(urlData, metricField);
+                }
+            });
+
+            const datasets = selectedUrls.map((url, i) => {
+                const data = urlGroups[url] || [];
+                return {
+                    label: url,
+                    data: data.map((row) => ({
+                        x: row.date,
+                        y: metric === "Clicks" ? row.clicks || 0 :
+                            metric === "Impressions" ? row.impressions || 0 :
+                            (row.ctr * 100) || 0
+                    })),
+                    borderColor: colors[`hue${(i + 1) % 5}`] || colors.primary,
+                    backgroundColor: colors[`hue${(i + 1) % 5}`] || colors.primary,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    fill: false,
+                };
+            });
+
+            return {
+                labels: [...new Set(Object.values(urlGroups).flat().map(row => row.date))].sort(),
+                datasets
+            };
+        }
+
+        // Daily granularity (default)
+        const datasets = selectedUrls.map((url, i) => ({
             label: url,
-            data: filteredUrlsByDate
+            data: processedData
                 .filter((row) => row.url === url)
                 .map((row) => ({
                     x: row.date,
@@ -418,27 +762,74 @@ export default function SEODashboard({ customerId, customerName, initialData, de
                         metric === "Impressions" ? row.impressions || 0 :
                             (row.ctr * 100) || 0
                 })),
-            borderColor: colors[`hue${i % 5}`] || colors.primary,
-            backgroundColor: colors[`hue${i % 5}`] || colors.primary,
-            borderWidth: 1,
-            pointRadius: 2,
-            pointHoverRadius: 4,
+            borderColor: colors[`hue${(i + 1) % 5}`] || colors.primary,
+            backgroundColor: colors[`hue${(i + 1) % 5}`] || colors.primary,
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5,
             fill: false,
-        })),
-    };
+        }));
+
+        return {
+            labels: [...new Set(processedData.map((row) => row.date))].sort(),
+            datasets
+        };
+    }, [filteredUrlsByDate, urls_by_date, selectedUrls, metric, urlsViewMode, urlsGranularity, dateStart, dateEnd, colors]);
+
+    // ViewModeToggle component
+    const ViewModeToggle = ({ viewMode, onViewModeChange, granularity, onGranularityChange, disabled }) => (
+        <div className="flex items-center gap-2">
+            <button
+                onClick={() => onViewModeChange(viewMode === "YTD" ? "Period" : "YTD")}
+                disabled={disabled}
+                className="flex items-center text-xs px-3 py-1.5 bg-[var(--color-natural)] hover:bg-[var(--color-lime)] text-[var(--color-dark-green)] hover:text-white rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={viewMode === "YTD" ? "Switch to Period view" : "Switch to YTD view"}
+            >
+                <HiOutlineCalendar className="mr-1" />
+                {viewMode}
+            </button>
+            
+            {viewMode === "Period" && (
+                <div className="flex items-center bg-[var(--color-natural)] rounded-md overflow-hidden">
+                    <button
+                        onClick={() => onGranularityChange("Daily")}
+                        disabled={disabled}
+                        className={`text-xs px-2 py-1.5 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                            granularity === "Daily" 
+                                ? "bg-[var(--color-lime)] text-white" 
+                                : "text-[var(--color-dark-green)] hover:bg-[var(--color-lime)] hover:text-white"
+                        }`}
+                    >
+                        Daily
+                    </button>
+                    <button
+                        onClick={() => onGranularityChange("Weekly")}
+                        disabled={disabled}
+                        className={`text-xs px-2 py-1.5 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                            granularity === "Weekly" 
+                                ? "bg-[var(--color-lime)] text-white" 
+                                : "text-[var(--color-dark-green)] hover:bg-[var(--color-lime)] hover:text-white"
+                        }`}
+                    >
+                        Weekly
+                    </button>
+                </div>
+            )}
+        </div>
+    );
 
     const chartComponents = [
         {
             title: "Impressions",
-            chart: <Line data={impressionsChartData} options={chartOptions} />
+            chart: <Line data={impressionsChartData} options={getChartOptions(impressionsGranularity, impressionsViewMode === "YTD" && impressionsChartData?.datasets?.length > 1)} />
         },
         {
             title: "Top Keywords Impressions",
-            chart: <Line data={keywordChartData} options={chartOptions} />
+            chart: <Line data={keywordChartData} options={getChartOptions(keywordsGranularity, keywordChartData?.datasets?.length > 1)} />
         },
         {
             title: "Top URLs Trends",
-            chart: <Line data={urlChartData} options={chartOptions} />
+            chart: <Line data={urlChartData} options={getChartOptions(urlsGranularity, urlChartData?.datasets?.length > 1)} />
         }
     ];
 
@@ -775,19 +1166,28 @@ export default function SEODashboard({ customerId, customerName, initialData, de
                                 </span>
                             )}
                         </h3>
-                        <select
-                            value={metric}
-                            onChange={(e) => setMetric(e.target.value)}
-                            className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
-                            disabled={isFetchingAllData}
-                        >
-                            <option>Impressions</option>
-                            <option>Clicks</option>
-                            <option>CTR</option>
-                        </select>
+                        <div className="flex items-center gap-4">
+                            <ViewModeToggle
+                                viewMode={impressionsViewMode}
+                                onViewModeChange={setImpressionsViewMode}
+                                granularity={impressionsGranularity}
+                                onGranularityChange={setImpressionsGranularity}
+                                disabled={isFetchingAllData}
+                            />
+                            <select
+                                value={metric}
+                                onChange={(e) => setMetric(e.target.value)}
+                                className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                disabled={isFetchingAllData}
+                            >
+                                <option>Impressions</option>
+                                <option>Clicks</option>
+                                <option>CTR</option>
+                            </select>
+                        </div>
                     </div>
                     <div className="w-full h-[300px]">
-                        <Line data={impressionsChartData} options={chartOptions} />
+                        <Line data={impressionsChartData} options={getChartOptions(impressionsGranularity, impressionsViewMode === "YTD" && impressionsChartData?.datasets?.length > 1)} />
                     </div>
                 </div>
 
@@ -813,6 +1213,33 @@ export default function SEODashboard({ customerId, customerName, initialData, de
                                 )}
                             </h3>
                             <div className="flex items-center gap-2">
+                                {activeChartIndex === 0 && (
+                                    <ViewModeToggle
+                                        viewMode={impressionsViewMode}
+                                        onViewModeChange={setImpressionsViewMode}
+                                        granularity={impressionsGranularity}
+                                        onGranularityChange={setImpressionsGranularity}
+                                        disabled={isFetchingAllData}
+                                    />
+                                )}
+                                {activeChartIndex === 1 && (
+                                    <ViewModeToggle
+                                        viewMode={keywordsViewMode}
+                                        onViewModeChange={setKeywordsViewMode}
+                                        granularity={keywordsGranularity}
+                                        onGranularityChange={setKeywordsGranularity}
+                                        disabled={isFetchingAllData}
+                                    />
+                                )}
+                                {activeChartIndex === 2 && (
+                                    <ViewModeToggle
+                                        viewMode={urlsViewMode}
+                                        onViewModeChange={setUrlsViewMode}
+                                        granularity={urlsGranularity}
+                                        onGranularityChange={setUrlsGranularity}
+                                        disabled={isFetchingAllData}
+                                    />
+                                )}
                                 <select
                                     value={metric}
                                     onChange={(e) => setMetric(e.target.value)}
@@ -975,19 +1402,28 @@ export default function SEODashboard({ customerId, customerName, initialData, de
                     <div className="flex flex-col h-full">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Keywords Over Time</h3>
-                            <select
-                                className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
-                                value={metric}
-                                onChange={(e) => setMetric(e.target.value)}
-                            >
-                                <option>Clicks</option>
-                                <option>Impressions</option>
-                                <option>CTR</option>
-                                <option>Position</option>
-                            </select>
+                            <div className="flex items-center gap-4">
+                                <ViewModeToggle
+                                    viewMode={keywordsViewMode}
+                                    onViewModeChange={setKeywordsViewMode}
+                                    granularity={keywordsGranularity}
+                                    onGranularityChange={setKeywordsGranularity}
+                                    disabled={isFetchingAllData}
+                                />
+                                <select
+                                    className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    value={metric}
+                                    onChange={(e) => setMetric(e.target.value)}
+                                >
+                                    <option>Clicks</option>
+                                    <option>Impressions</option>
+                                    <option>CTR</option>
+                                    <option>Position</option>
+                                </select>
+                            </div>
                         </div>
                         <div className="flex-1 w-full h-[calc(100%-2rem)] min-h-[300px] max-h-[500px] overflow-y-auto">
-                            <Line data={keywordChartData} options={chartOptions} />
+                            <Line data={keywordChartData} options={getChartOptions(keywordsGranularity, keywordChartData?.datasets?.length > 1)} />
                         </div>
                     </div>
                 </div>
@@ -1170,18 +1606,27 @@ export default function SEODashboard({ customerId, customerName, initialData, de
                     <div className="flex flex-col h-full">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">URLs Over Time</h3>
-                            <select
-                                className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
-                                value={metric}
-                                onChange={(e) => setMetric(e.target.value)}
-                            >
-                                <option>Clicks</option>
-                                <option>Impressions</option>
-                                <option>CTR</option>
-                            </select>
+                            <div className="flex items-center gap-4">
+                                <ViewModeToggle
+                                    viewMode={urlsViewMode}
+                                    onViewModeChange={setUrlsViewMode}
+                                    granularity={urlsGranularity}
+                                    onGranularityChange={setUrlsGranularity}
+                                    disabled={isFetchingAllData}
+                                />
+                                <select
+                                    className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                    value={metric}
+                                    onChange={(e) => setMetric(e.target.value)}
+                                >
+                                    <option>Clicks</option>
+                                    <option>Impressions</option>
+                                    <option>CTR</option>
+                                </select>
+                            </div>
                         </div>
                         <div className="flex-1 w-full h-[calc(100%-2rem)] min-h-[300px] max-h-[500px] overflow-y-auto">
-                            <Line data={urlChartData} options={chartOptions} />
+                            <Line data={urlChartData} options={getChartOptions(urlsGranularity, urlChartData?.datasets?.length > 1)} />
                         </div>
                     </div>
                 </div>

@@ -20,6 +20,7 @@ import "chartjs-adapter-date-fns";
 
 import DashboardMetrics from "./components/DashboardMetrics";
 import DashboardCharts from "./components/DashboardCharts";
+import CustomerSegmentationCharts from "./components/CustomerSegmentationCharts";
 import ServiceDashboards from "./components/ServiceDashboards";
 import Subheading from "@/app/components/UI/Utility/Subheading";
 import CustomerAssignedUsers from "@/app/components/CampaignPlanner/CustomerAssignedUsers";
@@ -476,6 +477,17 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                         comparison={comparison}
                         formatMonthLabel={formatMonthLabel}
                         formatComparisonDate={formatComparisonDate}
+                    />
+
+                    {/* Customer Segmentation Charts */}
+                    <CustomerSegmentationCharts 
+                        customerId={customerId}
+                        customerType="Shopify" // This could be dynamic based on customer data
+                        dateStart={dateStart}
+                        dateEnd={dateEnd}
+                        compStart={compStart}
+                        compEnd={compEnd}
+                        comparison={comparison}
                     />
 
                     {/* Service Dashboards */}

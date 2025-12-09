@@ -70,6 +70,7 @@ export default async function DashboardPage({ params }) {
                         SELECT
                             DATE(created_at) AS date,
                             SUM(CAST(total_price AS FLOAT64)) AS gross_sales,
+                            SUM(CAST(total_price AS FLOAT64)) AS net_sales,
                             COUNT(*) AS order_count,
                             presentment_currency AS currency
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
@@ -93,8 +94,8 @@ export default async function DashboardPage({ params }) {
                         CAST(o.date AS STRING) as date,
                         o.order_count AS orders,
                         o.gross_sales AS gross_revenue,
-                        o.gross_sales - COALESCE(r.total_refunds, 0) AS revenue,
-                        o.gross_sales - COALESCE(r.total_refunds, 0) AS gross_profit,
+                        o.net_sales - COALESCE(r.total_refunds, 0) AS revenue,
+                        o.net_sales - COALESCE(r.total_refunds, 0) AS gross_profit,
                         o.order_count,
                         o.currency AS presentment_currency
                     FROM

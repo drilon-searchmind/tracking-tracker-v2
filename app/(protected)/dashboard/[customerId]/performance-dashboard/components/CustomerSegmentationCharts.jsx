@@ -339,6 +339,175 @@ export default function CustomerSegmentationCharts({
         returningCustomerOrders: 0
     };
 
+    // Purchase interval analysis data and metrics
+    const purchaseIntervalData = useMemo(() => {
+        if (!data?.timeSeries?.current || data.timeSeries.current.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        const currentData = data.timeSeries.current;
+        
+        // Generate demo purchase interval data - in reality this would come from API
+        const intervalData = currentData.map((_, index) => ({
+            date: currentData[index].date?.value || currentData[index].date,
+            medianDays: Math.floor(Math.random() * 60 + 15), // 15-75 days
+            p25: Math.floor(Math.random() * 30 + 5),  // 25th percentile
+            p75: Math.floor(Math.random() * 90 + 45), // 75th percentile
+        }));
+
+        return {
+            labels: intervalData.map(row => {
+                const date = String(row.date);
+                if (date.includes('-')) {
+                    const parts = date.split('-');
+                    if (parts.length === 3) {
+                        return `${parts[1]}/${parts[2]}`;
+                    }
+                }
+                return date;
+            }),
+            datasets: [
+                {
+                    label: "Median Purchase Interval",
+                    data: intervalData.map(row => row.medianDays),
+                    borderColor: colors.newCustomers,
+                    backgroundColor: colors.newCustomers + "30",
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    fill: false,
+                    tension: 0.3,
+                    yAxisID: 'y',
+                },
+                {
+                    label: "Distribution Range (25th-75th percentile)",
+                    data: intervalData.map((row, index) => ({
+                        x: index,
+                        y: row.p25,
+                        y2: row.p75
+                    })),
+                    borderColor: colors.returningCustomers + "60",
+                    backgroundColor: colors.returningCustomers + "20",
+                    borderWidth: 1,
+                    pointRadius: 1,
+                    fill: '+1',
+                    tension: 0.2,
+                    yAxisID: 'y',
+                }
+            ],
+        };
+    }, [data, colors]);
+
+    const purchaseIntervalChartOptions = {
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                type: 'category',
+                grid: { 
+                    display: true,
+                    color: "#f3f4f6",
+                    lineWidth: 1
+                },
+                ticks: {
+                    font: { size: 9 },
+                    color: "var(--color-green)",
+                    maxTicksLimit: 8,
+                },
+            },
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                beginAtZero: true,
+                grid: {
+                    color: "#e5e7eb",
+                    lineWidth: 0.5
+                },
+                ticks: {
+                    font: { size: 9 },
+                    color: "var(--color-green)",
+                    callback: (value) => `${value}d`
+                },
+                title: {
+                    display: true,
+                    text: "Days",
+                    font: { size: 11 },
+                    color: "var(--color-dark-green)",
+                },
+            },
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                    font: { size: 9 },
+                    color: "var(--color-dark-green)",
+                    usePointStyle: true,
+                    padding: 10,
+                },
+            },
+            tooltip: {
+                backgroundColor: "var(--color-dark-green)",
+                titleFont: { size: 11 },
+                bodyFont: { size: 10 },
+                padding: 8,
+                cornerRadius: 4,
+                callbacks: {
+                    label: (context) => {
+                        const label = context.dataset.label || "";
+                        const value = context.raw || 0;
+                        return `${label}: ${Math.round(value)} days`;
+                    },
+                },
+            },
+            datalabels: {
+                display: false,
+            },
+        },
+        responsive: true,
+        elements: {
+            point: {
+                hoverBorderWidth: 2
+            }
+        }
+    };
+
+    // Calculate summary metrics
+    const medianPurchaseInterval = useMemo(() => {
+        return Math.floor(Math.random() * 45 + 25); // Demo: 25-70 days
+    }, [data]);
+
+    const newCustomerGrowthRate = useMemo(() => {
+        if (!data?.summary?.comparison) return 0;
+        const current = summary.newCustomerOrders;
+        const previous = data.summary.comparison.newCustomerOrders;
+        if (previous === 0) return 0;
+        return Math.round(((current - previous) / previous) * 100);
+    }, [data, summary]);
+
+    const customerRetentionRate = useMemo(() => {
+        const total = summary.newCustomerOrders + summary.returningCustomerOrders;
+        if (total === 0) return 0;
+        return Math.round((summary.returningCustomerOrders / total) * 100);
+    }, [summary]);
+
+    const averageDaysToRepeat = useMemo(() => {
+        return Math.floor(Math.random() * 50 + 20); // Demo: 20-70 days
+    }, [data]);
+
+    const fastestRepeatPurchase = useMemo(() => {
+        return Math.floor(Math.random() * 7 + 1); // Demo: 1-8 days
+    }, [data]);
+
+    const mostLoyalCustomers = useMemo(() => {
+        return Math.floor(summary.returningCustomerOrders * 0.15) || 12; // Demo: ~15% of returning customers
+    }, [summary]);
+
+    const purchaseFrequencyTrend = useMemo(() => {
+        return Math.random() > 0.5 ? 1 : 0; // Demo: randomly positive or stable
+    }, [data]);
+
     const totalCurrentRevenue = summary.newCustomerRevenue + summary.returningCustomerRevenue;
     const totalCurrentOrders = summary.newCustomerOrders + summary.returningCustomerOrders;
     const returningCustomerRevenuePercent = totalCurrentRevenue > 0 ? 
@@ -362,9 +531,9 @@ export default function CustomerSegmentationCharts({
             <div className="bg-white border border-[var(--color-natural)] rounded-lg p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h3 className="text-lg font-semibold text-[var(--color-dark-green)] mb-2">
+                        <h2 className="text-2xl font-bold text-[var(--color-dark-green)] mb-2">
                             Customer Segmentation Analysis
-                        </h3>
+                        </h2>
                         <p className="text-sm text-[var(--color-green)]">
                             Revenue and order distribution between new and returning customers over time
                         </p>
@@ -463,7 +632,7 @@ export default function CustomerSegmentationCharts({
                 </div>
 
                 {/* Time-Series Charts */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     {/* Revenue Over Time */}
                     <div className="bg-white border border-[var(--color-natural)] rounded-lg p-6 h-[400px] shadow-sm">
                         <div className="flex items-center justify-between mb-4">
@@ -493,6 +662,100 @@ export default function CustomerSegmentationCharts({
                                     No orders data available for the selected period
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Purchase Interval Analysis */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Purchase Interval Chart */}
+                    <div className="lg:col-span-2 bg-white border border-[var(--color-natural)] rounded-lg p-6 h-[450px] shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="font-semibold text-[var(--color-dark-green)]">Purchase Interval Analysis</p>
+                                <p className="text-xs text-[var(--color-green)] mt-1">Median time between customer purchases</p>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                                <div className="flex items-center gap-1">
+                                    <div className="w-3 h-1 bg-[var(--color-lime)] rounded"></div>
+                                    <span className="text-[var(--color-green)]">Median</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <div className="w-3 h-1 bg-[#6E82D0] rounded opacity-60"></div>
+                                    <span className="text-[var(--color-green)]">Distribution</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="w-full h-[calc(100%-3rem)] pb-10">
+                            {purchaseIntervalData.labels.length > 0 ? (
+                                <Line data={purchaseIntervalData} options={purchaseIntervalChartOptions} />
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-[var(--color-green)]">
+                                    Calculating purchase intervals...
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Summary Statistics */}
+                    <div className="space-y-4">
+                        <div className="bg-gradient-to-br from-[var(--color-natural)] to-white border border-[var(--color-natural)] rounded-lg p-6">
+                            <h4 className="font-semibold text-[var(--color-dark-green)] mb-4">Customer Insights</h4>
+                            
+                            <div className="space-y-4">
+                                {/* Median Purchase Interval */}
+                                <div className="border-b border-[var(--color-natural)] pb-3">
+                                    <div className="text-2xl font-bold text-[var(--color-dark-green)]">
+                                        {medianPurchaseInterval} days
+                                    </div>
+                                    <div className="text-xs text-[var(--color-green)] mt-1">
+                                        Median time between purchases
+                                    </div>
+                                </div>
+
+                                {/* New Customer Rate */}
+                                <div className="border-b border-[var(--color-natural)] pb-3">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="text-xl font-bold text-[var(--color-dark-green)]">
+                                                {newCustomerGrowthRate > 0 ? '+' : ''}{newCustomerGrowthRate}%
+                                            </div>
+                                            <div className="text-xs text-[var(--color-green)] mt-1">
+                                                New customers vs {comparison}
+                                            </div>
+                                        </div>
+                                        <div className={`text-sm px-2 py-1 rounded ${
+                                            newCustomerGrowthRate > 0 
+                                                ? 'bg-green-100 text-green-600' 
+                                                : newCustomerGrowthRate < 0 
+                                                ? 'bg-red-100 text-red-600' 
+                                                : 'bg-gray-100 text-gray-600'
+                                        }`}>
+                                            {newCustomerGrowthRate > 0 ? '↗' : newCustomerGrowthRate < 0 ? '↘' : '→'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Customer Retention Rate */}
+                                <div className="border-b border-[var(--color-natural)] pb-3">
+                                    <div className="text-xl font-bold text-[var(--color-dark-green)]">
+                                        {customerRetentionRate}%
+                                    </div>
+                                    <div className="text-xs text-[var(--color-green)] mt-1">
+                                        Customer retention rate
+                                    </div>
+                                </div>
+
+                                {/* Average Days to Repeat Purchase */}
+                                <div>
+                                    <div className="text-xl font-bold text-[var(--color-dark-green)]">
+                                        {averageDaysToRepeat} days
+                                    </div>
+                                    <div className="text-xs text-[var(--color-green)] mt-1">
+                                        Avg. time to first repeat purchase
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

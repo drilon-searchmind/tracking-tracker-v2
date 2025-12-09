@@ -65,11 +65,91 @@ export default async function PnLPage({ params }) {
 
         const facebookWhereClause = buildFacebookWhereClause();
 
+        // Debug queries to examine table structures
+        console.log("=== DEBUGGING P&L DATA STRUCTURES ===");
+        
+        try {
+            // Debug query 1: Check shopify_orders structure
+            const ordersDebugQuery = `
+                SELECT *
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
+                WHERE presentment_currency = "${customerValutaCode}"
+                LIMIT 3
+            `;
+            
+            console.log("Debug Query - Shopify Orders:", ordersDebugQuery);
+            
+            const ordersDebugData = await queryBigQueryPNLMetrics({
+                tableId: projectId,
+                customerId: bigQueryCustomerId,
+                customQuery: ordersDebugQuery,
+            });
+            
+            console.log("=== SHOPIFY ORDERS DEBUG DATA ===");
+            console.log("Number of orders returned:", ordersDebugData?.length || 0);
+            if (ordersDebugData && ordersDebugData.length > 0) {
+                console.log("First order sample:", JSON.stringify(ordersDebugData[0], null, 2));
+                console.log("Available fields:", Object.keys(ordersDebugData[0]));
+                
+                // Check specific fields we're interested in
+                const firstOrder = ordersDebugData[0];
+                console.log("Key billing fields:");
+                console.log("- total_line_items_price:", firstOrder.total_line_items_price, "(type:", typeof firstOrder.total_line_items_price, ")");
+                console.log("- total_discounts:", firstOrder.total_discounts, "(type:", typeof firstOrder.total_discounts, ")");
+                console.log("- total_tax:", firstOrder.total_tax, "(type:", typeof firstOrder.total_tax, ")");
+                console.log("- total_price:", firstOrder.total_price, "(type:", typeof firstOrder.total_price, ")");
+                console.log("- shipping_lines:", firstOrder.shipping_lines, "(type:", typeof firstOrder.shipping_lines, ")");
+                console.log("- presentment_currency:", firstOrder.presentment_currency);
+            }
+        } catch (error) {
+            console.error("Error in orders debug query:", error);
+        }
+
+        try {
+            // Debug query 2: Check shopify_order_refunds structure
+            const refundsDebugQuery = `
+                SELECT *
+                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
+                LIMIT 3
+            `;
+            
+            console.log("Debug Query - Shopify Refunds:", refundsDebugQuery);
+            
+            const refundsDebugData = await queryBigQueryPNLMetrics({
+                tableId: projectId,
+                customerId: bigQueryCustomerId,
+                customQuery: refundsDebugQuery,
+            });
+            
+            console.log("=== SHOPIFY REFUNDS DEBUG DATA ===");
+            console.log("Number of refunds returned:", refundsDebugData?.length || 0);
+            if (refundsDebugData && refundsDebugData.length > 0) {
+                console.log("First refund sample:", JSON.stringify(refundsDebugData[0], null, 2));
+                console.log("Available fields:", Object.keys(refundsDebugData[0]));
+                
+                // Check specific fields we're interested in
+                const firstRefund = refundsDebugData[0];
+                console.log("Key refund fields:");
+                console.log("- order_id:", firstRefund.order_id, "(type:", typeof firstRefund.order_id, ")");
+                console.log("- refund_line_items:", firstRefund.refund_line_items, "(type:", typeof firstRefund.refund_line_items, ")");
+                console.log("- created_at:", firstRefund.created_at, "(type:", typeof firstRefund.created_at, ")");
+            }
+        } catch (error) {
+            console.error("Error in refunds debug query:", error);
+        }
+
+        console.log("=== END DEBUG SECTION ===");
+
         const dashboardQuery = `
             WITH combined_metrics AS (
                 SELECT
                     COALESCE(s.date, f.date, g.date) AS date,
                     COALESCE(s.net_sales, 0) AS net_sales,
+                    COALESCE(s.gross_sales, 0) AS gross_sales,
+                    COALESCE(s.total_discounts, 0) AS total_discounts,
+                    COALESCE(s.total_refunds, 0) AS total_refunds,
+                    COALESCE(s.shipping_fees, 0) AS shipping_fees,
+                    COALESCE(s.total_taxes, 0) AS total_taxes,
                     COALESCE(s.orders, 0) AS orders,
                     COALESCE(f.marketing_spend_facebook, 0) AS marketing_spend_facebook,
                     COALESCE(g.marketing_spend_google, 0) AS marketing_spend_google,
@@ -79,44 +159,61 @@ export default async function PnLPage({ params }) {
                     WITH orders AS (
                         SELECT
                             DATE(created_at) AS date,
-                            SUM(CAST(total_price AS FLOAT64)) AS gross_sales,
-                            COUNT(*) AS order_count,
-                            presentment_currency AS currency
+                            -- Extract billing components directly from fields
+                            SUM(CAST(total_line_items_price AS FLOAT64)) AS gross_sales,
+                            SUM(CAST(total_discounts AS FLOAT64)) AS total_discounts,
+                            SUM(CAST(total_tax AS FLOAT64)) AS total_taxes,
+                            -- Extract shipping fees from shipping_lines JSON
+                            SUM(
+                                (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(shipping_line, '$.price') AS FLOAT64))
+                                FROM UNNEST(JSON_EXTRACT_ARRAY(shipping_lines)) AS shipping_line)
+                            ) AS shipping_fees,
+                            SUM(CAST(total_price AS FLOAT64)) AS total_price,
+                            COUNT(*) AS order_count
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
                         WHERE presentment_currency = "${customerValutaCode}"
-                        GROUP BY DATE(created_at), presentment_currency
+                        GROUP BY DATE(created_at)
                     ),
                     refunds AS (
                         SELECT
                             DATE(created_at) AS date,
+                            -- Extract refund amounts from refund_line_items using proper JSON handling
                             SUM(
-                                (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(transaction, '$.amount') AS FLOAT64))
-                                FROM UNNEST(JSON_EXTRACT_ARRAY(transactions)) AS transaction
-                                WHERE JSON_EXTRACT_SCALAR(transaction, '$.kind') = 'refund'
-                                    AND JSON_EXTRACT_SCALAR(transaction, '$.currency') = "${customerValutaCode}"
-                                )
+                                (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(refund_line_item, '$.subtotal') AS FLOAT64))
+                                FROM UNNEST(JSON_EXTRACT_ARRAY(refund_line_items)) AS refund_line_item)
                             ) AS total_refunds
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
+                        WHERE refund_line_items IS NOT NULL 
+                            AND ARRAY_LENGTH(JSON_EXTRACT_ARRAY(refund_line_items)) > 0
                         GROUP BY DATE(created_at)
                     )
                     SELECT
                         CAST(o.date AS STRING) AS date,
-                        o.gross_sales - COALESCE(r.total_refunds, 0) AS net_sales,
+                        o.gross_sales,
+                        o.total_discounts,
+                        COALESCE(r.total_refunds, 0) AS total_refunds,
+                        o.shipping_fees,
+                        o.total_taxes,
+                        o.total_price - COALESCE(r.total_refunds, 0) AS net_sales,
                         o.order_count AS orders
                     FROM
                         orders o
                     LEFT JOIN
                         refunds r ON o.date = r.date
                     ` : `
+                    -- WooCommerce version (existing logic)
                     WITH orders AS (
                         SELECT
                             DATE(TIMESTAMP(date_created)) AS date,
                             SUM(CAST(total AS FLOAT64)) AS gross_sales,
-                            COUNT(*) AS order_count,
-                            currency AS presentment_currency
+                            SUM(CAST(discount_total AS FLOAT64)) AS total_discounts,
+                            SUM(CAST(total_tax AS FLOAT64)) AS total_taxes,
+                            SUM(CAST(shipping_total AS FLOAT64)) AS shipping_fees,
+                            SUM(CAST(total AS FLOAT64)) AS total_price,
+                            COUNT(*) AS order_count
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.woocommerce_orders\`
                         WHERE currency = "${customerValutaCode}"
-                        GROUP BY DATE(TIMESTAMP(date_created)), currency
+                        GROUP BY DATE(TIMESTAMP(date_created))
                     ),
                     refunds AS (
                         SELECT
@@ -127,7 +224,12 @@ export default async function PnLPage({ params }) {
                     )
                     SELECT
                         CAST(o.date AS STRING) AS date,
-                        o.gross_sales - COALESCE(r.total_refunds, 0) AS net_sales,
+                        o.gross_sales,
+                        o.total_discounts,
+                        COALESCE(r.total_refunds, 0) AS total_refunds,
+                        o.shipping_fees,
+                        o.total_taxes,
+                        o.total_price - COALESCE(r.total_refunds, 0) AS net_sales,
                         o.order_count AS orders
                     FROM
                         orders o
@@ -135,6 +237,7 @@ export default async function PnLPage({ params }) {
                         refunds r ON o.date = r.date
                     `}
                 ) s
+                -- ...existing Facebook and Google joins...
                 FULL OUTER JOIN (
                     SELECT
                         CAST(date_start AS STRING) AS date,
@@ -157,6 +260,11 @@ export default async function PnLPage({ params }) {
                 ARRAY_AGG(STRUCT(
                     date,
                     net_sales,
+                    gross_sales,
+                    total_discounts,
+                    total_refunds,
+                    shipping_fees,
+                    total_taxes,
                     orders,
                     total_marketing_spend,
                     marketing_spend_facebook,
@@ -179,6 +287,11 @@ export default async function PnLPage({ params }) {
         const serializedMetricsByDate = data[0].metrics_by_date.map(row => ({
             date: row.date,
             net_sales: Number(row.net_sales || 0),
+            gross_sales: Number(row.gross_sales || 0),
+            total_discounts: Number(row.total_discounts || 0),
+            total_refunds: Number(row.total_refunds || 0),
+            shipping_fees: Number(row.shipping_fees || 0),
+            total_taxes: Number(row.total_taxes || 0),
             orders: Number(row.orders || 0),
             total_marketing_spend: Number(row.total_marketing_spend || 0),
             marketing_spend_facebook: Number(row.marketing_spend_facebook || 0),

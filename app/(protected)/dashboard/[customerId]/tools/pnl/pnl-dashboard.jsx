@@ -91,6 +91,11 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
         const aggregated = filteredMetricsByDate.reduce(
             (acc, row) => ({
                 net_sales: acc.net_sales + (Number(row.net_sales) || 0),
+                gross_sales: acc.gross_sales + (Number(row.gross_sales) || 0),
+                total_discounts: acc.total_discounts + (Number(row.total_discounts) || 0),
+                total_refunds: acc.total_refunds + (Number(row.total_refunds) || 0),
+                shipping_fees: acc.shipping_fees + (Number(row.shipping_fees) || 0),
+                total_taxes: acc.total_taxes + (Number(row.total_taxes) || 0),
                 orders: acc.orders + (Number(row.orders) || 0),
                 total_marketing_spend: acc.total_marketing_spend + (Number(row.total_marketing_spend) || 0),
                 marketing_spend_facebook: acc.marketing_spend_facebook + (Number(row.marketing_spend_facebook) || 0),
@@ -98,6 +103,11 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
             }),
             {
                 net_sales: 0,
+                gross_sales: 0,
+                total_discounts: 0,
+                total_refunds: 0,
+                shipping_fees: 0,
+                total_taxes: 0,
                 orders: 0,
                 total_marketing_spend: 0,
                 marketing_spend_facebook: 0,
@@ -136,6 +146,11 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
 
         const resultMetrics = {
             net_sales: aggregated.net_sales,
+            gross_sales: aggregated.gross_sales,
+            total_discounts: aggregated.total_discounts,
+            total_refunds: aggregated.total_refunds,
+            shipping_fees: aggregated.shipping_fees,
+            total_taxes: aggregated.total_taxes,
             orders: aggregated.orders,
             cogs,
             db1,
@@ -492,9 +507,66 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                                     Net sales represents total revenue minus discounts and returns
                                 </Tooltip>
                             )}
-                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base">
-                                <span className="text-[var(--color-dark-green)]">Netsales</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.net_sales).toLocaleString('en-US')}</span>
+                            
+                            {/* Bruttoomsætning */}
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="gross-sales-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Gross turnover</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.gross_sales || metrics.net_sales).toLocaleString('en-US')}</span>
+                            </div>
+                            {isClient && (
+                                <Tooltip id="gross-sales-tooltip" place="top">
+                                    Gross sales before discounts and returns (total line items price)
+                                </Tooltip>
+                            )}
+
+                            {/* Rabatter (Discounts) */}
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="discounts-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Discounts</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">-kr. {Math.round(metrics.total_discounts || 0).toLocaleString('en-US')}</span>
+                            </div>
+                            {isClient && (
+                                <Tooltip id="discounts-tooltip" place="top">
+                                    Total discounts applied to orders
+                                </Tooltip>
+                            )}
+
+                            {/* Returninger (Refunds) */}
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="refunds-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Refunds</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">-kr. {Math.round(metrics.total_refunds || 0).toLocaleString('en-US')}</span>
+                            </div>
+                            {isClient && (
+                                <Tooltip id="refunds-tooltip" place="top">
+                                    Total amount refunded to customers
+                                </Tooltip>
+                            )}
+
+                            {/* Leveringsgebyrer (Shipping Fees) */}
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="shipping-fees-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Delivery Fees</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.shipping_fees || 0).toLocaleString('en-US')}</span>
+                            </div>
+                            {isClient && (
+                                <Tooltip id="shipping-fees-tooltip" place="top">
+                                    Revenue from shipping fees charged to customers
+                                </Tooltip>
+                            )}
+
+                            {/* Skatter (Taxes) */}
+                            <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="taxes-tooltip">
+                                <span className="text-[var(--color-dark-green)]">Taxes</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.total_taxes || 0).toLocaleString('en-US')}</span>
+                            </div>
+                            {isClient && (
+                                <Tooltip id="taxes-tooltip" place="top">
+                                    Total taxes collected (VAT, sales tax, etc.)
+                                </Tooltip>
+                            )}
+
+                            {/* Net Sales (existing) */}
+                            <div className="flex justify-between px-4 py-2 border-t-2 border-[var(--color-dark-green)] text-sm md:text-base font-semibold">
+                                <span className="text-[var(--color-dark-green)]">Total Sales (Netsales)</span>
+                                <span className="text-[var(--color-dark-green)]">kr. {Math.round(metrics.net_sales).toLocaleString('en-US')}</span>
                             </div>
                         </div>
 

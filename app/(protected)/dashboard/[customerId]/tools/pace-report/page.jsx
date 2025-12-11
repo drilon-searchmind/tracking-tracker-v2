@@ -48,17 +48,17 @@ export default async function PacePage({ params }) {
                     ${customerType === "Shopify" ? `
                     WITH orders AS (
                         SELECT
-                            DATE(created_at) AS date,
+                            DATE(DATETIME(created_at, "Europe/Copenhagen")) AS date,
                             SUM(CAST(total_price AS FLOAT64)) AS gross_sales,
                             COUNT(*) AS order_count,
                             presentment_currency AS currency
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
                         WHERE presentment_currency = "${customerValutaCode}"
-                        GROUP BY DATE(created_at), presentment_currency
+                        GROUP BY DATE(DATETIME(created_at, "Europe/Copenhagen")), presentment_currency
                     ),
                     refunds AS (
                         SELECT
-                            DATE(created_at) AS date,
+                            DATE(DATETIME(created_at, "Europe/Copenhagen")) AS date,
                             SUM(
                                 (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(transaction, '$.amount') AS FLOAT64))
                                 FROM UNNEST(JSON_EXTRACT_ARRAY(transactions)) AS transaction
@@ -67,7 +67,7 @@ export default async function PacePage({ params }) {
                                 )
                             ) AS total_refunds
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
-                        GROUP BY DATE(created_at)
+                        GROUP BY DATE(DATETIME(created_at, "Europe/Copenhagen"))
                     )
                     SELECT
                         CAST(o.date AS STRING) AS date,

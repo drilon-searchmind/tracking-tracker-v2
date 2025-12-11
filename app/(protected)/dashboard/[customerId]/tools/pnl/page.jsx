@@ -83,7 +83,7 @@ export default async function PnLPage({ params }) {
                     ${customerType === "Shopify" ? `
                     WITH orders AS (
                         SELECT
-                            DATE(created_at) AS date,
+                            DATE(DATETIME(created_at, "Europe/Copenhagen")) AS date,
                             -- Extract billing components directly from fields
                             SUM(CAST(total_line_items_price AS FLOAT64)) AS gross_sales,
                             SUM(CAST(total_discounts AS FLOAT64)) AS total_discounts,
@@ -97,11 +97,11 @@ export default async function PnLPage({ params }) {
                             COUNT(*) AS order_count
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
                         WHERE presentment_currency = "${customerValutaCode}"
-                        GROUP BY DATE(created_at)
+                        GROUP BY DATE(DATETIME(created_at, "Europe/Copenhagen"))
                     ),
                     refunds AS (
                         SELECT
-                            DATE(created_at) AS date,
+                            DATE(DATETIME(created_at, "Europe/Copenhagen")) AS date,
                             -- Extract refund amounts from refund_line_items using proper JSON handling
                             SUM(
                                 (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(refund_line_item, '$.subtotal') AS FLOAT64))
@@ -110,7 +110,7 @@ export default async function PnLPage({ params }) {
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
                         WHERE refund_line_items IS NOT NULL 
                             AND ARRAY_LENGTH(JSON_EXTRACT_ARRAY(refund_line_items)) > 0
-                        GROUP BY DATE(created_at)
+                        GROUP BY DATE(DATETIME(created_at, "Europe/Copenhagen"))
                     )
                     SELECT
                         CAST(o.date AS STRING) AS date,

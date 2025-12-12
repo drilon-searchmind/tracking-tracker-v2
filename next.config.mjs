@@ -3,7 +3,8 @@ const nextConfig = {
     images: {
         domains: [
             "lh3.googleusercontent.com",
-            "attachments.clickup.com"
+            "attachments.clickup.com",
+            "cdn.shopify.com"
         ],
     },
 

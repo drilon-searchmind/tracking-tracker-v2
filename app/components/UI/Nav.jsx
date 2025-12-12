@@ -7,7 +7,7 @@ import CustomerModal from "@/app/components/Dashboard/CustomerModal.jsx";
 import { FaMoon, FaSun, FaHome, FaChartLine, FaUserCog, FaUserCircle, FaBars, FaTimes, FaBell, FaChartBar } from "react-icons/fa";
 import LogoutButton from "../Auth/LogoutButton";
 import LoginButton from "../Auth/LoginButton";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "@/app/contexts/ThemeContext";
 
 export default function Nav() {
@@ -15,7 +15,11 @@ export default function Nav() {
     const [showModal, setShowModal] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
     const { theme, toggleTheme } = useTheme();
+
+    // Check if current page is homepage
+    const isHomePage = pathname === '/home';
 
     useEffect(() => {
         if (session?.user) {
@@ -24,8 +28,8 @@ export default function Nav() {
     }, [session, router]);
 
     return (
-        <section id="componentNav" className="bg-white border-b border-gray-100 sticky top-0 z-50">
-            <nav className="flex justify-between items-center container mx-auto px-4 md:px-0">
+        <section id="componentNav" className="bg-white border-b border-gray-100 relative top-0 z-50">
+            <nav className={`flex justify-between items-center container mx-auto ${isHomePage ? '' : 'px-4 md:px-20'}`}>
                 <div className="flex items-center gap-3 py-4">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center">

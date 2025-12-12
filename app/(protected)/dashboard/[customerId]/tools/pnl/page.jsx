@@ -38,7 +38,7 @@ export default async function PnLPage({ params }) {
     }
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude } = await fetchCustomerDetails(customerId);
+        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude, customerType } = await fetchCustomerDetails(customerId);
         let projectId = bigQueryProjectId;
 
         const buildFacebookWhereClause = () => {
@@ -70,43 +70,99 @@ export default async function PnLPage({ params }) {
                 SELECT
                     COALESCE(s.date, f.date, g.date) AS date,
                     COALESCE(s.net_sales, 0) AS net_sales,
+                    COALESCE(s.gross_sales, 0) AS gross_sales,
+                    COALESCE(s.total_discounts, 0) AS total_discounts,
+                    COALESCE(s.total_refunds, 0) AS total_refunds,
+                    COALESCE(s.shipping_fees, 0) AS shipping_fees,
+                    COALESCE(s.total_taxes, 0) AS total_taxes,
                     COALESCE(s.orders, 0) AS orders,
                     COALESCE(f.marketing_spend_facebook, 0) AS marketing_spend_facebook,
                     COALESCE(g.marketing_spend_google, 0) AS marketing_spend_google,
                     COALESCE(f.marketing_spend_facebook, 0) + COALESCE(g.marketing_spend_google, 0) AS total_marketing_spend
                 FROM (
+                    ${customerType === "Shopify" ? `
                     WITH orders AS (
                         SELECT
-                            DATE(created_at) AS date,
-                            SUM(CAST(total_price AS FLOAT64)) AS gross_sales,
-                            COUNT(*) AS order_count,
-                            presentment_currency AS currency
+                            DATE(DATETIME(created_at, "Europe/Copenhagen")) AS date,
+                            -- Extract billing components directly from fields
+                            SUM(CAST(total_line_items_price AS FLOAT64)) AS gross_sales,
+                            SUM(CAST(total_discounts AS FLOAT64)) AS total_discounts,
+                            SUM(CAST(total_tax AS FLOAT64)) AS total_taxes,
+                            -- Extract shipping fees from shipping_lines JSON
+                            SUM(
+                                (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(shipping_line, '$.price') AS FLOAT64))
+                                FROM UNNEST(JSON_EXTRACT_ARRAY(shipping_lines)) AS shipping_line)
+                            ) AS shipping_fees,
+                            SUM(CAST(total_price AS FLOAT64)) AS total_price,
+                            COUNT(*) AS order_count
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
                         WHERE presentment_currency = "${customerValutaCode}"
-                        GROUP BY DATE(created_at), presentment_currency
+                        GROUP BY DATE(DATETIME(created_at, "Europe/Copenhagen"))
                     ),
                     refunds AS (
                         SELECT
-                            DATE(created_at) AS date,
+                            DATE(DATETIME(created_at, "Europe/Copenhagen")) AS date,
+                            -- Extract refund amounts from refund_line_items using proper JSON handling
                             SUM(
-                                (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(transaction, '$.amount') AS FLOAT64))
-                                FROM UNNEST(JSON_EXTRACT_ARRAY(transactions)) AS transaction
-                                WHERE JSON_EXTRACT_SCALAR(transaction, '$.kind') = 'refund'
-                                    AND JSON_EXTRACT_SCALAR(transaction, '$.currency') = "${customerValutaCode}"
-                                )
+                                (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(refund_line_item, '$.subtotal') AS FLOAT64))
+                                FROM UNNEST(JSON_EXTRACT_ARRAY(refund_line_items)) AS refund_line_item)
                             ) AS total_refunds
                         FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
-                        GROUP BY DATE(created_at)
+                        WHERE refund_line_items IS NOT NULL 
+                            AND ARRAY_LENGTH(JSON_EXTRACT_ARRAY(refund_line_items)) > 0
+                        GROUP BY DATE(DATETIME(created_at, "Europe/Copenhagen"))
                     )
                     SELECT
                         CAST(o.date AS STRING) AS date,
-                        o.gross_sales - COALESCE(r.total_refunds, 0) AS net_sales,
+                        o.gross_sales,
+                        o.total_discounts,
+                        COALESCE(r.total_refunds, 0) AS total_refunds,
+                        o.shipping_fees,
+                        o.total_taxes,
+                        o.total_price - COALESCE(r.total_refunds, 0) AS net_sales,
                         o.order_count AS orders
                     FROM
                         orders o
                     LEFT JOIN
                         refunds r ON o.date = r.date
+                    ` : `
+                    -- WooCommerce version (existing logic)
+                    WITH orders AS (
+                        SELECT
+                            DATE(TIMESTAMP(date_created)) AS date,
+                            SUM(CAST(total AS FLOAT64)) AS gross_sales,
+                            SUM(CAST(discount_total AS FLOAT64)) AS total_discounts,
+                            SUM(CAST(total_tax AS FLOAT64)) AS total_taxes,
+                            SUM(CAST(shipping_total AS FLOAT64)) AS shipping_fees,
+                            SUM(CAST(total AS FLOAT64)) AS total_price,
+                            COUNT(*) AS order_count
+                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.woocommerce_orders\`
+                        WHERE currency = "${customerValutaCode}"
+                        GROUP BY DATE(TIMESTAMP(date_created))
+                    ),
+                    refunds AS (
+                        SELECT
+                            DATE(TIMESTAMP(date_created)) AS date,
+                            SUM(CAST(amount AS FLOAT64)) AS total_refunds
+                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.woocommerce_refunds\`
+                        GROUP BY DATE(TIMESTAMP(date_created))
+                    )
+                    SELECT
+                        CAST(o.date AS STRING) AS date,
+                        o.gross_sales,
+                        o.total_discounts,
+                        COALESCE(r.total_refunds, 0) AS total_refunds,
+                        o.shipping_fees,
+                        o.total_taxes,
+                        o.total_price - COALESCE(r.total_refunds, 0) AS net_sales,
+                        o.order_count AS orders
+                    FROM
+                        orders o
+                    LEFT JOIN
+                        refunds r ON o.date = r.date
+                    `}
                 ) s
+                -- ...existing Facebook and Google joins...
                 FULL OUTER JOIN (
                     SELECT
                         CAST(date_start AS STRING) AS date,
@@ -129,6 +185,11 @@ export default async function PnLPage({ params }) {
                 ARRAY_AGG(STRUCT(
                     date,
                     net_sales,
+                    gross_sales,
+                    total_discounts,
+                    total_refunds,
+                    shipping_fees,
+                    total_taxes,
                     orders,
                     total_marketing_spend,
                     marketing_spend_facebook,
@@ -151,6 +212,11 @@ export default async function PnLPage({ params }) {
         const serializedMetricsByDate = data[0].metrics_by_date.map(row => ({
             date: row.date,
             net_sales: Number(row.net_sales || 0),
+            gross_sales: Number(row.gross_sales || 0),
+            total_discounts: Number(row.total_discounts || 0),
+            total_refunds: Number(row.total_refunds || 0),
+            shipping_fees: Number(row.shipping_fees || 0),
+            total_taxes: Number(row.total_taxes || 0),
             orders: Number(row.orders || 0),
             total_marketing_spend: Number(row.total_marketing_spend || 0),
             marketing_spend_facebook: Number(row.marketing_spend_facebook || 0),

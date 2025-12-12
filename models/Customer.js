@@ -12,6 +12,7 @@ const CustomerSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }, 
     updatedAt: { type: Date, default: Date.now },
     isArchived: { type: Boolean, default: false },
+    customerType: { type: String, enum: ["Shopify", "WooCommerce", "Other"], default: "Shopify" },
 });
 
 export default mongoose.models.Customer || mongoose.model("Customer", CustomerSchema);

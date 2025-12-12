@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
+import { HiOutlineCalendar } from "react-icons/hi";
 import {
     Chart as ChartJS,
     LineElement,
@@ -30,6 +31,8 @@ ChartJS.register(
 );
 
 export default function PSDashboard({ customerId, customerName, initialData }) {
+    // Data is already sanitized in the server component
+
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -48,11 +51,19 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
     const [comparison, setComparison] = useState("Previous Year");
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
     const [endDate, setEndDate] = useState(formatDate(yesterday));
-    const [selectedMetric, setSelectedMetric] = useState("Conversions");
+    const [selectedMetric, setSelectedMetric] = useState("Ad Spend");
     const [cpcMetric, setCpcMetric] = useState("CPC");
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [expandedCampaigns, setExpandedCampaigns] = useState({});
     const [showAllMetrics, setShowAllMetrics] = useState(false);
+    
+    // View mode and granularity states
+    const [metricsViewMode, setMetricsViewMode] = useState("YTD");
+    const [metricsPeriodGranularity, setMetricsPeriodGranularity] = useState("Daily");
+    const [campaignsViewMode, setCampaignsViewMode] = useState("YTD");
+    const [campaignsPeriodGranularity, setCampaignsPeriodGranularity] = useState("Daily");
+    const [cpcViewMode, setCpcViewMode] = useState("YTD");
+    const [cpcPeriodGranularity, setCpcPeriodGranularity] = useState("Daily");
 
     const { metrics_by_date, top_campaigns, campaigns_by_date } = initialData || {};
 
@@ -69,12 +80,12 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
     const metrics = useMemo(() => {
         const result = filteredMetricsByDate.reduce(
             (acc, row) => ({
-                clicks: acc.clicks + (Number(row.clicks) || 0),
-                impressions: acc.impressions + (Number(row.impressions) || 0),
-                conversions: acc.conversions + (Number(row.conversions) || 0),
-                conversion_value: acc.conversion_value + (Number(row.conversion_value) || 0),
-                ad_spend: acc.ad_spend + (Number(row.ad_spend) || 0),
-                roas: Number(row.ad_spend) > 0 ? acc.conversion_value / acc.ad_spend : 0,
+                clicks: acc.clicks + row.clicks,
+                impressions: acc.impressions + row.impressions,
+                conversions: acc.conversions + row.conversions,
+                conversion_value: acc.conversion_value + row.conversion_value,
+                ad_spend: acc.ad_spend + row.ad_spend,
+                roas: row.ad_spend > 0 ? acc.conversion_value / acc.ad_spend : 0,
                 aov: acc.conversions > 0 ? acc.conversion_value / acc.conversions : 0,
                 ctr: acc.impressions > 0 ? acc.clicks / acc.impressions : 0,
                 cpc: acc.clicks > 0 ? acc.ad_spend / acc.clicks : 0,
@@ -139,16 +150,174 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
 
     const { compStart, compEnd } = getComparisonDates();
 
+    // Weekly aggregation utility function
+    const aggregateDataByWeek = (dataArray) => {
+        if (!Array.isArray(dataArray) || dataArray.length === 0) return [];
+
+        const weeklyData = {};
+        
+        dataArray.forEach(row => {
+            const date = new Date(row.date);
+            if (isNaN(date.getTime())) return;
+
+            // Get Monday of the week
+            const dayOfWeek = date.getDay();
+            const monday = new Date(date);
+            monday.setDate(date.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+            const weekKey = monday.toISOString().split('T')[0];
+
+            if (!weeklyData[weekKey]) {
+                weeklyData[weekKey] = {
+                    date: weekKey,
+                    clicks: 0,
+                    impressions: 0,
+                    conversions: 0,
+                    conversion_value: 0,
+                    ad_spend: 0,
+                    roas: 0,
+                    aov: 0,
+                    ctr: 0,
+                    cpc: 0,
+                    cpm: 0,
+                    conv_rate: 0,
+                    count: 0
+                };
+            }
+
+            const week = weeklyData[weekKey];
+            week.clicks += Number(row.clicks) || 0;
+            week.impressions += Number(row.impressions) || 0;
+            week.conversions += Number(row.conversions) || 0;
+            week.conversion_value += Number(row.conversion_value) || 0;
+            week.ad_spend += Number(row.ad_spend) || 0;
+            week.count += 1;
+        });
+
+        // Calculate averages and ratios
+        return Object.values(weeklyData).map(week => ({
+            ...week,
+            roas: week.ad_spend > 0 ? week.conversion_value / week.ad_spend : 0,
+            aov: week.conversions > 0 ? week.conversion_value / week.conversions : 0,
+            ctr: week.impressions > 0 ? week.clicks / week.impressions : 0,
+            cpc: week.clicks > 0 ? week.ad_spend / week.clicks : 0,
+            cpm: week.impressions > 0 ? (week.ad_spend / week.impressions) * 1000 : 0,
+            conv_rate: week.clicks > 0 ? week.conversions / week.clicks : 0
+        })).sort((a, b) => new Date(a.date) - new Date(b.date));
+    };
+
+    // Function to format week labels
+    const formatWeekLabel = (weekStartDate) => {
+        const startDate = new Date(weekStartDate);
+        if (isNaN(startDate.getTime())) return weekStartDate;
+        
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        
+        const formatOptions = { month: 'short', day: 'numeric' };
+        return `${startDate.toLocaleDateString('en-US', formatOptions)} - ${endDate.toLocaleDateString('en-US', formatOptions)}`;
+    };
+
+    // Monthly data aggregation
+    const groupDataByMonth = (dataArray) => {
+        if (!Array.isArray(dataArray) || dataArray.length === 0) return [];
+
+        const monthlyData = {};
+        
+        dataArray.forEach(row => {
+            const date = new Date(row.date);
+            if (isNaN(date.getTime())) return;
+
+            const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            
+            if (!monthlyData[yearMonth]) {
+                monthlyData[yearMonth] = {
+                    date: yearMonth,
+                    clicks: 0,
+                    impressions: 0,
+                    conversions: 0,
+                    conversion_value: 0,
+                    ad_spend: 0,
+                    roas: 0,
+                    aov: 0,
+                    ctr: 0,
+                    cpc: 0,
+                    cpm: 0,
+                    conv_rate: 0,
+                    count: 0
+                };
+            }
+
+            const month = monthlyData[yearMonth];
+            month.clicks += Number(row.clicks) || 0;
+            month.impressions += Number(row.impressions) || 0;
+            month.conversions += Number(row.conversions) || 0;
+            month.conversion_value += Number(row.conversion_value) || 0;
+            month.ad_spend += Number(row.ad_spend) || 0;
+            month.count += 1;
+        });
+
+        // Calculate averages and ratios
+        return Object.values(monthlyData).map(month => ({
+            ...month,
+            roas: month.ad_spend > 0 ? month.conversion_value / month.ad_spend : 0,
+            aov: month.conversions > 0 ? month.conversion_value / month.conversions : 0,
+            ctr: month.impressions > 0 ? month.clicks / month.impressions : 0,
+            cpc: month.clicks > 0 ? month.ad_spend / month.clicks : 0,
+            cpm: month.impressions > 0 ? (month.ad_spend / month.impressions) * 1000 : 0,
+            conv_rate: month.clicks > 0 ? month.conversions / month.clicks : 0
+        })).sort((a, b) => new Date(a.date + '-01') - new Date(b.date + '-01'));
+    };
+
+    // Format month labels
+    const formatMonthLabel = (yearMonth) => {
+        const date = new Date(yearMonth + '-01');
+        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    };
+
+    // Get YTD data
+    const getYTDData = useMemo(() => {
+        const currentYear = new Date(endDate).getFullYear();
+        const yearStart = new Date(currentYear, 0, 1);
+        const yearStartStr = formatDate(yearStart);
+        
+        return (metrics_by_date || []).filter(row => {
+            return row.date >= yearStartStr && row.date <= endDate;
+        });
+    }, [metrics_by_date, endDate]);
+
+    // Get YTD comparison data (previous year)
+    const getYTDComparisonData = useMemo(() => {
+        const currentYear = new Date(endDate).getFullYear();
+        const prevYear = currentYear - 1;
+        const prevYearStart = new Date(prevYear, 0, 1);
+        const prevYearEnd = new Date(prevYear, new Date(endDate).getMonth(), new Date(endDate).getDate());
+        
+        const prevYearStartStr = formatDate(prevYearStart);
+        const prevYearEndStr = formatDate(prevYearEnd);
+        
+        return (metrics_by_date || []).filter(row => {
+            return row.date >= prevYearStartStr && row.date <= prevYearEndStr;
+        });
+    }, [metrics_by_date, endDate]);
+
+    const monthlyYTDData = useMemo(() => groupDataByMonth(getYTDData), [getYTDData]);
+    const monthlyYTDComparisonData = useMemo(() => groupDataByMonth(getYTDComparisonData), [getYTDComparisonData]);
+
+    // Get filtered comparison data for Period view
+    const filteredComparisonMetricsByDate = useMemo(() => {
+        return (metrics_by_date || []).filter(row => row.date >= compStart && row.date <= compEnd);
+    }, [metrics_by_date, compStart, compEnd]);
+
     const comparisonMetrics = useMemo(() => {
         const comparisonData = metrics_by_date?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
         const result = comparisonData.reduce(
             (acc, row) => ({
-                clicks: acc.clicks + (Number(row.clicks) || 0),
-                impressions: acc.impressions + (Number(row.impressions) || 0),
-                conversions: acc.conversions + (Number(row.conversions) || 0),
-                conversion_value: acc.conversion_value + (Number(row.conversion_value) || 0),
-                ad_spend: acc.ad_spend + (Number(row.ad_spend) || 0),
-                roas: Number(row.ad_spend) > 0 ? acc.conversion_value / acc.ad_spend : 0,
+                clicks: acc.clicks + row.clicks,
+                impressions: acc.impressions + row.impressions,
+                conversions: acc.conversions + row.conversions,
+                conversion_value: acc.conversion_value + row.conversion_value,
+                ad_spend: acc.ad_spend + row.ad_spend,
+                roas: row.ad_spend > 0 ? acc.conversion_value / acc.ad_spend : 0,
                 aov: acc.conversions > 0 ? acc.conversion_value / acc.conversions : 0,
                 ctr: acc.impressions > 0 ? acc.clicks / acc.impressions : 0,
                 cpc: acc.clicks > 0 ? acc.ad_spend / acc.clicks : 0,
@@ -174,8 +343,8 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
 
     const filteredTopCampaigns = useMemo(() => {
         const campaignMap = filteredCampaignsByDate.reduce((acc, row) => {
-            const clicks = (acc[row.campaign_name]?.clicks || 0) + (Number(row.clicks) || 0);
-            const impressions = (acc[row.campaign_name]?.impressions || 0) + (Number(row.impressions) || 0);
+            const clicks = (acc[row.campaign_name]?.clicks || 0) + row.clicks;
+            const impressions = (acc[row.campaign_name]?.impressions || 0) + row.impressions;
             acc[row.campaign_name] = {
                 clicks,
                 impressions,
@@ -274,147 +443,481 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
         },
     ];
 
-    const metricsChartData = {
-        labels: filteredMetricsByDate.map((row) => row.date) || [],
-        datasets: [
+    const metricsChartData = useMemo(() => {
+        let currentData, comparisonData, labels;
+
+        if (metricsViewMode === "YTD") {
+            // YTD view uses monthly data
+            currentData = monthlyYTDData;
+            comparisonData = monthlyYTDComparisonData;
+            labels = currentData.map(row => formatMonthLabel(row.date));
+        } else {
+            // Period view
+            if (metricsPeriodGranularity === "Weekly") {
+                currentData = aggregateDataByWeek(filteredMetricsByDate);
+                comparisonData = aggregateDataByWeek(filteredComparisonMetricsByDate);
+                labels = currentData.map(row => formatWeekLabel(row.date));
+            } else {
+                // Daily
+                currentData = filteredMetricsByDate;
+                comparisonData = filteredComparisonMetricsByDate;
+                labels = currentData.map(row => row.date);
+            }
+        }
+
+        const getMetricValue = (row) => {
+            switch (selectedMetric) {
+                case "Conversions":
+                    return row.conversions || 0;
+                case "Ad Spend":
+                    return row.ad_spend || 0;
+                case "ROAS":
+                    return row.roas || 0;
+                default:
+                    return 0;
+            }
+        };
+
+        const datasets = [
             {
                 label: selectedMetric,
-                data: filteredMetricsByDate.map((row) => {
-                    switch (selectedMetric) {
-                        case "Conversions":
-                            return Number(row.conversions) || 0;
-                        case "Ad Spend":
-                            return Number(row.ad_spend) || 0;
-                        case "ROAS":
-                            return Number(row.roas) || 0;
-                        default:
-                            return 0;
-                    }
-                }) || [],
+                data: currentData.map(getMetricValue),
                 borderColor: colors.primary,
                 backgroundColor: colors.primary,
                 borderWidth: 1,
                 pointRadius: 2,
                 pointHoverRadius: 4,
                 fill: false,
-            },
-        ],
-    };
+            }
+        ];
 
-    const cpcChartData = {
-        labels: filteredMetricsByDate.map((row) => row.date) || [],
-        datasets: [
+        // Add comparison dataset for Period view
+        if (metricsViewMode === "Period" && comparisonData.length > 0) {
+            datasets.push({
+                label: `${selectedMetric} (${comparison})`,
+                data: comparisonData.map(getMetricValue),
+                borderColor: colors.hue3,
+                backgroundColor: colors.hue3,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+                borderDash: [5, 5],
+            });
+        } else if (metricsViewMode === "YTD" && comparisonData.length > 0) {
+            datasets.push({
+                label: `${selectedMetric} (Previous Year)`,
+                data: comparisonData.map(getMetricValue),
+                borderColor: colors.hue3,
+                backgroundColor: colors.hue3,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+                borderDash: [5, 5],
+            });
+        }
+
+        return {
+            labels,
+            datasets
+        };
+    }, [metricsViewMode, metricsPeriodGranularity, selectedMetric, monthlyYTDData, monthlyYTDComparisonData, filteredMetricsByDate, filteredComparisonMetricsByDate, colors, comparison]);
+
+    const cpcChartData = useMemo(() => {
+        let currentData, comparisonData, labels;
+
+        if (cpcViewMode === "YTD") {
+            // YTD view uses monthly data
+            currentData = monthlyYTDData;
+            comparisonData = monthlyYTDComparisonData;
+            labels = currentData.map(row => formatMonthLabel(row.date));
+        } else {
+            // Period view
+            if (cpcPeriodGranularity === "Weekly") {
+                currentData = aggregateDataByWeek(filteredMetricsByDate);
+                comparisonData = aggregateDataByWeek(filteredComparisonMetricsByDate);
+                labels = currentData.map(row => formatWeekLabel(row.date));
+            } else {
+                // Daily
+                currentData = filteredMetricsByDate;
+                comparisonData = filteredComparisonMetricsByDate;
+                labels = currentData.map(row => row.date);
+            }
+        }
+
+        const getCpcMetricValue = (row) => {
+            switch (cpcMetric) {
+                case "CPC":
+                    return row.cpc || 0;
+                case "CTR":
+                    return row.ctr || 0;
+                case "Conv. Rate":
+                    return row.conv_rate || 0;
+                default:
+                    return 0;
+            }
+        };
+
+        const datasets = [
             {
                 label: cpcMetric,
-                data: filteredMetricsByDate.map((row) => {
-                    switch (cpcMetric) {
-                        case "CPC":
-                            return Number(row.cpc) || 0;
-                        case "CTR":
-                            return Number(row.ctr) || 0;
-                        case "Conv. Rate":
-                            return Number(row.conv_rate) || 0;
-                        default:
-                            return 0;
-                    }
-                }) || [],
+                data: currentData.map(getCpcMetricValue),
                 borderColor: colors.primary,
                 backgroundColor: colors.primary,
                 borderWidth: 1,
                 pointRadius: 2,
                 pointHoverRadius: 4,
                 fill: false,
-            },
-        ],
+            }
+        ];
+
+        // Add comparison dataset
+        if (cpcViewMode === "Period" && comparisonData.length > 0) {
+            datasets.push({
+                label: `${cpcMetric} (${comparison})`,
+                data: comparisonData.map(getCpcMetricValue),
+                borderColor: colors.hue3,
+                backgroundColor: colors.hue3,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+                borderDash: [5, 5],
+            });
+        } else if (cpcViewMode === "YTD" && comparisonData.length > 0) {
+            datasets.push({
+                label: `${cpcMetric} (Previous Year)`,
+                data: comparisonData.map(getCpcMetricValue),
+                borderColor: colors.hue3,
+                backgroundColor: colors.hue3,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+                borderDash: [5, 5],
+            });
+        }
+
+        return {
+            labels,
+            datasets
+        };
+    }, [cpcViewMode, cpcPeriodGranularity, cpcMetric, monthlyYTDData, monthlyYTDComparisonData, filteredMetricsByDate, filteredComparisonMetricsByDate, colors, comparison]);
+
+    // Campaign-specific aggregation functions
+    const aggregateCampaignDataByWeek = (dataArray) => {
+        if (!Array.isArray(dataArray) || dataArray.length === 0) return [];
+
+        const weeklyData = {};
+        
+        dataArray.forEach(row => {
+            const date = new Date(row.date);
+            if (isNaN(date.getTime())) return;
+
+            // Get Monday of the week
+            const dayOfWeek = date.getDay();
+            const monday = new Date(date);
+            monday.setDate(date.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+            const weekKey = `${monday.toISOString().split('T')[0]}_${row.campaign_name}`;
+
+            if (!weeklyData[weekKey]) {
+                weeklyData[weekKey] = {
+                    date: monday.toISOString().split('T')[0],
+                    campaign_name: row.campaign_name,
+                    clicks: 0,
+                    impressions: 0,
+                    ctr: 0,
+                    conv_rate: 0,
+                    cpc: 0,
+                    cpm: 0,
+                    count: 0
+                };
+            }
+
+            const week = weeklyData[weekKey];
+            week.clicks += Number(row.clicks) || 0;
+            week.impressions += Number(row.impressions) || 0;
+            week.count += 1;
+        });
+
+        // Calculate averages
+        return Object.values(weeklyData).map(week => ({
+            ...week,
+            ctr: week.impressions > 0 ? week.clicks / week.impressions : 0,
+            cpc: week.clicks > 0 ? (week.ad_spend || 0) / week.clicks : 0,
+            conv_rate: week.clicks > 0 ? (week.conversions || 0) / week.clicks : 0,
+            cpm: week.impressions > 0 ? ((week.ad_spend || 0) / week.impressions) * 1000 : 0
+        })).sort((a, b) => new Date(a.date) - new Date(b.date));
     };
 
-    const campaignChartData = {
-        labels: [...new Set(filteredCampaignsByDate.map((row) => row.date))].sort(),
-        datasets: selectedCampaigns.map((campaign, i) => ({
-            label: campaign,
-            data: filteredCampaignsByDate
-                .filter((row) => row.campaign_name === campaign && Number(row.impressions) > 0)
-                .map((row) => ({
+    const groupCampaignDataByMonth = (dataArray) => {
+        if (!Array.isArray(dataArray) || dataArray.length === 0) return [];
+
+        const monthlyData = {};
+        
+        dataArray.forEach(row => {
+            const date = new Date(row.date);
+            if (isNaN(date.getTime())) return;
+
+            const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const monthKey = `${yearMonth}_${row.campaign_name}`;
+            
+            if (!monthlyData[monthKey]) {
+                monthlyData[monthKey] = {
+                    date: yearMonth,
+                    campaign_name: row.campaign_name,
+                    clicks: 0,
+                    impressions: 0,
+                    ctr: 0,
+                    conv_rate: 0,
+                    cpc: 0,
+                    cpm: 0,
+                    count: 0
+                };
+            }
+
+            const month = monthlyData[monthKey];
+            month.clicks += Number(row.clicks) || 0;
+            month.impressions += Number(row.impressions) || 0;
+            month.count += 1;
+        });
+
+        // Calculate averages
+        return Object.values(monthlyData).map(month => ({
+            ...month,
+            ctr: month.impressions > 0 ? month.clicks / month.impressions : 0,
+            cpc: month.clicks > 0 ? (month.ad_spend || 0) / month.clicks : 0,
+            conv_rate: month.clicks > 0 ? (month.conversions || 0) / month.clicks : 0,
+            cpm: month.impressions > 0 ? ((month.ad_spend || 0) / month.impressions) * 1000 : 0
+        })).sort((a, b) => new Date(a.date + '-01') - new Date(b.date + '-01'));
+    };
+
+    // Get YTD campaigns data
+    const getYTDCampaignsData = useMemo(() => {
+        const currentYear = new Date(endDate).getFullYear();
+        const yearStart = new Date(currentYear, 0, 1);
+        const yearStartStr = formatDate(yearStart);
+        
+        return (campaigns_by_date || []).filter(row => {
+            return row.date >= yearStartStr && row.date <= endDate;
+        });
+    }, [campaigns_by_date, endDate]);
+
+    const monthlyCampaignsYTDData = useMemo(() => groupCampaignDataByMonth(getYTDCampaignsData), [getYTDCampaignsData]);
+
+    const campaignChartData = useMemo(() => {
+        let campaignData, labels;
+
+        if (campaignsViewMode === "YTD") {
+            // YTD view uses monthly data
+            campaignData = monthlyCampaignsYTDData;
+            labels = [...new Set(campaignData.map(row => formatMonthLabel(row.date)))].sort();
+        } else {
+            // Period view
+            if (campaignsPeriodGranularity === "Weekly") {
+                campaignData = aggregateCampaignDataByWeek(filteredCampaignsByDate);
+                labels = [...new Set(campaignData.map(row => formatWeekLabel(row.date)))].sort();
+            } else {
+                // Daily
+                campaignData = filteredCampaignsByDate;
+                labels = [...new Set(campaignData.map(row => row.date))].sort();
+            }
+        }
+
+        const getCampaignMetricValue = (row) => {
+            if (selectedMetric === "Conversions") return row.conv_rate || 0;
+            if (selectedMetric === "Ad Spend") return row.cpc || 0;
+            return row.ctr || 0;
+        };
+
+        const datasets = selectedCampaigns.map((campaign, i) => {
+            const campaignRows = campaignData.filter(row => row.campaign_name === campaign && row.impressions > 0);
+            
+            let data;
+            if (campaignsViewMode === "YTD") {
+                data = campaignRows.map(row => ({
+                    x: formatMonthLabel(row.date),
+                    y: getCampaignMetricValue(row)
+                }));
+            } else if (campaignsPeriodGranularity === "Weekly") {
+                data = campaignRows.map(row => ({
+                    x: formatWeekLabel(row.date),
+                    y: getCampaignMetricValue(row)
+                }));
+            } else {
+                data = campaignRows.map(row => ({
                     x: row.date,
-                    y: selectedMetric === "Conversions" ? (Number(row.conv_rate) || 0) :
-                        selectedMetric === "Ad Spend" ? (Number(row.cpc) || 0) :
-                            (Number(row.ctr) || 0)
-                })),
-            borderColor: colors[`hue${i % 5}`] || colors.primary,
-            backgroundColor: colors[`hue${i % 5}`] || colors.primary,
-            borderWidth: 1,
-            pointRadius: 2,
-            pointHoverRadius: 4,
-            fill: false,
-        })),
+                    y: getCampaignMetricValue(row)
+                }));
+            }
+
+            return {
+                label: campaign,
+                data,
+                borderColor: colors[`hue${i % 4 + 1}`] || colors.primary,
+                backgroundColor: colors[`hue${i % 4 + 1}`] || colors.primary,
+                borderWidth: 1,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false,
+            };
+        });
+
+        return {
+            labels,
+            datasets
+        };
+    }, [campaignsViewMode, campaignsPeriodGranularity, selectedMetric, monthlyCampaignsYTDData, filteredCampaignsByDate, selectedCampaigns, colors]);
+
+    // Dynamic chart options function
+    const getChartOptions = (viewMode, periodGranularity) => {
+        let timeUnit, displayFormats;
+        
+        if (viewMode === "YTD") {
+            timeUnit = "month";
+            displayFormats = { month: "MMM yyyy" };
+        } else if (periodGranularity === "Weekly") {
+            timeUnit = "week";
+            displayFormats = { week: "MMM dd" };
+        } else {
+            timeUnit = "day";
+            displayFormats = { day: "MMM dd" };
+        }
+
+        return {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: {
+                x: {
+                    type: viewMode === "YTD" || periodGranularity === "Weekly" ? "category" : "time",
+                    time: viewMode === "YTD" || periodGranularity === "Weekly" ? undefined : { 
+                        unit: timeUnit,
+                        displayFormats 
+                    },
+                    grid: { display: false },
+                    ticks: { 
+                        font: { size: 10 },
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: "rgba(0, 0, 0, 0.05)" },
+                    ticks: {
+                        font: { size: 10 },
+                        callback: (value) => value.toLocaleString('en-US')
+                    },
+                },
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "rgba(0, 0, 0, 0.7)",
+                    titleFont: { size: 12 },
+                    bodyFont: { size: 10 },
+                    padding: 8,
+                    cornerRadius: 4,
+                    callbacks: {
+                        label: (context) => {
+                            const label = context.dataset.label || '';
+                            const value = context.raw || 0;
+                            return `${label}: ${typeof value === 'number' ? value.toLocaleString('en-US') : value}`;
+                        }
+                    }
+                },
+            },
+        };
     };
 
-    const chartOptions = {
-        maintainAspectRatio: false,
-        responsive: true,
-        scales: {
-            x: {
-                type: "time",
-                time: { unit: "day" },
-                grid: { display: false },
-                ticks: { 
-                    font: { size: 10 },
-                    maxRotation: 45,
-                    minRotation: 45
-                },
-            },
-            y: {
-                beginAtZero: true,
-                grid: { color: "rgba(0, 0, 0, 0.05)" },
-                ticks: {
-                    font: { size: 10 },
-                    callback: (value) => value.toLocaleString('en-US')
-                },
-            },
-        },
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                backgroundColor: "rgba(0, 0, 0, 0.7)",
-                titleFont: { size: 12 },
-                bodyFont: { size: 10 },
-                padding: 8,
-                cornerRadius: 4,
-                callbacks: {
-                    label: (context) => {
-                        const label = context.dataset.label || '';
-                        const value = context.raw || 0;
-                        return `${label}: ${typeof value === 'number' ? value.toLocaleString('en-US') : value}`;
-                    }
-                }
-            },
-        },
-    };
+    // ViewModeToggle component
+    const ViewModeToggle = ({ viewMode, setViewMode, periodGranularity, setPeriodGranularity }) => (
+        <div className="flex items-center gap-2">
+            <button
+                onClick={() => setViewMode(viewMode === "YTD" ? "Period" : "YTD")}
+                className="flex items-center text-xs px-3 py-1.5 bg-[var(--color-natural)] hover:bg-[var(--color-lime)] text-[var(--color-dark-green)] hover:text-white rounded-md transition-colors duration-200"
+                title={viewMode === "YTD" ? "Switch to Period view" : "Switch to YTD view"}
+            >
+                <HiOutlineCalendar className="mr-1" />
+                {viewMode}
+            </button>
+            
+            {viewMode === "Period" && (
+                <div className="flex items-center bg-[var(--color-natural)] rounded-md overflow-hidden">
+                    <button
+                        onClick={() => setPeriodGranularity("Daily")}
+                        className={`text-xs px-2 py-1.5 transition-colors duration-200 ${
+                            periodGranularity === "Daily" 
+                                ? "bg-[var(--color-lime)] text-white" 
+                                : "text-[var(--color-dark-green)] hover:bg-[var(--color-lime)] hover:text-white"
+                        }`}
+                    >
+                        Daily
+                    </button>
+                    <button
+                        onClick={() => setPeriodGranularity("Weekly")}
+                        className={`text-xs px-2 py-1.5 transition-colors duration-200 ${
+                            periodGranularity === "Weekly" 
+                                ? "bg-[var(--color-lime)] text-white" 
+                                : "text-[var(--color-dark-green)] hover:bg-[var(--color-lime)] hover:text-white"
+                        }`}
+                    >
+                        Weekly
+                    </button>
+                </div>
+            )}
+        </div>
+    );
 
     const chartComponents = [
         {
             title: selectedMetric,
-            chart: <Line data={metricsChartData} options={chartOptions} />,
+            chart: <Line data={metricsChartData} options={getChartOptions(metricsViewMode, metricsPeriodGranularity)} />,
+            viewModeToggle: (
+                <ViewModeToggle 
+                    viewMode={metricsViewMode} 
+                    setViewMode={setMetricsViewMode}
+                    periodGranularity={metricsPeriodGranularity}
+                    setPeriodGranularity={setMetricsPeriodGranularity}
+                />
+            ),
             selector: (
                 <select
                     value={selectedMetric}
                     onChange={(e) => setSelectedMetric(e.target.value)}
                     className="border px-2 py-1 rounded text-xs"
                 >
-                    <option>Conversions</option>
                     <option>Ad Spend</option>
+                    <option>Conversions</option>
                     <option>ROAS</option>
                 </select>
             )
         },
         {
             title: "Top Campaigns",
-            chart: <Line data={campaignChartData} options={chartOptions} />,
+            chart: <Line data={campaignChartData} options={getChartOptions(campaignsViewMode, campaignsPeriodGranularity)} />,
+            viewModeToggle: (
+                <ViewModeToggle 
+                    viewMode={campaignsViewMode} 
+                    setViewMode={setCampaignsViewMode}
+                    periodGranularity={campaignsPeriodGranularity}
+                    setPeriodGranularity={setCampaignsPeriodGranularity}
+                />
+            ),
             selector: null
         },
         {
             title: cpcMetric,
-            chart: <Line data={cpcChartData} options={chartOptions} />,
+            chart: <Line data={cpcChartData} options={getChartOptions(cpcViewMode, cpcPeriodGranularity)} />,
+            viewModeToggle: (
+                <ViewModeToggle 
+                    viewMode={cpcViewMode} 
+                    setViewMode={setCpcViewMode}
+                    periodGranularity={cpcPeriodGranularity}
+                    setPeriodGranularity={setCpcPeriodGranularity}
+                />
+            ),
             selector: (
                 <select
                     value={cpcMetric}
@@ -585,48 +1088,57 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                 {/* Mobile Chart Carousel */}
                 <div className="md:hidden mb-8">
                     <div className="bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-4 h-[280px]">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">{chartComponents[activeChartIndex].title}</h3>
-                            <div className="flex items-center gap-2">
-                                {activeChartIndex === 0 && (
-                                    <select
-                                        value={selectedMetric}
-                                        onChange={(e) => setSelectedMetric(e.target.value)}
-                                        className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
-                                    >
-                                        <option>Conversions</option>
-                                        <option>Ad Spend</option>
-                                        <option>ROAS</option>
-                                    </select>
-                                )}
-                                {activeChartIndex === 2 && (
-                                    <select
-                                        value={cpcMetric}
-                                        onChange={(e) => setCpcMetric(e.target.value)}
-                                        className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
-                                    >
-                                        <option>CPC</option>
-                                        <option>CTR</option>
-                                        <option>Conv. Rate</option>
-                                    </select>
-                                )}
-                                <div className="flex gap-1">
-                                    <button 
-                                        onClick={() => navigateChart('prev')} 
-                                        className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
-                                    >
-                                        <FaChevronLeft size={12} />
-                                    </button>
-                                    <button 
-                                        onClick={() => navigateChart('next')} 
-                                        className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
-                                    >
-                                        <FaChevronRight size={12} />
-                                    </button>
+                        <div className="flex flex-col gap-2 mb-4">
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-semibold text-sm text-[var(--color-dark-green)]">{chartComponents[activeChartIndex].title}</h3>
+                                <div className="flex items-center gap-2">
+                                    {activeChartIndex === 0 && (
+                                        <>
+                                            {chartComponents[activeChartIndex].viewModeToggle}
+                                            <select
+                                                value={selectedMetric}
+                                                onChange={(e) => setSelectedMetric(e.target.value)}
+                                                className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
+                                            >
+                                                <option>Ad Spend</option>
+                                                <option>Conversions</option>
+                                                <option>ROAS</option>
+                                            </select>
+                                        </>
+                                    )}
+                                    {activeChartIndex === 1 && chartComponents[activeChartIndex].viewModeToggle}
+                                    {activeChartIndex === 2 && (
+                                        <>
+                                            {chartComponents[activeChartIndex].viewModeToggle}
+                                            <select
+                                                value={cpcMetric}
+                                                onChange={(e) => setCpcMetric(e.target.value)}
+                                                className="border border-[var(--color-dark-natural)] px-2 py-1 rounded text-xs bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-1 focus:ring-[var(--color-lime)]"
+                                            >
+                                                <option>CPC</option>
+                                                <option>CTR</option>
+                                                <option>Conv. Rate</option>
+                                            </select>
+                                        </>
+                                    )}
+                                    <div className="flex gap-1">
+                                        <button 
+                                            onClick={() => navigateChart('prev')} 
+                                            className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
+                                        >
+                                            <FaChevronLeft size={12} />
+                                        </button>
+                                        <button 
+                                            onClick={() => navigateChart('next')} 
+                                            className="text-sm bg-[var(--color-natural)] text-[var(--color-dark-green)] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-light-natural)] transition-colors"
+                                        >
+                                            <FaChevronRight size={12} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="w-full h-[210px]">
+                        <div className="w-full h-[180px]">
                             {chartComponents[activeChartIndex].chart}
                         </div>
                     </div>
@@ -644,18 +1156,26 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                 <div className="hidden md:block bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6 mb-8">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">{selectedMetric}</h3>
-                        <select
-                            value={selectedMetric}
-                            onChange={(e) => setSelectedMetric(e.target.value)}
-                            className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
-                        >
-                            <option>Conversions</option>
-                            <option>Ad Spend</option>
-                            <option>ROAS</option>
-                        </select>
+                        <div className="flex items-center gap-3">
+                            <ViewModeToggle 
+                                viewMode={metricsViewMode} 
+                                setViewMode={setMetricsViewMode}
+                                periodGranularity={metricsPeriodGranularity}
+                                setPeriodGranularity={setMetricsPeriodGranularity}
+                            />
+                            <select
+                                value={selectedMetric}
+                                onChange={(e) => setSelectedMetric(e.target.value)}
+                                className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                            >
+                                <option>Ad Spend</option>
+                                <option>Conversions</option>
+                                <option>ROAS</option>
+                            </select>
+                        </div>
                     </div>
                     <div className="w-full h-[300px]">
-                        <Line data={metricsChartData} options={chartOptions} />
+                        <Line data={metricsChartData} options={getChartOptions(metricsViewMode, metricsPeriodGranularity)} />
                     </div>
                 </div>
 
@@ -728,9 +1248,17 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                         </table>
                     </div>
                     <div className="mt-6">
-                        <h3 className="text-lg font-semibold text-[var(--color-dark-green)] mb-4">Top Campaigns Impressions Over Time</h3>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">Top Campaigns Impressions Over Time</h3>
+                            <ViewModeToggle 
+                                viewMode={campaignsViewMode} 
+                                setViewMode={setCampaignsViewMode}
+                                periodGranularity={campaignsPeriodGranularity}
+                                setPeriodGranularity={setCampaignsPeriodGranularity}
+                            />
+                        </div>
                         <div className="w-full h-[300px]">
-                            <Line data={campaignChartData} options={chartOptions} />
+                            <Line data={campaignChartData} options={getChartOptions(campaignsViewMode, campaignsPeriodGranularity)} />
                         </div>
                     </div>
                 </div>
@@ -739,18 +1267,26 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                 <div className="hidden md:block bg-white border border-[var(--color-light-natural)] rounded-lg shadow-sm p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-semibold text-[var(--color-dark-green)]">{cpcMetric}</h3>
-                        <select
-                            value={cpcMetric}
-                            onChange={(e) => setCpcMetric(e.target.value)}
-                            className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
-                        >
-                            <option>CPC</option>
-                            <option>CTR</option>
-                            <option>Conv. Rate</option>
-                        </select>
+                        <div className="flex items-center gap-3">
+                            <ViewModeToggle 
+                                viewMode={cpcViewMode} 
+                                setViewMode={setCpcViewMode}
+                                periodGranularity={cpcPeriodGranularity}
+                                setPeriodGranularity={setCpcPeriodGranularity}
+                            />
+                            <select
+                                value={cpcMetric}
+                                onChange={(e) => setCpcMetric(e.target.value)}
+                                className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                            >
+                                <option>CPC</option>
+                                <option>CTR</option>
+                                <option>Conv. Rate</option>
+                            </select>
+                        </div>
                     </div>
                     <div className="w-full h-[300px]">
-                        <Line data={cpcChartData} options={chartOptions} />
+                        <Line data={cpcChartData} options={getChartOptions(cpcViewMode, cpcPeriodGranularity)} />
                     </div>
                 </div>
             </div>

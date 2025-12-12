@@ -71,7 +71,7 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}/performance-dashboard`}
-                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[var(--color-natural)] ${
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}/performance-dashboard`) 
                                     ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
                                     : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
@@ -84,7 +84,7 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}`}
-                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[var(--color-natural)] ${
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}`) 
                                     ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
                                     : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
@@ -95,7 +95,7 @@ export default function DashboardLayout({ children }) {
                     </li>
 
                     <li className="relative group">
-                        <div className={`flex items-center gap-1 cursor-pointer text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[var(--color-natural)] ${
+                        <div className={`flex items-center gap-1 cursor-pointer text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                             isServiceActive 
                                 ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
                                 : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
@@ -124,7 +124,7 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}/product-performance`}
-                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[var(--color-natural)] ${
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}/product-performance`) 
                                     ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
                                     : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
@@ -137,7 +137,7 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}/tools/pace-report`}
-                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[var(--color-natural)] ${
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}/tools/pace-report`) 
                                     ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
                                     : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
@@ -150,7 +150,7 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}/tools/pnl`}
-                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[var(--color-natural)] ${
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}/tools/pnl`) 
                                     ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
                                     : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
@@ -163,7 +163,7 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}/tools/kampagneplan`}
-                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[var(--color-natural)] ${
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}/tools/kampagneplan`) 
                                     ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
                                     : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"
@@ -176,7 +176,7 @@ export default function DashboardLayout({ children }) {
                     <li>
                         <a
                             href={`/dashboard/${customerId}/config`}
-                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[var(--color-natural)] ${
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 pathname === `/dashboard/${customerId}/config` 
                                     ? "bg-[var(--color-lime)]/20 text-[var(--color-dark-green)] border border-[var(--color-lime)]" 
                                     : "text-[var(--color-green)] hover:text-[var(--color-dark-green)] hover:bg-[var(--color-natural)]"

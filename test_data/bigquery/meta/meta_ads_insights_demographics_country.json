@@ -1,0 +1,30 @@
+[
+    {
+        "_airbyte_raw_id": "019b1274-6ceb-7566-8454-12a6256c8ccf",
+        "_airbyte_extracted_at": "2025-12-12 12:06:18.437000 UTC",
+        "_airbyte_meta": "{\"changes\":[],\"sync_id\":2711}",
+        "_airbyte_generation_id": "0",
+        "cpc": "3.821538",
+        "cpm": "69.288703",
+        "cpp": "80.846216",
+        "ctr": "1.81311",
+        "ad_id": "120241070303120204",
+        "spend": "99.36",
+        "clicks": "26",
+        "ad_name": "SM | JPG02 | Holiday | Dec25",
+        "country": "DK",
+        "adset_id": "120240752221470204",
+        "account_id": "1339051207259038",
+        "adset_name": "SM | Creative Pack #22",
+        "date_start": "2025-12-12",
+        "campaign_id": "120217850190190204",
+        "conversions": null,
+        "impressions": "1434",
+        "account_name": "Angulus ALL",
+        "created_time": "2025-12-04",
+        "social_spend": null,
+        "campaign_name": "SM | AO - testing | Konvertering (DK)",
+        "account_currency": "DKK",
+        "conversion_values": null
+    }
+]

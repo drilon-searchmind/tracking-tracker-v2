@@ -50,14 +50,14 @@ export default async function OverviewPage({ params, searchParams }) {
             endDate: endDate
         };
 
-        // Google Ads API configuration
+        // Google Ads API configuration with OAuth 2.0
         const googleAdsConfig = {
             developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
             clientId: process.env.GOOGLE_ADS_CLIENT_ID,
             clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
             refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
-            accessToken: process.env.GOOGLE_ADS_ACCESS_TOKEN, // Use existing access token first
-            customerId: '806-648-1135',
+            customerId: process.env.GOOGLE_ADS_CUSTOMER_ID, // e.g., '6042038980' (no dashes)
+            managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID, // e.g., '6635038416' (no dashes)
             startDate: startDate,
             endDate: endDate
         };
@@ -69,11 +69,12 @@ export default async function OverviewPage({ params, searchParams }) {
         // Fetch all ad platform data in parallel
         const [facebookAdsData, googleAdsData] = await Promise.all([
             fetchFacebookAdsMetrics(facebookConfig).catch(err => {
-                console.error("Failed to fetch Facebook Ads data:", err);
+                console.error("Failed to fetch Facebook Ads data:", err.message);
                 return []; // Return empty array on error
             }),
             fetchGoogleAdsMetrics(googleAdsConfig).catch(err => {
-                console.error("Failed to fetch Google Ads data:", err);
+                console.error("Failed to fetch Google Ads data:", err.message);
+                console.warn("⚠️  Google Ads integration is currently unavailable - continuing without it");
                 return []; // Return empty array on error
             })
         ]);

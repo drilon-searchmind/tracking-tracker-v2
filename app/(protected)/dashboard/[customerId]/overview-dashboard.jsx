@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { FaChevronRight, FaCalendarAlt } from "react-icons/fa";
 import Subheading from "@/app/components/UI/Utility/Subheading";
@@ -43,6 +44,10 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
 };
 
 export default function OverviewDashboard({ customerId, customerName, customerValutaCode, initialData }) {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const [isPending, startTransition] = useTransition();
+
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -54,8 +59,10 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
         return `${year}-${month}-${day}`;
     };
 
-    const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
-    const [endDate, setEndDate] = useState(formatDate(yesterday));
+    const [startDate, setStartDate] = useState(searchParams.get('startDate') || formatDate(firstDayOfMonth));
+    const [endDate, setEndDate] = useState(searchParams.get('endDate') || formatDate(yesterday));
+    const [tempStartDate, setTempStartDate] = useState(searchParams.get('startDate') || formatDate(firstDayOfMonth));
+    const [tempEndDate, setTempEndDate] = useState(searchParams.get('endDate') || formatDate(yesterday));
     const [metricView, setMetricView] = useState("roas");
     const [expandedRows, setExpandedRows] = useState({});
     const [expandedLastYearRows, setExpandedLastYearRows] = useState({});
@@ -88,6 +95,22 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
         fetchCustomerSettings()
     }, [customerId])
 
+    const handleDateChange = (newStartDate, newEndDate) => {
+        if (newStartDate) setTempStartDate(newStartDate);
+        if (newEndDate) setTempEndDate(newEndDate);
+    };
+
+    const handleApplyDates = () => {
+        setStartDate(tempStartDate);
+        setEndDate(tempEndDate);
+        
+        // Show loading state and trigger navigation
+        setLoading(true);
+        startTransition(() => {
+            router.push(`/dashboard/${customerId}?startDate=${tempStartDate}&endDate=${tempEndDate}`);
+        });
+    };
+
     const toggleRowExpansion = (index) => {
         setExpandedRows(prev => ({
             ...prev,
@@ -112,7 +135,6 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
 
     const filteredMetrics = useMemo(() => {
         return overview_metrics
-            .filter((row) => row.date >= startDate && row.date <= endDate)
             .sort((a, b) => a.date.localeCompare(b.date))
             .map(row => {
                 // First convert currency for revenue fields
@@ -129,7 +151,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                     aov: convertedRow.orders > 0 ? convertedRow.revenue / convertedRow.orders : 0,
                 };
             });
-    }, [overview_metrics, startDate, endDate, customerValutaCode, changeCurrency]);
+    }, [overview_metrics, customerValutaCode, changeCurrency]);
 
     const filteredTotals = useMemo(() => {
         return filteredMetrics.reduce(
@@ -176,7 +198,6 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
 
     const lastYearMetrics = useMemo(() => {
         const metricsWithConversion = overview_metrics
-            .filter((row) => row.date >= lastYearStart && row.date <= lastYearEnd)
             .map(row => {
                 // First convert currency for revenue fields
                 const convertedRow = convertDataRow(row, customerValutaCode, changeCurrency);
@@ -232,7 +253,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
         });
 
         return Object.values(groupedByDate).sort((a, b) => a.date.localeCompare(b.date));
-    }, [overview_metrics, lastYearStart, lastYearEnd, customerValutaCode, changeCurrency]);
+    }, [overview_metrics, customerValutaCode, changeCurrency]);
 
     const filteredLastYearTotals = useMemo(() => {
         return lastYearMetrics.reduce(
@@ -433,9 +454,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                     <div className="relative">
                                         <input
                                             type="date"
-                                            value={startDate}
-                                            onChange={(e) => setStartDate(e.target.value)}
-                                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-full md:w-auto focus:border-[var(--color-lime)] focus:outline-none transition-colors"
+                                            value={tempStartDate}
+                                            onChange={(e) => handleDateChange(e.target.value, null)}
+                                            className="border border-gray-300 px-4 py-2 rounded text-sm w-full md:w-auto focus:border-[var(--color-lime)] focus:outline-none transition-colors"
                                         />
                                     </div>
                                     <span className="text-[var(--color-green)] hidden md:inline font-medium">to</span>
@@ -443,12 +464,19 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                     <div className="relative">
                                         <input
                                             type="date"
-                                            value={endDate}
-                                            onChange={(e) => setEndDate(e.target.value)}
-                                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-full md:w-auto focus:border-[var(--color-lime)] focus:outline-none transition-colors"
+                                            value={tempEndDate}
+                                            onChange={(e) => handleDateChange(null, e.target.value)}
+                                            className="border border-gray-300 px-4 py-2 rounded text-sm w-full md:w-auto focus:border-[var(--color-lime)] focus:outline-none transition-colors"
                                         />
                                     </div>
                                 </div>
+                                <button
+                                    onClick={handleApplyDates}
+                                    className="bg-[var(--foreground)] text-white px-4 py-2 rounded text-sm font-medium hover:bg-[var(--color-primary-searchmind)] cursor-pointer"
+                                    disabled={isPending}
+                                >
+                                    {isPending ? "Applying..." : "Apply"}
+                                </button>
                             </div>
                         </div>
 

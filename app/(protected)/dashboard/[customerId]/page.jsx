@@ -1,6 +1,7 @@
 import OverviewDashboard from "./overview-dashboard";
 // import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
 import { fetchShopifyDashboardMetrics } from "@/lib/shopifyApi";
+import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const dynamic = 'force-dynamic';
@@ -40,9 +41,27 @@ export default async function OverviewPage({ params, searchParams }) {
             endDate: endDate
         };
 
-        console.log("::: Fetching Shopify data from:", shopifyConfig.startDate, "to", shopifyConfig.endDate);
+        // Facebook Ads API configuration
+        const facebookConfig = {
+            accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
+            adAccountId: process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            startDate: startDate,
+            endDate: endDate
+        };
 
-        const data = await fetchShopifyDashboardMetrics(shopifyConfig);
+        console.log("::: Fetching Shopify data from:", shopifyConfig.startDate, "to", shopifyConfig.endDate);
+        console.log("::: Fetching Facebook Ads data from:", facebookConfig.startDate, "to", facebookConfig.endDate);
+
+        // Fetch both Shopify and Facebook data in parallel
+        const [facebookAdsData] = await Promise.all([
+            fetchFacebookAdsMetrics(facebookConfig).catch(err => {
+                console.error("Failed to fetch Facebook Ads data:", err);
+                return []; // Return empty array on error
+            })
+        ]);
+
+        // Fetch Shopify data and merge with Facebook Ads data
+        const data = await fetchShopifyDashboardMetrics(shopifyConfig, facebookAdsData);
 
         if (!data || !data.overview_metrics || data.overview_metrics.length === 0) {
             console.warn("No data returned from Shopify API for customerId:", customerId);

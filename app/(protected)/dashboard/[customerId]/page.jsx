@@ -2,6 +2,7 @@ import OverviewDashboard from "./overview-dashboard";
 // import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
 import { fetchShopifyDashboardMetrics } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
+import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const dynamic = 'force-dynamic';
@@ -49,19 +50,36 @@ export default async function OverviewPage({ params, searchParams }) {
             endDate: endDate
         };
 
+        // Google Ads API configuration
+        const googleAdsConfig = {
+            developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
+            clientId: process.env.GOOGLE_ADS_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
+            refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
+            accessToken: process.env.GOOGLE_ADS_ACCESS_TOKEN, // Use existing access token first
+            customerId: '806-648-1135',
+            startDate: startDate,
+            endDate: endDate
+        };
+
         console.log("::: Fetching Shopify data from:", shopifyConfig.startDate, "to", shopifyConfig.endDate);
         console.log("::: Fetching Facebook Ads data from:", facebookConfig.startDate, "to", facebookConfig.endDate);
+        console.log("::: Fetching Google Ads data from:", googleAdsConfig.startDate, "to", googleAdsConfig.endDate);
 
-        // Fetch both Shopify and Facebook data in parallel
-        const [facebookAdsData] = await Promise.all([
+        // Fetch all ad platform data in parallel
+        const [facebookAdsData, googleAdsData] = await Promise.all([
             fetchFacebookAdsMetrics(facebookConfig).catch(err => {
                 console.error("Failed to fetch Facebook Ads data:", err);
+                return []; // Return empty array on error
+            }),
+            fetchGoogleAdsMetrics(googleAdsConfig).catch(err => {
+                console.error("Failed to fetch Google Ads data:", err);
                 return []; // Return empty array on error
             })
         ]);
 
-        // Fetch Shopify data and merge with Facebook Ads data
-        const data = await fetchShopifyDashboardMetrics(shopifyConfig, facebookAdsData);
+        // Fetch Shopify data and merge with both ad platforms
+        const data = await fetchShopifyDashboardMetrics(shopifyConfig, facebookAdsData, googleAdsData);
 
         if (!data || !data.overview_metrics || data.overview_metrics.length === 0) {
             console.warn("No data returned from Shopify API for customerId:", customerId);

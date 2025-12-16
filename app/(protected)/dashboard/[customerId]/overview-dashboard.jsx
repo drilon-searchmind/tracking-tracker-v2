@@ -48,6 +48,8 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
 
+    const { overview_metrics = [], totals = {}, last_year_totals = {}, last_year_metrics = [], two_years_ago_totals = {} } = initialData || {};
+
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -125,8 +127,6 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
         }));
     };
 
-    const { overview_metrics, totals, last_year_totals } = initialData || {};
-
     if (!overview_metrics || overview_metrics.length === 0) {
         return <div>No data available for {customerId}</div>;
     }
@@ -197,12 +197,12 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
     const lastYearEnd = formatDate(new Date(new Date(endDate).setFullYear(new Date(endDate).getFullYear() - 1)));
 
     const lastYearMetrics = useMemo(() => {
-        const metricsWithConversion = overview_metrics
+        return last_year_metrics
             .map(row => {
-                // First convert currency for revenue fields
+                // Convert currency for revenue fields
                 const convertedRow = convertDataRow(row, customerValutaCode, changeCurrency);
 
-                // Then calculate metrics using converted revenue values
+                // Return with all calculated metrics
                 return {
                     ...convertedRow,
                     spendshare: convertedRow.revenue_ex_tax > 0 ? (convertedRow.ppc_cost + convertedRow.ps_cost) / convertedRow.revenue_ex_tax : 0,
@@ -212,48 +212,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                     gp: convertedRow.revenue * (1 - 0.25) - convertedRow.revenue * 0.7,
                     aov: convertedRow.orders > 0 ? convertedRow.revenue / convertedRow.orders : 0,
                 };
-            });
-
-        const groupedByDate = {};
-
-        metricsWithConversion.forEach(row => {
-            if (!groupedByDate[row.date]) {
-                groupedByDate[row.date] = { ...row };
-            } else {
-                // Aggregate the raw values
-                groupedByDate[row.date].orders += row.orders;
-                groupedByDate[row.date].revenue += row.revenue;
-                groupedByDate[row.date].revenue_ex_tax += row.revenue_ex_tax;
-                groupedByDate[row.date].ppc_cost += row.ppc_cost;
-                groupedByDate[row.date].ps_cost += row.ps_cost;
-                groupedByDate[row.date].gp += row.gp;
-
-                // Recalculate metrics using aggregated converted values
-                const totalCost = groupedByDate[row.date].ppc_cost + groupedByDate[row.date].ps_cost;
-                groupedByDate[row.date].roas = totalCost > 0
-                    ? groupedByDate[row.date].revenue / totalCost
-                    : 0;
-
-                groupedByDate[row.date].poas = totalCost > 0
-                    ? (groupedByDate[row.date].revenue * (1 - 0.25) - groupedByDate[row.date].revenue * 0.7) / totalCost
-                    : 0;
-
-                groupedByDate[row.date].spendshare = groupedByDate[row.date].revenue_ex_tax > 0
-                    ? totalCost / groupedByDate[row.date].revenue_ex_tax
-                    : 0;
-
-                groupedByDate[row.date].spendshare_db = groupedByDate[row.date].revenue_ex_tax > 0
-                    ? totalCost / (0.7 * groupedByDate[row.date].revenue_ex_tax)
-                    : 0;
-
-                groupedByDate[row.date].aov = groupedByDate[row.date].orders > 0
-                    ? groupedByDate[row.date].revenue / groupedByDate[row.date].orders
-                    : 0;
-            }
-        });
-
-        return Object.values(groupedByDate).sort((a, b) => a.date.localeCompare(b.date));
-    }, [overview_metrics, customerValutaCode, changeCurrency]);
+            })
+            .sort((a, b) => a.date.localeCompare(b.date));
+    }, [last_year_metrics, customerValutaCode, changeCurrency]);
 
     const filteredLastYearTotals = useMemo(() => {
         return lastYearMetrics.reduce(
@@ -331,6 +292,43 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
             aov: calculateIndex(filteredTotals.aov, filteredLastYearTotals.aov),
         };
     }, [filteredTotals, filteredLastYearTotals]);
+
+    // Calculate differences between last year and 2 years ago
+    const lastYearDifferences = useMemo(() => ({
+        orders: filteredLastYearTotals.orders - (two_years_ago_totals.orders || 0),
+        revenue: filteredLastYearTotals.revenue - (two_years_ago_totals.revenue || 0),
+        revenue_ex_tax: filteredLastYearTotals.revenue_ex_tax - (two_years_ago_totals.revenue_ex_tax || 0),
+        ppc_cost: filteredLastYearTotals.ppc_cost - (two_years_ago_totals.ppc_cost || 0),
+        ps_cost: filteredLastYearTotals.ps_cost - (two_years_ago_totals.ps_cost || 0),
+        roas: filteredLastYearTotals.roas - (two_years_ago_totals.roas || 0),
+        poas: filteredLastYearTotals.poas - (two_years_ago_totals.poas || 0),
+        spendshare: filteredLastYearTotals.spendshare - (two_years_ago_totals.spendshare || 0),
+        spendshare_db: filteredLastYearTotals.spendshare_db - (two_years_ago_totals.spendshare_db || 0),
+        gp: filteredLastYearTotals.gp - (two_years_ago_totals.gp || 0),
+        aov: filteredLastYearTotals.aov - (two_years_ago_totals.aov || 0),
+    }), [filteredLastYearTotals, two_years_ago_totals]);
+
+    // Calculate index for last year (comparing last year to 2 years ago)
+    const lastYearIndexMetrics = useMemo(() => {
+        const calculateIndex = (current, previous) => {
+            if (!previous || previous === 0) return current > 0 ? 100 : 0;
+            return (current / previous) * 100;
+        };
+
+        return {
+            orders: calculateIndex(filteredLastYearTotals.orders, two_years_ago_totals.orders),
+            revenue: calculateIndex(filteredLastYearTotals.revenue, two_years_ago_totals.revenue),
+            revenue_ex_tax: calculateIndex(filteredLastYearTotals.revenue_ex_tax, two_years_ago_totals.revenue_ex_tax),
+            ppc_cost: calculateIndex(filteredLastYearTotals.ppc_cost, two_years_ago_totals.ppc_cost),
+            ps_cost: calculateIndex(filteredLastYearTotals.ps_cost, two_years_ago_totals.ps_cost),
+            roas: calculateIndex(filteredLastYearTotals.roas, two_years_ago_totals.roas),
+            poas: calculateIndex(filteredLastYearTotals.poas, two_years_ago_totals.poas),
+            spendshare: calculateIndex(filteredLastYearTotals.spendshare, two_years_ago_totals.spendshare),
+            spendshare_db: calculateIndex(filteredLastYearTotals.spendshare_db, two_years_ago_totals.spendshare_db),
+            gp: calculateIndex(filteredLastYearTotals.gp, two_years_ago_totals.gp),
+            aov: calculateIndex(filteredLastYearTotals.aov, two_years_ago_totals.aov),
+        };
+    }, [filteredLastYearTotals, two_years_ago_totals]);
 
     const metricRanges = useMemo(() => {
         const ranges = {
@@ -815,6 +813,42 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                         <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</td>
                                         <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.aov).toLocaleString()}</td>
                                     </tr>
+                                    <tr className="bg-[var(--color-natural)] font-semibold text-xs">
+                                        <td className="px-2 py-2 text-[var(--color-green)] font-bold">2 Years Ago</td>
+                                        <td className="px-2 py-2 text-[var(--color-green)]">{Math.round(two_years_ago_totals.orders || 0).toLocaleString()}</td>
+                                        <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.revenue || 0).toLocaleString()}</td>
+                                        <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.revenue_ex_tax || 0).toLocaleString()}</td>
+                                        <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.ppc_cost || 0).toLocaleString()}</td>
+                                        <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.ps_cost || 0).toLocaleString()}</td>
+                                        <td className="px-2 py-2 text-[var(--color-green)]">{(metricView === "ROAS/POAS" ? (two_years_ago_totals.roas || 0) : ((two_years_ago_totals.spendshare || 0) * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</td>
+                                        <td className="px-2 py-2 text-[var(--color-green)]">{(metricView === "ROAS/POAS" ? (two_years_ago_totals.poas || 0) : ((two_years_ago_totals.spendshare_db || 0) * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</td>
+                                        <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.gp || 0).toLocaleString()}</td>
+                                        <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.aov || 0).toLocaleString()}</td>
+                                    </tr>
+                                    <tr className="bg-gradient-to-r from-[var(--color-lime)]/20 to-[var(--color-natural)] font-semibold text-xs border-t border-[var(--color-lime)]/50">
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)] font-bold">Difference</td>
+                                        <td className={`px-2 py-2 ${lastYearDifferences.orders >= 0 ? 'text-green-600' : 'text-red-600'}`}>{Math.round(lastYearDifferences.orders).toLocaleString()}</td>
+                                        <td className={`px-2 py-2 ${lastYearDifferences.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(lastYearDifferences.revenue).toLocaleString()}</td>
+                                        <td className={`px-2 py-2 ${lastYearDifferences.revenue_ex_tax >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(lastYearDifferences.revenue_ex_tax).toLocaleString()}</td>
+                                        <td className={`px-2 py-2 ${lastYearDifferences.ppc_cost >= 0 ? 'text-red-600' : 'text-green-600'}`}>kr. {Math.round(lastYearDifferences.ppc_cost).toLocaleString()}</td>
+                                        <td className={`px-2 py-2 ${lastYearDifferences.ps_cost >= 0 ? 'text-red-600' : 'text-green-600'}`}>kr. {Math.round(lastYearDifferences.ps_cost).toLocaleString()}</td>
+                                        <td className={`px-2 py-2 ${lastYearDifferences.roas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "ROAS/POAS" ? lastYearDifferences.roas : (lastYearDifferences.spendshare * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</td>
+                                        <td className={`px-2 py-2 ${lastYearDifferences.poas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "ROAS/POAS" ? lastYearDifferences.poas : (lastYearDifferences.spendshare_db * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</td>
+                                        <td className={`px-2 py-2 ${lastYearDifferences.gp >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(lastYearDifferences.gp).toLocaleString()}</td>
+                                        <td className={`px-2 py-2 ${lastYearDifferences.aov >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(lastYearDifferences.aov).toLocaleString()}</td>
+                                    </tr>
+                                    <tr className="bg-gradient-to-r from-[var(--color-lime)]/20 to-[var(--color-natural)] font-semibold text-xs border-t border-[var(--color-lime)]/50">
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)] font-bold">Index</td>
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.orders)}</td>
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.revenue)}</td>
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.revenue_ex_tax)}</td>
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.ppc_cost)}</td>
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.ps_cost)}</td>
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.roas)}</td>
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.poas)}</td>
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.gp)}</td>
+                                        <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.aov)}</td>
+                                    </tr>
                                     {lastYearMetrics.map((row, i) => (
                                         <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-[var(--color-natural)]/30 transition-colors">
                                             <td className="px-2 py-1">{row.date}</td>
@@ -872,6 +906,78 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                         <div className="flex justify-between">
                                             <span className="text-[var(--color-green)]">GP:</span>
                                             <span className="font-semibold text-[var(--color-dark-green)]">kr. {Math.round(filteredLastYearTotals.gp).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="border-b border-gray-100">
+                                <div className="px-6 py-4 bg-[var(--color-natural)]">
+                                    <div className="text-sm font-bold text-[var(--color-green)] mb-2">2 Years Ago</div>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">Orders:</span>
+                                            <span className="font-semibold">{Math.round(two_years_ago_totals.orders || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">Revenue:</span>
+                                            <span className="font-semibold">kr. {Math.round(two_years_ago_totals.revenue || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">{metricView === "ROAS/POAS" ? "ROAS:" : "Spendshare:"}</span>
+                                            <span className="font-semibold">{(metricView === "ROAS/POAS" ? (two_years_ago_totals.roas || 0) : ((two_years_ago_totals.spendshare || 0) * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">GP:</span>
+                                            <span className="font-semibold">kr. {Math.round(two_years_ago_totals.gp || 0).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="border-b border-gray-100">
+                                <div className="px-6 py-4 bg-gradient-to-r from-[var(--color-lime)]/20 to-[var(--color-natural)]">
+                                    <div className="text-sm font-bold text-[var(--color-dark-green)] mb-2">Difference</div>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">Orders:</span>
+                                            <span className={`font-semibold ${lastYearDifferences.orders >= 0 ? 'text-green-600' : 'text-red-600'}`}>{Math.round(lastYearDifferences.orders).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">Revenue:</span>
+                                            <span className={`font-semibold ${lastYearDifferences.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(lastYearDifferences.revenue).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">{metricView === "ROAS/POAS" ? "ROAS:" : "Spendshare:"}</span>
+                                            <span className={`font-semibold ${lastYearDifferences.roas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "ROAS/POAS" ? lastYearDifferences.roas : (lastYearDifferences.spendshare * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">GP:</span>
+                                            <span className={`font-semibold ${lastYearDifferences.gp >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(lastYearDifferences.gp).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="border-b border-gray-100">
+                                <div className="px-6 py-4 bg-gradient-to-r from-[var(--color-lime)]/20 to-[var(--color-natural)]">
+                                    <div className="text-sm font-bold text-[var(--color-dark-green)] mb-2">Index</div>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">Orders:</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.orders)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">Revenue:</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.revenue)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">{metricView === "ROAS/POAS" ? "ROAS:" : "Spendshare:"}</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.roas)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-[var(--color-green)]">GP:</span>
+                                            <span className="font-semibold text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.gp)}</span>
                                         </div>
                                     </div>
                                 </div>

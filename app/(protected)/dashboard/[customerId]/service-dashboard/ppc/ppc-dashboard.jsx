@@ -46,23 +46,56 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
         return `${year}-${month}-${day}`;
     };
 
-    const [comparison, setComparison] = useState("Previous Year");
+    const [comparison, setComparison] = useState("Previous Period");
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
     const [endDate, setEndDate] = useState(formatDate(yesterday));
+    const [tempStartDate, setTempStartDate] = useState(formatDate(firstDayOfMonth));
+    const [tempEndDate, setTempEndDate] = useState(formatDate(yesterday));
     const [selectedMetric, setSelectedMetric] = useState("Ad Spend");
     const [cpcMetric, setCpcMetric] = useState("CPC");
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [expandedCampaigns, setExpandedCampaigns] = useState({});
     const [showAllMetrics, setShowAllMetrics] = useState(false);
     const [campaignSearch, setCampaignSearch] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [dashboardData, setDashboardData] = useState(initialData || null);
     
     // View mode and granularity states
-    const [metricsViewMode, setMetricsViewMode] = useState("YTD");
+    const [metricsViewMode, setMetricsViewMode] = useState("Period");
     const [metricsPeriodGranularity, setMetricsPeriodGranularity] = useState("Daily");
-    const [campaignsViewMode, setCampaignsViewMode] = useState("YTD");
+    const [campaignsViewMode, setCampaignsViewMode] = useState("Period");
     const [campaignsPeriodGranularity, setCampaignsPeriodGranularity] = useState("Daily");
 
-    const { metrics_by_date, top_campaigns, campaigns_by_date } = initialData || {};
+    const { metrics_by_date, top_campaigns, campaigns_by_date } = dashboardData || {};
+
+    // Fetch data function
+    const fetchData = async (start, end) => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(
+                `/api/ppc-dashboard/${customerId}?startDate=${start}&endDate=${end}`
+            );
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            setDashboardData(data);
+        } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+            // You could set an error state here to display to the user
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Handle apply button click
+    const handleApplyDates = () => {
+        setStartDate(tempStartDate);
+        setEndDate(tempEndDate);
+        fetchData(tempStartDate, tempEndDate);
+    };
 
     const getComparisonDates = () => {
         try {
@@ -989,7 +1022,7 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                 </div>
                 <div className="px-0 md:px-20 mx-auto z-10 relative">
                     <div className="flex justify-center items-center p-10 bg-white rounded-lg shadow-sm border border-[var(--color-natural)]">
-                        <p className="text-[var(--color-dark-green)] text-lg">No data available for {customerId}</p>
+                        <p className="text-[var(--color-dark-green)] text-lg">Loading PPC dashboard data...</p>
                     </div>
                 </div>
             </div>
@@ -998,6 +1031,17 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
 
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            {/* Loading Overlay */}
+            {isLoading && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                    <div className="bg-white rounded-lg p-8 shadow-xl">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-lime)]"></div>
+                            <p className="text-[var(--color-dark-green)] font-medium">Loading PPC data...</p>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -1037,18 +1081,25 @@ export default function PPCDashboard({ customerId, customerName, initialData }) 
                                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
                                     <input
                                         type="date"
-                                        value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
+                                        value={tempStartDate}
+                                        onChange={(e) => setTempStartDate(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
                                     <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
                                     <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
                                     <input
                                         type="date"
-                                        value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
+                                        value={tempEndDate}
+                                        onChange={(e) => setTempEndDate(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
+                                    <button
+                                        onClick={handleApplyDates}
+                                        disabled={isLoading}
+                                        className="bg-[var(--color-lime)] hover:bg-[var(--color-dark-green)] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+                                    >
+                                        {isLoading ? 'Loading...' : 'Apply'}
+                                    </button>
                                 </div>
                             </div>
                         </div>

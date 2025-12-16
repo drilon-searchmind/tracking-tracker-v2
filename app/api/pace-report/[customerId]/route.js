@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
+import { dbConnect } from "@/lib/dbConnect";
+import CustomerSettings from "@/models/CustomerSettings";
 
 /**
  * Helper function to merge Shopify, Facebook Ads, and Google Ads data for Pace Report
@@ -71,10 +73,19 @@ export async function GET(request, { params }) {
 
         console.log(`[API] Fetching Pace Report data for ${customerId} from ${startDate} to ${endDate}`);
 
+        // Fetch customer settings from database
+        await dbConnect();
+        const customerSettings = await CustomerSettings.findOne({ customer: customerId });
+        
+        const shopifyUrl = customerSettings?.shopifyUrl || "";
+        const shopifyApiPassword = customerSettings?.shopifyApiPassword || "";
+        const facebookAdAccountId = customerSettings?.facebookAdAccountId || "";
+        const googleAdsCustomerId = customerSettings?.googleAdsCustomerId || "";
+
         // Shopify API configuration
         const shopifyConfig = {
-            shopUrl: process.env.TEMP_SHOPIFY_URL,
-            accessToken: process.env.TEMP_SHOPIFY_PASSWORD,
+            shopUrl: shopifyUrl || process.env.TEMP_SHOPIFY_URL,
+            accessToken: shopifyApiPassword || process.env.TEMP_SHOPIFY_PASSWORD,
             startDate,
             endDate
         };
@@ -82,7 +93,7 @@ export async function GET(request, { params }) {
         // Facebook Ads API configuration
         const facebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
             startDate,
             endDate
         };
@@ -93,7 +104,7 @@ export async function GET(request, { params }) {
             clientId: process.env.GOOGLE_ADS_CLIENT_ID,
             clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
             refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
-            customerId: process.env.GOOGLE_ADS_CUSTOMER_ID,
+            customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID,
             managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
             startDate,
             endDate

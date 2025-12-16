@@ -9,7 +9,7 @@ export default async function GoogleAdsDashboardPage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { customerName } = await fetchCustomerDetails(customerId);
+        const { customerName, googleAdsCustomerId } = await fetchCustomerDetails(customerId);
 
         // Calculate default date range (current month to yesterday)
         const today = new Date();
@@ -33,7 +33,7 @@ export default async function GoogleAdsDashboardPage({ params }) {
             clientId: process.env.GOOGLE_ADS_CLIENT_ID,
             clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
             refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
-            customerId: process.env.GOOGLE_ADS_CUSTOMER_ID,
+            customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID,
             managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
             startDate,
             endDate

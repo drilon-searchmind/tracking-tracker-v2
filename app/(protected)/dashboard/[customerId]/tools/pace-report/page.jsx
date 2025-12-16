@@ -57,7 +57,7 @@ export default async function PacePage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { customerName, customerValutaCode } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId } = await fetchCustomerDetails(customerId);
 
         // Calculate date range for initial data (last 30 days)
         const today = new Date();
@@ -78,8 +78,8 @@ export default async function PacePage({ params }) {
 
         // Shopify API configuration
         const shopifyConfig = {
-            shopUrl: process.env.TEMP_SHOPIFY_URL,
-            accessToken: process.env.TEMP_SHOPIFY_PASSWORD,
+            shopUrl: shopifyUrl || process.env.TEMP_SHOPIFY_URL,
+            accessToken: shopifyApiPassword || process.env.TEMP_SHOPIFY_PASSWORD,
             startDate: startDateStr,
             endDate: endDateStr
         };
@@ -87,7 +87,7 @@ export default async function PacePage({ params }) {
         // Facebook Ads API configuration
         const facebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
             startDate: startDateStr,
             endDate: endDateStr
         };
@@ -98,7 +98,7 @@ export default async function PacePage({ params }) {
             clientId: process.env.GOOGLE_ADS_CLIENT_ID,
             clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
             refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
-            customerId: process.env.GOOGLE_ADS_CUSTOMER_ID,
+            customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID,
             managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
             startDate: startDateStr,
             endDate: endDateStr

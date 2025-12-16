@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchShopifyProductMetrics, fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
+import { dbConnect } from "@/lib/dbConnect";
+import CustomerSettings from "@/models/CustomerSettings";
 
 /**
  * GET /api/product-performance/[customerId]?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
@@ -23,10 +25,17 @@ export async function GET(request, { params }) {
 
         console.log(`[API] Fetching Product Performance data for ${customerId} from ${startDate} to ${endDate}`);
 
+        // Fetch customer settings from database
+        await dbConnect();
+        const customerSettings = await CustomerSettings.findOne({ customer: customerId });
+        
+        const shopifyUrl = customerSettings?.shopifyUrl || "";
+        const shopifyApiPassword = customerSettings?.shopifyApiPassword || "";
+
         // Shopify API configuration
         const shopifyConfig = {
-            shopUrl: process.env.TEMP_SHOPIFY_URL,
-            accessToken: process.env.TEMP_SHOPIFY_PASSWORD,
+            shopUrl: shopifyUrl || process.env.TEMP_SHOPIFY_URL,
+            accessToken: shopifyApiPassword || process.env.TEMP_SHOPIFY_PASSWORD,
             startDate,
             endDate
         };

@@ -16,7 +16,7 @@ export default async function OverviewPage({ params, searchParams }) {
     console.log("::: Fetching customer with ID:", customerId);
 
     try {
-        const { customerName, customerValutaCode } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId } = await fetchCustomerDetails(customerId);
 
         // Get dates from search params or use defaults
         const today = new Date();
@@ -50,8 +50,8 @@ export default async function OverviewPage({ params, searchParams }) {
 
         // Shopify API configuration
         const shopifyConfig = {
-            shopUrl: process.env.TEMP_SHOPIFY_URL,
-            accessToken: process.env.TEMP_SHOPIFY_PASSWORD,
+            shopUrl: shopifyUrl || process.env.TEMP_SHOPIFY_URL,
+            accessToken: shopifyApiPassword || process.env.TEMP_SHOPIFY_PASSWORD,
             startDate: startDate,
             endDate: endDate
         };
@@ -59,7 +59,7 @@ export default async function OverviewPage({ params, searchParams }) {
         // Facebook Ads API configuration
         const facebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
             startDate: startDate,
             endDate: endDate
         };
@@ -67,7 +67,7 @@ export default async function OverviewPage({ params, searchParams }) {
         // Last year Facebook Ads configuration
         const lastYearFacebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
             startDate: formatDate(lastYearStartDate),
             endDate: formatDate(lastYearEndDate)
         };
@@ -75,7 +75,7 @@ export default async function OverviewPage({ params, searchParams }) {
         // 2 years ago Facebook Ads configuration
         const twoYearsAgoFacebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
             startDate: formatDate(twoYearsAgoStartDate),
             endDate: formatDate(twoYearsAgoEndDate)
         };
@@ -86,7 +86,7 @@ export default async function OverviewPage({ params, searchParams }) {
             clientId: process.env.GOOGLE_ADS_CLIENT_ID,
             clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
             refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
-            customerId: process.env.GOOGLE_ADS_CUSTOMER_ID, // e.g., '6042038980' (no dashes)
+            customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID, // e.g., '6042038980' (no dashes)
             managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID, // e.g., '6635038416' (no dashes)
             startDate: startDate,
             endDate: endDate
@@ -98,7 +98,7 @@ export default async function OverviewPage({ params, searchParams }) {
             clientId: process.env.GOOGLE_ADS_CLIENT_ID,
             clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
             refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
-            customerId: process.env.GOOGLE_ADS_CUSTOMER_ID,
+            customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID,
             managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
             startDate: formatDate(lastYearStartDate),
             endDate: formatDate(lastYearEndDate)
@@ -110,7 +110,7 @@ export default async function OverviewPage({ params, searchParams }) {
             clientId: process.env.GOOGLE_ADS_CLIENT_ID,
             clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
             refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
-            customerId: process.env.GOOGLE_ADS_CUSTOMER_ID,
+            customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID,
             managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
             startDate: formatDate(twoYearsAgoStartDate),
             endDate: formatDate(twoYearsAgoEndDate)

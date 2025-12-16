@@ -9,7 +9,7 @@ export default async function PaidSocialDashboardPage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { customerName } = await fetchCustomerDetails(customerId);
+        const { customerName, facebookAdAccountId } = await fetchCustomerDetails(customerId);
 
         // Calculate default date range (current month to yesterday)
         const today = new Date();
@@ -31,20 +31,22 @@ export default async function PaidSocialDashboardPage({ params }) {
         if (!process.env.TEMP_FACEBOOK_API_TOKEN) {
             throw new Error("TEMP_FACEBOOK_API_TOKEN environment variable is not set");
         }
-        if (!process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID) {
-            throw new Error("TEMP_FACEBOOK_AD_ACCOUNT_ID environment variable is not set");
+        
+        const adAccountId = facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID;
+        if (!adAccountId) {
+            throw new Error("Facebook Ad Account ID is not configured for this customer");
         }
 
         // Facebook Ads API configuration
         const facebookAdsConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: adAccountId,
             startDate,
             endDate
         };
 
         console.log(`[PS Dashboard] Fetching data for ${customerId} from ${startDate} to ${endDate}`);
-        console.log(`[PS Dashboard] Using ad account: ${process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID}`);
+        console.log(`[PS Dashboard] Using ad account: ${adAccountId}`);
 
         // Fetch Facebook Ads PS dashboard data
         const data = await fetchFacebookAdsPSDashboardMetrics(facebookAdsConfig);

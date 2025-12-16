@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchGoogleAdsPPCDashboardMetrics } from "@/lib/googleAdsApi";
+import { dbConnect } from "@/lib/dbConnect";
+import CustomerSettings from "@/models/CustomerSettings";
 
 /**
  * GET /api/ppc-dashboard/[customerId]?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
@@ -23,13 +25,19 @@ export async function GET(request, { params }) {
 
         console.log(`[API] Fetching PPC dashboard data for ${customerId} from ${startDate} to ${endDate}`);
 
+        // Fetch customer settings from database
+        await dbConnect();
+        const customerSettings = await CustomerSettings.findOne({ customer: customerId });
+        
+        const googleAdsCustomerId = customerSettings?.googleAdsCustomerId || "";
+
         // Google Ads API configuration
         const googleAdsConfig = {
             developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
             clientId: process.env.GOOGLE_ADS_CLIENT_ID,
             clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
             refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
-            customerId: process.env.GOOGLE_ADS_CUSTOMER_ID,
+            customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID,
             managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
             startDate,
             endDate

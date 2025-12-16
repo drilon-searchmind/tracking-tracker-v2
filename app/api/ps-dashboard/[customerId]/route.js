@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchFacebookAdsPSDashboardMetrics } from "@/lib/facebookAdsApi";
+import { dbConnect } from "@/lib/dbConnect";
+import CustomerSettings from "@/models/CustomerSettings";
 
 /**
  * GET /api/ps-dashboard/[customerId]?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
@@ -23,10 +25,16 @@ export async function GET(request, { params }) {
 
         console.log(`[API] Fetching PS dashboard data for ${customerId} from ${startDate} to ${endDate}`);
 
+        // Fetch customer settings from database
+        await dbConnect();
+        const customerSettings = await CustomerSettings.findOne({ customer: customerId });
+        
+        const facebookAdAccountId = customerSettings?.facebookAdAccountId || "";
+
         // Facebook Ads API configuration
         const facebookAdsConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
             startDate,
             endDate
         };
@@ -36,7 +44,7 @@ export async function GET(request, { params }) {
             throw new Error("TEMP_FACEBOOK_API_TOKEN environment variable is not set");
         }
         if (!facebookAdsConfig.adAccountId) {
-            throw new Error("TEMP_FACEBOOK_AD_ACCOUNT_ID environment variable is not set");
+            throw new Error("Facebook Ad Account ID is not configured for this customer");
         }
 
         // Fetch Facebook Ads PS dashboard data

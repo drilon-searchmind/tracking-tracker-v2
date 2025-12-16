@@ -49,9 +49,10 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
         return `${year}-${month}-${day}`;
     };
 
-    const [comparison, setComparison] = useState("Previous Period");
-    const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
-    const [endDate, setEndDate] = useState(formatDate(yesterday));
+    const [tempStartDate, setTempStartDate] = useState(formatDate(firstDayOfMonth));
+    const [tempEndDate, setTempEndDate] = useState(formatDate(yesterday));
+    const [dateStart, setDateStart] = useState(formatDate(firstDayOfMonth));
+    const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
     const [selectedMetric, setSelectedMetric] = useState("Revenue");
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [expandedProducts, setExpandedProducts] = useState({});
@@ -59,6 +60,8 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
     const [productSearch, setProductSearch] = useState("");
     const [sortBy, setSortBy] = useState("total_revenue");
     const [sortOrder, setSortOrder] = useState("desc");
+    const [isFetchingData, setIsFetchingData] = useState(false);
+    const [fetchedData, setFetchedData] = useState(null);
     
     // View mode and granularity states
     const [metricsViewMode, setMetricsViewMode] = useState("Period");
@@ -66,13 +69,47 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
     const [productsViewMode, setProductsViewMode] = useState("Period");
     const [productsPeriodGranularity, setProductsPeriodGranularity] = useState("Daily");
 
-    const { dashboard_data, top_products, product_daily_metrics } = initialData || {};
+    useEffect(() => {
+        console.log('Product Performance Dashboard mounted for customer:', customerId);
+        // Auto-fetch with default date range (first day of month to yesterday)
+        setIsFetchingData(true);
+        fetchProductData(formatDate(firstDayOfMonth), formatDate(yesterday));
+    }, [customerId]);
+
+    const fetchProductData = async (startDate, endDate) => {
+        setIsFetchingData(true);
+        try {
+            const response = await fetch(
+                `/api/product-performance/${customerId}?startDate=${startDate}&endDate=${endDate}`
+            );
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch product data: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            setFetchedData(result.data);
+        } catch (error) {
+            console.error('Error fetching product data:', error);
+        } finally {
+            setIsFetchingData(false);
+        }
+    };
+
+    const handleApplyDates = () => {
+        setDateStart(tempStartDate);
+        setDateEnd(tempEndDate);
+        fetchProductData(tempStartDate, tempEndDate);
+    };
+
+    // Use fetchedData (client-side only)
+    const { dashboard_data, top_products, product_daily_metrics } = fetchedData || {};
 
     // Filter dashboard data by date range
     const filteredDashboardData = useMemo(() => {
         if (!dashboard_data) return [];
-        return dashboard_data.filter(item => item.date >= startDate && item.date <= endDate);
-    }, [dashboard_data, startDate, endDate]);
+        return dashboard_data.filter(item => item.date >= dateStart && item.date <= dateEnd);
+    }, [dashboard_data, dateStart, dateEnd]);
 
     // Calculate overall metrics from dashboard data (matching performance dashboard)
     const overallMetrics = useMemo(() => {
@@ -99,7 +136,7 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
         // First, get products that have sales within the date range
         const productsWithSalesInRange = new Set();
         product_daily_metrics
-            .filter(metric => metric.order_date >= startDate && metric.order_date <= endDate)
+            .filter(metric => metric.order_date >= dateStart && metric.order_date <= dateEnd)
             .forEach(metric => productsWithSalesInRange.add(metric.product_id));
         
         // Filter and recalculate metrics for products with sales in the date range
@@ -110,8 +147,8 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
                 const productDailyData = product_daily_metrics.filter(
                     metric => 
                         metric.product_id === product.product_id &&
-                        metric.order_date >= startDate && 
-                        metric.order_date <= endDate
+                        metric.order_date >= dateStart && 
+                        metric.order_date <= dateEnd
                 );
                 
                 const dateRangeMetrics = productDailyData.reduce(
@@ -162,16 +199,16 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
         });
 
         return filtered;
-    }, [top_products, product_daily_metrics, productSearch, startDate, endDate, sortBy, sortOrder]);
+    }, [top_products, product_daily_metrics, productSearch, dateStart, dateEnd, sortBy, sortOrder]);
 
     // Filter daily metrics by date range
     const filteredDailyMetrics = useMemo(() => {
         if (!product_daily_metrics) return [];
         
         return product_daily_metrics.filter(metric => 
-            metric.order_date >= startDate && metric.order_date <= endDate
+            metric.order_date >= dateStart && metric.order_date <= dateEnd
         );
-    }, [product_daily_metrics, startDate, endDate]);
+    }, [product_daily_metrics, dateStart, dateEnd]);
 
     // Calculate product-specific metrics from filtered products
     const productMetricsFromProducts = useMemo(() => {
@@ -283,9 +320,9 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
 
     useEffect(() => {
         setExpandedProducts({});
-    }, [startDate, endDate]);
+    }, [dateStart, dateEnd]);
 
-    if (!dashboard_data || !top_products || !product_daily_metrics) {
+    if (isFetchingData || !dashboard_data || !top_products || !product_daily_metrics) {
         return (
             <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
                 <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
@@ -300,7 +337,10 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
                 </div>
                 <div className="px-0 md:px-20 mx-auto z-10 relative">
                     <div className="flex justify-center items-center p-10 bg-white rounded-lg shadow-sm border border-[var(--color-natural)]">
-                        <p className="text-[var(--color-dark-green)] text-lg">No product performance data available for {customerId}</p>
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                            <p className="text-[var(--color-dark-green)] text-lg">Loading product performance data...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -309,6 +349,18 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
 
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            {/* Loading Overlay */}
+            {isFetchingData && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+                    <div className="bg-white rounded-lg p-8 shadow-xl">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-lime)]"></div>
+                            <p className="text-[var(--color-dark-green)] font-medium">Loading product data...</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -338,18 +390,32 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
                                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
                                     <input
                                         type="date"
-                                        value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
+                                        value={tempStartDate}
+                                        onChange={(e) => setTempStartDate(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
                                     <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
                                     <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
                                     <input
                                         type="date"
-                                        value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
+                                        value={tempEndDate}
+                                        onChange={(e) => setTempEndDate(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
+                                    <button
+                                        onClick={handleApplyDates}
+                                        disabled={isFetchingData}
+                                        className="bg-[var(--color-lime)] text-[var(--color-dark-green)] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[var(--color-lime-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    >
+                                        {isFetchingData ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--color-dark-green)]"></div>
+                                                Loading...
+                                            </>
+                                        ) : (
+                                            'Apply'
+                                        )}
+                                    </button>
                                 </div>
                             </div>
                         </div>

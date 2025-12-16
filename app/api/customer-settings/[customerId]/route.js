@@ -16,7 +16,11 @@ export async function PUT(req, { params }) {
             customerClickupID,
             customerMetaID,
             customerMetaIDExclude,
-            changeCurrency
+            changeCurrency,
+            shopifyUrl,
+            shopifyApiPassword,
+            facebookAdAccountId,
+            googleAdsCustomerId
         } = body;
 
         if (metricPreference && !["ROAS/POAS", "Spendshare"].includes(metricPreference)) {
@@ -31,6 +35,10 @@ export async function PUT(req, { params }) {
         if (customerMetaID !== undefined) updateData.customerMetaID = customerMetaID;
         if (customerMetaIDExclude !== undefined) updateData.customerMetaIDExclude = customerMetaIDExclude;
         if (changeCurrency !== undefined) updateData.changeCurrency = changeCurrency;
+        if (shopifyUrl !== undefined) updateData.shopifyUrl = shopifyUrl;
+        if (shopifyApiPassword !== undefined) updateData.shopifyApiPassword = shopifyApiPassword;
+        if (facebookAdAccountId !== undefined) updateData.facebookAdAccountId = facebookAdAccountId;
+        if (googleAdsCustomerId !== undefined) updateData.googleAdsCustomerId = googleAdsCustomerId;
 
         updateData.updatedAt = new Date();
 
@@ -65,7 +73,11 @@ export async function GET(req, { params }) {
                 customerClickupID: "",
                 customerMetaID: "",
                 customerMetaIDExclude: "",
-                changeCurrency: true
+                changeCurrency: true,
+                shopifyUrl: "",
+                shopifyApiPassword: "",
+                facebookAdAccountId: "",
+                googleAdsCustomerId: ""
             };
             return new Response(JSON.stringify(defaultSettings), { status: 200 });
         }

@@ -95,10 +95,13 @@ export default function CustomerModal({ closeModal }) {
                 const parentCustomersResponse = await fetch("/api/parent-customers");
                 const allParentCustomers = await parentCustomersResponse.json();
 
+                // Filter out archived customers
+                const activeCustomers = allCustomers.filter(customer => !customer.isArchived);
+
                 if (isAdmin || !isExternal) {
-                    setCustomers(allCustomers || []);
+                    setCustomers(activeCustomers || []);
                     setParentCustomers(allParentCustomers || []);
-                    setFilteredCustomers(allCustomers || []);
+                    setFilteredCustomers(activeCustomers || []);
                     setFilteredParentCustomers(allParentCustomers || []);
                     return;
                 }
@@ -109,7 +112,7 @@ export default function CustomerModal({ closeModal }) {
                 if (sharingsResult?.data?.length > 0) {
                     const customerIds = sharingsResult.data.map(sharing => sharing.customer);
 
-                    const accessibleCustomers = allCustomers.filter(customer => {
+                    const accessibleCustomers = activeCustomers.filter(customer => {
                         const customerId = customer._id ? customer._id.toString() : customer._id;
                         return customerIds.some(id => id === customerId);
                     });
@@ -353,7 +356,9 @@ export default function CustomerModal({ closeModal }) {
                                 </li>
                             ) : filteredParentCustomers.length > 0 || getCustomersWithoutParent().length > 0 ? (
                                 <>
-                                    {filteredParentCustomers.map((parent) => (
+                                    {filteredParentCustomers
+                                        .filter(parent => getCustomersByParent(parent._id).length > 0)
+                                        .map((parent) => (
                                         <li key={parent._id} className="mb-4">
                                             <div
                                                 className="font-bold text-[var(--color-dark-green)] mb-2 cursor-pointer hover:text-[var(--color-green)] transition-colors flex items-center"

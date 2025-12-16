@@ -9,6 +9,11 @@ const CustomerSettingsSchema = new mongoose.Schema({
     customerMetaID: { type: String, default: "" },
     customerMetaIDExclude: { type: String, default: "" },
     changeCurrency: { type: Boolean, default: true },
+    
+    shopifyUrl: { type: String, default: "" },
+    shopifyApiPassword: { type: String, default: "" },
+    facebookAdAccountId: { type: String, default: "" },
+    googleAdsCustomerId: { type: String, default: "" },
 }, { timestamps: true })
 
 export default mongoose.models.CustomerSettings || mongoose.model("CustomerSettings", CustomerSettingsSchema);

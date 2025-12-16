@@ -1,15 +1,10 @@
-import React from "react";
-import PerformanceDashboard from "./performance-dashboard";
+import { NextResponse } from "next/server";
 import { fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
-import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
-
-export const revalidate = 3600; // ISR: Revalidate every hour
 
 /**
  * Helper function to merge Shopify, Facebook Ads, and Google Ads data
- * Returns data in the format expected by the Performance Dashboard
  */
 function mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData) {
     const dataByDate = {};
@@ -19,7 +14,7 @@ function mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData) {
         dataByDate[row.date] = {
             date: row.date,
             revenue: row.revenue || 0,
-            gross_profit: (row.revenue || 0) * 0.3, // 30% gross profit margin (adjust as needed)
+            gross_profit: (row.revenue || 0) * 0.3, // 30% gross profit margin
             orders: row.orders || 0,
             google_ads_cost: 0,
             meta_spend: 0,
@@ -78,49 +73,42 @@ function mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData) {
     return result.sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export default async function DashboardPage({ params }) {
-    const resolvedParams = await params;
-    const customerId = resolvedParams.customerId;
-
+/**
+ * GET /api/performance-dashboard/[customerId]?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
+ * Fetch performance dashboard data for a specific date range
+ */
+export async function GET(request, { params }) {
     try {
-        const { customerName, customerValutaCode } = await fetchCustomerDetails(customerId);
-
-        // Get initial date range - fetch minimal data (just last 30 days to start)
-        // The component will fetch more data dynamically when user changes dates
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1); // Yesterday
+        const resolvedParams = await params;
+        const customerId = resolvedParams.customerId;
+        const { searchParams } = new URL(request.url);
         
-        // Fetch last 30 days only for initial load
-        const thirtyDaysAgo = new Date(yesterday);
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const startDate = searchParams.get('startDate');
+        const endDate = searchParams.get('endDate');
 
-        const formatDate = (date) => {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        };
+        if (!startDate || !endDate) {
+            return NextResponse.json(
+                { error: "startDate and endDate are required" },
+                { status: 400 }
+            );
+        }
 
-        const startDateStr = formatDate(thirtyDaysAgo);
-        const endDateStr = formatDate(yesterday);
-
-        console.log("::: Fetching Performance Dashboard data from:", startDateStr, "to", endDateStr);
+        console.log(`[API] Fetching performance data for ${customerId} from ${startDate} to ${endDate}`);
 
         // Shopify API configuration
         const shopifyConfig = {
             shopUrl: process.env.TEMP_SHOPIFY_URL,
             accessToken: process.env.TEMP_SHOPIFY_PASSWORD,
-            startDate: startDateStr,
-            endDate: endDateStr
+            startDate,
+            endDate
         };
 
         // Facebook Ads API configuration
         const facebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
             adAccountId: process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
-            startDate: startDateStr,
-            endDate: endDateStr
+            startDate,
+            endDate
         };
 
         // Google Ads API configuration
@@ -131,8 +119,8 @@ export default async function DashboardPage({ params }) {
             refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
             customerId: process.env.GOOGLE_ADS_CUSTOMER_ID,
             managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
-            startDate: startDateStr,
-            endDate: endDateStr
+            startDate,
+            endDate
         };
 
         // Fetch all data in parallel
@@ -154,23 +142,15 @@ export default async function DashboardPage({ params }) {
         // Merge all data sources
         const data = mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData);
 
-        if (!Array.isArray(data) || data.length === 0) {
-            console.warn("No data returned for customerId:", customerId);
-            return <div>No data available for {customerId}</div>;
-        }
+        console.log(`[API] Successfully fetched ${data.length} days of performance data`);
 
-        console.log("::: Successfully fetched", data.length, "days of performance data");
+        return NextResponse.json({ data });
 
-        return (
-            <PerformanceDashboard
-                customerId={customerId}
-                customerName={customerName}
-                customerValutaCode={customerValutaCode}
-                initialData={data}
-            />
-        );
     } catch (error) {
-        console.error("Dashboard error:", error.message, error.stack);
-        return <div>Error: Failed to load dashboard - {error.message}</div>;
+        console.error("[API] Performance dashboard error:", error);
+        return NextResponse.json(
+            { error: error.message },
+            { status: 500 }
+        );
     }
 }

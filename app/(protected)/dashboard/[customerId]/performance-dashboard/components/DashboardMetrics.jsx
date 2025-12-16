@@ -10,6 +10,14 @@ import { FaMoneyCheckAlt } from "react-icons/fa";
 export default function DashboardMetrics({ currentMetrics, prevMetrics, customerId }) {
     const [cogsPercentage, setCogsPercentage] = useState(0);
 
+    // Debug logging
+    useEffect(() => {
+        console.log("=== DashboardMetrics Debug ===");
+        console.log("currentMetrics:", currentMetrics);
+        console.log("prevMetrics:", prevMetrics);
+        console.log("cogsPercentage:", cogsPercentage);
+    }, [currentMetrics, prevMetrics, cogsPercentage]);
+
     useEffect(() => {
         console.log("Fetching COGS percentage for customer ID:", customerId);
         

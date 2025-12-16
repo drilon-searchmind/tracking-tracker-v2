@@ -624,6 +624,8 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                         formatComparisonDate={formatComparisonDate}
                     />
 
+                    {/* TODO: Re-enable after migrating to native APIs */}
+
                     {/* Customer Segmentation Charts */}
                     {/* Temporarily disabled - needs migration to native APIs */}
                     {/* <CustomerSegmentationCharts 

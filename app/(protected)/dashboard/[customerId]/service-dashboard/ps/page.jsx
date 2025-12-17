@@ -32,7 +32,7 @@ export default async function PaidSocialDashboardPage({ params }) {
             throw new Error("TEMP_FACEBOOK_API_TOKEN environment variable is not set");
         }
         
-        const adAccountId = facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID;
+        const adAccountId = facebookAdAccountId;
         if (!adAccountId) {
             throw new Error("Facebook Ad Account ID is not configured for this customer");
         }

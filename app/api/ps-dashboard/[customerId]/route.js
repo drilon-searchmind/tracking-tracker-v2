@@ -34,7 +34,7 @@ export async function GET(request, { params }) {
         // Facebook Ads API configuration
         const facebookAdsConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId,
             startDate,
             endDate
         };

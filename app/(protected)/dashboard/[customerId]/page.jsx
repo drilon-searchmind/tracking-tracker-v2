@@ -18,6 +18,8 @@ export default async function OverviewPage({ params, searchParams }) {
     try {
         const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId } = await fetchCustomerDetails(customerId);
 
+        console.log("::: Customer details:", { customerName, customerValutaCode, shopifyUrl, facebookAdAccountId, googleAdsCustomerId });
+
         // Get dates from search params or use defaults
         const today = new Date();
         const yesterday = new Date(today);
@@ -59,7 +61,7 @@ export default async function OverviewPage({ params, searchParams }) {
         // Facebook Ads API configuration
         const facebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId,
             startDate: startDate,
             endDate: endDate
         };
@@ -67,7 +69,7 @@ export default async function OverviewPage({ params, searchParams }) {
         // Last year Facebook Ads configuration
         const lastYearFacebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId,
             startDate: formatDate(lastYearStartDate),
             endDate: formatDate(lastYearEndDate)
         };
@@ -75,7 +77,7 @@ export default async function OverviewPage({ params, searchParams }) {
         // 2 years ago Facebook Ads configuration
         const twoYearsAgoFacebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId,
             startDate: formatDate(twoYearsAgoStartDate),
             endDate: formatDate(twoYearsAgoEndDate)
         };

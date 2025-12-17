@@ -87,7 +87,7 @@ export default async function PacePage({ params }) {
         // Facebook Ads API configuration
         const facebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
-            adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+            adAccountId: facebookAdAccountId,
             startDate: startDateStr,
             endDate: endDateStr
         };

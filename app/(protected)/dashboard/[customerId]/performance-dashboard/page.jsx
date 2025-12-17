@@ -83,7 +83,7 @@ export default async function DashboardPage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
 
         // Get initial date range - fetch minimal data (just last 30 days to start)
         // The component will fetch more data dynamically when user changes dates
@@ -120,7 +120,8 @@ export default async function DashboardPage({ params }) {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
             adAccountId: facebookAdAccountId,
             startDate: startDateStr,
-            endDate: endDateStr
+            endDate: endDateStr,
+            countryCode: customerMetaID || undefined // Filter by country if specified
         };
 
         // Google Ads API configuration

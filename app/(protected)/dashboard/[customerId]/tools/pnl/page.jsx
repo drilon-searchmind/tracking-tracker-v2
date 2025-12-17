@@ -109,7 +109,7 @@ export default async function PnLPage({ params }) {
     }
 
     try {
-        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
 
         // Calculate date range for initial data (last 30 days)
         const today = new Date();
@@ -141,7 +141,8 @@ export default async function PnLPage({ params }) {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
             adAccountId: facebookAdAccountId,
             startDate: startDateStr,
-            endDate: endDateStr
+            endDate: endDateStr,
+            countryCode: customerMetaID || undefined // Filter by country if specified
         };
 
         // Google Ads API configuration

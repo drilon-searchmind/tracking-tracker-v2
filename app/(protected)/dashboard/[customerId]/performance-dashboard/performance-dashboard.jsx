@@ -217,30 +217,9 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                 setIsLoading(false);
                 setInitialLoadComplete(true);
                 
-                // Automatically fetch data with comparison period
-                const end = new Date(dateEnd);
-                const start = new Date(dateStart);
-                const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-
-                let compStart, compEnd;
-                if (comparison === "Previous Year") {
-                    const compStartDate = new Date(start);
-                    compStartDate.setFullYear(compStartDate.getFullYear() - 1);
-                    const compEndDate = new Date(end);
-                    compEndDate.setFullYear(compEndDate.getFullYear() - 1);
-                    compStart = formatDate(compStartDate);
-                    compEnd = formatDate(compEndDate);
-                } else {
-                    const compStartDate = new Date(start);
-                    compStartDate.setDate(compStartDate.getDate() - daysDiff - 1);
-                    const compEndDate = new Date(end);
-                    compEndDate.setDate(compEndDate.getDate() - daysDiff - 1);
-                    compStart = formatDate(compStartDate);
-                    compEnd = formatDate(compEndDate);
-                }
-
-                console.log("Auto-fetching data for:", dateStart, "to", dateEnd, "with comparison:", compStart, "to", compEnd);
-                fetchPerformanceData(dateStart, dateEnd, compStart, compEnd);
+                // Don't fetch data automatically - we already have initialData from server
+                // Only fetch when user clicks Apply or changes comparison period
+                console.log("Initial data loaded from server, skipping automatic fetch");
             }, 100);
 
             return () => clearTimeout(timer);

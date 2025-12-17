@@ -30,13 +30,15 @@ export async function GET(request, { params }) {
         const customerSettings = await CustomerSettings.findOne({ customer: customerId });
         
         const facebookAdAccountId = customerSettings?.facebookAdAccountId || "";
+        const customerMetaID = customerSettings?.customerMetaID || "";
 
         // Facebook Ads API configuration
         const facebookAdsConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
             adAccountId: facebookAdAccountId,
             startDate,
-            endDate
+            endDate,
+            countryCode: customerMetaID || undefined // Filter by country if specified
         };
 
         // Validate environment variables

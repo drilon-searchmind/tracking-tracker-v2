@@ -9,7 +9,7 @@ export default async function PaidSocialDashboardPage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { customerName, facebookAdAccountId } = await fetchCustomerDetails(customerId);
+        const { customerName, facebookAdAccountId, customerMetaID } = await fetchCustomerDetails(customerId);
 
         // Calculate default date range (current month to yesterday)
         const today = new Date();
@@ -42,7 +42,8 @@ export default async function PaidSocialDashboardPage({ params }) {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
             adAccountId: adAccountId,
             startDate,
-            endDate
+            endDate,
+            countryCode: customerMetaID || undefined // Filter by country if specified
         };
 
         console.log(`[PS Dashboard] Fetching data for ${customerId} from ${startDate} to ${endDate}`);

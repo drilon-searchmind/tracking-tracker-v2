@@ -16,9 +16,9 @@ export default async function OverviewPage({ params, searchParams }) {
     console.log("::: Fetching customer with ID:", customerId);
 
     try {
-        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
 
-        console.log("::: Customer details:", { customerName, customerValutaCode, shopifyUrl, facebookAdAccountId, googleAdsCustomerId });
+        console.log("::: Customer details:", { customerName, customerValutaCode, shopifyUrl, facebookAdAccountId, googleAdsCustomerId, customerMetaID });
 
         // Get dates from search params or use defaults
         const today = new Date();
@@ -63,7 +63,8 @@ export default async function OverviewPage({ params, searchParams }) {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
             adAccountId: facebookAdAccountId,
             startDate: startDate,
-            endDate: endDate
+            endDate: endDate,
+            countryCode: customerMetaID || undefined // Filter by country if specified
         };
 
         // Last year Facebook Ads configuration
@@ -71,7 +72,8 @@ export default async function OverviewPage({ params, searchParams }) {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
             adAccountId: facebookAdAccountId,
             startDate: formatDate(lastYearStartDate),
-            endDate: formatDate(lastYearEndDate)
+            endDate: formatDate(lastYearEndDate),
+            countryCode: customerMetaID || undefined // Filter by country if specified
         };
 
         // 2 years ago Facebook Ads configuration
@@ -79,7 +81,8 @@ export default async function OverviewPage({ params, searchParams }) {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
             adAccountId: facebookAdAccountId,
             startDate: formatDate(twoYearsAgoStartDate),
-            endDate: formatDate(twoYearsAgoEndDate)
+            endDate: formatDate(twoYearsAgoEndDate),
+            countryCode: customerMetaID || undefined // Filter by country if specified
         };
 
         // Google Ads API configuration with OAuth 2.0

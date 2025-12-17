@@ -105,6 +105,7 @@ export async function GET(request, { params }) {
         const shopifyApiPassword = customerSettings?.shopifyApiPassword || "";
         const facebookAdAccountId = customerSettings?.facebookAdAccountId || "";
         const googleAdsCustomerId = customerSettings?.googleAdsCustomerId || "";
+        const customerMetaID = customerSettings?.customerMetaID || "";
 
         // Shopify API configuration
         const shopifyConfig = {
@@ -119,7 +120,8 @@ export async function GET(request, { params }) {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
             adAccountId: facebookAdAccountId,
             startDate,
-            endDate
+            endDate,
+            countryCode: customerMetaID || undefined // Filter by country if specified
         };
 
         // Google Ads API configuration

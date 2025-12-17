@@ -11,8 +11,14 @@ export default function RollUpChildCustomers({
     initialEndDate,
     onDataUpdate
 }) {
+    // Applied date range (used for API calls)
     const [startDate, setStartDate] = useState(initialStartDate);
     const [endDate, setEndDate] = useState(initialEndDate);
+    
+    // Temporary date range (for input fields before applying)
+    const [tempStartDate, setTempStartDate] = useState(initialStartDate);
+    const [tempEndDate, setTempEndDate] = useState(initialEndDate);
+    
     const [customerMetrics, setCustomerMetrics] = useState(initialCustomerMetrics || []);
     const [loading, setLoading] = useState(false);
 
@@ -83,6 +89,12 @@ export default function RollUpChildCustomers({
         }
     }, [customerMetrics, onDataUpdate]);
 
+    // Handle Apply button click
+    const handleApply = () => {
+        setStartDate(tempStartDate);
+        setEndDate(tempEndDate);
+    };
+
     return (
         <div className="bg-white rounded-xl shadow-solid-l border border-gray-100 p-6 mb-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
@@ -98,17 +110,24 @@ export default function RollUpChildCustomers({
                     <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
                         <input
                             type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
+                            value={tempStartDate}
+                            onChange={(e) => setTempStartDate(e.target.value)}
                             className="border border-gray-300 px-3 py-2 rounded-lg text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors"
                         />
                         <span className="text-[var(--color-green)] text-sm font-medium">to</span>
                         <input
                             type="date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
+                            value={tempEndDate}
+                            onChange={(e) => setTempEndDate(e.target.value)}
                             className="border border-gray-300 px-3 py-2 rounded-lg text-sm focus:border-[var(--color-lime)] focus:outline-none transition-colors"
                         />
+                        <button
+                            onClick={handleApply}
+                            disabled={loading}
+                            className="px-4 py-2 bg-[var(--color-dark-green)] text-white rounded-lg text-sm font-medium hover:bg-[var(--color-green)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Apply
+                        </button>
                     </div>
                 </div>
             </div>

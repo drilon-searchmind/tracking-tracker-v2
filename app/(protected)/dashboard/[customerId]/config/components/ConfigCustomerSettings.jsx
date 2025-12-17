@@ -106,6 +106,7 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     excludeMetaCountries: apiData.customerMetaIDExclude || "",
                     parentCustomer: customerData.parentCustomer?._id || "",
                     changeCurrency: apiData.changeCurrency !== undefined ? apiData.changeCurrency : true,
+                    customerRevenueType: apiData.customerRevenueType || "total_sales",
                     shopifyUrl: apiData.shopifyUrl || "",
                     shopifyApiPassword: apiData.shopifyApiPassword || "",
                     facebookAdAccountId: apiData.facebookAdAccountId || "",
@@ -123,6 +124,7 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     excludeMetaCountries: "",
                     parentCustomer: "",
                     changeCurrency: true,
+                    customerRevenueType: "total_sales",
                     shopifyUrl: "",
                     shopifyApiPassword: "",
                     facebookAdAccountId: "",
@@ -203,6 +205,7 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                 customerMetaID: settings.metaCustomerCountry,
                 customerMetaIDExclude: settings.excludeMetaCountries,
                 changeCurrency: settings.changeCurrency ?? true,
+                customerRevenueType: settings.customerRevenueType || "total_sales",
                 shopifyUrl: settings.shopifyUrl || "",
                 shopifyApiPassword: settings.shopifyApiPassword || "",
                 facebookAdAccountId: settings.facebookAdAccountId || "",
@@ -393,6 +396,18 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                             <option value="SEK">Swedish Krona (SEK)</option>
                             <option value="NOK">Norwegian Krone (NOK)</option>
                             <option value="CHF">Swiss Franc (CHF)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Revenue Type</label>
+                        <select
+                            value={settings?.customerRevenueType || "total_sales"}
+                            onChange={(e) => setSettings({ ...settings, customerRevenueType: e.target.value })}
+                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                        >
+                            <option value="total_sales">Total Sales</option>
+                            <option value="net_sales">Net Sales</option>
                         </select>
                     </div>
 

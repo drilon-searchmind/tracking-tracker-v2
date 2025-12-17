@@ -17,6 +17,7 @@ export async function PUT(req, { params }) {
             customerMetaID,
             customerMetaIDExclude,
             changeCurrency,
+            customerRevenueType,
             shopifyUrl,
             shopifyApiPassword,
             facebookAdAccountId,
@@ -27,6 +28,10 @@ export async function PUT(req, { params }) {
             return new Response(JSON.stringify({ error: "Invalid metric preference" }), { status: 400 });
         }
 
+        if (customerRevenueType && !["total_sales", "net_sales"].includes(customerRevenueType)) {
+            return new Response(JSON.stringify({ error: "Invalid revenue type" }), { status: 400 });
+        }
+
         const updateData = {};
         if (metricPreference !== undefined) updateData.metricPreference = metricPreference;
         if (customerValuta !== undefined) updateData.customerValuta = customerValuta;
@@ -35,6 +40,7 @@ export async function PUT(req, { params }) {
         if (customerMetaID !== undefined) updateData.customerMetaID = customerMetaID;
         if (customerMetaIDExclude !== undefined) updateData.customerMetaIDExclude = customerMetaIDExclude;
         if (changeCurrency !== undefined) updateData.changeCurrency = changeCurrency;
+        if (customerRevenueType !== undefined) updateData.customerRevenueType = customerRevenueType;
         if (shopifyUrl !== undefined) updateData.shopifyUrl = shopifyUrl;
         if (shopifyApiPassword !== undefined) updateData.shopifyApiPassword = shopifyApiPassword;
         if (facebookAdAccountId !== undefined) updateData.facebookAdAccountId = facebookAdAccountId;
@@ -74,6 +80,7 @@ export async function GET(req, { params }) {
                 customerMetaID: "",
                 customerMetaIDExclude: "",
                 changeCurrency: true,
+                customerRevenueType: "total_sales",
                 shopifyUrl: "",
                 shopifyApiPassword: "",
                 facebookAdAccountId: "",

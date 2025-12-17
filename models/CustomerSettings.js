@@ -9,7 +9,8 @@ const CustomerSettingsSchema = new mongoose.Schema({
     customerMetaID: { type: String, default: "" },
     customerMetaIDExclude: { type: String, default: "" },
     changeCurrency: { type: Boolean, default: true },
-    
+    customerRevenueType: { type: String, enum: ["total_sales", "net_sales"], required: false, default: "total_sales" },
+
     shopifyUrl: { type: String, default: "" },
     shopifyApiPassword: { type: String, default: "" },
     facebookAdAccountId: { type: String, default: "" },

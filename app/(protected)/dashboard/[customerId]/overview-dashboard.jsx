@@ -80,6 +80,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
         }
     }, [initialData]);
 
+    /*
     useEffect(() => {
         const testSalesAnalytics = async () => {
             try {
@@ -97,6 +98,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
             testSalesAnalytics();
         }
     }, [customerId, startDate, endDate]);
+    */
 
     useEffect(() => {
         const fetchCustomerSettings = async () => {

@@ -1,6 +1,6 @@
 import OverviewDashboard from "./overview-dashboard";
 // import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
-import { fetchShopifyDashboardMetrics } from "@/lib/shopifyApi";
+import { fetchShopifySalesAnalyticsWithAds } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
@@ -166,8 +166,8 @@ export default async function OverviewPage({ params, searchParams }) {
             })
         ]);
 
-        // Fetch Shopify data and merge with all ad platforms data
-        const data = await fetchShopifyDashboardMetrics(
+        // Fetch Shopify sales analytics and merge with all ad platforms data
+        const data = await fetchShopifySalesAnalyticsWithAds(
             shopifyConfig, 
             facebookAdsData, 
             googleAdsData,

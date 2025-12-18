@@ -16,7 +16,7 @@ export default async function OverviewPage({ params, searchParams }) {
     console.log("::: Fetching customer with ID:", customerId);
 
     try {
-        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID, customerRevenueType } = await fetchCustomerDetails(customerId);
 
         console.log("::: Customer details:", { customerName, customerValutaCode, shopifyUrl, facebookAdAccountId, googleAdsCustomerId, customerMetaID });
 
@@ -186,12 +186,14 @@ export default async function OverviewPage({ params, searchParams }) {
 
         console.log("::: Successfully fetched", overview_metrics.length, "days of data");
 
+        // Pass customerRevenueType to OverviewDashboard
         return (
             <OverviewDashboard
                 customerId={customerId}
                 customerName={customerName}
                 customerValutaCode={customerValutaCode}
                 initialData={{ overview_metrics, totals, last_year_totals, last_year_metrics, two_years_ago_totals }}
+                customerRevenueType={customerRevenueType} // Added this prop
             />
         );
     } catch (error) {

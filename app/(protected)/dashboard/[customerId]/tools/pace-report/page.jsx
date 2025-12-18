@@ -18,6 +18,7 @@ function mergePaceReportData(salesData, facebookAdsData, googleAdsData) {
             date: row.day,
             orders: parseInt(row.orders) || 0,
             revenue: parseFloat(row.total_sales) || 0,
+            net_sales: parseFloat(row.net_sales) || 0, // Include net_sales
             ad_spend: 0,
         };
     });
@@ -57,7 +58,7 @@ export default async function PacePage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, customerRevenueType, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
 
         // Calculate date range for initial data (last 30 days)
         const today = new Date();
@@ -132,6 +133,7 @@ export default async function PacePage({ params }) {
                 customerId={customerId}
                 customerName={customerName}
                 customerValutaCode={customerValutaCode}
+                customerRevenueType={customerRevenueType} // Pass customerRevenueType
                 initialData={{ daily_metrics }}
             />
         );

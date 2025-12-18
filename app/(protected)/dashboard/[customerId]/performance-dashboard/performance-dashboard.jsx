@@ -80,7 +80,7 @@ ChartJS.register(
     ChartDataLabels,
 );
 
-export default function PerformanceDashboard({ customerId, customerName, customerValutaCode, initialData }) {
+export default function PerformanceDashboard({ customerId, customerName, customerValutaCode, initialData, customerRevenueType }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -135,8 +135,16 @@ export default function PerformanceDashboard({ customerId, customerName, custome
     }, [customerId]);
 
     const data = useMemo(() => {
-        return Array.isArray(fetchedData) ? fetchedData.map(row => convertDataRow(row, customerValutaCode, changeCurrency)) : [];
-    }, [fetchedData, customerValutaCode, changeCurrency]);
+        return Array.isArray(fetchedData)
+            ? fetchedData.map(row => {
+                  const convertedRow = convertDataRow(row, customerValutaCode, changeCurrency);
+                  return {
+                      ...convertedRow,
+                      revenue: customerRevenueType === "net_sales" ? convertedRow.net_sales : convertedRow.revenue,
+                  };
+              })
+            : [];
+    }, [fetchedData, customerValutaCode, changeCurrency, customerRevenueType]);
 
     useEffect(() => {
         if (initialData) {
@@ -471,6 +479,8 @@ export default function PerformanceDashboard({ customerId, customerName, custome
         );
     }
 
+    const tableHeader = customerRevenueType === "net_sales" ? "Net Sales" : "Revenue";
+
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
             {/* Loading Overlay - positioned at top level */}
@@ -573,6 +583,7 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                         currentMetrics={currentMetrics}
                         prevMetrics={prevMetrics}
                         customerId={customerId}
+                        tableHeader={tableHeader}
                     />
 
                     {/* Charts */}
@@ -601,6 +612,7 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                         comparison={comparison}
                         formatMonthLabel={formatMonthLabel}
                         formatComparisonDate={formatComparisonDate}
+                        tableHeader={tableHeader}
                     />
 
                     {/* TODO: Re-enable after migrating to native APIs */}

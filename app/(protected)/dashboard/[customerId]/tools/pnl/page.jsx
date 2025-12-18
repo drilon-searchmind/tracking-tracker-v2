@@ -1,4 +1,3 @@
-
 import PnLDashboard from "./pnl-dashboard";
 import { fetchShopifySalesAnalyticsWithAds } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
@@ -46,7 +45,7 @@ export default async function PnLPage({ params }) {
     }
 
     try {
-        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID, customerRevenueType } = await fetchCustomerDetails(customerId);
 
         // Calculate date range for initial data (last 30 days)
         const today = new Date();
@@ -108,7 +107,10 @@ export default async function PnLPage({ params }) {
 
         // Use new ShopifyQL analytics with ad data merge
         const analyticsResult = await fetchShopifySalesAnalyticsWithAds(shopifyConfig, facebookAdsData, googleAdsData);
-        const metrics_by_date = analyticsResult?.overview_metrics || [];
+        const metrics_by_date = analyticsResult?.overview_metrics.map(metric => ({
+            ...metric,
+            net_sales: metric.net_sales || 0 // Ensure net_sales is included
+        })) || [];
 
         console.log(`[P&L] Fetched ${metrics_by_date.length} days of initial data for ${customerId}`);
 
@@ -118,6 +120,7 @@ export default async function PnLPage({ params }) {
                 customerName={customerName}
                 customerValutaCode={customerValutaCode}
                 initialData={{ metrics_by_date, staticExpenses }}
+                customerRevenueType={customerRevenueType}
             />
         );
     } catch (error) {

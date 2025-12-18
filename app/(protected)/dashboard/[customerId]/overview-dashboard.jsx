@@ -43,7 +43,7 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     return convertedRow;
 };
 
-export default function OverviewDashboard({ customerId, customerName, customerValutaCode, initialData }) {
+export default function OverviewDashboard({ customerId, customerName, customerValutaCode, initialData, customerRevenueType }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
@@ -157,12 +157,11 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
         return overview_metrics
             .sort((a, b) => a.date.localeCompare(b.date))
             .map(row => {
-                // First convert currency for revenue fields
                 const convertedRow = convertDataRow(row, customerValutaCode, changeCurrency);
 
-                // Then calculate metrics using converted revenue values
                 return {
                     ...convertedRow,
+                    revenue: customerRevenueType === "net_sales" ? convertedRow.net_sales : convertedRow.revenue,
                     spendshare: convertedRow.revenue_ex_tax > 0 ? (convertedRow.ppc_cost + convertedRow.ps_cost) / convertedRow.revenue_ex_tax : 0,
                     spendshare_db: convertedRow.revenue_ex_tax > 0 ? (convertedRow.ppc_cost + convertedRow.ps_cost) / (0.7 * convertedRow.revenue_ex_tax) : 0,
                     roas: (convertedRow.ppc_cost + convertedRow.ps_cost) > 0 ? convertedRow.revenue / (convertedRow.ppc_cost + convertedRow.ps_cost) : 0,
@@ -171,7 +170,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                     aov: convertedRow.orders > 0 ? convertedRow.revenue / convertedRow.orders : 0,
                 };
             });
-    }, [overview_metrics, customerValutaCode, changeCurrency]);
+    }, [overview_metrics, customerValutaCode, changeCurrency, customerRevenueType]);
 
     const filteredTotals = useMemo(() => {
         return filteredMetrics.reduce(
@@ -429,6 +428,8 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
         setExpandedLastYearRows({});
     }, [startDate, endDate]);
 
+    const tableHeader = customerRevenueType === "net_sales" ? "NET SALES" : "REVENUE";
+
     return (
         <ClickUpUsersProvider>
             <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden">
@@ -512,7 +513,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                             <tr className="text-[var(--color-dark-green)] uppercase font-medium">
                                                 <th className="px-2 py-3">Date</th>
                                                 <th className="px-2 py-3">Orders</th>
-                                                <th className="px-2 py-3">Revenue</th>
+                                                <th className="px-2 py-3">{tableHeader}</th>
                                                 <th className="px-2 py-3">Revenue Ex Tax</th>
                                                 <th className="px-2 py-3">PPC Cost</th>
                                                 <th className="px-2 py-3">PS Cost</th>
@@ -810,7 +811,7 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                     <tr className="text-[var(--color-dark-green)] uppercase text-xs font-medium">
                                         <th className="px-2 py-2 font-medium">Date</th>
                                         <th className="px-2 py-2 font-medium">Orders</th>
-                                        <th className="px-2 py-2 font-medium">Revenue</th>
+                                        <th className="px-2 py-2 font-medium">{tableHeader}</th>
                                         <th className="px-2 py-2 font-medium">Revenue Ex Tax</th>
                                         <th className="px-2 py-2 font-medium">PPC Cost</th>
                                         <th className="px-2 py-2 font-medium">PS Cost</th>
@@ -1056,15 +1057,15 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between border-b border-gray-100 py-1">
-                                                    <span className="text-[var(--color-green)]">{metricView === "roas" ? "ROAS:" : "Spendshare:"}</span>
-                                                    <span style={getHeatmapStyle(metricView === "roas" ? row.roas : row.spendshare, metricView === "roas" ? 'roas' : 'spendshare', true)}>
-                                                        {metricView === "roas" ? row.roas.toFixed(2) : `${(row.spendshare * 100).toFixed(2)}%`}
+                                                    <span className="text-[var(--color-green)]">{metricView === "ROAS/POAS" ? "ROAS:" : "Spendshare:"}</span>
+                                                    <span style={getHeatmapStyle(metricView === "ROAS/POAS" ? row.roas : row.spendshare, metricView === "ROAS/POAS" ? 'roas' : 'spendshare', true)}>
+                                                        {metricView === "ROAS/POAS" ? row.roas.toFixed(2) : `${(row.spendshare * 100).toFixed(2)}%`}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between border-b border-gray-100 py-1">
                                                     <span className="text-[var(--color-green)]">{metricView === "roas" ? "POAS:" : "Spendshare DB:"}</span>
-                                                    <span style={getHeatmapStyle(metricView === "roas" ? row.poas : row.spendshare_db, metricView === "roas" ? 'poas' : 'spendshare_db', true)}>
-                                                        {metricView === "roas" ? row.poas.toFixed(2) : `${(row.spendshare_db * 100).toFixed(2)}%`}
+                                                    <span style={getHeatmapStyle(metricView === "ROAS/POAS" ? row.poas : row.spendshare_db, metricView === "ROAS/POAS" ? 'poas' : 'spendshare_db', true)}>
+                                                        {metricView === "ROAS/POAS" ? row.poas.toFixed(2) : `${(row.spendshare_db * 100).toFixed(2)}%`}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between border-b border-gray-100 py-1">

@@ -39,7 +39,7 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     return convertedRow;
 };
 
-export default function PnLDashboard({ customerId, customerName, customerValutaCode, initialData }) {
+export default function PnLDashboard({ customerId, customerName, customerValutaCode, initialData, customerRevenueType }) {
     const [isClient, setIsClient] = useState(false);
     const [showAllMetrics, setShowAllMetrics] = useState(false);
     const [changeCurrency, setChangeCurrency] = useState(true);
@@ -207,44 +207,46 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
 
 
 
-    const metricsDisplay = [
-        {
-            label: "Net Sales",
-            value: metrics.net_sales ? Math.round(metrics.net_sales).toLocaleString('en-US') : "0",
-        },
-        {
-            label: "Orders",
-            value: metrics.orders ? Math.round(metrics.orders).toLocaleString('en-US') : "0",
-        },
-        {
-            label: "COGS",
-            value: metrics.cogs ? Math.round(metrics.cogs).toLocaleString('en-US') : "0",
-        },
-        {
-            label: "Shipping",
-            value: metrics.shipping_cost ? Math.round(metrics.shipping_cost).toLocaleString('en-US') : "0",
-        },
-        {
-            label: "Transaction Costs",
-            value: metrics.transaction_cost ? Math.round(metrics.transaction_cost).toLocaleString('en-US') : "0",
-        },
-        {
-            label: "Marketing Spend",
-            value: metrics.marketing_spend ? Math.round(metrics.marketing_spend).toLocaleString('en-US') : "0",
-        },
-        {
-            label: "Marketing Bureau",
-            value: metrics.marketing_bureau_cost ? Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US') : "0",
-        },
-        {
-            label: "Marketing Tooling",
-            value: metrics.marketing_tooling_cost ? Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US') : "0",
-        },
-        {
-            label: "Fixed Expenses",
-            value: metrics.fixed_expenses ? Math.round(metrics.fixed_expenses).toLocaleString('en-US') : "0",
-        },
-    ];
+    const metricsDisplay = useMemo(() => {
+        return [
+            {
+                label: customerRevenueType === "net_sales" ? "Net Sales" : "Total Sales",
+                value: metrics.net_sales ? Math.round(metrics.net_sales).toLocaleString('en-US') : "0",
+            },
+            {
+                label: "Orders",
+                value: metrics.orders ? Math.round(metrics.orders).toLocaleString('en-US') : "0",
+            },
+            {
+                label: "COGS",
+                value: metrics.cogs ? Math.round(metrics.cogs).toLocaleString('en-US') : "0",
+            },
+            {
+                label: "Shipping",
+                value: metrics.shipping_cost ? Math.round(metrics.shipping_cost).toLocaleString('en-US') : "0",
+            },
+            {
+                label: "Transaction Costs",
+                value: metrics.transaction_cost ? Math.round(metrics.transaction_cost).toLocaleString('en-US') : "0",
+            },
+            {
+                label: "Marketing Spend",
+                value: metrics.marketing_spend ? Math.round(metrics.marketing_spend).toLocaleString('en-US') : "0",
+            },
+            {
+                label: "Marketing Bureau",
+                value: metrics.marketing_bureau_cost ? Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US') : "0",
+            },
+            {
+                label: "Marketing Tooling",
+                value: metrics.marketing_tooling_cost ? Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US') : "0",
+            },
+            {
+                label: "Fixed Expenses",
+                value: metrics.fixed_expenses ? Math.round(metrics.fixed_expenses).toLocaleString('en-US') : "0",
+            },
+        ];
+    }, [metrics, customerRevenueType]);
 
     if (!metrics_by_date || !staticExpenses) {
         return (
@@ -418,11 +420,11 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             {/* Bruttoomsætning */}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="gross-sales-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Gross turnover</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.gross_sales || metrics.net_sales).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.net_sales || 0).toLocaleString('en-US')}</span>
                             </div>
                             {isClient && (
                                 <Tooltip id="gross-sales-tooltip" place="top">
-                                    Gross sales before discounts and returns (total line items price)
+                                    Net sales represents total revenue minus discounts and returns
                                 </Tooltip>
                             )}
 

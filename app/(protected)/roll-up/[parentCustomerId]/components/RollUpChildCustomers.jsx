@@ -9,7 +9,8 @@ export default function RollUpChildCustomers({
     parentCustomerId,
     initialStartDate,
     initialEndDate,
-    onDataUpdate
+    onDataUpdate,
+    customerRevenueType // Added prop for revenue type
 }) {
     // Applied date range (used for API calls)
     const [startDate, setStartDate] = useState(initialStartDate);
@@ -143,7 +144,10 @@ export default function RollUpChildCustomers({
                 <div className="space-y-3">
                     {childCustomers.map((customer) => {
                         const customerMetric = customerMetrics?.find(m => m.customer_id === customer._id) || {};
-                        
+                        const revenueMetric = customerMetric.customerRevenueType === "net_sales" 
+                            ? customerMetric.net_sales 
+                            : customerMetric.revenue; // Adjusted to use customer-specific revenue type from API response
+
                         return (
                             <div key={customer._id} className="flex items-center p-4 bg-[var(--color-natural)] rounded-lg hover:bg-gray-100 transition-colors">
                                 <div className="flex items-center gap-3 min-w-[20%] max-w-[20%] overflow-hidden">
@@ -156,9 +160,9 @@ export default function RollUpChildCustomers({
                                 <div className="flex items-center gap-10 text-sm ml-6">
                                     <div className="text-left">
                                         <div className="text-xl font-bold text-[var(--color-dark-green)]">
-                                            {formatCurrency(customerMetric.revenue)}
+                                            {formatCurrency(revenueMetric)}
                                         </div>
-                                        <div className="text-xs text-gray-500">Revenue</div>
+                                        <div className="text-xs text-gray-500">Revenue ({customerMetric.customerRevenueType})</div>
                                     </div>
                                     <div className="text-left">
                                         <div className="text-xl font-bold text-[var(--color-dark-green)]">
@@ -195,6 +199,12 @@ export default function RollUpChildCustomers({
                                         className="text-xs bg-[var(--color-dark-green)] text-white px-3 py-1 rounded-full hover:bg-[var(--color-green)] transition-colors whitespace-nowrap"
                                     >
                                         View Dashboard
+                                    </a>
+                                    <a 
+                                        href={`/dashboard/${customer._id}/config`}
+                                        className="text-xs text-black border border-[var(--color-dark-green)] px-3 py-1 rounded-full hover:bg-[var(--color-green)] transition-colors whitespace-nowrap hover:text-white"
+                                    >
+                                        Config
                                     </a>
                                 </div>
                             </div>

@@ -1,5 +1,5 @@
 import PnLDashboard from "./pnl-dashboard";
-import { fetchShopifyPnLMetrics } from "@/lib/shopifyApi";
+import { fetchShopifySalesAnalyticsWithAds } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
@@ -11,71 +11,7 @@ export const revalidate = 3600; // ISR: Revalidate every hour
 /**
  * Helper function to merge Shopify, Facebook Ads, and Google Ads data for P&L
  */
-function mergePnLData(shopifyMetrics, facebookAdsData, googleAdsData) {
-    const dataByDate = {};
-
-    // Process Shopify data
-    shopifyMetrics.forEach(row => {
-        dataByDate[row.date] = {
-            date: row.date,
-            net_sales: row.net_sales || 0,
-            gross_sales: row.gross_sales || 0,
-            total_discounts: row.total_discounts || 0,
-            total_refunds: row.total_refunds || 0,
-            shipping_fees: row.shipping_fees || 0,
-            total_taxes: row.total_taxes || 0,
-            orders: row.orders || 0,
-            marketing_spend_facebook: 0,
-            marketing_spend_google: 0,
-            total_marketing_spend: 0,
-        };
-    });
-
-    // Add Facebook Ads data
-    facebookAdsData.forEach(row => {
-        if (!dataByDate[row.date]) {
-            dataByDate[row.date] = {
-                date: row.date,
-                net_sales: 0,
-                gross_sales: 0,
-                total_discounts: 0,
-                total_refunds: 0,
-                shipping_fees: 0,
-                total_taxes: 0,
-                orders: 0,
-                marketing_spend_facebook: 0,
-                marketing_spend_google: 0,
-                total_marketing_spend: 0,
-            };
-        }
-        dataByDate[row.date].marketing_spend_facebook = row.ps_cost || 0;
-        dataByDate[row.date].total_marketing_spend += row.ps_cost || 0;
-    });
-
-    // Add Google Ads data
-    googleAdsData.forEach(row => {
-        if (!dataByDate[row.date]) {
-            dataByDate[row.date] = {
-                date: row.date,
-                net_sales: 0,
-                gross_sales: 0,
-                total_discounts: 0,
-                total_refunds: 0,
-                shipping_fees: 0,
-                total_taxes: 0,
-                orders: 0,
-                marketing_spend_facebook: 0,
-                marketing_spend_google: 0,
-                total_marketing_spend: 0,
-            };
-        }
-        dataByDate[row.date].marketing_spend_google = row.ppc_cost || 0;
-        dataByDate[row.date].total_marketing_spend += row.ppc_cost || 0;
-    });
-
-    const result = Object.values(dataByDate);
-    return result.sort((a, b) => a.date.localeCompare(b.date));
-}
+// No merge function needed, handled in fetchShopifySalesAnalyticsWithAds
 
 export default async function PnLPage({ params }) {
     const resolvedParams = await params;
@@ -109,7 +45,7 @@ export default async function PnLPage({ params }) {
     }
 
     try {
-        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID, customerRevenueType } = await fetchCustomerDetails(customerId);
 
         // Calculate date range for initial data (last 30 days)
         const today = new Date();
@@ -157,12 +93,8 @@ export default async function PnLPage({ params }) {
             endDate: endDateStr
         };
 
-        // Fetch initial data (last 30 days) in parallel
-        const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
-            fetchShopifyPnLMetrics(shopifyConfig).catch(err => {
-                console.error("Failed to fetch Shopify data:", err.message);
-                return [];
-            }),
+        // Fetch initial data (last 30 days) in parallel using ShopifyQL analytics
+        const [facebookAdsData, googleAdsData] = await Promise.all([
             fetchFacebookAdsMetrics(facebookConfig).catch(err => {
                 console.error("Failed to fetch Facebook Ads data:", err.message);
                 return [];
@@ -173,8 +105,12 @@ export default async function PnLPage({ params }) {
             })
         ]);
 
-        // Merge all data sources
-        const metrics_by_date = mergePnLData(shopifyMetrics, facebookAdsData, googleAdsData);
+        // Use new ShopifyQL analytics with ad data merge
+        const analyticsResult = await fetchShopifySalesAnalyticsWithAds(shopifyConfig, facebookAdsData, googleAdsData);
+        const metrics_by_date = analyticsResult?.overview_metrics.map(metric => ({
+            ...metric,
+            net_sales: metric.net_sales || 0 // Ensure net_sales is included
+        })) || [];
 
         console.log(`[P&L] Fetched ${metrics_by_date.length} days of initial data for ${customerId}`);
 
@@ -184,6 +120,7 @@ export default async function PnLPage({ params }) {
                 customerName={customerName}
                 customerValutaCode={customerValutaCode}
                 initialData={{ metrics_by_date, staticExpenses }}
+                customerRevenueType={customerRevenueType}
             />
         );
     } catch (error) {

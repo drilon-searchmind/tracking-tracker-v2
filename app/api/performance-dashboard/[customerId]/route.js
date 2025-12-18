@@ -1,23 +1,29 @@
 import { NextResponse } from "next/server";
-import { fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
+import { fetchShopifySalesAnalytics } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { dbConnect } from "@/lib/dbConnect";
 import CustomerSettings from "@/models/CustomerSettings";
 
 /**
- * Helper function to merge Shopify, Facebook Ads, and Google Ads data
+ * Helper function to merge Shopify sales analytics, Facebook Ads, and Google Ads data
  */
-function mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData) {
+function mergePerformanceData(salesData, facebookAdsData, googleAdsData) {
     const dataByDate = {};
 
-    // Process Shopify data
-    shopifyMetrics.forEach(row => {
-        dataByDate[row.date] = {
-            date: row.date,
-            revenue: row.revenue || 0,
-            gross_profit: (row.revenue || 0) * 0.3, // 30% gross profit margin
-            orders: row.orders || 0,
+    // Process Shopify sales data (from ShopifyQL)
+    salesData.forEach(row => {
+        dataByDate[row.day] = {
+            date: row.day,
+            revenue: parseFloat(row.total_sales) || 0,
+            gross_profit: (parseFloat(row.total_sales) || 0) * 0.3, // 30% gross profit margin
+            orders: parseInt(row.orders) || 0,
+            gross_sales: parseFloat(row.gross_sales) || 0,
+            discounts: parseFloat(row.discounts) || 0,
+            returns: parseFloat(row.returns) || 0,
+            net_sales: parseFloat(row.net_sales) || 0,
+            shipping_charges: parseFloat(row.shipping_charges) || 0,
+            taxes: parseFloat(row.taxes) || 0,
             google_ads_cost: 0,
             meta_spend: 0,
             cost: 0,
@@ -34,6 +40,12 @@ function mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData) {
                 revenue: 0,
                 gross_profit: 0,
                 orders: 0,
+                gross_sales: 0,
+                discounts: 0,
+                returns: 0,
+                net_sales: 0,
+                shipping_charges: 0,
+                taxes: 0,
                 google_ads_cost: 0,
                 meta_spend: 0,
                 cost: 0,
@@ -53,6 +65,12 @@ function mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData) {
                 revenue: 0,
                 gross_profit: 0,
                 orders: 0,
+                gross_sales: 0,
+                discounts: 0,
+                returns: 0,
+                net_sales: 0,
+                shipping_charges: 0,
+                taxes: 0,
                 google_ads_cost: 0,
                 meta_spend: 0,
                 cost: 0,
@@ -137,10 +155,10 @@ export async function GET(request, { params }) {
         };
 
         // Fetch all data in parallel
-        const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
-            fetchShopifyOrderMetrics(shopifyConfig).catch(err => {
-                console.error("Failed to fetch Shopify data:", err.message);
-                return [];
+        const [salesResult, facebookAdsData, googleAdsData] = await Promise.all([
+            fetchShopifySalesAnalytics(shopifyConfig).catch(err => {
+                console.error("Failed to fetch Shopify sales data:", err.message);
+                return { salesData: [], totals: {}, columns: [] };
             }),
             fetchFacebookAdsMetrics(facebookConfig).catch(err => {
                 console.error("Failed to fetch Facebook Ads data:", err.message);
@@ -152,8 +170,8 @@ export async function GET(request, { params }) {
             })
         ]);
 
-        // Merge all data sources
-        const data = mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData);
+        // Merge all data sources (use salesData from the result)
+        const data = mergePerformanceData(salesResult.salesData, facebookAdsData, googleAdsData);
 
         console.log(`[API] Successfully fetched ${data.length} days of performance data`);
 

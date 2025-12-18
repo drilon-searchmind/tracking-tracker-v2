@@ -7,7 +7,7 @@ import {
 } from "react-icons/hi2";
 import { FaMoneyCheckAlt } from "react-icons/fa";
 
-export default function DashboardMetrics({ currentMetrics, prevMetrics, customerId }) {
+export default function DashboardMetrics({ currentMetrics, prevMetrics, customerId, tableHeader }) {
     const [cogsPercentage, setCogsPercentage] = useState(0);
 
     // Debug logging
@@ -61,7 +61,7 @@ export default function DashboardMetrics({ currentMetrics, prevMetrics, customer
 
     const metrics = [
         {
-            title: "Revenue (Inc VAT)",
+            title: `${tableHeader} (Inc VAT)`,
             value: `${Math.round(currentMetrics.revenue).toLocaleString('en-US')} DKK`,
             delta: calculateDelta(currentMetrics.revenue, prevMetrics.revenue),
             positive: currentMetrics.revenue >= prevMetrics.revenue,

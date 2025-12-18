@@ -1,6 +1,6 @@
 import React from "react";
 import PerformanceDashboard from "./performance-dashboard";
-import { fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
+import { fetchShopifySalesAnalytics } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
@@ -8,19 +8,25 @@ import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 /**
- * Helper function to merge Shopify, Facebook Ads, and Google Ads data
+ * Helper function to merge Shopify sales analytics, Facebook Ads, and Google Ads data
  * Returns data in the format expected by the Performance Dashboard
  */
-function mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData) {
+function mergePerformanceData(salesData, facebookAdsData, googleAdsData) {
     const dataByDate = {};
 
-    // Process Shopify data
-    shopifyMetrics.forEach(row => {
-        dataByDate[row.date] = {
-            date: row.date,
-            revenue: row.revenue || 0,
-            gross_profit: (row.revenue || 0) * 0.3, // 30% gross profit margin (adjust as needed)
-            orders: row.orders || 0,
+    // Process Shopify sales data (from ShopifyQL)
+    salesData.forEach(row => {
+        dataByDate[row.day] = {
+            date: row.day,
+            revenue: parseFloat(row.total_sales) || 0,
+            gross_profit: (parseFloat(row.total_sales) || 0) * 0.3, // 30% gross profit margin (adjust as needed)
+            orders: parseInt(row.orders) || 0,
+            gross_sales: parseFloat(row.gross_sales) || 0,
+            discounts: parseFloat(row.discounts) || 0,
+            returns: parseFloat(row.returns) || 0,
+            net_sales: parseFloat(row.net_sales) || 0,
+            shipping_charges: parseFloat(row.shipping_charges) || 0,
+            taxes: parseFloat(row.taxes) || 0,
             google_ads_cost: 0,
             meta_spend: 0,
             cost: 0,
@@ -37,6 +43,12 @@ function mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData) {
                 revenue: 0,
                 gross_profit: 0,
                 orders: 0,
+                gross_sales: 0,
+                discounts: 0,
+                returns: 0,
+                net_sales: 0,
+                shipping_charges: 0,
+                taxes: 0,
                 google_ads_cost: 0,
                 meta_spend: 0,
                 cost: 0,
@@ -56,6 +68,12 @@ function mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData) {
                 revenue: 0,
                 gross_profit: 0,
                 orders: 0,
+                gross_sales: 0,
+                discounts: 0,
+                returns: 0,
+                net_sales: 0,
+                shipping_charges: 0,
+                taxes: 0,
                 google_ads_cost: 0,
                 meta_spend: 0,
                 cost: 0,
@@ -83,7 +101,7 @@ export default async function DashboardPage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, customerRevenueType, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
 
         // Get initial date range - fetch minimal data (just last 30 days to start)
         // The component will fetch more data dynamically when user changes dates
@@ -137,10 +155,10 @@ export default async function DashboardPage({ params }) {
         };
 
         // Fetch all data in parallel
-        const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
-            fetchShopifyOrderMetrics(shopifyConfig).catch(err => {
-                console.error("Failed to fetch Shopify data:", err.message);
-                return [];
+        const [salesResult, facebookAdsData, googleAdsData] = await Promise.all([
+            fetchShopifySalesAnalytics(shopifyConfig).catch(err => {
+                console.error("Failed to fetch Shopify sales data:", err.message);
+                return { salesData: [], totals: {}, columns: [] };
             }),
             fetchFacebookAdsMetrics(facebookConfig).catch(err => {
                 console.error("Failed to fetch Facebook Ads data:", err.message);
@@ -152,8 +170,8 @@ export default async function DashboardPage({ params }) {
             })
         ]);
 
-        // Merge all data sources
-        const data = mergePerformanceData(shopifyMetrics, facebookAdsData, googleAdsData);
+        // Merge all data sources (use salesData from the result)
+        const data = mergePerformanceData(salesResult.salesData, facebookAdsData, googleAdsData);
 
         if (!Array.isArray(data) || data.length === 0) {
             console.warn("No data returned for customerId:", customerId);
@@ -167,6 +185,7 @@ export default async function DashboardPage({ params }) {
                 customerId={customerId}
                 customerName={customerName}
                 customerValutaCode={customerValutaCode}
+                customerRevenueType={customerRevenueType} // Pass customerRevenueType
                 initialData={data}
             />
         );

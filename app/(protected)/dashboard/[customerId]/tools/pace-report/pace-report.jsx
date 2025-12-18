@@ -59,7 +59,7 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     return convertedRow;
 };
 
-export default function PaceReport({ customerId, customerName, customerValutaCode, initialData }) {
+export default function PaceReport({ customerId, customerName, customerValutaCode, initialData, customerRevenueType }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -160,21 +160,29 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     const filteredMetrics = useMemo(() => {
         const filtered = daily_metrics
             .filter(row => row.date >= dateStart && row.date <= dateEnd)
-            .map(row => convertDataRow(row, customerValutaCode, changeCurrency))
+            .map(row => {
+                const convertedRow = convertDataRow(row, customerValutaCode, changeCurrency);
+                return {
+                    ...convertedRow,
+                    revenue: customerRevenueType === "net_sales" ? convertedRow.net_sales : convertedRow.revenue,
+                };
+            })
             .sort((a, b) => a.date.localeCompare(b.date));
         return filtered;
-    }, [daily_metrics, dateStart, dateEnd, customerValutaCode, changeCurrency]);
+    }, [daily_metrics, dateStart, dateEnd, customerValutaCode, changeCurrency, customerRevenueType]);
 
     const cumulativeMetrics = useMemo(() => {
-        let cumOrders = 0, cumRevenue = 0, cumAdSpend = 0;
+        let cumOrders = 0, cumRevenue = 0, cumNetSales = 0, cumAdSpend = 0;
         const result = filteredMetrics.map(row => {
             cumOrders += Number(row.orders || 0);
             cumRevenue += Number(row.revenue || 0);
+            cumNetSales += Number(row.net_sales || 0); // Accumulate net_sales
             cumAdSpend += Number(row.ad_spend || 0);
             return {
                 date: row.date,
                 orders: cumOrders,
                 revenue: cumRevenue,
+                net_sales: cumNetSales, // Include net_sales in cumulative metrics
                 ad_spend: cumAdSpend,
                 roas: cumAdSpend > 0 ? cumRevenue / cumAdSpend : 0,
             };
@@ -226,6 +234,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         const result = {
             orders: aggregated.orders,
             revenue: aggregated.revenue,
+            net_sales: aggregated.net_sales || 0, // Ensure net_sales is included
             ad_spend: aggregated.ad_spend,
             roas: isFinite(aggregated.roas) ? aggregated.roas : 0,
             revenue_budget: revenueBudgetNum,
@@ -272,32 +281,25 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         ]
     };
 
+    const paceChartLabels = cumulativeMetrics.map(row => row.date);
+    const paceChartValues = cumulativeMetrics;
+
     const paceChartData = {
-        labels: cumulativeMetrics.map(row => row.date),
+        labels: paceChartLabels,
         datasets: [
             {
-                label: metric,
-                data: cumulativeMetrics.map(row => (metric === "Revenue" ? row.revenue : row.orders)),
-                borderColor: "#1e3a8a",
-                backgroundColor: "#1e3a8a",
-                fill: false,
-                tension: 0.3,
-                pointRadius: 0,
-                borderWidth: 2
+                label: customerRevenueType === 'net_sales' ? 'Net Sales' : 'Revenue',
+                data: paceChartValues.map(value => customerRevenueType === 'net_sales' ? value.net_sales : value.revenue),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
             },
             {
-                label: `${metric} Budget`,
-                data: cumulativeMetrics.map((_, i) => {
-                    const totalBudget = metric === "Revenue" ? totals.revenue_budget : totals.orders_budget;
-                    return totalBudget * ((i + 1) / cumulativeMetrics.length);
-                }),
-                borderColor: "#d1d5db",
-                backgroundColor: "#d1d5db",
-                fill: false,
-                borderDash: [5, 5],
-                tension: 0.3,
-                pointRadius: 0,
-                borderWidth: 2
+                label: 'Orders',
+                data: paceChartValues.map(value => value.orders),
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
             }
         ]
     };
@@ -418,7 +420,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                 {
                     label: `Current ${metric}`,
                     value: metric === "Revenue" 
-                        ? `kr. ${Math.round(totals.revenue).toLocaleString("en-US")}`
+                        ? `kr. ${Math.round(customerRevenueType === "net_sales" ? totals.net_sales : totals.revenue).toLocaleString("en-US")}`
                         : Math.round(totals.orders).toLocaleString("en-US")
                 },
                 {
@@ -667,7 +669,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                                 <p className="text-sm text-[var(--color-green)]">Current {metric}</p>
                                 <p className="text-lg font-semibold text-[var(--color-dark-green)]">
                                     {metric === "Revenue"
-                                        ? `kr. ${Math.round(totals.revenue).toLocaleString("en-US")}`
+                                        ? `kr. ${Math.round(customerRevenueType === "net_sales" ? totals.net_sales : totals.revenue).toLocaleString("en-US")}`
                                         : Math.round(totals.orders).toLocaleString("en-US")
                                     }
                                 </p>

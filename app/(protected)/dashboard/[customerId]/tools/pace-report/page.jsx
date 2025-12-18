@@ -1,5 +1,5 @@
 import PaceReport from "./pace-report";
-import { fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
+import { fetchShopifySalesAnalytics } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
@@ -9,15 +9,16 @@ export const revalidate = 3600; // ISR: Revalidate every hour
 /**
  * Helper function to merge Shopify, Facebook Ads, and Google Ads data for Pace Report
  */
-function mergePaceReportData(shopifyMetrics, facebookAdsData, googleAdsData) {
+function mergePaceReportData(salesData, facebookAdsData, googleAdsData) {
     const dataByDate = {};
 
-    // Process Shopify data
-    shopifyMetrics.forEach(row => {
-        dataByDate[row.date] = {
-            date: row.date,
-            orders: row.orders || 0,
-            revenue: row.revenue || 0,
+    // Process Shopify sales data (from ShopifyQL)
+    salesData.forEach(row => {
+        dataByDate[row.day] = {
+            date: row.day,
+            orders: parseInt(row.orders) || 0,
+            revenue: parseFloat(row.total_sales) || 0,
+            net_sales: parseFloat(row.net_sales) || 0, // Include net_sales
             ad_spend: 0,
         };
     });
@@ -57,7 +58,7 @@ export default async function PacePage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
+        const { customerName, customerValutaCode, customerRevenueType, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
 
         // Calculate date range for initial data (last 30 days)
         const today = new Date();
@@ -106,10 +107,11 @@ export default async function PacePage({ params }) {
         };
 
         // Fetch initial data (last 30 days) in parallel
-        const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
-            fetchShopifyOrderMetrics(shopifyConfig).catch(err => {
-                console.error("Failed to fetch Shopify data:", err.message);
-                return [];
+
+        const [salesResult, facebookAdsData, googleAdsData] = await Promise.all([
+            fetchShopifySalesAnalytics(shopifyConfig).catch(err => {
+                console.error("Failed to fetch Shopify sales data:", err.message);
+                return { salesData: [], totals: {}, columns: [] };
             }),
             fetchFacebookAdsMetrics(facebookConfig).catch(err => {
                 console.error("Failed to fetch Facebook Ads data:", err.message);
@@ -121,8 +123,8 @@ export default async function PacePage({ params }) {
             })
         ]);
 
-        // Merge all data sources
-        const daily_metrics = mergePaceReportData(shopifyMetrics, facebookAdsData, googleAdsData);
+        // Merge all data sources (use salesData from the result)
+        const daily_metrics = mergePaceReportData(salesResult.salesData, facebookAdsData, googleAdsData);
 
         console.log(`[Pace Report] Fetched ${daily_metrics.length} days of initial data for ${customerId}`);
 
@@ -131,6 +133,7 @@ export default async function PacePage({ params }) {
                 customerId={customerId}
                 customerName={customerName}
                 customerValutaCode={customerValutaCode}
+                customerRevenueType={customerRevenueType} // Pass customerRevenueType
                 initialData={{ daily_metrics }}
             />
         );

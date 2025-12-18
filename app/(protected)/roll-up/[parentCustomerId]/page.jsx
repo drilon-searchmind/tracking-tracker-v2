@@ -6,7 +6,7 @@ import RollUpChildCustomers from "./components/RollUpChildCustomers";
 import Subheading from "@/app/components/UI/Utility/Subheading";
 
 // Move server functions inside useEffect or separate API calls
-export default function RollUpPage({ params }) {
+export default function RollUpPage({ params, customerRevenueType }) {
     const [parentCustomer, setParentCustomer] = useState(null);
     const [childCustomers, setChildCustomers] = useState([]);
     const [summaryData, setSummaryData] = useState({
@@ -67,8 +67,9 @@ export default function RollUpPage({ params }) {
 
         // Aggregate the data from all customers
         const aggregated = customerMetrics.reduce((acc, customer) => {
+            const revenueMetric = customer.customerRevenueType === "net_sales" ? customer.net_sales : customer.revenue;
             return {
-                total_revenue: acc.total_revenue + (customer.revenue || 0),
+                total_revenue: acc.total_revenue + (revenueMetric || 0),
                 total_ad_spend: acc.total_ad_spend + (customer.total_ad_spend || 0),
                 total_orders: acc.total_orders + (customer.orders || 0),
             };
@@ -78,12 +79,22 @@ export default function RollUpPage({ params }) {
         const overall_roas = aggregated.total_ad_spend > 0 ? aggregated.total_revenue / aggregated.total_ad_spend : 0;
         const aov = aggregated.total_orders > 0 ? aggregated.total_revenue / aggregated.total_orders : 0;
 
-        setSummaryData({
-            ...aggregated,
-            overall_roas,
-            aov,
-            customer_metrics: customerMetrics
-        });
+        // Only update state if the data has changed
+        if (
+            aggregated.total_revenue !== summaryData.total_revenue ||
+            aggregated.total_ad_spend !== summaryData.total_ad_spend ||
+            aggregated.total_orders !== summaryData.total_orders ||
+            overall_roas !== summaryData.overall_roas ||
+            aov !== summaryData.aov ||
+            JSON.stringify(customerMetrics) !== JSON.stringify(summaryData.customer_metrics)
+        ) {
+            setSummaryData({
+                ...aggregated,
+                overall_roas,
+                aov,
+                customer_metrics: customerMetrics
+            });
+        }
     };
 
     useEffect(() => {
@@ -91,53 +102,57 @@ export default function RollUpPage({ params }) {
             try {
                 const resolvedParams = await params;
                 const id = resolvedParams.parentCustomerId;
-                setParentCustomerId(id);
 
-                // Fetch parent customer data
-                const parentResponse = await fetch(`/api/parent-customers`);
-                if (parentResponse.ok) {
-                    const parentCustomers = await parentResponse.json();
-                    const parent = parentCustomers.find(pc => pc._id === id);
-                    setParentCustomer(parent);
-                }
+                if (!parentCustomerId) {
+                    // Fetch parent customer data
+                    const parentResponse = await fetch(`/api/parent-customers`);
+                    if (parentResponse.ok) {
+                        const parentCustomers = await parentResponse.json();
+                        const parent = parentCustomers.find(pc => pc._id === id);
+                        setParentCustomer(parent);
+                    }
 
-                // Fetch child customers with settings
-                const customersResponse = await fetch(`/api/customers`);
-                if (customersResponse.ok) {
-                    const allCustomers = await customersResponse.json();
-                    const children = allCustomers.filter(customer => 
-                        customer.parentCustomer && 
-                        (customer.parentCustomer._id === id || customer.parentCustomer === id)
-                    );
+                    // Fetch child customers with settings
+                    const customersResponse = await fetch(`/api/customers`);
+                    if (customersResponse.ok) {
+                        const allCustomers = await customersResponse.json();
+                        const children = allCustomers.filter(customer => 
+                            customer.parentCustomer && 
+                            (customer.parentCustomer._id === id || customer.parentCustomer === id)
+                        );
 
-                    // Fetch settings for each child customer
-                    const customersWithSettings = await Promise.all(
-                        children.map(async (customer) => {
-                            try {
-                                const settingsResponse = await fetch(`/api/customer-settings/${customer._id}`);
-                                if (settingsResponse.ok) {
-                                    const settings = await settingsResponse.json();
-                                    return {
-                                        ...customer,
-                                        customerMetaID: settings.customerMetaID || "",
-                                        customerMetaIDExclude: settings.customerMetaIDExclude || "",
-                                        customerValutaCode: settings.customerValutaCode || "DKK"
-                                    };
+                        // Fetch settings for each child customer
+                        const customersWithSettings = await Promise.all(
+                            children.map(async (customer) => {
+                                try {
+                                    const settingsResponse = await fetch(`/api/customer-settings/${customer._id}`);
+                                    if (settingsResponse.ok) {
+                                        const settings = await settingsResponse.json();
+                                        return {
+                                            ...customer,
+                                            customerMetaID: settings.customerMetaID || "",
+                                            customerMetaIDExclude: settings.customerMetaIDExclude || "",
+                                            customerValutaCode: settings.customerValutaCode || "DKK",
+                                            customerRevenueType: settings.customerRevenueType || "revenue", // Include customerRevenueType
+                                        };
+                                    }
+                                } catch (error) {
+                                    console.error(`Error fetching settings for customer ${customer._id}:`, error);
                                 }
-                            } catch (error) {
-                                console.error(`Error fetching settings for customer ${customer._id}:`, error);
-                            }
-                            
-                            return {
-                                ...customer,
-                                customerMetaID: "",
-                                customerMetaIDExclude: "",
-                                customerValutaCode: "DKK"
-                            };
-                        })
-                    );
 
-                    setChildCustomers(customersWithSettings);
+                                return {
+                                    ...customer,
+                                    customerMetaID: "",
+                                    customerMetaIDExclude: "",
+                                    customerValutaCode: "DKK",
+                                    customerRevenueType: "revenue", // Default value
+                                };
+                            })
+                        );
+
+                        setChildCustomers(customersWithSettings);
+                        setParentCustomerId(id); // Set parentCustomerId after fetching data
+                    }
                 }
             } catch (error) {
                 console.error("Error initializing page:", error);
@@ -147,7 +162,7 @@ export default function RollUpPage({ params }) {
         };
 
         initializePage();
-    }, [params]);
+    }, []); // Ensure the effect runs only once on mount
 
     const parentCustomerName = parentCustomer?.name || "Parent Customer";
 
@@ -302,12 +317,17 @@ export default function RollUpPage({ params }) {
                             <div className="space-y-4">
                                 <h3 className="font-semibold text-[var(--color-dark-green)]">Customer Performance Distribution</h3>
                                 <div className="space-y-2">
-                                    {summaryData.customer_metrics?.slice(0, 5).map((customerMetric, index) => (
-                                        <div key={customerMetric.customer_id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                                            <span className="text-sm text-gray-600">{customerMetric.customer_name}:</span>
-                                            <span className="font-medium text-[var(--color-dark-green)]">{formatCurrency(customerMetric.revenue)}</span>
-                                        </div>
-                                    ))}
+                                    {summaryData.customer_metrics?.slice(0, 5).map((customerMetric, index) => {
+                                        const revenueMetric = customerMetric.customerRevenueType === "net_sales" ? customerMetric.net_sales : customerMetric.revenue;
+                                        return (
+                                            <div key={customerMetric.customer_id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                                <span className="text-sm text-gray-600">{customerMetric.customer_name}:</span>
+                                                <span className="font-medium text-[var(--color-dark-green)]">
+                                                    {formatCurrency(revenueMetric)} ({customerMetric.customerRevenueType === "net_sales" ? "Net Sales" : "Total Sales"})
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
                                     {summaryData.customer_metrics?.length === 0 && (
                                         <div className="flex justify-center items-center p-3 bg-gray-50 rounded">
                                             <span className="text-sm text-gray-500">No customer data available for selected period</span>

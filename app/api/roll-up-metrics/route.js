@@ -1,4 +1,4 @@
-import { fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
+import { fetchShopifySalesAnalyticsWithAds } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import currencyExchangeData from "../../../lib/static-data/currencyApiValues.json";
@@ -68,6 +68,9 @@ export async function POST(req) {
                 const googleAdsCustomerId = customerSettings?.googleAdsCustomerId || "";
                 const currencyCode = customerSettings?.customerValutaCode || "DKK";
                 const changeCurrency = customerSettings?.changeCurrency ?? true;
+                const customerRevenueType = customerSettings?.customerRevenueType || "revenue"; // Default to revenue if not set
+
+                console.log("customerRevenueType:", customerRevenueType, "for customer:", customer.name);
 
                 // Shopify API configuration
                 const shopifyConfig = {
@@ -97,12 +100,8 @@ export async function POST(req) {
                     endDate
                 };
 
-                // Fetch all data in parallel
-                const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
-                    fetchShopifyOrderMetrics(shopifyConfig).catch(err => {
-                        console.error(`Failed to fetch Shopify data for ${customer.name}:`, err.message);
-                        return [];
-                    }),
+                // Fetch all data in parallel (ShopifyQL analytics)
+                const [facebookAdsData, googleAdsData] = await Promise.all([
                     fetchFacebookAdsMetrics(facebookConfig).catch(err => {
                         console.error(`Failed to fetch Facebook Ads data for ${customer.name}:`, err.message);
                         return [];
@@ -113,56 +112,19 @@ export async function POST(req) {
                     })
                 ]);
 
-                // Merge data by date
-                const dataByDate = {};
-
-                // Process Shopify data
-                shopifyMetrics.forEach(row => {
-                    dataByDate[row.date] = {
-                        date: row.date,
-                        revenue: row.revenue || 0,
-                        orders: row.orders || 0,
-                        ps_cost: 0,
-                        ppc_cost: 0,
-                        total_ad_spend: 0,
-                    };
-                });
-
-                // Add Facebook Ads data
-                facebookAdsData.forEach(row => {
-                    if (!dataByDate[row.date]) {
-                        dataByDate[row.date] = {
-                            date: row.date,
-                            revenue: 0,
-                            orders: 0,
-                            ps_cost: 0,
-                            ppc_cost: 0,
-                            total_ad_spend: 0,
-                        };
-                    }
-                    dataByDate[row.date].ps_cost = row.ps_cost || 0;
-                    dataByDate[row.date].total_ad_spend += row.ps_cost || 0;
-                });
-
-                // Add Google Ads data
-                googleAdsData.forEach(row => {
-                    if (!dataByDate[row.date]) {
-                        dataByDate[row.date] = {
-                            date: row.date,
-                            revenue: 0,
-                            orders: 0,
-                            ps_cost: 0,
-                            ppc_cost: 0,
-                            total_ad_spend: 0,
-                        };
-                    }
-                    dataByDate[row.date].ppc_cost = row.ppc_cost || 0;
-                    dataByDate[row.date].total_ad_spend += row.ppc_cost || 0;
-                });
+                // Use new ShopifyQL analytics with ad data merge
+                const analyticsResult = await fetchShopifySalesAnalyticsWithAds(shopifyConfig, facebookAdsData, googleAdsData);
+                const overview_metrics = analyticsResult?.overview_metrics || [];
 
                 // Convert to array and apply currency conversion
-                const dailyData = Object.values(dataByDate).map(row => ({
-                    ...row,
+                const dailyData = overview_metrics.map(row => ({
+                    date: row.date,
+                    revenue: Number(row.revenue) || 0,
+                    net_sales: Number(row.net_sales) || 0, // Added net_sales
+                    orders: Number(row.orders) || 0,
+                    ps_cost: Number(row.ps_cost) || 0,
+                    ppc_cost: Number(row.ppc_cost) || 0,
+                    total_ad_spend: (Number(row.ps_cost) || 0) + (Number(row.ppc_cost) || 0),
                     customer_id: customer._id,
                     customer_name: customer.name,
                 }));
@@ -172,6 +134,7 @@ export async function POST(req) {
                     customer_name: customer.name,
                     currencyCode,
                     changeCurrency,
+                    customerRevenueType, // Include customerRevenueType in the response
                     dailyData
                 };
 
@@ -191,7 +154,7 @@ export async function POST(req) {
 
         // Aggregate the data by customer
         const aggregatedMetrics = customerDataResults.map(customerData => {
-            const { customer_id, customer_name, currencyCode, changeCurrency, dailyData } = customerData;
+            const { customer_id, customer_name, currencyCode, changeCurrency, dailyData, customerRevenueType } = customerData; // Destructure customerRevenueType
 
             // Sum up all daily metrics
             const totals = dailyData.reduce((acc, row) => {
@@ -200,30 +163,39 @@ export async function POST(req) {
                     ? convertCurrency(row.revenue, currencyCode, "DKK")
                     : row.revenue;
 
+                const net_sales = changeCurrency && currencyCode !== "DKK"
+                    ? convertCurrency(row.net_sales, currencyCode, "DKK")
+                    : row.net_sales;
+
                 return {
                     revenue: acc.revenue + revenue,
+                    net_sales: acc.net_sales + net_sales, // Added net_sales aggregation
                     orders: acc.orders + row.orders,
                     ps_cost: acc.ps_cost + row.ps_cost,
                     ppc_cost: acc.ppc_cost + row.ppc_cost,
                     total_ad_spend: acc.total_ad_spend + row.total_ad_spend,
                 };
-            }, { revenue: 0, orders: 0, ps_cost: 0, ppc_cost: 0, total_ad_spend: 0 });
+            }, { revenue: 0, net_sales: 0, orders: 0, ps_cost: 0, ppc_cost: 0, total_ad_spend: 0 });
 
             // Calculate derived metrics
             const roas = totals.total_ad_spend > 0 ? totals.revenue / totals.total_ad_spend : 0;
             const aov = totals.orders > 0 ? totals.revenue / totals.orders : 0;
 
+            console.log("net_sales total for", customer_name, ":", totals.net_sales);
+
             return {
                 customer_id,
                 customer_name,
                 revenue: totals.revenue,
+                net_sales: totals.net_sales, // Include net_sales in the aggregated response
                 orders: totals.orders,
                 total_ad_spend: totals.total_ad_spend,
                 ps_cost: totals.ps_cost,
                 ppc_cost: totals.ppc_cost,
                 roas,
                 aov,
-                days_with_data: dailyData.length
+                days_with_data: dailyData.length,
+                customerRevenueType // Include customerRevenueType in the aggregated response
             };
         });
 

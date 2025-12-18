@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchShopifyPnLMetrics } from "@/lib/shopifyApi";
+import { fetchShopifySalesAnalyticsWithAds } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { dbConnect } from "@/lib/dbConnect";
@@ -137,7 +137,7 @@ export async function GET(request, { params }) {
 
         // Fetch all data in parallel
         const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
-            fetchShopifyPnLMetrics(shopifyConfig).catch(err => {
+            fetchShopifySalesAnalyticsWithAds(shopifyConfig, facebookAdsData, googleAdsData).catch(err => {
                 console.error("Failed to fetch Shopify data:", err.message);
                 return [];
             }),

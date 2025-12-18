@@ -81,6 +81,24 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
     }, [initialData]);
 
     useEffect(() => {
+        const testSalesAnalytics = async () => {
+            try {
+                // You'll need to get the Shopify credentials - 
+                // either pass them from the page component or fetch them
+                const response = await fetch(`/api/shopify-sales-test?customerId=${customerId}&startDate=${startDate}&endDate=${endDate}`);
+                const data = await response.json();
+                console.log('Sales Analytics Response:', data);
+            } catch (error) {
+                console.error('Error fetching sales analytics:', error);
+            }
+        };
+
+        if (customerId && startDate && endDate) {
+            testSalesAnalytics();
+        }
+    }, [customerId, startDate, endDate]);
+
+    useEffect(() => {
         const fetchCustomerSettings = async () => {
             try {
                 const response = await fetch(`/api/customer-settings/${customerId}`);

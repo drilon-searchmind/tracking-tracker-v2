@@ -16,11 +16,20 @@ export async function PUT(req, { params }) {
             customerClickupID,
             customerMetaID,
             customerMetaIDExclude,
-            changeCurrency
+            changeCurrency,
+            customerRevenueType,
+            shopifyUrl,
+            shopifyApiPassword,
+            facebookAdAccountId,
+            googleAdsCustomerId
         } = body;
 
         if (metricPreference && !["ROAS/POAS", "Spendshare"].includes(metricPreference)) {
             return new Response(JSON.stringify({ error: "Invalid metric preference" }), { status: 400 });
+        }
+
+        if (customerRevenueType && !["total_sales", "net_sales"].includes(customerRevenueType)) {
+            return new Response(JSON.stringify({ error: "Invalid revenue type" }), { status: 400 });
         }
 
         const updateData = {};
@@ -31,6 +40,11 @@ export async function PUT(req, { params }) {
         if (customerMetaID !== undefined) updateData.customerMetaID = customerMetaID;
         if (customerMetaIDExclude !== undefined) updateData.customerMetaIDExclude = customerMetaIDExclude;
         if (changeCurrency !== undefined) updateData.changeCurrency = changeCurrency;
+        if (customerRevenueType !== undefined) updateData.customerRevenueType = customerRevenueType;
+        if (shopifyUrl !== undefined) updateData.shopifyUrl = shopifyUrl;
+        if (shopifyApiPassword !== undefined) updateData.shopifyApiPassword = shopifyApiPassword;
+        if (facebookAdAccountId !== undefined) updateData.facebookAdAccountId = facebookAdAccountId;
+        if (googleAdsCustomerId !== undefined) updateData.googleAdsCustomerId = googleAdsCustomerId;
 
         updateData.updatedAt = new Date();
 
@@ -65,7 +79,12 @@ export async function GET(req, { params }) {
                 customerClickupID: "",
                 customerMetaID: "",
                 customerMetaIDExclude: "",
-                changeCurrency: true
+                changeCurrency: true,
+                customerRevenueType: "total_sales",
+                shopifyUrl: "",
+                shopifyApiPassword: "",
+                facebookAdAccountId: "",
+                googleAdsCustomerId: ""
             };
             return new Response(JSON.stringify(defaultSettings), { status: 200 });
         }

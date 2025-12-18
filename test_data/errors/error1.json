@@ -1,0 +1,63 @@
+{
+    "timestamp": "2025-12-15T09:55:25.922Z",
+    "integrations": {},
+    "event": "Airbyte.UI.Source.TestFailure",
+    "type": "track",
+    "properties": {
+        "actionDescription": "Tested connector - failure",
+        "connector": "Google Ads",
+        "connector_definition_id": "253487c0-2246-43ba-a21f-5116b20a2c50",
+        "connector_documentation_url": "https://docs.airbyte.com/integrations/sources/google-ads",
+        "external_message": "errors.http.default",
+        "airbyte_version": "1.8.5",
+        "environment": "prod",
+        "workspace_id": "2a95de9c-e4df-4098-84fa-7ea0c64e15e5",
+        "customer_id": "5594d204-2d71-4b1e-addc-3f70fb72727c"
+    },
+    "context": {
+        "page": {
+            "path": "/workspaces/2a95de9c-e4df-4098-84fa-7ea0c64e15e5/source/new-source/253487c0-2246-43ba-a21f-5116b20a2c50",
+            "referrer": "",
+            "search": "",
+            "title": "Airbyte | New Source",
+            "url": "https://airbyte.searchmind.tech/workspaces/2a95de9c-e4df-4098-84fa-7ea0c64e15e5/source/new-source/253487c0-2246-43ba-a21f-5116b20a2c50"
+        },
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+        "userAgentData": {
+            "brands": [
+                {
+                    "brand": "Google Chrome",
+                    "version": "143"
+                },
+                {
+                    "brand": "Chromium",
+                    "version": "143"
+                },
+                {
+                    "brand": "Not A(Brand",
+                    "version": "24"
+                }
+            ],
+            "mobile": false,
+            "platform": "Windows"
+        },
+        "locale": "da",
+        "library": {
+            "name": "analytics.js",
+            "version": "next-1.81.0"
+        },
+        "timezone": "Europe/Copenhagen"
+    },
+    "messageId": "ajs-next-1765792525922-62ca7f60-d0b5-4d2b-8fa3-32d5c1d5e053",
+    "userId": "2a95de9c-e4df-4098-84fa-7ea0c64e15e5",
+    "anonymousId": "ffbb1024-020f-4bab-8a82-393f05734096",
+    "writeKey": "aUaUVyQ05KqtvbnMrRdsn71HdTGKSRiw",
+    "sentAt": "2025-12-15T09:55:25.945Z",
+    "_metadata": {
+        "bundled": [
+            "Segment.io"
+        ],
+        "unbundled": [],
+        "bundledIds": []
+    }
+}

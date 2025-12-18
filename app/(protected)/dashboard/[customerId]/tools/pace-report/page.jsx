@@ -1,166 +1,137 @@
 import PaceReport from "./pace-report";
-import { queryBigQueryDashboardMetrics } from "@/lib/bigQueryConnect";
+import { fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
+import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
+import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
+
+/**
+ * Helper function to merge Shopify, Facebook Ads, and Google Ads data for Pace Report
+ */
+function mergePaceReportData(shopifyMetrics, facebookAdsData, googleAdsData) {
+    const dataByDate = {};
+
+    // Process Shopify data
+    shopifyMetrics.forEach(row => {
+        dataByDate[row.date] = {
+            date: row.date,
+            orders: row.orders || 0,
+            revenue: row.revenue || 0,
+            ad_spend: 0,
+        };
+    });
+
+    // Add Facebook Ads data
+    facebookAdsData.forEach(row => {
+        if (!dataByDate[row.date]) {
+            dataByDate[row.date] = {
+                date: row.date,
+                orders: 0,
+                revenue: 0,
+                ad_spend: 0,
+            };
+        }
+        dataByDate[row.date].ad_spend += row.ps_cost || 0;
+    });
+
+    // Add Google Ads data
+    googleAdsData.forEach(row => {
+        if (!dataByDate[row.date]) {
+            dataByDate[row.date] = {
+                date: row.date,
+                orders: 0,
+                revenue: 0,
+                ad_spend: 0,
+            };
+        }
+        dataByDate[row.date].ad_spend += row.ppc_cost || 0;
+    });
+
+    const result = Object.values(dataByDate);
+    return result.sort((a, b) => a.date.localeCompare(b.date));
+}
 
 export default async function PacePage({ params }) {
     const resolvedParams = await params;
     const customerId = resolvedParams.customerId;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude, customerType } = await fetchCustomerDetails(customerId);
-        let projectId = bigQueryProjectId;
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
 
-        const buildFacebookWhereClause = () => {
-            const conditions = [];
-            
-            if (customerMetaID?.trim()) {
-                conditions.push(`country = "${customerMetaID}"`);
-            }
-            
-            if (customerMetaIDExclude?.trim()) {
-                const excludeList = customerMetaIDExclude
-                    .split(',')
-                    .map(c => `"${c.trim()}"`)
-                    .filter(c => c !== '""')
-                    .join(', ');
-                
-                if (excludeList) {
-                    conditions.push(`country NOT IN (${excludeList})`);
-                }
-            }
-            
-            return conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        // Calculate date range for initial data (last 30 days)
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const startDate = new Date(yesterday);
+        startDate.setDate(yesterday.getDate() - 30);
+
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         };
 
-        const facebookWhereClause = buildFacebookWhereClause();
+        const startDateStr = formatDate(startDate);
+        const endDateStr = formatDate(yesterday);
 
-        const dashboardQuery = `
-            WITH combined_data AS (
-                SELECT
-                    COALESCE(s.date, f.date, g.date) AS date,
-                    COALESCE(s.orders, 0) AS orders,
-                    COALESCE(s.revenue, 0) AS revenue,
-                    COALESCE(f.ps_cost, 0) AS ps_cost,
-                    COALESCE(g.ppc_cost, 0) AS ppc_cost
-                FROM (
-                    ${customerType === "Shopify" ? `
-                    WITH orders AS (
-                        SELECT
-                            DATE(DATETIME(created_at, "Europe/Copenhagen")) AS date,
-                            SUM(CAST(total_price AS FLOAT64)) AS gross_sales,
-                            COUNT(*) AS order_count,
-                            presentment_currency AS currency
-                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
-                        WHERE presentment_currency = "${customerValutaCode}"
-                        GROUP BY DATE(DATETIME(created_at, "Europe/Copenhagen")), presentment_currency
-                    ),
-                    refunds AS (
-                        SELECT
-                            DATE(DATETIME(created_at, "Europe/Copenhagen")) AS date,
-                            SUM(
-                                (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(transaction, '$.amount') AS FLOAT64))
-                                FROM UNNEST(JSON_EXTRACT_ARRAY(transactions)) AS transaction
-                                WHERE JSON_EXTRACT_SCALAR(transaction, '$.kind') = 'refund'
-                                    AND JSON_EXTRACT_SCALAR(transaction, '$.currency') = "${customerValutaCode}"
-                                )
-                            ) AS total_refunds
-                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
-                        GROUP BY DATE(DATETIME(created_at, "Europe/Copenhagen"))
-                    )
-                    SELECT
-                        CAST(o.date AS STRING) AS date,
-                        o.gross_sales - COALESCE(r.total_refunds, 0) AS revenue,
-                        o.order_count AS orders
-                    FROM
-                        orders o
-                    LEFT JOIN
-                        refunds r ON o.date = r.date
-                    ` : `
-                    WITH orders AS (
-                        SELECT
-                            DATE(TIMESTAMP(date_created)) AS date,
-                            SUM(CAST(total AS FLOAT64)) AS gross_sales,
-                            COUNT(*) AS order_count,
-                            currency AS presentment_currency
-                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.woocommerce_orders\`
-                        WHERE currency = "${customerValutaCode}"
-                        GROUP BY DATE(TIMESTAMP(date_created)), currency
-                    ),
-                    refunds AS (
-                        SELECT
-                            DATE(TIMESTAMP(date_created)) AS date,
-                            SUM(CAST(amount AS FLOAT64)) AS total_refunds
-                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.woocommerce_refunds\`
-                        GROUP BY DATE(TIMESTAMP(date_created))
-                    )
-                    SELECT
-                        CAST(o.date AS STRING) AS date,
-                        o.gross_sales - COALESCE(r.total_refunds, 0) AS revenue,
-                        o.order_count AS orders
-                    FROM
-                        orders o
-                    LEFT JOIN
-                        refunds r ON o.date = r.date
-                    `}
-                ) s
-                FULL OUTER JOIN (
-                    SELECT
-                        CAST(date_start AS STRING) AS date,
-                        SUM(COALESCE(spend, 0)) AS ps_cost
-                    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-                    ${facebookWhereClause}
-                    GROUP BY date_start
-                ) f ON s.date = f.date
-                FULL OUTER JOIN (
-                    SELECT
-                        CAST(segments_date AS STRING) AS date,
-                        SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS ppc_cost
-                    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
-                    WHERE segments_date IS NOT NULL
-                    GROUP BY segments_date
-                ) g ON COALESCE(s.date, f.date) = g.date
-                WHERE COALESCE(s.date, f.date, g.date) IS NOT NULL
-            )
-            SELECT
-                ARRAY_AGG(STRUCT(
-                    date,
-                    orders,
-                    revenue,
-                    (ps_cost + ppc_cost) AS ad_spend
-                ) ORDER BY date) AS daily_metrics
-            FROM combined_data
-        `;
+        // Shopify API configuration
+        const shopifyConfig = {
+            shopUrl: shopifyUrl || process.env.TEMP_SHOPIFY_URL,
+            accessToken: shopifyApiPassword || process.env.TEMP_SHOPIFY_PASSWORD,
+            startDate: startDateStr,
+            endDate: endDateStr
+        };
 
-        const data = await queryBigQueryDashboardMetrics({
-            tableId: projectId,
-            customerId: bigQueryCustomerId,
-            customQuery: dashboardQuery,
-        });
+        // Facebook Ads API configuration
+        const facebookConfig = {
+            accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
+            adAccountId: facebookAdAccountId,
+            startDate: startDateStr,
+            endDate: endDateStr,
+            countryCode: customerMetaID || undefined // Filter by country if specified
+        };
 
-        console.log("Pace Report data (raw):", JSON.stringify(data, null, 2));
+        // Google Ads API configuration
+        const googleAdsConfig = {
+            developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
+            clientId: process.env.GOOGLE_ADS_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
+            refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
+            customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID,
+            managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
+            startDate: startDateStr,
+            endDate: endDateStr
+        };
 
-        if (!data || !data[0] || !data[0].daily_metrics) {
-            console.warn("No data returned from BigQuery for customerId:", customerId);
-            return <div>No data available for {customerId}</div>;
-        }
+        // Fetch initial data (last 30 days) in parallel
+        const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
+            fetchShopifyOrderMetrics(shopifyConfig).catch(err => {
+                console.error("Failed to fetch Shopify data:", err.message);
+                return [];
+            }),
+            fetchFacebookAdsMetrics(facebookConfig).catch(err => {
+                console.error("Failed to fetch Facebook Ads data:", err.message);
+                return [];
+            }),
+            fetchGoogleAdsMetrics(googleAdsConfig).catch(err => {
+                console.error("Failed to fetch Google Ads data:", err.message);
+                return [];
+            })
+        ]);
 
-        const serializedDailyMetrics = data[0].daily_metrics.map(row => ({
-            date: row.date,
-            orders: Number(row.orders || 0),
-            revenue: Number(row.revenue || 0),
-            ad_spend: Number(row.ad_spend || 0)
-        }));
+        // Merge all data sources
+        const daily_metrics = mergePaceReportData(shopifyMetrics, facebookAdsData, googleAdsData);
 
-        console.log("Pace Report data (serialized):", JSON.stringify(serializedDailyMetrics, null, 2));
+        console.log(`[Pace Report] Fetched ${daily_metrics.length} days of initial data for ${customerId}`);
 
         return (
             <PaceReport
                 customerId={customerId}
                 customerName={customerName}
                 customerValutaCode={customerValutaCode}
-                initialData={{ daily_metrics: serializedDailyMetrics }}
+                initialData={{ daily_metrics }}
             />
         );
     } catch (error) {

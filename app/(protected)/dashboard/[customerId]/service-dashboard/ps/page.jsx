@@ -1,5 +1,5 @@
 import PSDashboard from "./ps-dashboard";
-import { queryBigQueryPaidSocialDashboardMetrics } from "@/lib/bigQueryConnect";
+import { fetchFacebookAdsPSDashboardMetrics } from "@/lib/facebookAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
@@ -9,214 +9,67 @@ export default async function PaidSocialDashboardPage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude } = await fetchCustomerDetails(customerId);
-        let projectId = bigQueryProjectId;
+        const { customerName, facebookAdAccountId, customerMetaID } = await fetchCustomerDetails(customerId);
 
-        const buildFacebookWhereClause = () => {
-            const conditions = [];
-            
-            if (customerMetaID?.trim()) {
-                conditions.push(`country = "${customerMetaID}"`);
-            }
-            
-            if (customerMetaIDExclude?.trim()) {
-                const excludeList = customerMetaIDExclude
-                    .split(',')
-                    .map(c => `"${c.trim()}"`)
-                    .filter(c => c !== '""')
-                    .join(', ');
-                
-                if (excludeList) {
-                    conditions.push(`country NOT IN (${excludeList})`);
-                }
-            }
-            
-            return conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        // Calculate default date range (current month to yesterday)
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         };
 
-        const facebookWhereClause = buildFacebookWhereClause();
+        const startDate = formatDate(firstDayOfMonth);
+        const endDate = formatDate(yesterday);
+
+        // Validate environment variables
+        if (!process.env.TEMP_FACEBOOK_API_TOKEN) {
+            throw new Error("TEMP_FACEBOOK_API_TOKEN environment variable is not set");
+        }
         
-        const dashboardQuery = `
-            WITH raw_data AS (
-                SELECT
-                    date_start AS date,
-                    campaign_name,
-                    clicks,
-                    impressions,
-                    CAST(JSON_VALUE(conversions) AS FLOAT64) AS conversions,
-                    CAST(JSON_VALUE(conversion_values) AS FLOAT64) AS conversion_value,
-                    spend
-                FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-                ${facebookWhereClause}
-            ),
-            metrics_by_date AS (
-                SELECT
-                    CAST(date AS STRING) AS date,
-                    SUM(COALESCE(clicks, 0)) AS clicks,
-                    SUM(COALESCE(impressions, 0)) AS impressions,
-                    CAST(SUM(COALESCE(conversions, 0)) AS FLOAT64) AS conversions,
-                    CAST(SUM(COALESCE(conversion_value, 0)) AS FLOAT64) AS conversion_value,
-                    SUM(COALESCE(spend, 0)) AS ad_spend,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(spend, 0)) > 0 THEN SUM(COALESCE(conversion_value, 0)) / SUM(COALESCE(spend, 0))
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS roas,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(conversions, 0)) > 0 THEN SUM(COALESCE(conversion_value, 0)) / SUM(COALESCE(conversions, 0))
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS aov,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(impressions, 0)) > 0 THEN SUM(COALESCE(clicks, 0)) / SUM(COALESCE(impressions, 0))
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS ctr,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(clicks, 0)) > 0 THEN SUM(COALESCE(spend, 0)) / SUM(COALESCE(clicks, 0))
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS cpc,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(impressions, 0)) > 0 THEN (SUM(COALESCE(spend, 0)) / SUM(COALESCE(impressions, 0))) * 1000
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS cpm,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(clicks, 0)) > 0 THEN SUM(COALESCE(conversions, 0)) / SUM(COALESCE(clicks, 0))
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS conv_rate
-                FROM raw_data
-                GROUP BY date
-                ORDER BY date
-            ),
-            top_campaigns AS (
-                SELECT
-                    campaign_name,
-                    SUM(COALESCE(clicks, 0)) AS clicks,
-                    SUM(COALESCE(impressions, 0)) AS impressions,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(impressions, 0)) > 0 THEN SUM(COALESCE(clicks, 0)) / SUM(COALESCE(impressions, 0))
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS ctr
-                FROM raw_data
-                GROUP BY campaign_name
-                ORDER BY clicks DESC
-                LIMIT 5
-            ),
-            campaigns_by_date AS (
-                SELECT
-                    CAST(r.date AS STRING) AS date,
-                    r.campaign_name,
-                    SUM(COALESCE(r.clicks, 0)) AS clicks,
-                    SUM(COALESCE(r.impressions, 0)) AS impressions,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(r.impressions, 0)) > 0 THEN SUM(COALESCE(r.clicks, 0)) / SUM(COALESCE(r.impressions, 0))
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS ctr,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(r.clicks, 0)) > 0 THEN SUM(COALESCE(r.conversions, 0)) / SUM(COALESCE(r.clicks, 0))
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS conv_rate,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(r.clicks, 0)) > 0 THEN SUM(COALESCE(r.spend, 0)) / SUM(COALESCE(r.clicks, 0))
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS cpc,
-                    CAST(
-                        CASE
-                            WHEN SUM(COALESCE(r.impressions, 0)) > 0 THEN (SUM(COALESCE(r.spend, 0)) / SUM(COALESCE(r.impressions, 0))) * 1000
-                            ELSE 0
-                        END AS FLOAT64
-                    ) AS cpm
-                FROM raw_data r
-                INNER JOIN top_campaigns t
-                    ON r.campaign_name = t.campaign_name
-                GROUP BY r.date, r.campaign_name
-                ORDER BY r.date, clicks DESC
-            )
-            SELECT
-                (SELECT ARRAY_AGG(STRUCT(
-                    date,
-                    clicks,
-                    impressions,
-                    conversions,
-                    conversion_value,
-                    ad_spend,
-                    roas,
-                    aov,
-                    ctr,
-                    cpc,
-                    cpm,
-                    conv_rate
-                )) FROM metrics_by_date) AS metrics_by_date,
-                (SELECT ARRAY_AGG(STRUCT(campaign_name, clicks, impressions, ctr)) FROM top_campaigns) AS top_campaigns,
-                (SELECT ARRAY_AGG(STRUCT(date, campaign_name, clicks, impressions, ctr, conv_rate, cpc, cpm)) FROM campaigns_by_date) AS campaigns_by_date
-        `;
-
-        const data = await queryBigQueryPaidSocialDashboardMetrics({
-            tableId: projectId,
-            customerId: bigQueryCustomerId,
-            customQuery: dashboardQuery,
-        });
-
-        console.log("Paid Social Dashboard data:", JSON.stringify(data, null, 2));
-
-        if (!data || !data[0]) {
-            console.warn("No data returned from BigQuery for customerId:", customerId);
-            return <div>No data available for {customerId}</div>;
+        const adAccountId = facebookAdAccountId;
+        if (!adAccountId) {
+            throw new Error("Facebook Ad Account ID is not configured for this customer");
         }
 
-        // Sanitize BigQuery data to convert Decimal objects to plain numbers
-        const sanitizeNumericFields = (row) => {
-            if (!row) return row;
-            
-            const sanitized = { ...row };
-            
-            // Convert all potential Decimal fields to plain numbers
-            const numericFields = [
-                'clicks', 'impressions', 'conversions', 'conversion_value', 
-                'ad_spend', 'spend', 'roas', 'aov', 'ctr', 'cpc', 'cpm', 'conv_rate'
-            ];
-            
-            numericFields.forEach(field => {
-                if (sanitized[field] !== undefined && sanitized[field] !== null) {
-                    // Convert Decimal objects or any other numeric types to plain numbers
-                    sanitized[field] = Number(sanitized[field]) || 0;
-                }
-            });
-            
-            return sanitized;
+        // Facebook Ads API configuration
+        const facebookAdsConfig = {
+            accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
+            adAccountId: adAccountId,
+            startDate,
+            endDate,
+            countryCode: customerMetaID || undefined // Filter by country if specified
         };
 
-        const { metrics_by_date, top_campaigns, campaigns_by_date } = data[0];
+        console.log(`[PS Dashboard] Fetching data for ${customerId} from ${startDate} to ${endDate}`);
+        console.log(`[PS Dashboard] Using ad account: ${adAccountId}`);
 
-        // Sanitize all data arrays
-        const sanitizedData = {
-            metrics_by_date: Array.isArray(metrics_by_date) ? metrics_by_date.map(sanitizeNumericFields) : [],
-            top_campaigns: Array.isArray(top_campaigns) ? top_campaigns.map(sanitizeNumericFields) : [],
-            campaigns_by_date: Array.isArray(campaigns_by_date) ? campaigns_by_date.map(sanitizeNumericFields) : []
-        };
+        // Fetch Facebook Ads PS dashboard data
+        const data = await fetchFacebookAdsPSDashboardMetrics(facebookAdsConfig);
+
+        if (!data || !data.metrics_by_date) {
+            console.warn("No data returned from Facebook Ads API for customerId:", customerId);
+            return (
+                <PSDashboard
+                    customerId={customerId}
+                    customerName={customerName}
+                    initialData={null}
+                />
+            );
+        }
+
+        const { metrics_by_date, top_campaigns, campaigns_by_date } = data;
 
         return (
             <PSDashboard
                 customerId={customerId}
                 customerName={customerName}
-                initialData={sanitizedData}
+                initialData={{ metrics_by_date, top_campaigns, campaigns_by_date }}
             />
         );
     } catch (error) {

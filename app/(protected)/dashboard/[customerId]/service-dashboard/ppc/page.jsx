@@ -1,5 +1,5 @@
 import PPCDashboard from "./ppc-dashboard";
-import { queryBigQueryGoogleAdsDashboardMetrics } from "@/lib/bigQueryConnect";
+import { fetchGoogleAdsPPCDashboardMetrics } from "@/lib/googleAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
@@ -9,140 +9,53 @@ export default async function GoogleAdsDashboardPage({ params }) {
     const customerId = resolvedParams.customerId;
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName } = await fetchCustomerDetails(customerId);
-        let projectId = bigQueryProjectId;
+        const { customerName, googleAdsCustomerId } = await fetchCustomerDetails(customerId);
 
-        const dashboardQuery = `
-    WITH raw_data AS (
-        SELECT
-            segments_date AS date,
-            campaign_name,
-            metrics_clicks AS clicks,
-            metrics_impressions AS impressions,
-            metrics_conversions AS conversions,
-            metrics_conversions_value AS conversions_value,
-            metrics_cost_micros / 1000000.0 AS cost
-        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
-        WHERE segments_date IS NOT NULL
-    ),
-    metrics_by_date AS (
-        SELECT
-            CAST(date AS STRING) AS date,
-            SUM(clicks) AS clicks,
-            SUM(impressions) AS impressions,
-            CAST(SUM(conversions) AS FLOAT64) AS conversions,
-            CAST(SUM(conversions_value) AS FLOAT64) AS conversions_value,
-            SUM(cost) AS ad_spend,
-            CAST(
-                CASE
-                    WHEN SUM(cost) > 0 THEN SUM(conversions_value) / SUM(cost)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS roas,
-            CAST(
-                CASE
-                    WHEN SUM(conversions) > 0 THEN SUM(conversions_value) / SUM(conversions)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS aov,
-            CAST(
-                CASE
-                    WHEN SUM(impressions) > 0 THEN SUM(clicks) / SUM(impressions)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS ctr,
-            CAST(
-                CASE
-                    WHEN SUM(clicks) > 0 THEN SUM(cost) / SUM(clicks)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS cpc,
-            CAST(
-                CASE
-                    WHEN SUM(clicks) > 0 THEN SUM(conversions) / SUM(clicks)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS conv_rate
-        FROM raw_data
-        GROUP BY date
-        ORDER BY date
-    ),
-    top_campaigns AS (
-        SELECT
-            campaign_name,
-            SUM(clicks) AS clicks,
-            SUM(impressions) AS impressions,
-            CAST(
-                CASE
-                    WHEN SUM(impressions) > 0 THEN SUM(clicks) / SUM(impressions)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS ctr
-        FROM raw_data
-        GROUP BY campaign_name
-        ORDER BY clicks DESC
-        LIMIT 1000
-    ),
-    campaigns_by_date AS (
-        SELECT
-            CAST(r.date AS STRING) AS date,
-            r.campaign_name,
-            SUM(r.clicks) AS clicks,
-            SUM(r.impressions) AS impressions,
-            CAST(
-                CASE
-                    WHEN SUM(r.impressions) > 0 THEN SUM(r.clicks) / SUM(r.impressions)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS ctr,
-            CAST(
-                CASE
-                    WHEN SUM(r.clicks) > 0 THEN SUM(r.conversions) / SUM(r.clicks)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS conv_rate,
-            CAST(
-                CASE
-                    WHEN SUM(r.clicks) > 0 THEN SUM(r.cost) / SUM(r.clicks)
-                    ELSE 0
-                END AS FLOAT64
-            ) AS cpc
-        FROM raw_data r
-        INNER JOIN top_campaigns t
-            ON r.campaign_name = t.campaign_name
-        GROUP BY r.date, r.campaign_name
-        ORDER BY r.date, clicks DESC
-    )
-    SELECT
-        (SELECT ARRAY_AGG(STRUCT(
-            date, 
-            clicks, 
-            impressions, 
-            conversions, 
-            conversions_value, 
-            ad_spend, 
-            roas, 
-            aov, 
-            ctr, 
-            cpc, 
-            conv_rate
-        )) FROM metrics_by_date) AS metrics_by_date,
-        (SELECT ARRAY_AGG(STRUCT(campaign_name, clicks, impressions, ctr)) FROM top_campaigns) AS top_campaigns,
-        (SELECT ARRAY_AGG(STRUCT(date, campaign_name, clicks, impressions, ctr, conv_rate, cpc)) FROM campaigns_by_date) AS campaigns_by_date
-`;
+        // Calculate default date range (current month to yesterday)
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
 
-        const data = await queryBigQueryGoogleAdsDashboardMetrics({
-            tableId: projectId,
-            customerId: bigQueryCustomerId,
-            customQuery: dashboardQuery,
-        });
+        const startDate = formatDate(firstDayOfMonth);
+        const endDate = formatDate(yesterday);
 
-        if (!data || !data[0]) {
-            console.warn("No data returned from BigQuery for customerId:", customerId);
-            return <div>No data available for {customerId}</div>;
+        // Google Ads API configuration
+        const googleAdsConfig = {
+            developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
+            clientId: process.env.GOOGLE_ADS_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
+            refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
+            customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID,
+            managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
+            startDate,
+            endDate
+        };
+
+        console.log(`[PPC Dashboard] Fetching data for ${customerId} from ${startDate} to ${endDate}`);
+
+        // Fetch Google Ads PPC dashboard data
+        const data = await fetchGoogleAdsPPCDashboardMetrics(googleAdsConfig);
+
+        if (!data || !data.metrics_by_date) {
+            console.warn("No data returned from Google Ads API for customerId:", customerId);
+            return (
+                <PPCDashboard
+                    customerId={customerId}
+                    customerName={customerName}
+                    initialData={null}
+                />
+            );
         }
 
-        const { metrics_by_date, top_campaigns, campaigns_by_date } = data[0];
+        const { metrics_by_date, top_campaigns, campaigns_by_date } = data;
 
         return (
             <PPCDashboard

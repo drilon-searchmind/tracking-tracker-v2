@@ -69,20 +69,26 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
             console.warn('Invalid date encountered:', date);
             return '';
         }
-        return date.toISOString().split("T")[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
 
     const [revenueBudget, setRevenueBudget] = useState("500000");
     const [ordersBudget, setOrdersBudget] = useState("1000");
     const [adSpendBudget, setAdSpendBudget] = useState("100000");
     const [metric, setMetric] = useState("Revenue");
-    const [comparison, setComparison] = useState("Previous Year");
-    const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
-    const [endDate, setEndDate] = useState(formatDate(yesterday));
+    const [tempStartDate, setTempStartDate] = useState(formatDate(firstDayOfMonth));
+    const [tempEndDate, setTempEndDate] = useState(formatDate(yesterday));
+    const [dateStart, setDateStart] = useState(formatDate(firstDayOfMonth));
+    const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [changeCurrency, setChangeCurrency] = useState(true);
+    const [isFetchingData, setIsFetchingData] = useState(false);
+    const [fetchedData, setFetchedData] = useState(null);
 
-    const end = new Date(endDate);
+    const end = new Date(dateEnd);
     const daysInMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
 
     useEffect(() => {
@@ -100,6 +106,32 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
 
         fetchCustomerSettings()
     }, [customerId]);
+
+    const fetchPaceData = async (startDate, endDate) => {
+        setIsFetchingData(true);
+        try {
+            const response = await fetch(
+                `/api/pace-report/${customerId}?startDate=${startDate}&endDate=${endDate}`
+            );
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch Pace Report data');
+            }
+            
+            const data = await response.json();
+            setFetchedData(data);
+        } catch (error) {
+            console.error('Error fetching Pace Report data:', error);
+        } finally {
+            setIsFetchingData(false);
+        }
+    };
+
+    const handleApplyDates = () => {
+        setDateStart(tempStartDate);
+        setDateEnd(tempEndDate);
+        fetchPaceData(tempStartDate, tempEndDate);
+    };
 
     if (!initialData || !initialData.daily_metrics) {
         return (
@@ -123,15 +155,15 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         );
     }
 
-    const { daily_metrics } = initialData;
+    const daily_metrics = fetchedData?.data || initialData?.daily_metrics || [];
 
     const filteredMetrics = useMemo(() => {
         const filtered = daily_metrics
-            .filter(row => row.date >= startDate && row.date <= endDate)
+            .filter(row => row.date >= dateStart && row.date <= dateEnd)
             .map(row => convertDataRow(row, customerValutaCode, changeCurrency))
             .sort((a, b) => a.date.localeCompare(b.date));
         return filtered;
-    }, [daily_metrics, startDate, endDate, customerValutaCode, changeCurrency]);
+    }, [daily_metrics, dateStart, dateEnd, customerValutaCode, changeCurrency]);
 
     const cumulativeMetrics = useMemo(() => {
         let cumOrders = 0, cumRevenue = 0, cumAdSpend = 0;
@@ -162,7 +194,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         const ordersBudgetNum = Number(ordersBudget.replace(/[^0-9.-]+/g, "")) || 1000;
         const adSpendBudgetNum = Number(adSpendBudget.replace(/[^0-9.-]+/g, "")) || 100000;
 
-        const start = new Date(startDate);
+        const start = new Date(dateStart);
         const daysInRange = Math.ceil((end - start + 1) / (1000 * 60 * 60 * 24));
         const daysElapsed = daysInRange;
         const daysRemaining = daysInMonth - daysElapsed;
@@ -211,85 +243,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         };
 
         return result;
-    }, [cumulativeMetrics, revenueBudget, ordersBudget, adSpendBudget, startDate, endDate, daysInMonth]);
-
-    const getComparisonDates = () => {
-        try {
-            const end = new Date(endDate);
-            const start = new Date(startDate);
-
-            if (isNaN(end.getTime()) || isNaN(start.getTime())) {
-                console.warn('Invalid start or end date:', { start, end });
-                return { compStart: '', compEnd: '' };
-            }
-
-            const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-
-            if (comparison === "Previous Year") {
-                const prevStart = new Date(start);
-                const prevEnd = new Date(end);
-                prevStart.setFullYear(prevStart.getFullYear() - 1);
-                prevEnd.setFullYear(prevEnd.getFullYear() - 1);
-
-                return {
-                    compStart: formatDate(prevStart),
-                    compEnd: formatDate(prevEnd),
-                };
-            } else {
-                const prevStart = new Date(start);
-                const prevEnd = new Date(end);
-                prevStart.setDate(prevStart.getDate() - daysDiff);
-                prevEnd.setDate(prevEnd.getDate() - daysDiff);
-
-                return {
-                    compStart: formatDate(prevStart),
-                    compEnd: formatDate(prevEnd),
-                };
-            }
-        } catch (error) {
-            console.error('Error calculating comparison dates:', error);
-            return { compStart: '', compEnd: '' };
-        }
-    };
-
-    const { compStart, compEnd } = getComparisonDates();
-
-    const comparisonTotals = useMemo(() => {
-        const comparisonData = daily_metrics
-            .filter(row => row.date >= compStart && row.date <= compEnd)
-            .map(row => convertDataRow(row, customerValutaCode, changeCurrency))
-            .sort((a, b) => a.date.localeCompare(b.date));
-        let cumOrders = 0, cumRevenue = 0, cumAdSpend = 0;
-        const cumulativeComparison = comparisonData.map(row => {
-            cumOrders += Number(row.orders || 0);
-            cumRevenue += Number(row.revenue || 0);
-            cumAdSpend += Number(row.ad_spend || 0);
-            return { orders: cumOrders, revenue: cumRevenue, ad_spend: cumAdSpend };
-        });
-
-        const aggregated = cumulativeComparison.length > 0 ? cumulativeComparison[cumulativeComparison.length - 1] : {
-            orders: 0,
-            revenue: 0,
-            ad_spend: 0
-        };
-
-        const roas = aggregated.ad_spend > 0 ? aggregated.revenue / aggregated.ad_spend : 0;
-
-        const result = {
-            orders: aggregated.orders,
-            revenue: aggregated.revenue,
-            ad_spend: aggregated.ad_spend,
-            roas: isFinite(roas) ? roas : 0
-        };
-
-        return result;
-    }, [daily_metrics, compStart, compEnd, customerValutaCode, changeCurrency]);
-
-    const calculateDelta = (current, prev = 0) => {
-        if (!prev || prev === 0) return null;
-        const delta = ((current - prev) / prev * 100).toFixed(2);
-        return `${delta > 0 ? "+" : ""}${delta.toLocaleString('en-US')}%`;
-    };
+    }, [cumulativeMetrics, revenueBudget, ordersBudget, adSpendBudget, dateStart, dateEnd, daysInMonth]);
 
     const budgetChartData = {
         labels: cumulativeMetrics.map(row => row.date),
@@ -503,6 +457,16 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
 
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            {/* Loading Overlay - positioned at top level */}
+            {isFetchingData && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center">
+                    <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center gap-4 border-2 border-[var(--color-lime)]">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[var(--color-lime)]"></div>
+                        <p className="text-[var(--color-dark-green)] font-medium">Loading Pace Report data...</p>
+                    </div>
+                </div>
+            )}
+            
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -527,35 +491,40 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                 <div className="bg-white rounded-lg shadow-sm border border-[var(--color-natural)] p-4 md:p-6 mb-6 md:mb-8">
                     <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center justify-end">
                         <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
-                            <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Comparison:</label>
-                            <select
-                                value={comparison}
-                                onChange={(e) => setComparison(e.target.value)}
-                                className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent w-full md:w-auto transition-colors"
-                            >
-                                <option>Previous Year</option>
-                                <option>Previous Period</option>
-                            </select>
-                            
                             <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
                                 <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Date Range:</label>
                                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
                                     <input
                                         type="date"
-                                        value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
+                                        value={tempStartDate}
+                                        onChange={(e) => setTempStartDate(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
                                     <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
                                     <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
                                     <input
                                         type="date"
-                                        value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
+                                        value={tempEndDate}
+                                        onChange={(e) => setTempEndDate(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
                                 </div>
                             </div>
+                            
+                            <button
+                                onClick={handleApplyDates}
+                                disabled={isFetchingData}
+                                className="bg-[var(--color-lime)] hover:bg-[var(--color-lime-dark)] text-[var(--color-dark-green)] font-medium px-6 py-2 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full md:w-auto justify-center"
+                            >
+                                {isFetchingData ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--color-dark-green)]"></div>
+                                        Loading...
+                                    </>
+                                ) : (
+                                    'Apply'
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>

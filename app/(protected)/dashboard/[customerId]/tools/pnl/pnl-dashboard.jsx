@@ -43,6 +43,8 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
     const [isClient, setIsClient] = useState(false);
     const [showAllMetrics, setShowAllMetrics] = useState(false);
     const [changeCurrency, setChangeCurrency] = useState(true);
+    const [isFetchingData, setIsFetchingData] = useState(false);
+    const [fetchedData, setFetchedData] = useState(null);
     
     useEffect(() => {
         setIsClient(true);
@@ -64,6 +66,32 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
         fetchCustomerSettings()
     }, [customerId]);
 
+    const fetchPnLData = async (startDate, endDate) => {
+        setIsFetchingData(true);
+        try {
+            const response = await fetch(
+                `/api/pnl-dashboard/${customerId}?startDate=${startDate}&endDate=${endDate}`
+            );
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch P&L data');
+            }
+            
+            const data = await response.json();
+            setFetchedData(data);
+        } catch (error) {
+            console.error('Error fetching P&L data:', error);
+        } finally {
+            setIsFetchingData(false);
+        }
+    };
+
+    const handleApplyDates = () => {
+        setDateStart(tempStartDate);
+        setDateEnd(tempEndDate);
+        fetchPnLData(tempStartDate, tempEndDate);
+    };
+
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -76,16 +104,18 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
         return date.toISOString().split("T")[0];
     };
 
-    const [comparison, setComparison] = useState("Previous Year");
-    const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
-    const [endDate, setEndDate] = useState(formatDate(yesterday));
+    const [tempStartDate, setTempStartDate] = useState(formatDate(firstDayOfMonth));
+    const [tempEndDate, setTempEndDate] = useState(formatDate(yesterday));
+    const [dateStart, setDateStart] = useState(formatDate(firstDayOfMonth));
+    const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
 
-    const { metrics_by_date, staticExpenses } = initialData || {};
+    const { staticExpenses } = initialData || {};
+    const metrics_by_date = fetchedData?.data || initialData?.metrics_by_date || [];
 
     const filteredMetricsByDate = useMemo(() => {
-        const filtered = metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
+        const filtered = metrics_by_date?.filter((row) => row.date >= dateStart && row.date <= dateEnd) || [];
         return filtered.map(row => convertDataRow(row, customerValutaCode, changeCurrency));
-    }, [metrics_by_date, startDate, endDate, customerValutaCode, changeCurrency]);
+    }, [metrics_by_date, dateStart, dateEnd, customerValutaCode, changeCurrency]);
 
     const metrics = useMemo(() => {
         const aggregated = filteredMetricsByDate.reduce(
@@ -175,182 +205,44 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
         return resultMetrics;
     }, [filteredMetricsByDate, staticExpenses]);
 
-    const getComparisonDates = () => {
-        try {
-            const end = new Date(endDate);
-            const start = new Date(startDate);
 
-            if (isNaN(end.getTime()) || isNaN(start.getTime())) {
-                console.warn('Invalid start or end date:', { start, end });
-                return { compStart: '', compEnd: '' };
-            }
-
-            const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-
-            if (comparison === "Previous Year") {
-                const prevStart = new Date(start);
-                const prevEnd = new Date(end);
-                prevStart.setFullYear(prevStart.getFullYear() - 1);
-                prevEnd.setFullYear(prevEnd.getFullYear() - 1);
-
-                return {
-                    compStart: formatDate(prevStart),
-                    compEnd: formatDate(prevEnd),
-                };
-            } else {
-                const prevStart = new Date(start);
-                const prevEnd = new Date(end);
-                prevStart.setDate(prevStart.getDate() - daysDiff);
-                prevEnd.setDate(prevEnd.getDate() - daysDiff);
-
-                return {
-                    compStart: formatDate(prevStart),
-                    compEnd: formatDate(prevEnd),
-                };
-            }
-        } catch (error) {
-            console.error('Error calculating comparison dates:', error);
-            return { compStart: '', compEnd: '' };
-        }
-    };
-
-    const { compStart, compEnd } = getComparisonDates();
-
-    const comparisonMetrics = useMemo(() => {
-        const comparisonData = metrics_by_date?.filter((row) => row.date >= compStart && row.date <= compEnd) || [];
-        const convertedComparisonData = comparisonData.map(row => convertDataRow(row, customerValutaCode, changeCurrency));
-        const aggregated = convertedComparisonData.reduce(
-            (acc, row) => ({
-                net_sales: acc.net_sales + (Number(row.net_sales) || 0),
-                orders: acc.orders + (Number(row.orders) || 0),
-                total_marketing_spend: acc.total_marketing_spend + (Number(row.total_marketing_spend) || 0),
-                marketing_spend_facebook: acc.marketing_spend_facebook + (Number(row.marketing_spend_facebook) || 0),
-                marketing_spend_google: acc.marketing_spend_google + (Number(row.marketing_spend_google) || 0),
-            }),
-            {
-                net_sales: 0,
-                orders: 0,
-                total_marketing_spend: 0,
-                marketing_spend_facebook: 0,
-                marketing_spend_google: 0,
-            }
-        );
-
-        const cogs = aggregated.net_sales * (staticExpenses.cogs_percentage || 0);
-        const db1 = aggregated.net_sales - cogs;
-
-        const shipping_cost = aggregated.orders * (staticExpenses.shipping_cost_per_order || 0);
-        const transaction_cost = aggregated.net_sales * (staticExpenses.transaction_cost_percentage || 0);
-        const direct_selling_costs = shipping_cost + transaction_cost;
-        const db2 = db1 - direct_selling_costs;
-
-        const marketing_costs = aggregated.total_marketing_spend + (staticExpenses.marketing_bureau_cost || 0) + (staticExpenses.marketing_tooling_cost || 0);
-        const db3 = db2 - marketing_costs;
-        const result = db3 - (staticExpenses.fixed_expenses || 0);
-
-        const realized_roas = aggregated.total_marketing_spend > 0 ? aggregated.net_sales / aggregated.total_marketing_spend : 0;
-
-        const total_costs = cogs + shipping_cost + transaction_cost +
-            aggregated.total_marketing_spend +
-            (staticExpenses.marketing_bureau_cost || 0) +
-            (staticExpenses.marketing_tooling_cost || 0) +
-            (staticExpenses.fixed_expenses || 0);
-
-        const db1_percentage = total_costs > 0 ? ((total_costs - cogs) / total_costs) * 100 : 0;
-        const db2_percentage = total_costs > 0 ? ((total_costs - cogs - shipping_cost - transaction_cost) / total_costs) * 100 : 0;
-        const db3_percentage = total_costs > 0 ? ((total_costs - cogs - shipping_cost - transaction_cost -
-            aggregated.total_marketing_spend -
-            (staticExpenses.marketing_bureau_cost || 0) -
-            (staticExpenses.marketing_tooling_cost || 0)) / total_costs) * 100 : 0;
-
-        const break_even_roas = aggregated.total_marketing_spend > 0 ? total_costs / aggregated.total_marketing_spend : 0;
-
-        const resultMetrics = {
-            net_sales: aggregated.net_sales,
-            orders: aggregated.orders,
-            cogs,
-            db1,
-            shipping_cost,
-            transaction_cost,
-            db2,
-            marketing_spend: aggregated.total_marketing_spend,
-            marketing_bureau_cost: staticExpenses.marketing_bureau_cost || 0,
-            marketing_tooling_cost: staticExpenses.marketing_tooling_cost || 0,
-            db3,
-            fixed_expenses: staticExpenses.fixed_expenses || 0,
-            result,
-            realized_roas,
-            break_even_roas,
-            db_percentages: {
-                db1: isFinite(db1_percentage) ? db1_percentage : 0,
-                db2: isFinite(db2_percentage) ? db2_percentage : 0,
-                db3: isFinite(db3_percentage) ? db3_percentage : 0,
-            },
-            total_costs,
-        };
-        return resultMetrics;
-    }, [metrics_by_date, compStart, compEnd, staticExpenses, customerValutaCode, changeCurrency]);
-
-    const calculateDelta = (current, prev = 0) => {
-        if (!prev || prev === 0) return null;
-        const delta = ((current - prev) / prev * 100).toFixed(2);
-        return `${delta > 0 ? "+" : ""}${delta.toLocaleString('en-US')}%`;
-    };
 
     const metricsDisplay = [
         {
             label: "Net Sales",
             value: metrics.net_sales ? Math.round(metrics.net_sales).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.net_sales, comparisonMetrics.net_sales),
-            positive: metrics.net_sales >= comparisonMetrics.net_sales,
         },
         {
             label: "Orders",
             value: metrics.orders ? Math.round(metrics.orders).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.orders, comparisonMetrics.orders),
-            positive: metrics.orders >= comparisonMetrics.orders,
         },
         {
             label: "COGS",
             value: metrics.cogs ? Math.round(metrics.cogs).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.cogs, comparisonMetrics.cogs),
-            positive: metrics.cogs <= comparisonMetrics.cogs,
         },
         {
             label: "Shipping",
             value: metrics.shipping_cost ? Math.round(metrics.shipping_cost).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.shipping_cost, comparisonMetrics.shipping_cost),
-            positive: metrics.shipping_cost <= comparisonMetrics.shipping_cost,
         },
         {
             label: "Transaction Costs",
             value: metrics.transaction_cost ? Math.round(metrics.transaction_cost).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.transaction_cost, comparisonMetrics.transaction_cost),
-            positive: metrics.transaction_cost <= comparisonMetrics.transaction_cost,
         },
         {
             label: "Marketing Spend",
             value: metrics.marketing_spend ? Math.round(metrics.marketing_spend).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.marketing_spend, comparisonMetrics.marketing_spend),
-            positive: metrics.marketing_spend <= comparisonMetrics.marketing_spend,
         },
         {
             label: "Marketing Bureau",
             value: metrics.marketing_bureau_cost ? Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.marketing_bureau_cost, comparisonMetrics.marketing_bureau_cost),
-            positive: metrics.marketing_bureau_cost <= comparisonMetrics.marketing_bureau_cost,
         },
         {
             label: "Marketing Tooling",
             value: metrics.marketing_tooling_cost ? Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.marketing_tooling_cost, comparisonMetrics.marketing_tooling_cost),
-            positive: metrics.marketing_tooling_cost <= comparisonMetrics.marketing_tooling_cost,
         },
         {
             label: "Fixed Expenses",
             value: metrics.fixed_expenses ? Math.round(metrics.fixed_expenses).toLocaleString('en-US') : "0",
-            delta: calculateDelta(metrics.fixed_expenses, comparisonMetrics.fixed_expenses),
-            positive: metrics.fixed_expenses <= comparisonMetrics.fixed_expenses,
         },
     ];
 
@@ -378,6 +270,16 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
 
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            {/* Loading Overlay - positioned at top level */}
+            {isFetchingData && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center">
+                    <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center gap-4 border-2 border-[var(--color-lime)]">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[var(--color-lime)]"></div>
+                        <p className="text-[var(--color-dark-green)] font-medium">Loading P&L data...</p>
+                    </div>
+                </div>
+            )}
+            
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -402,35 +304,40 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                 <div className="bg-white rounded-lg shadow-sm border border-[var(--color-natural)] p-4 md:p-6 mb-6 md:mb-8">
                     <div className="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center justify-end">
                         <div className="flex flex-col md:flex-row w-full md:w-auto items-start md:items-center gap-3">
-                            <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Comparison:</label>
-                            <select
-                                value={comparison}
-                                onChange={(e) => setComparison(e.target.value)}
-                                className="border border-[var(--color-dark-natural)] px-4 py-2 rounded-lg text-sm bg-white text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent w-full md:w-auto transition-colors"
-                            >
-                                <option>Previous Year</option>
-                                <option>Previous Period</option>
-                            </select>
-                            
                             <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
                                 <label className="text-sm font-medium text-[var(--color-dark-green)] md:hidden">Date Range:</label>
                                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
                                     <input
                                         type="date"
-                                        value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
+                                        value={tempStartDate}
+                                        onChange={(e) => setTempStartDate(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
                                     <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
                                     <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
                                     <input
                                         type="date"
-                                        value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
+                                        value={tempEndDate}
+                                        onChange={(e) => setTempEndDate(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
                                 </div>
                             </div>
+                            
+                            <button
+                                onClick={handleApplyDates}
+                                disabled={isFetchingData}
+                                className="bg-[var(--color-lime)] hover:bg-[var(--color-lime-dark)] text-[var(--color-dark-green)] font-medium px-6 py-2 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full md:w-auto justify-center"
+                            >
+                                {isFetchingData ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--color-dark-green)]"></div>
+                                        Loading...
+                                    </>
+                                ) : (
+                                    'Apply'
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>

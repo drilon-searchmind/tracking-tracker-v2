@@ -1,4 +1,6 @@
-import { queryBigQueryRollUpMetrics } from "../../../lib/bigQueryConnect";
+import { fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
+import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
+import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import currencyExchangeData from "../../../lib/static-data/currencyApiValues.json";
 import { dbConnect } from "@/lib/dbConnect";
 import CustomerSettings from "../../../models/CustomerSettings";
@@ -49,80 +51,183 @@ export async function POST(req) {
             return new Response(JSON.stringify({ error: "Both startDate and endDate must be provided" }), { status: 400 });
         }
 
+        console.log(`[Roll-Up API] Fetching metrics for ${childCustomers.length} customers from ${startDate} to ${endDate}`);
+
         // Connect to database
         await dbConnect();
         
-        // Create a map of customer ID to currency code and changeCurrency setting
-        const customerSettingsMap = {};
-        for (const customer of childCustomers) {
+        // Fetch all customer data in parallel
+        const customerDataPromises = childCustomers.map(async (customer) => {
             try {
-                const customerSettings = await CustomerSettings.findOne({ 
-                    customer: customer._id 
+                // Fetch customer settings
+                const customerSettings = await CustomerSettings.findOne({ customer: customer._id });
+                
+                const shopifyUrl = customerSettings?.shopifyUrl || "";
+                const shopifyApiPassword = customerSettings?.shopifyApiPassword || "";
+                const facebookAdAccountId = customerSettings?.facebookAdAccountId || "";
+                const googleAdsCustomerId = customerSettings?.googleAdsCustomerId || "";
+                const currencyCode = customerSettings?.customerValutaCode || "DKK";
+                const changeCurrency = customerSettings?.changeCurrency ?? true;
+
+                // Shopify API configuration
+                const shopifyConfig = {
+                    shopUrl: shopifyUrl || process.env.TEMP_SHOPIFY_URL,
+                    accessToken: shopifyApiPassword || process.env.TEMP_SHOPIFY_PASSWORD,
+                    startDate,
+                    endDate
+                };
+
+                // Facebook Ads API configuration
+                const facebookConfig = {
+                    accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
+                    adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
+                    startDate,
+                    endDate
+                };
+
+                // Google Ads API configuration
+                const googleAdsConfig = {
+                    developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
+                    clientId: process.env.GOOGLE_ADS_CLIENT_ID,
+                    clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
+                    refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
+                    customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID,
+                    managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
+                    startDate,
+                    endDate
+                };
+
+                // Fetch all data in parallel
+                const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
+                    fetchShopifyOrderMetrics(shopifyConfig).catch(err => {
+                        console.error(`Failed to fetch Shopify data for ${customer.name}:`, err.message);
+                        return [];
+                    }),
+                    fetchFacebookAdsMetrics(facebookConfig).catch(err => {
+                        console.error(`Failed to fetch Facebook Ads data for ${customer.name}:`, err.message);
+                        return [];
+                    }),
+                    fetchGoogleAdsMetrics(googleAdsConfig).catch(err => {
+                        console.error(`Failed to fetch Google Ads data for ${customer.name}:`, err.message);
+                        return [];
+                    })
+                ]);
+
+                // Merge data by date
+                const dataByDate = {};
+
+                // Process Shopify data
+                shopifyMetrics.forEach(row => {
+                    dataByDate[row.date] = {
+                        date: row.date,
+                        revenue: row.revenue || 0,
+                        orders: row.orders || 0,
+                        ps_cost: 0,
+                        ppc_cost: 0,
+                        total_ad_spend: 0,
+                    };
                 });
-                customerSettingsMap[customer._id] = {
-                    currencyCode: customerSettings?.customerValutaCode || "DKK",
-                    changeCurrency: customerSettings?.changeCurrency ?? true
+
+                // Add Facebook Ads data
+                facebookAdsData.forEach(row => {
+                    if (!dataByDate[row.date]) {
+                        dataByDate[row.date] = {
+                            date: row.date,
+                            revenue: 0,
+                            orders: 0,
+                            ps_cost: 0,
+                            ppc_cost: 0,
+                            total_ad_spend: 0,
+                        };
+                    }
+                    dataByDate[row.date].ps_cost = row.ps_cost || 0;
+                    dataByDate[row.date].total_ad_spend += row.ps_cost || 0;
+                });
+
+                // Add Google Ads data
+                googleAdsData.forEach(row => {
+                    if (!dataByDate[row.date]) {
+                        dataByDate[row.date] = {
+                            date: row.date,
+                            revenue: 0,
+                            orders: 0,
+                            ps_cost: 0,
+                            ppc_cost: 0,
+                            total_ad_spend: 0,
+                        };
+                    }
+                    dataByDate[row.date].ppc_cost = row.ppc_cost || 0;
+                    dataByDate[row.date].total_ad_spend += row.ppc_cost || 0;
+                });
+
+                // Convert to array and apply currency conversion
+                const dailyData = Object.values(dataByDate).map(row => ({
+                    ...row,
+                    customer_id: customer._id,
+                    customer_name: customer.name,
+                }));
+
+                return {
+                    customer_id: customer._id,
+                    customer_name: customer.name,
+                    currencyCode,
+                    changeCurrency,
+                    dailyData
                 };
+
             } catch (error) {
-                console.warn(`Could not fetch settings for customer ${customer._id}:`, error);
-                customerSettingsMap[customer._id] = {
+                console.error(`Error fetching data for customer ${customer.name}:`, error);
+                return {
+                    customer_id: customer._id,
+                    customer_name: customer.name,
                     currencyCode: "DKK",
-                    changeCurrency: true
+                    changeCurrency: true,
+                    dailyData: []
                 };
-            }
-        }
-
-        const rollUpMetrics = await queryBigQueryRollUpMetrics({ childCustomers, startDate, endDate, customerSettingsMap });
-
-        // Aggregate the daily data by customer with currency conversion
-        const customerAggregations = {};
-        
-        rollUpMetrics.forEach(row => {
-            const customerId = row.customer_id;
-            const customerSettings = customerSettingsMap[customerId] || { currencyCode: "DKK", changeCurrency: true };
-            
-            // Convert the row data if needed
-            const convertedRow = convertDataRow(row, customerSettings.currencyCode, customerSettings.changeCurrency);
-            
-            if (!customerAggregations[customerId]) {
-                customerAggregations[customerId] = {
-                    customer_id: customerId,
-                    customer_name: row.customer_name,
-                    revenue: 0,
-                    revenue_ex_tax: 0,
-                    orders: 0,
-                    total_ad_spend: 0,
-                    ps_cost: 0,
-                    ppc_cost: 0,
-                    days_with_data: 0
-                };
-            }
-            
-            // Aggregate the metrics using converted values
-            customerAggregations[customerId].revenue += parseFloat(convertedRow.revenue) || 0;
-            customerAggregations[customerId].revenue_ex_tax += parseFloat(convertedRow.revenue_ex_tax) || 0;
-            customerAggregations[customerId].orders += parseInt(convertedRow.orders) || 0;
-            customerAggregations[customerId].ps_cost += parseFloat(convertedRow.ps_cost) || 0;
-            customerAggregations[customerId].ppc_cost += parseFloat(convertedRow.ppc_cost) || 0;
-            customerAggregations[customerId].total_ad_spend += parseFloat(convertedRow.total_ad_spend) || 0;
-            
-            // Count days with data (for potential averaging)
-            if (convertedRow.revenue > 0 || convertedRow.orders > 0 || convertedRow.total_ad_spend > 0) {
-                customerAggregations[customerId].days_with_data++;
             }
         });
 
-        // Calculate derived metrics (ROAS, AOV)
-        const aggregatedMetrics = Object.values(customerAggregations).map(customer => {
-            const roas = customer.total_ad_spend > 0 ? customer.revenue / customer.total_ad_spend : 0;
-            const aov = customer.orders > 0 ? customer.revenue / customer.orders : 0;
-            
+        const customerDataResults = await Promise.all(customerDataPromises);
+
+        // Aggregate the data by customer
+        const aggregatedMetrics = customerDataResults.map(customerData => {
+            const { customer_id, customer_name, currencyCode, changeCurrency, dailyData } = customerData;
+
+            // Sum up all daily metrics
+            const totals = dailyData.reduce((acc, row) => {
+                // Apply currency conversion if needed
+                const revenue = changeCurrency && currencyCode !== "DKK" 
+                    ? convertCurrency(row.revenue, currencyCode, "DKK")
+                    : row.revenue;
+
+                return {
+                    revenue: acc.revenue + revenue,
+                    orders: acc.orders + row.orders,
+                    ps_cost: acc.ps_cost + row.ps_cost,
+                    ppc_cost: acc.ppc_cost + row.ppc_cost,
+                    total_ad_spend: acc.total_ad_spend + row.total_ad_spend,
+                };
+            }, { revenue: 0, orders: 0, ps_cost: 0, ppc_cost: 0, total_ad_spend: 0 });
+
+            // Calculate derived metrics
+            const roas = totals.total_ad_spend > 0 ? totals.revenue / totals.total_ad_spend : 0;
+            const aov = totals.orders > 0 ? totals.revenue / totals.orders : 0;
+
             return {
-                ...customer,
-                roas: roas,
-                aov: aov
+                customer_id,
+                customer_name,
+                revenue: totals.revenue,
+                orders: totals.orders,
+                total_ad_spend: totals.total_ad_spend,
+                ps_cost: totals.ps_cost,
+                ppc_cost: totals.ppc_cost,
+                roas,
+                aov,
+                days_with_data: dailyData.length
             };
         });
+
+        console.log(`[Roll-Up API] Successfully aggregated metrics for ${aggregatedMetrics.length} customers`);
 
         return new Response(JSON.stringify({ customer_metrics: aggregatedMetrics }), { status: 200 });
     } catch (error) {

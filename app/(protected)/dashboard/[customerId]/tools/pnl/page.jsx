@@ -1,10 +1,81 @@
 import PnLDashboard from "./pnl-dashboard";
-import { queryBigQueryPNLMetrics } from "@/lib/bigQueryConnect";
+import { fetchShopifyPnLMetrics } from "@/lib/shopifyApi";
+import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
+import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 import { dbConnect } from "@/lib/dbConnect";
 import StaticExpenses from "@/models/StaticExpenses";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
+
+/**
+ * Helper function to merge Shopify, Facebook Ads, and Google Ads data for P&L
+ */
+function mergePnLData(shopifyMetrics, facebookAdsData, googleAdsData) {
+    const dataByDate = {};
+
+    // Process Shopify data
+    shopifyMetrics.forEach(row => {
+        dataByDate[row.date] = {
+            date: row.date,
+            net_sales: row.net_sales || 0,
+            gross_sales: row.gross_sales || 0,
+            total_discounts: row.total_discounts || 0,
+            total_refunds: row.total_refunds || 0,
+            shipping_fees: row.shipping_fees || 0,
+            total_taxes: row.total_taxes || 0,
+            orders: row.orders || 0,
+            marketing_spend_facebook: 0,
+            marketing_spend_google: 0,
+            total_marketing_spend: 0,
+        };
+    });
+
+    // Add Facebook Ads data
+    facebookAdsData.forEach(row => {
+        if (!dataByDate[row.date]) {
+            dataByDate[row.date] = {
+                date: row.date,
+                net_sales: 0,
+                gross_sales: 0,
+                total_discounts: 0,
+                total_refunds: 0,
+                shipping_fees: 0,
+                total_taxes: 0,
+                orders: 0,
+                marketing_spend_facebook: 0,
+                marketing_spend_google: 0,
+                total_marketing_spend: 0,
+            };
+        }
+        dataByDate[row.date].marketing_spend_facebook = row.ps_cost || 0;
+        dataByDate[row.date].total_marketing_spend += row.ps_cost || 0;
+    });
+
+    // Add Google Ads data
+    googleAdsData.forEach(row => {
+        if (!dataByDate[row.date]) {
+            dataByDate[row.date] = {
+                date: row.date,
+                net_sales: 0,
+                gross_sales: 0,
+                total_discounts: 0,
+                total_refunds: 0,
+                shipping_fees: 0,
+                total_taxes: 0,
+                orders: 0,
+                marketing_spend_facebook: 0,
+                marketing_spend_google: 0,
+                total_marketing_spend: 0,
+            };
+        }
+        dataByDate[row.date].marketing_spend_google = row.ppc_cost || 0;
+        dataByDate[row.date].total_marketing_spend += row.ppc_cost || 0;
+    });
+
+    const result = Object.values(dataByDate);
+    return result.sort((a, b) => a.date.localeCompare(b.date));
+}
 
 export default async function PnLPage({ params }) {
     const resolvedParams = await params;
@@ -38,197 +109,81 @@ export default async function PnLPage({ params }) {
     }
 
     try {
-        const { bigQueryCustomerId, bigQueryProjectId, customerName, customerMetaID, customerValutaCode, customerMetaIDExclude, customerType } = await fetchCustomerDetails(customerId);
-        let projectId = bigQueryProjectId;
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
 
-        const buildFacebookWhereClause = () => {
-            const conditions = [];
-            
-            if (customerMetaID?.trim()) {
-                conditions.push(`country = "${customerMetaID}"`);
-            }
-            
-            if (customerMetaIDExclude?.trim()) {
-                const excludeList = customerMetaIDExclude
-                    .split(',')
-                    .map(c => `"${c.trim()}"`)
-                    .filter(c => c !== '""')
-                    .join(', ');
-                
-                if (excludeList) {
-                    conditions.push(`country NOT IN (${excludeList})`);
-                }
-            }
-            
-            return conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        // Calculate date range for initial data (last 30 days)
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const startDate = new Date(yesterday);
+        startDate.setDate(yesterday.getDate() - 30);
+
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         };
 
-        const facebookWhereClause = buildFacebookWhereClause();
+        const startDateStr = formatDate(startDate);
+        const endDateStr = formatDate(yesterday);
 
-        const dashboardQuery = `
-            WITH combined_metrics AS (
-                SELECT
-                    COALESCE(s.date, f.date, g.date) AS date,
-                    COALESCE(s.net_sales, 0) AS net_sales,
-                    COALESCE(s.gross_sales, 0) AS gross_sales,
-                    COALESCE(s.total_discounts, 0) AS total_discounts,
-                    COALESCE(s.total_refunds, 0) AS total_refunds,
-                    COALESCE(s.shipping_fees, 0) AS shipping_fees,
-                    COALESCE(s.total_taxes, 0) AS total_taxes,
-                    COALESCE(s.orders, 0) AS orders,
-                    COALESCE(f.marketing_spend_facebook, 0) AS marketing_spend_facebook,
-                    COALESCE(g.marketing_spend_google, 0) AS marketing_spend_google,
-                    COALESCE(f.marketing_spend_facebook, 0) + COALESCE(g.marketing_spend_google, 0) AS total_marketing_spend
-                FROM (
-                    ${customerType === "Shopify" ? `
-                    WITH orders AS (
-                        SELECT
-                            DATE(DATETIME(created_at, "Europe/Copenhagen")) AS date,
-                            -- Extract billing components directly from fields
-                            SUM(CAST(total_line_items_price AS FLOAT64)) AS gross_sales,
-                            SUM(CAST(total_discounts AS FLOAT64)) AS total_discounts,
-                            SUM(CAST(total_tax AS FLOAT64)) AS total_taxes,
-                            -- Extract shipping fees from shipping_lines JSON
-                            SUM(
-                                (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(shipping_line, '$.price') AS FLOAT64))
-                                FROM UNNEST(JSON_EXTRACT_ARRAY(shipping_lines)) AS shipping_line)
-                            ) AS shipping_fees,
-                            SUM(CAST(total_price AS FLOAT64)) AS total_price,
-                            COUNT(*) AS order_count
-                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_orders\`
-                        WHERE presentment_currency = "${customerValutaCode}"
-                        GROUP BY DATE(DATETIME(created_at, "Europe/Copenhagen"))
-                    ),
-                    refunds AS (
-                        SELECT
-                            DATE(DATETIME(created_at, "Europe/Copenhagen")) AS date,
-                            -- Extract refund amounts from refund_line_items using proper JSON handling
-                            SUM(
-                                (SELECT SUM(CAST(JSON_EXTRACT_SCALAR(refund_line_item, '$.subtotal') AS FLOAT64))
-                                FROM UNNEST(JSON_EXTRACT_ARRAY(refund_line_items)) AS refund_line_item)
-                            ) AS total_refunds
-                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.shopify_order_refunds\`
-                        WHERE refund_line_items IS NOT NULL 
-                            AND ARRAY_LENGTH(JSON_EXTRACT_ARRAY(refund_line_items)) > 0
-                        GROUP BY DATE(DATETIME(created_at, "Europe/Copenhagen"))
-                    )
-                    SELECT
-                        CAST(o.date AS STRING) AS date,
-                        o.gross_sales,
-                        o.total_discounts,
-                        COALESCE(r.total_refunds, 0) AS total_refunds,
-                        o.shipping_fees,
-                        o.total_taxes,
-                        o.total_price - COALESCE(r.total_refunds, 0) AS net_sales,
-                        o.order_count AS orders
-                    FROM
-                        orders o
-                    LEFT JOIN
-                        refunds r ON o.date = r.date
-                    ` : `
-                    -- WooCommerce version (existing logic)
-                    WITH orders AS (
-                        SELECT
-                            DATE(TIMESTAMP(date_created)) AS date,
-                            SUM(CAST(total AS FLOAT64)) AS gross_sales,
-                            SUM(CAST(discount_total AS FLOAT64)) AS total_discounts,
-                            SUM(CAST(total_tax AS FLOAT64)) AS total_taxes,
-                            SUM(CAST(shipping_total AS FLOAT64)) AS shipping_fees,
-                            SUM(CAST(total AS FLOAT64)) AS total_price,
-                            COUNT(*) AS order_count
-                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.woocommerce_orders\`
-                        WHERE currency = "${customerValutaCode}"
-                        GROUP BY DATE(TIMESTAMP(date_created))
-                    ),
-                    refunds AS (
-                        SELECT
-                            DATE(TIMESTAMP(date_created)) AS date,
-                            SUM(CAST(amount AS FLOAT64)) AS total_refunds
-                        FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.woocommerce_refunds\`
-                        GROUP BY DATE(TIMESTAMP(date_created))
-                    )
-                    SELECT
-                        CAST(o.date AS STRING) AS date,
-                        o.gross_sales,
-                        o.total_discounts,
-                        COALESCE(r.total_refunds, 0) AS total_refunds,
-                        o.shipping_fees,
-                        o.total_taxes,
-                        o.total_price - COALESCE(r.total_refunds, 0) AS net_sales,
-                        o.order_count AS orders
-                    FROM
-                        orders o
-                    LEFT JOIN
-                        refunds r ON o.date = r.date
-                    `}
-                ) s
-                -- ...existing Facebook and Google joins...
-                FULL OUTER JOIN (
-                    SELECT
-                        CAST(date_start AS STRING) AS date,
-                        SUM(COALESCE(spend, 0)) AS marketing_spend_facebook
-                    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.meta_ads_insights_demographics_country\`
-                    ${facebookWhereClause}
-                    GROUP BY date_start
-                ) f ON s.date = f.date
-                FULL OUTER JOIN (
-                    SELECT
-                        CAST(segments_date AS STRING) AS date,
-                        SUM(COALESCE(metrics_cost_micros / 1000000.0, 0)) AS marketing_spend_google
-                    FROM \`${projectId}.${bigQueryCustomerId.replace("airbyte_", "airbyte_")}.google_ads_campaign\`
-                    WHERE segments_date IS NOT NULL
-                    GROUP BY segments_date
-                ) g ON COALESCE(s.date, f.date) = g.date
-                WHERE COALESCE(s.date, f.date, g.date) IS NOT NULL
-            )
-            SELECT
-                ARRAY_AGG(STRUCT(
-                    date,
-                    net_sales,
-                    gross_sales,
-                    total_discounts,
-                    total_refunds,
-                    shipping_fees,
-                    total_taxes,
-                    orders,
-                    total_marketing_spend,
-                    marketing_spend_facebook,
-                    marketing_spend_google
-                ) ORDER BY date) AS metrics_by_date
-            FROM combined_metrics
-        `;
+        // Shopify API configuration
+        const shopifyConfig = {
+            shopUrl: shopifyUrl || process.env.TEMP_SHOPIFY_URL,
+            accessToken: shopifyApiPassword || process.env.TEMP_SHOPIFY_PASSWORD,
+            startDate: startDateStr,
+            endDate: endDateStr
+        };
 
-        const data = await queryBigQueryPNLMetrics({
-            tableId: projectId,
-            customerId: bigQueryCustomerId,
-            customQuery: dashboardQuery,
-        });
+        // Facebook Ads API configuration
+        const facebookConfig = {
+            accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
+            adAccountId: facebookAdAccountId,
+            startDate: startDateStr,
+            endDate: endDateStr,
+            countryCode: customerMetaID || undefined // Filter by country if specified
+        };
 
-        if (!data || !data[0] || !data[0].metrics_by_date) {
-            console.warn("No data returned from BigQuery for customerId:", customerId);
-            return <div>No data available for {customerId}</div>;
-        }
+        // Google Ads API configuration
+        const googleAdsConfig = {
+            developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
+            clientId: process.env.GOOGLE_ADS_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET,
+            refreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN,
+            customerId: googleAdsCustomerId || process.env.GOOGLE_ADS_CUSTOMER_ID,
+            managerCustomerId: process.env.GOOGLE_ADS_MANAGER_CUSTOMER_ID,
+            startDate: startDateStr,
+            endDate: endDateStr
+        };
 
-        const serializedMetricsByDate = data[0].metrics_by_date.map(row => ({
-            date: row.date,
-            net_sales: Number(row.net_sales || 0),
-            gross_sales: Number(row.gross_sales || 0),
-            total_discounts: Number(row.total_discounts || 0),
-            total_refunds: Number(row.total_refunds || 0),
-            shipping_fees: Number(row.shipping_fees || 0),
-            total_taxes: Number(row.total_taxes || 0),
-            orders: Number(row.orders || 0),
-            total_marketing_spend: Number(row.total_marketing_spend || 0),
-            marketing_spend_facebook: Number(row.marketing_spend_facebook || 0),
-            marketing_spend_google: Number(row.marketing_spend_google || 0),
-        }));
+        // Fetch initial data (last 30 days) in parallel
+        const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
+            fetchShopifyPnLMetrics(shopifyConfig).catch(err => {
+                console.error("Failed to fetch Shopify data:", err.message);
+                return [];
+            }),
+            fetchFacebookAdsMetrics(facebookConfig).catch(err => {
+                console.error("Failed to fetch Facebook Ads data:", err.message);
+                return [];
+            }),
+            fetchGoogleAdsMetrics(googleAdsConfig).catch(err => {
+                console.error("Failed to fetch Google Ads data:", err.message);
+                return [];
+            })
+        ]);
+
+        // Merge all data sources
+        const metrics_by_date = mergePnLData(shopifyMetrics, facebookAdsData, googleAdsData);
+
+        console.log(`[P&L] Fetched ${metrics_by_date.length} days of initial data for ${customerId}`);
 
         return (
             <PnLDashboard
                 customerId={customerId}
                 customerName={customerName}
                 customerValutaCode={customerValutaCode}
-                initialData={{ metrics_by_date: serializedMetricsByDate, staticExpenses }}
+                initialData={{ metrics_by_date, staticExpenses }}
             />
         );
     } catch (error) {

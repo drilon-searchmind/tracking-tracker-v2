@@ -96,17 +96,21 @@ export default function PerformanceDashboard({ customerId, customerName, custome
         return `${year}-${month}-${day}`;
     };
 
-    const [comparison, setComparison] = useState("Previous Year");
+    const [comparison, setComparison] = useState("Previous Period");
     const [dateStart, setDateStart] = useState(formatDate(firstDayOfMonth));
     const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
+    const [tempDateStart, setTempDateStart] = useState(formatDate(firstDayOfMonth));
+    const [tempDateEnd, setTempDateEnd] = useState(formatDate(yesterday));
     const [isLoading, setIsLoading] = useState(true);
+    const [isFetchingData, setIsFetchingData] = useState(false);
     const [initialLoadComplete, setInitialLoadComplete] = useState(false);
     const [changeCurrency, setChangeCurrency] = useState(true);
+    const [fetchedData, setFetchedData] = useState(initialData);
 
-    const [revenueViewMode, setRevenueViewMode] = useState("YTD");
-    const [spendViewMode, setSpendViewMode] = useState("YTD");
-    const [aovViewMode, setAovViewMode] = useState("YTD");
-    const [sessionsViewMode, setSessionsViewMode] = useState("YTD");
+    const [revenueViewMode, setRevenueViewMode] = useState("Period");
+    const [spendViewMode, setSpendViewMode] = useState("Period");
+    const [aovViewMode, setAovViewMode] = useState("Period");
+    const [sessionsViewMode, setSessionsViewMode] = useState("Period");
 
     // Period granularity states (for when viewMode is "Period")
     const [revenuePeriodGranularity, setRevenuePeriodGranularity] = useState("Daily");
@@ -131,8 +135,8 @@ export default function PerformanceDashboard({ customerId, customerName, custome
     }, [customerId]);
 
     const data = useMemo(() => {
-        return Array.isArray(initialData) ? initialData.map(row => convertDataRow(row, customerValutaCode, changeCurrency)) : [];
-    }, [initialData, customerValutaCode, changeCurrency]);
+        return Array.isArray(fetchedData) ? fetchedData.map(row => convertDataRow(row, customerValutaCode, changeCurrency)) : [];
+    }, [fetchedData, customerValutaCode, changeCurrency]);
 
     useEffect(() => {
         if (initialData) {
@@ -145,17 +149,100 @@ export default function PerformanceDashboard({ customerId, customerName, custome
         }
     }, [initialData]);
 
-    useEffect(() => {
-        if (initialLoadComplete) {
-            return;
+    // Function to fetch data for current period and comparison period
+    const fetchPerformanceData = async (start, end, compStart, compEnd) => {
+        setIsFetchingData(true);
+        try {
+            console.log(`Fetching data: Current (${start} to ${end}), Comparison (${compStart} to ${compEnd})`);
+            
+            // Calculate the full date range needed (current + comparison)
+            const allDates = [start, end, compStart, compEnd].sort();
+            const earliestDate = allDates[0];
+            const latestDate = allDates[allDates.length - 1];
+
+            const response = await fetch(
+                `/api/performance-dashboard/${customerId}?startDate=${earliestDate}&endDate=${latestDate}`
+            );
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            setFetchedData(result.data || []);
+            console.log(`Successfully fetched ${result.data?.length || 0} days of data`);
+        } catch (error) {
+            console.error("Error fetching performance data:", error);
+            setFetchedData([]);
+        } finally {
+            setIsFetchingData(false);
+        }
+    };
+
+    // Handle Apply button click
+    const handleApplyDates = () => {
+        setDateStart(tempDateStart);
+        setDateEnd(tempDateEnd);
+        
+        // Calculate comparison dates
+        const end = new Date(tempDateEnd);
+        const start = new Date(tempDateStart);
+        const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+        let compStart, compEnd;
+        if (comparison === "Previous Year") {
+            const compStartDate = new Date(start);
+            compStartDate.setFullYear(compStartDate.getFullYear() - 1);
+            const compEndDate = new Date(end);
+            compEndDate.setFullYear(compEndDate.getFullYear() - 1);
+            compStart = formatDate(compStartDate);
+            compEnd = formatDate(compEndDate);
+        } else {
+            const compStartDate = new Date(start);
+            compStartDate.setDate(compStartDate.getDate() - daysDiff - 1);
+            const compEndDate = new Date(end);
+            compEndDate.setDate(compEndDate.getDate() - daysDiff - 1);
+            compStart = formatDate(compStartDate);
+            compEnd = formatDate(compEndDate);
         }
 
-        setIsLoading(true);
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 800);
-        return () => clearTimeout(timer);
-    }, [dateStart, dateEnd, comparison, initialLoadComplete]);
+        // Fetch data for both periods
+        fetchPerformanceData(tempDateStart, tempDateEnd, compStart, compEnd);
+    };
+
+    // Initial load - fetch data for current period and previous period
+    useEffect(() => {
+        if (initialData && !initialLoadComplete) {
+            const timer = setTimeout(() => {
+                setIsLoading(false);
+                setInitialLoadComplete(true);
+                
+                // Don't fetch data automatically - we already have initialData from server
+                // Only fetch when user clicks Apply or changes comparison period
+                console.log("Initial data loaded from server, skipping automatic fetch");
+            }, 100);
+
+            return () => clearTimeout(timer);
+        }
+    }, [initialData, initialLoadComplete]);
+
+    useEffect(() => {
+        const fetchCustomerSettings = async () => {
+            try {
+                const response = await fetch(`/api/customer-settings/${customerId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data?.data?.convertCurrency !== undefined) {
+                        setChangeCurrency(data.data.convertCurrency);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching customer settings:", error);
+            }
+        }
+
+        fetchCustomerSettings()
+    }, [customerId]);
 
     const formatComparisonDate = (date) => {
         if (!date) return '';
@@ -324,6 +411,17 @@ export default function PerformanceDashboard({ customerId, customerName, custome
     const currentMetrics = aggregateMetrics(filteredData);
     const prevMetrics = aggregateMetrics(comparisonData);
 
+    // Debug logging
+    console.log("=== Performance Dashboard Debug ===");
+    console.log("Date Range:", dateStart, "to", dateEnd);
+    console.log("Comparison Range:", compStart, "to", compEnd);
+    console.log("Total data rows:", data.length);
+    console.log("Filtered data rows:", filteredData.length);
+    console.log("Comparison data rows:", comparisonData.length);
+    console.log("Current Metrics:", currentMetrics);
+    console.log("Prev Metrics:", prevMetrics);
+    console.log("Sample filtered data:", filteredData.slice(0, 3));
+
     const validChartData = filteredData.filter(
         (row) => row.date && !isNaN(new Date(row.date).getTime()) && row.revenue !== 0 && row.aov !== 0
     );
@@ -375,6 +473,16 @@ export default function PerformanceDashboard({ customerId, customerName, custome
 
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+            {/* Loading Overlay - positioned at top level */}
+            {isFetchingData && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center">
+                    <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center gap-4 border-2 border-[var(--color-lime)]">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[var(--color-lime)]"></div>
+                        <p className="text-[var(--color-dark-green)] font-medium">Loading performance data...</p>
+                    </div>
+                </div>
+            )}
+            
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
                 <Image
@@ -424,20 +532,36 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
                                     <input
                                         type="date"
-                                        value={dateStart}
-                                        onChange={(e) => setDateStart(e.target.value)}
+                                        value={tempDateStart}
+                                        onChange={(e) => setTempDateStart(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
                                     <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
                                     <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
                                     <input
                                         type="date"
-                                        value={dateEnd}
-                                        onChange={(e) => setDateEnd(e.target.value)}
+                                        value={tempDateEnd}
+                                        onChange={(e) => setTempDateEnd(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
                                 </div>
                             </div>
+
+                            <button
+                                onClick={handleApplyDates}
+                                disabled={isFetchingData}
+                                className="bg-[var(--color-lime)] hover:bg-[var(--color-lime-dark)] text-[var(--color-dark-green)] font-medium px-6 py-2 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+                            >
+                                {isFetchingData ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Loading...
+                                    </span>
+                                ) : 'Apply'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -479,8 +603,11 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                         formatComparisonDate={formatComparisonDate}
                     />
 
+                    {/* TODO: Re-enable after migrating to native APIs */}
+
                     {/* Customer Segmentation Charts */}
-                    <CustomerSegmentationCharts 
+                    {/* Temporarily disabled - needs migration to native APIs */}
+                    {/* <CustomerSegmentationCharts 
                         customerId={customerId}
                         customerType="Shopify" // This could be dynamic based on customer data
                         dateStart={dateStart}
@@ -488,7 +615,7 @@ export default function PerformanceDashboard({ customerId, customerName, custome
                         compStart={compStart}
                         compEnd={compEnd}
                         comparison={comparison}
-                    />
+                    /> */}
 
                     {/* Service Dashboards */}
                     {/* <ServiceDashboards /> */}

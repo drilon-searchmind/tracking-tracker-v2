@@ -105,7 +105,12 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     metaCustomerCountry: apiData.customerMetaID || "",
                     excludeMetaCountries: apiData.customerMetaIDExclude || "",
                     parentCustomer: customerData.parentCustomer?._id || "",
-                    changeCurrency: apiData.changeCurrency !== undefined ? apiData.changeCurrency : true
+                    changeCurrency: apiData.changeCurrency !== undefined ? apiData.changeCurrency : true,
+                    customerRevenueType: apiData.customerRevenueType || "total_sales",
+                    shopifyUrl: apiData.shopifyUrl || "",
+                    shopifyApiPassword: apiData.shopifyApiPassword || "",
+                    facebookAdAccountId: apiData.facebookAdAccountId || "",
+                    googleAdsCustomerId: apiData.googleAdsCustomerId || ""
                 });
                 
                 setParentCustomers(parentCustomersData || []);
@@ -118,7 +123,12 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     metaCustomerCountry: "",
                     excludeMetaCountries: "",
                     parentCustomer: "",
-                    changeCurrency: true
+                    changeCurrency: true,
+                    customerRevenueType: "total_sales",
+                    shopifyUrl: "",
+                    shopifyApiPassword: "",
+                    facebookAdAccountId: "",
+                    googleAdsCustomerId: ""
                 });
                 setParentCustomers([]);
             } finally {
@@ -194,7 +204,12 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                 customerClickupID: settings.clickupId,
                 customerMetaID: settings.metaCustomerCountry,
                 customerMetaIDExclude: settings.excludeMetaCountries,
-                changeCurrency: settings.changeCurrency ?? true // Default to true if undefined
+                changeCurrency: settings.changeCurrency ?? true,
+                customerRevenueType: settings.customerRevenueType || "total_sales",
+                shopifyUrl: settings.shopifyUrl || "",
+                shopifyApiPassword: settings.shopifyApiPassword || "",
+                facebookAdAccountId: settings.facebookAdAccountId || "",
+                googleAdsCustomerId: settings.googleAdsCustomerId || "" // Default to true if undefined
             };
             
             console.log("Frontend: Current settings state:", settings);
@@ -385,6 +400,18 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                     </div>
 
                     <div>
+                        <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Revenue Type</label>
+                        <select
+                            value={settings?.customerRevenueType || "total_sales"}
+                            onChange={(e) => setSettings({ ...settings, customerRevenueType: e.target.value })}
+                            className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                        >
+                            <option value="total_sales">Total Sales</option>
+                            <option value="net_sales">Net Sales</option>
+                        </select>
+                    </div>
+
+                    <div>
                         <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Change Currency</label>
                         <div className="flex items-center space-x-3">
                             <button
@@ -551,6 +578,67 @@ export default function ConfigCustomerSettings({ customerId, baseUrl }) {
                                     </div>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* API Configuration Section */}
+                <div className="mt-8 pt-8 border-t border-[var(--color-dark-natural)]">
+                    <h3 className="font-semibold text-base text-[var(--color-dark-green)] mb-4">API Configuration</h3>
+                    <p className="text-xs text-[var(--color-green)] mb-6">Configure API credentials for data integrations</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Shopify API */}
+                        <div className="md:col-span-2">
+                            <h4 className="font-medium text-sm text-[var(--color-dark-green)] mb-3">Shopify API</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Shopify URL</label>
+                                    <input
+                                        type="text"
+                                        value={settings?.shopifyUrl || ""}
+                                        onChange={(e) => setSettings({ ...settings, shopifyUrl: e.target.value })}
+                                        className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                        placeholder="example.myshopify.com"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Shopify API Password</label>
+                                    <input
+                                        type="password"
+                                        value={settings?.shopifyApiPassword || ""}
+                                        onChange={(e) => setSettings({ ...settings, shopifyApiPassword: e.target.value })}
+                                        className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                        placeholder="shpat_xxxxx"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Facebook Ads API */}
+                        <div>
+                            <h4 className="font-medium text-sm text-[var(--color-dark-green)] mb-3">Facebook Ads API</h4>
+                            <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Ad Account ID</label>
+                            <input
+                                type="text"
+                                value={settings?.facebookAdAccountId || ""}
+                                onChange={(e) => setSettings({ ...settings, facebookAdAccountId: e.target.value })}
+                                className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                placeholder="act_123456789"
+                            />
+                        </div>
+
+                        {/* Google Ads API */}
+                        <div>
+                            <h4 className="font-medium text-sm text-[var(--color-dark-green)] mb-3">Google Ads API</h4>
+                            <label className="block text-sm font-medium text-[var(--color-dark-green)] mb-2">Customer ID</label>
+                            <input
+                                type="text"
+                                value={settings?.googleAdsCustomerId || ""}
+                                onChange={(e) => setSettings({ ...settings, googleAdsCustomerId: e.target.value })}
+                                className="w-full border border-[var(--color-dark-natural)] rounded-lg px-3 py-2 text-sm text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
+                                placeholder="1234567890"
+                            />
                         </div>
                     </div>
                 </div>

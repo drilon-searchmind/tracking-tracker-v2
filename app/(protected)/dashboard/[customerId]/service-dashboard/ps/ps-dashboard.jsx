@@ -48,24 +48,54 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
         return `${year}-${month}-${day}`;
     };
 
-    const [comparison, setComparison] = useState("Previous Year");
+    const [comparison, setComparison] = useState("Previous Period");
     const [startDate, setStartDate] = useState(formatDate(firstDayOfMonth));
     const [endDate, setEndDate] = useState(formatDate(yesterday));
+    const [tempStartDate, setTempStartDate] = useState(formatDate(firstDayOfMonth));
+    const [tempEndDate, setTempEndDate] = useState(formatDate(yesterday));
     const [selectedMetric, setSelectedMetric] = useState("Ad Spend");
     const [cpcMetric, setCpcMetric] = useState("CPC");
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [expandedCampaigns, setExpandedCampaigns] = useState({});
     const [showAllMetrics, setShowAllMetrics] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [dashboardData, setDashboardData] = useState(initialData || null);
     
     // View mode and granularity states
-    const [metricsViewMode, setMetricsViewMode] = useState("YTD");
+    const [metricsViewMode, setMetricsViewMode] = useState("Period");
     const [metricsPeriodGranularity, setMetricsPeriodGranularity] = useState("Daily");
-    const [campaignsViewMode, setCampaignsViewMode] = useState("YTD");
+    const [campaignsViewMode, setCampaignsViewMode] = useState("Period");
     const [campaignsPeriodGranularity, setCampaignsPeriodGranularity] = useState("Daily");
-    const [cpcViewMode, setCpcViewMode] = useState("YTD");
+    const [cpcViewMode, setCpcViewMode] = useState("Period");
     const [cpcPeriodGranularity, setCpcPeriodGranularity] = useState("Daily");
 
-    const { metrics_by_date, top_campaigns, campaigns_by_date } = initialData || {};
+    const { metrics_by_date, top_campaigns, campaigns_by_date } = dashboardData || {};
+
+    // Fetch data function
+    const fetchData = async (start, end) => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`/api/ps-dashboard/${customerId}?startDate=${start}&endDate=${end}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch PS dashboard data');
+            }
+            const data = await response.json();
+            setDashboardData(data);
+        } catch (error) {
+            console.error('Error fetching PS dashboard data:', error);
+            alert('Failed to fetch dashboard data. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Handle apply button click
+    const handleApplyDates = () => {
+        setStartDate(tempStartDate);
+        setEndDate(tempEndDate);
+        fetchData(tempStartDate, tempEndDate);
+    };
+
 
     const filteredMetricsByDate = useMemo(() => {
         const filtered = metrics_by_date?.filter((row) => row.date >= startDate && row.date <= endDate) || [];
@@ -1018,23 +1048,40 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
                                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
                                     <input
                                         type="date"
-                                        value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
+                                        value={tempStartDate}
+                                        onChange={(e) => setTempStartDate(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
                                     <span className="text-[var(--color-green)] text-sm hidden md:inline">→</span>
                                     <span className="text-[var(--color-green)] text-sm md:hidden">to</span>
                                     <input
                                         type="date"
-                                        value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
+                                        value={tempEndDate}
+                                        onChange={(e) => setTempEndDate(e.target.value)}
                                         className="border border-[var(--color-dark-natural)] px-3 py-2 rounded-lg text-sm w-full md:w-auto text-[var(--color-dark-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:border-transparent transition-colors"
                                     />
+                                    <button
+                                        onClick={handleApplyDates}
+                                        disabled={isLoading}
+                                        className="px-4 py-2 bg-[var(--color-lime)] text-white rounded-lg text-sm font-medium hover:bg-[var(--color-green)] focus:outline-none focus:ring-2 focus:ring-[var(--color-lime)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-full md:w-auto"
+                                    >
+                                        {isLoading ? 'Loading...' : 'Apply'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Loading Overlay */}
+                {isLoading && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-8 flex flex-col items-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-lime)] mb-4"></div>
+                            <p className="text-[var(--color-dark-green)] font-medium">Loading dashboard data...</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Mobile Metrics View */}
                 <div className="md:hidden mb-6">

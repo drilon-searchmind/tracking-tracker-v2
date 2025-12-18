@@ -1,4 +1,4 @@
-import { fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
+import { fetchShopifySalesAnalyticsWithAds } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import currencyExchangeData from "../../../lib/static-data/currencyApiValues.json";
@@ -69,6 +69,7 @@ export async function POST(req) {
                 const currencyCode = customerSettings?.customerValutaCode || "DKK";
                 const changeCurrency = customerSettings?.changeCurrency ?? true;
 
+
                 // Shopify API configuration
                 const shopifyConfig = {
                     shopUrl: shopifyUrl || process.env.TEMP_SHOPIFY_URL,
@@ -97,12 +98,8 @@ export async function POST(req) {
                     endDate
                 };
 
-                // Fetch all data in parallel
-                const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
-                    fetchShopifyOrderMetrics(shopifyConfig).catch(err => {
-                        console.error(`Failed to fetch Shopify data for ${customer.name}:`, err.message);
-                        return [];
-                    }),
+                // Fetch all data in parallel (ShopifyQL analytics)
+                const [facebookAdsData, googleAdsData] = await Promise.all([
                     fetchFacebookAdsMetrics(facebookConfig).catch(err => {
                         console.error(`Failed to fetch Facebook Ads data for ${customer.name}:`, err.message);
                         return [];
@@ -113,56 +110,18 @@ export async function POST(req) {
                     })
                 ]);
 
-                // Merge data by date
-                const dataByDate = {};
-
-                // Process Shopify data
-                shopifyMetrics.forEach(row => {
-                    dataByDate[row.date] = {
-                        date: row.date,
-                        revenue: row.revenue || 0,
-                        orders: row.orders || 0,
-                        ps_cost: 0,
-                        ppc_cost: 0,
-                        total_ad_spend: 0,
-                    };
-                });
-
-                // Add Facebook Ads data
-                facebookAdsData.forEach(row => {
-                    if (!dataByDate[row.date]) {
-                        dataByDate[row.date] = {
-                            date: row.date,
-                            revenue: 0,
-                            orders: 0,
-                            ps_cost: 0,
-                            ppc_cost: 0,
-                            total_ad_spend: 0,
-                        };
-                    }
-                    dataByDate[row.date].ps_cost = row.ps_cost || 0;
-                    dataByDate[row.date].total_ad_spend += row.ps_cost || 0;
-                });
-
-                // Add Google Ads data
-                googleAdsData.forEach(row => {
-                    if (!dataByDate[row.date]) {
-                        dataByDate[row.date] = {
-                            date: row.date,
-                            revenue: 0,
-                            orders: 0,
-                            ps_cost: 0,
-                            ppc_cost: 0,
-                            total_ad_spend: 0,
-                        };
-                    }
-                    dataByDate[row.date].ppc_cost = row.ppc_cost || 0;
-                    dataByDate[row.date].total_ad_spend += row.ppc_cost || 0;
-                });
+                // Use new ShopifyQL analytics with ad data merge
+                const analyticsResult = await fetchShopifySalesAnalyticsWithAds(shopifyConfig, facebookAdsData, googleAdsData);
+                const overview_metrics = analyticsResult?.overview_metrics || [];
 
                 // Convert to array and apply currency conversion
-                const dailyData = Object.values(dataByDate).map(row => ({
-                    ...row,
+                const dailyData = overview_metrics.map(row => ({
+                    date: row.date,
+                    revenue: Number(row.revenue) || 0,
+                    orders: Number(row.orders) || 0,
+                    ps_cost: Number(row.ps_cost) || 0,
+                    ppc_cost: Number(row.ppc_cost) || 0,
+                    total_ad_spend: (Number(row.ps_cost) || 0) + (Number(row.ppc_cost) || 0),
                     customer_id: customer._id,
                     customer_name: customer.name,
                 }));

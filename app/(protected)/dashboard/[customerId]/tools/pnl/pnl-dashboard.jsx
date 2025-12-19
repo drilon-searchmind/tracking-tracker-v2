@@ -460,6 +460,14 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             ))}
                         </div>
 
+                        {/*
+                            TODO: Apply shopify sales data
+                            - Bruttoomsætning
+                            - Rabatter
+                            - Returneringer
+                            - Leveringsgebyrer
+                            - Skatter
+                        */}
                         {/* Section: Nettoomsætning */}
                         <div className="border border-[var(--color-light-natural)] rounded-lg bg-white shadow-sm">
                             <div className="bg-[var(--color-natural)] px-4 py-2 font-semibold text-[var(--color-dark-green)] flex items-center justify-between">

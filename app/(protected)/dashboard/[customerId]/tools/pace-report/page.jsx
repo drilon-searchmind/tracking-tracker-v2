@@ -19,7 +19,6 @@ function mergePaceReportData(salesData, facebookAdsData, googleAdsData) {
             orders: parseInt(row.orders) || 0,
             revenue: parseFloat(row.total_sales) || 0,
             net_sales: parseFloat(row.net_sales) || 0, // Include net_sales
-            ad_spend: 0,
             ad_spend_fb: 0,
             ad_spend_google: 0,
         };
@@ -32,12 +31,10 @@ function mergePaceReportData(salesData, facebookAdsData, googleAdsData) {
                 date: row.date,
                 orders: 0,
                 revenue: 0,
-                ad_spend: 0,
                 ad_spend_fb: 0,
                 ad_spend_google: 0,
             };
         }
-        dataByDate[row.date].ad_spend += row.ps_cost || 0;
         dataByDate[row.date].ad_spend_fb += row.ps_cost || 0;
     });
 
@@ -48,12 +45,10 @@ function mergePaceReportData(salesData, facebookAdsData, googleAdsData) {
                 date: row.date,
                 orders: 0,
                 revenue: 0,
-                ad_spend: 0,
                 ad_spend_fb: 0,
                 ad_spend_google: 0,
             };
         }
-        dataByDate[row.date].ad_spend += row.ppc_cost || 0;
         dataByDate[row.date].ad_spend_google += row.ppc_cost || 0;
     });
 

@@ -48,23 +48,19 @@ const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
 // Apply currency conversion to a data row
 const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     if (fromCurrency === "DKK" || !shouldConvertCurrency) return row;
-    
+
     const convertedRow = { ...row };
-    
-    // Convert revenue field
-    if (convertedRow.revenue !== undefined && convertedRow.revenue !== null) {
-        convertedRow.revenue = convertCurrency(convertedRow.revenue, fromCurrency);
+
+    // Convert google ad spend
+    if (convertedRow.ad_spend_google !== undefined && convertedRow.ad_spend_google !== null) {
+        convertedRow.ad_spend_google = convertCurrency(convertedRow.ad_spend_google, fromCurrency);
     }
 
-    // Convert net_sales field
-    if (convertedRow.net_sales !== undefined && convertedRow.net_sales !== null) {
-        convertedRow.net_sales = convertCurrency(convertedRow.net_sales, fromCurrency);
-    }
-    
-    // Convert ppc_cost field
-    if (convertedRow.ppc_cost !== undefined && convertedRow.ppc_cost !== null) {
-        convertedRow.ppc_cost = convertCurrency(convertedRow.ppc_cost, fromCurrency);
-    }
+    // ad_spend_fb remains unchanged
+    convertedRow.ad_spend_fb = row.ad_spend_fb;
+
+    // Calculate total ad_spend
+    convertedRow.ad_spend = (convertedRow.ad_spend_google || 0) + (convertedRow.ad_spend_fb || 0);
 
     return convertedRow;
 };
@@ -184,21 +180,29 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     }, [daily_metrics, dateStart, dateEnd, customerValutaCode, changeCurrency, customerRevenueType]);
 
     const cumulativeMetrics = useMemo(() => {
-        let cumOrders = 0, cumRevenue = 0, cumNetSales = 0, cumAdSpend = 0;
+        let cumOrders = 0, cumRevenue = 0, cumNetSales = 0;
+        let cumGoogleAdSpend = 0, cumFacebookAdSpend = 0, cumAdSpend = 0;
+
         const result = filteredMetrics.map(row => {
             cumOrders += Number(row.orders || 0);
             cumRevenue += Number(row.revenue || 0);
-            cumNetSales += Number(row.net_sales || 0); // Accumulate net_sales
-            cumAdSpend += Number(row.ad_spend || 0);
+            cumNetSales += Number(row.net_sales || 0);
+            cumGoogleAdSpend += Number(row.ad_spend_google || 0);
+            cumFacebookAdSpend += Number(row.ad_spend_fb || 0);
+            cumAdSpend = cumGoogleAdSpend + cumFacebookAdSpend;
+
             return {
                 date: row.date,
                 orders: cumOrders,
                 revenue: cumRevenue,
-                net_sales: cumNetSales, // Include net_sales in cumulative metrics
+                net_sales: cumNetSales,
+                google_adspend: cumGoogleAdSpend,
+                facebook_adspend: cumFacebookAdSpend,
                 ad_spend: cumAdSpend,
                 roas: cumAdSpend > 0 ? cumRevenue / cumAdSpend : 0,
             };
         });
+
         return result;
     }, [filteredMetrics]);
 

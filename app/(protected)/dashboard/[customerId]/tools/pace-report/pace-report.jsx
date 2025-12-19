@@ -51,6 +51,11 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
 
     const convertedRow = { ...row };
 
+    // Convert revenue
+    if (convertedRow.revenue !== undefined && convertedRow.revenue !== null) {
+        convertedRow.revenue = convertCurrency(convertedRow.revenue, fromCurrency);
+    }
+
     // Convert google ad spend
     if (convertedRow.ad_spend_google !== undefined && convertedRow.ad_spend_google !== null) {
         convertedRow.ad_spend_google = convertCurrency(convertedRow.ad_spend_google, fromCurrency);
@@ -210,6 +215,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         const aggregated = cumulativeMetrics.length > 0 ? cumulativeMetrics[cumulativeMetrics.length - 1] : {
             orders: 0,
             revenue: 0,
+            net_sales: 0,
             ad_spend: 0,
             roas: 0
         };
@@ -223,8 +229,12 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         const daysElapsed = daysInRange;
         const daysRemaining = daysInMonth - daysElapsed;
 
-        const revenuePace = (aggregated.revenue / daysInMonth) * (daysElapsed - 1) > 0
-            ? revenueBudgetNum / ((aggregated.revenue / daysInMonth) * (daysElapsed - 1))
+        // Convert revenue and net_sales if currency conversion is enabled
+        const convertedRevenue = changeCurrency ? convertCurrency(aggregated.revenue, customerValutaCode) : aggregated.revenue;
+        const convertedNetSales = changeCurrency ? convertCurrency(aggregated.net_sales, customerValutaCode) : aggregated.net_sales;
+
+        const revenuePace = (convertedRevenue / daysInMonth) * (daysElapsed - 1) > 0
+            ? revenueBudgetNum / ((convertedRevenue / daysInMonth) * (daysElapsed - 1))
             : 0;
 
         const ordersPace = (aggregated.orders / daysInMonth) * (daysElapsed - 1) > 0
@@ -236,7 +246,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
             : 0;
 
         const dailyRevenueGap = daysRemaining > 0
-            ? (revenueBudgetNum - aggregated.revenue) / daysRemaining
+            ? (revenueBudgetNum - convertedRevenue) / daysRemaining
             : 0;
 
         const dailyOrdersGap = daysRemaining > 0
@@ -249,8 +259,8 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
 
         const result = {
             orders: aggregated.orders,
-            revenue: aggregated.revenue,
-            net_sales: aggregated.net_sales || 0, // Ensure net_sales is included
+            revenue: convertedRevenue,
+            net_sales: convertedNetSales, // Ensure net_sales is included and converted
             ad_spend: aggregated.ad_spend,
             roas: isFinite(aggregated.roas) ? aggregated.roas : 0,
             revenue_budget: revenueBudgetNum,
@@ -268,7 +278,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         };
 
         return result;
-    }, [cumulativeMetrics, revenueBudget, ordersBudget, adSpendBudget, dateStart, dateEnd, daysInMonth]);
+    }, [cumulativeMetrics, revenueBudget, ordersBudget, adSpendBudget, dateStart, dateEnd, daysInMonth, changeCurrency, customerValutaCode]);
 
     const budgetChartData = {
         labels: cumulativeMetrics.map(row => row.date),

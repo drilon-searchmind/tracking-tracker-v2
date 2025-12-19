@@ -28,15 +28,27 @@ const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
 // Apply currency conversion to a data row
 const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     if (fromCurrency === "DKK" || !shouldConvertCurrency) return row;
-    
+
     const convertedRow = { ...row };
-    
+
     // Convert net_sales field
     if (convertedRow.net_sales !== undefined && convertedRow.net_sales !== null) {
         convertedRow.net_sales = convertCurrency(convertedRow.net_sales, fromCurrency);
     }
-    
+
+    // Convert marketing_spend_google field
+    if (convertedRow.marketing_spend_google !== undefined && convertedRow.marketing_spend_google !== null) {
+        convertedRow.marketing_spend_google = convertCurrency(convertedRow.marketing_spend_google, fromCurrency);
+    }
+
     return convertedRow;
+};
+
+const safeToLocaleString = (value) => {
+    if (typeof value === "number" && !isNaN(value)) {
+        return value.toLocaleString("en-US");
+    }
+    return "0";
 };
 
 export default function PnLDashboard({ customerId, customerName, customerValutaCode, initialData, customerRevenueType }) {
@@ -127,7 +139,6 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                 shipping_fees: acc.shipping_fees + (Number(row.shipping_fees) || 0),
                 total_taxes: acc.total_taxes + (Number(row.total_taxes) || 0),
                 orders: acc.orders + (Number(row.orders) || 0),
-                total_marketing_spend: acc.total_marketing_spend + (Number(row.total_marketing_spend) || 0),
                 marketing_spend_facebook: acc.marketing_spend_facebook + (Number(row.marketing_spend_facebook) || 0),
                 marketing_spend_google: acc.marketing_spend_google + (Number(row.marketing_spend_google) || 0),
             }),
@@ -139,7 +150,6 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                 shipping_fees: 0,
                 total_taxes: 0,
                 orders: 0,
-                total_marketing_spend: 0,
                 marketing_spend_facebook: 0,
                 marketing_spend_google: 0,
             }
@@ -153,97 +163,122 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
         const direct_selling_costs = shipping_cost + transaction_cost;
         const db2 = db1 - direct_selling_costs;
 
-        const marketing_costs = aggregated.total_marketing_spend + (staticExpenses.marketing_bureau_cost || 0) + (staticExpenses.marketing_tooling_cost || 0);
-        const db3 = db2 - marketing_costs;
-        const result = db3 - (staticExpenses.fixed_expenses || 0);
+        const marketing_spend = aggregated.marketing_spend_facebook + aggregated.marketing_spend_google;
+        const marketing_bureau_cost = staticExpenses.marketing_bureau_cost || 0;
+        const marketing_tooling_cost = staticExpenses.marketing_tooling_cost || 0;
+        const total_marketing_costs = marketing_spend + marketing_bureau_cost + marketing_tooling_cost;
+        const db3 = db2 - total_marketing_costs;
 
-        const realized_roas = aggregated.total_marketing_spend > 0 ? aggregated.net_sales / aggregated.total_marketing_spend : 0;
+        const fixed_expenses = staticExpenses.fixed_expenses || 0;
+        const result = db3 - fixed_expenses;
 
-        const total_costs = cogs + shipping_cost + transaction_cost +
-            aggregated.total_marketing_spend +
-            (staticExpenses.marketing_bureau_cost || 0) +
-            (staticExpenses.marketing_tooling_cost || 0) +
-            (staticExpenses.fixed_expenses || 0);
+        const total_costs = cogs + direct_selling_costs + total_marketing_costs + fixed_expenses;
 
-        const db1_percentage = total_costs > 0 ? ((total_costs - cogs) / total_costs) * 100 : 0;
-        const db2_percentage = total_costs > 0 ? ((total_costs - cogs - shipping_cost - transaction_cost) / total_costs) * 100 : 0;
-        const db3_percentage = total_costs > 0 ? ((total_costs - cogs - shipping_cost - transaction_cost -
-            aggregated.total_marketing_spend -
-            (staticExpenses.marketing_bureau_cost || 0) -
-            (staticExpenses.marketing_tooling_cost || 0)) / total_costs) * 100 : 0;
+        const realized_roas = marketing_spend > 0 ? aggregated.net_sales / marketing_spend : 0;
+        const break_even_roas = marketing_spend > 0 ? total_costs / marketing_spend : 0;
 
-        const break_even_roas = aggregated.total_marketing_spend > 0 ? total_costs / aggregated.total_marketing_spend : 0;
+        const db1_percentage = total_costs > 0 ? (db1 / total_costs) * 100 : 0;
+        const db2_percentage = total_costs > 0 ? (db2 / total_costs) * 100 : 0;
+        const db3_percentage = total_costs > 0 ? (db3 / total_costs) * 100 : 0;
 
-        const resultMetrics = {
-            net_sales: aggregated.net_sales,
-            gross_sales: aggregated.gross_sales,
-            total_discounts: aggregated.total_discounts,
-            total_refunds: aggregated.total_refunds,
-            shipping_fees: aggregated.shipping_fees,
-            total_taxes: aggregated.total_taxes,
-            orders: aggregated.orders,
+        console.log("Aggregated Metrics:", {
+            ...aggregated,
             cogs,
             db1,
             shipping_cost,
             transaction_cost,
             db2,
-            marketing_spend: aggregated.total_marketing_spend,
-            marketing_bureau_cost: staticExpenses.marketing_bureau_cost || 0,
-            marketing_tooling_cost: staticExpenses.marketing_tooling_cost || 0,
+            marketing_spend,
+            marketing_bureau_cost,
+            marketing_tooling_cost,
+            total_marketing_costs,
             db3,
-            fixed_expenses: staticExpenses.fixed_expenses || 0,
+            fixed_expenses,
             result,
+            total_costs,
             realized_roas,
             break_even_roas,
             db_percentages: {
-                db1: isFinite(db1_percentage) ? db1_percentage : 0,
-                db2: isFinite(db2_percentage) ? db2_percentage : 0,
-                db3: isFinite(db3_percentage) ? db3_percentage : 0,
+                db1: db1_percentage,
+                db2: db2_percentage,
+                db3: db3_percentage,
             },
+        });
+
+        return {
+            ...aggregated,
+            cogs,
+            db1,
+            shipping_cost,
+            transaction_cost,
+            db2,
+            marketing_spend,
+            marketing_bureau_cost,
+            marketing_tooling_cost,
+            total_marketing_costs,
+            db3,
+            fixed_expenses,
+            result,
             total_costs,
+            realized_roas,
+            break_even_roas,
+            db_percentages: {
+                db1: db1_percentage,
+                db2: db2_percentage,
+                db3: db3_percentage,
+            },
         };
-        return resultMetrics;
     }, [filteredMetricsByDate, staticExpenses]);
 
-
+    // Add debugging to inspect metrics and filteredMetricsByDate
+    console.log("Filtered Metrics By Date:", filteredMetricsByDate);
+    console.log("Aggregated Metrics:", metrics);
 
     const metricsDisplay = useMemo(() => {
         return [
             {
                 label: customerRevenueType === "net_sales" ? "Net Sales" : "Total Sales",
-                value: metrics.net_sales ? Math.round(metrics.net_sales).toLocaleString('en-US') : "0",
+                value: safeToLocaleString(metrics.net_sales),
             },
             {
                 label: "Orders",
-                value: metrics.orders ? Math.round(metrics.orders).toLocaleString('en-US') : "0",
+                value: safeToLocaleString(metrics.orders),
             },
             {
                 label: "COGS",
-                value: metrics.cogs ? Math.round(metrics.cogs).toLocaleString('en-US') : "0",
+                value: safeToLocaleString(metrics.cogs),
             },
             {
                 label: "Shipping",
-                value: metrics.shipping_cost ? Math.round(metrics.shipping_cost).toLocaleString('en-US') : "0",
+                value: safeToLocaleString(metrics.shipping_cost),
             },
             {
                 label: "Transaction Costs",
-                value: metrics.transaction_cost ? Math.round(metrics.transaction_cost).toLocaleString('en-US') : "0",
+                value: safeToLocaleString(metrics.transaction_cost),
             },
             {
                 label: "Marketing Spend",
-                value: metrics.marketing_spend ? Math.round(metrics.marketing_spend).toLocaleString('en-US') : "0",
+                value: safeToLocaleString(metrics.marketing_spend),
             },
             {
                 label: "Marketing Bureau",
-                value: metrics.marketing_bureau_cost ? Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US') : "0",
+                value: safeToLocaleString(metrics.marketing_bureau_cost),
             },
             {
                 label: "Marketing Tooling",
-                value: metrics.marketing_tooling_cost ? Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US') : "0",
+                value: safeToLocaleString(metrics.marketing_tooling_cost),
             },
             {
                 label: "Fixed Expenses",
-                value: metrics.fixed_expenses ? Math.round(metrics.fixed_expenses).toLocaleString('en-US') : "0",
+                value: safeToLocaleString(metrics.fixed_expenses),
+            },
+            {
+                label: "Realized ROAS",
+                value: metrics.realized_roas ? metrics.realized_roas.toFixed(2) : "0.00",
+            },
+            {
+                label: "Break-even ROAS",
+                value: metrics.break_even_roas ? metrics.break_even_roas.toFixed(2) : "0.00",
             },
         ];
     }, [metrics, customerRevenueType]);
@@ -270,6 +305,29 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
         );
     }
 
+    // Add a check to ensure data is fully loaded before calculating metrics
+    if (!filteredMetricsByDate || filteredMetricsByDate.length === 0) {
+        return (
+            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
+                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                    <Image
+                        width={1920}
+                        height={1080}
+                        src="/images/shape-dotted-light.svg"
+                        alt="bg"
+                        className="w-full h-full"
+                    />
+                </div>
+                <div className="px-0 md:px-20 mx-auto z-10 relative">
+                    <div className="flex justify-center items-center p-10 bg-white rounded-lg shadow-sm border border-[var(--color-natural)]">
+                        <p className="text-[var(--color-dark-green)] text-lg">Loading data...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
             {/* Loading Overlay - positioned at top level */}
@@ -280,7 +338,8 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                         <p className="text-[var(--color-dark-green)] font-medium">Loading P&L data...</p>
                     </div>
                 </div>
-            )}
+            )
+            }
             
             <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
             <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
@@ -420,7 +479,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             {/* Bruttoomsætning */}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="gross-sales-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Gross turnover</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.net_sales || 0).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {safeToLocaleString(metrics.net_sales)}</span>
                             </div>
                             {isClient && (
                                 <Tooltip id="gross-sales-tooltip" place="top">
@@ -431,7 +490,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             {/* Rabatter (Discounts) */}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="discounts-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Discounts</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">-kr. {Math.round(metrics.total_discounts || 0).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">-kr. {safeToLocaleString(metrics.total_discounts)}</span>
                             </div>
                             {isClient && (
                                 <Tooltip id="discounts-tooltip" place="top">
@@ -442,7 +501,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             {/* Returninger (Refunds) */}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="refunds-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Refunds</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">-kr. {Math.round(metrics.total_refunds || 0).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">-kr. {safeToLocaleString(metrics.total_refunds)}</span>
                             </div>
                             {isClient && (
                                 <Tooltip id="refunds-tooltip" place="top">
@@ -453,7 +512,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             {/* Leveringsgebyrer (Shipping Fees) */}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="shipping-fees-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Delivery Fees</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.shipping_fees || 0).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {safeToLocaleString(metrics.shipping_fees)}</span>
                             </div>
                             {isClient && (
                                 <Tooltip id="shipping-fees-tooltip" place="top">
@@ -464,7 +523,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             {/* Skatter (Taxes) */}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="taxes-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Taxes</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.total_taxes || 0).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {safeToLocaleString(metrics.total_taxes)}</span>
                             </div>
                             {isClient && (
                                 <Tooltip id="taxes-tooltip" place="top">
@@ -475,7 +534,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             {/* Net Sales (existing) */}
                             <div className="flex justify-between px-4 py-2 border-t-2 border-[var(--color-dark-green)] text-sm md:text-base font-semibold">
                                 <span className="text-[var(--color-dark-green)]">Total Sales (Netsales)</span>
-                                <span className="text-[var(--color-dark-green)]">kr. {Math.round(metrics.net_sales).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)]">kr. {safeToLocaleString(metrics.net_sales)}</span>
                             </div>
                         </div>
 
@@ -497,22 +556,22 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="cogs-calc-tooltip">
                                 <span className="text-[var(--color-dark-green)]">COGS</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.cogs).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {safeToLocaleString(metrics.cogs)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="cogs-calc-tooltip" place="top">
                                 COGS = Net Sales × {(staticExpenses.cogs_percentage * 100).toFixed(1)}%<br />
-                                = kr. {Math.round(metrics.net_sales).toLocaleString('en-US')} × {(staticExpenses.cogs_percentage * 100).toFixed(1)}%
+                                = kr. {safeToLocaleString(metrics.net_sales)} × {(staticExpenses.cogs_percentage * 100).toFixed(1)}%
                             </Tooltip>
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] font-semibold text-sm md:text-base" data-tooltip-id="db1-total-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Total, DB1</span>
-                                <span className="text-[var(--color-dark-green)]">kr. {Math.round(metrics.db1).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)]">kr. {safeToLocaleString(metrics.db1)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="db1-total-tooltip" place="top">
                                 DB1 = Net Sales - COGS<br />
-                                = kr. {Math.round(metrics.net_sales).toLocaleString('en-US')} - kr. {Math.round(metrics.cogs).toLocaleString('en-US')}
+                                = kr. {safeToLocaleString(metrics.net_sales)} - kr. {safeToLocaleString(metrics.cogs)}
                             </Tooltip>
                             )}
                         </div>
@@ -535,32 +594,32 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="shipping-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Shipping</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.shipping_cost).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {safeToLocaleString(metrics.shipping_cost)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="shipping-tooltip" place="top">
                                 Shipping = Orders × Shipping Cost Per Order<br />
-                                = {metrics.orders.toLocaleString('en-US')} × kr. {staticExpenses.shipping_cost_per_order.toLocaleString('en-US')}
+                                = {safeToLocaleString(metrics.orders)} × kr. {safeToLocaleString(staticExpenses.shipping_cost_per_order)}
                             </Tooltip>
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="transaction-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Transaction Costs</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.transaction_cost).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {safeToLocaleString(metrics.transaction_cost)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="transaction-tooltip" place="top">
                                 Transaction Costs = Net Sales × Transaction Cost Percentage<br />
-                                = kr. {Math.round(metrics.net_sales).toLocaleString('en-US')} × {(staticExpenses.transaction_cost_percentage * 100).toFixed(1)}%
+                                = kr. {safeToLocaleString(metrics.net_sales)} × {(staticExpenses.transaction_cost_percentage * 100).toFixed(1)}%
                             </Tooltip>
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] font-semibold text-sm md:text-base" data-tooltip-id="db2-total-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Total, DB2</span>
-                                <span className="text-[var(--color-dark-green)]">kr. {Math.round(metrics.db2).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)]">kr. {safeToLocaleString(metrics.db2)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="db2-total-tooltip" place="top">
                                 DB2 = DB1 - Shipping - Transaction Costs<br />
-                                = kr. {Math.round(metrics.db1).toLocaleString('en-US')} - kr. {Math.round(metrics.shipping_cost).toLocaleString('en-US')} - kr. {Math.round(metrics.transaction_cost).toLocaleString('en-US')}
+                                = kr. {safeToLocaleString(metrics.db1)} - kr. {safeToLocaleString(metrics.shipping_cost)} - kr. {safeToLocaleString(metrics.transaction_cost)}
                             </Tooltip>
                             )}
                         </div>
@@ -583,7 +642,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="marketing-spend-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Marketing Spend</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {safeToLocaleString(metrics.marketing_spend)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="marketing-spend-tooltip" place="top">
@@ -592,7 +651,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="bureau-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Marketing Bureau</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {safeToLocaleString(metrics.marketing_bureau_cost)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="bureau-tooltip" place="top">
@@ -601,7 +660,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="tooling-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Marketing Tooling</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {safeToLocaleString(metrics.marketing_tooling_cost)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="tooling-tooltip" place="top">
@@ -610,12 +669,12 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] font-semibold text-sm md:text-base" data-tooltip-id="db3-total-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Total, DB3</span>
-                                <span className="text-[var(--color-dark-green)]">kr. {Math.round(metrics.db3).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)]">kr. {safeToLocaleString(metrics.db3)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="db3-total-tooltip" place="top">
                                 DB3 = DB2 - Marketing Spend - Marketing Bureau - Marketing Tooling<br />
-                                = kr. {Math.round(metrics.db2).toLocaleString('en-US')} - kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')} - kr. {Math.round(metrics.marketing_bureau_cost).toLocaleString('en-US')} - kr. {Math.round(metrics.marketing_tooling_cost).toLocaleString('en-US')}
+                                = kr. {safeToLocaleString(metrics.db2)} - kr. {safeToLocaleString(metrics.marketing_spend)} - kr. {safeToLocaleString(metrics.marketing_bureau_cost)} - kr. {safeToLocaleString(metrics.marketing_tooling_cost)}
                             </Tooltip>
                             )}
                         </div>
@@ -638,7 +697,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] text-sm md:text-base" data-tooltip-id="fixed-expenses-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Fixed Expenses</span>
-                                <span className="text-[var(--color-dark-green)] font-medium">kr. {Math.round(metrics.fixed_expenses).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)] font-medium">kr. {safeToLocaleString(metrics.fixed_expenses)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="fixed-expenses-tooltip" place="top">
@@ -647,12 +706,12 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             )}
                             <div className="flex justify-between px-4 py-2 border-t border-[var(--color-light-natural)] font-semibold text-sm md:text-base" data-tooltip-id="final-result-tooltip">
                                 <span className="text-[var(--color-dark-green)]">Result</span>
-                                <span className="text-[var(--color-dark-green)]">kr. {Math.round(metrics.result).toLocaleString('en-US')}</span>
+                                <span className="text-[var(--color-dark-green)]">kr. {safeToLocaleString(metrics.result)}</span>
                             </div>
                             {isClient && (
                             <Tooltip id="final-result-tooltip" place="top">
                                 Final Result = DB3 - Fixed Expenses<br />
-                                = kr. {Math.round(metrics.db3).toLocaleString('en-US')} - kr. {Math.round(metrics.fixed_expenses).toLocaleString('en-US')}
+                                = kr. {safeToLocaleString(metrics.db3)} - kr. {safeToLocaleString(metrics.fixed_expenses)}
                             </Tooltip>
                             )}
                         </div>
@@ -666,7 +725,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             {isClient && (
                             <Tooltip id="realized-roas-tooltip" place="top">
                                 Realized ROAS = Net Sales ÷ Marketing Spend<br />
-                                = kr. {Math.round(metrics.net_sales).toLocaleString('en-US')} ÷ kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')}<br />
+                                = kr. {safeToLocaleString(metrics.net_sales)} ÷ kr. {safeToLocaleString(metrics.marketing_spend)}<br />
                             </Tooltip>
                             )}
                             <div className="px-4 py-3 md:py-5" data-tooltip-id="breakeven-roas-tooltip">
@@ -676,7 +735,7 @@ export default function PnLDashboard({ customerId, customerName, customerValutaC
                             {isClient && (
                             <Tooltip id="breakeven-roas-tooltip" place="top">
                                 Break-even ROAS = Total Costs ÷ Marketing Spend<br />
-                                = kr. {Math.round(metrics.total_costs).toLocaleString('en-US')} ÷ kr. {Math.round(metrics.marketing_spend).toLocaleString('en-US')}<br />
+                                = kr. {safeToLocaleString(metrics.total_costs)} ÷ kr. {safeToLocaleString(metrics.marketing_spend)}<br />
 
                             </Tooltip>
                             )}

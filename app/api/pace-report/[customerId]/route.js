@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { fetchShopifyOrderMetrics } from "@/lib/shopifyApi";
+import { fetchShopifySalesAnalytics } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { dbConnect } from "@/lib/dbConnect";
 import CustomerSettings from "@/models/CustomerSettings";
+import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
 /**
  * Helper function to merge Shopify, Facebook Ads, and Google Ads data for Pace Report
@@ -55,35 +56,21 @@ function mergePaceReportData(shopifyMetrics, facebookAdsData, googleAdsData) {
  * GET /api/pace-report/[customerId]?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
  * Fetch Pace Report data for a specific date range
  */
-export async function GET(request, { params }) {
+export async function GET(req, { params }) {
+    const { customerId } = params;
+    const { searchParams } = new URL(req.url);
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+
     try {
-        const resolvedParams = await params;
-        const customerId = resolvedParams.customerId;
-        const { searchParams } = new URL(request.url);
-        
-        const startDate = searchParams.get('startDate');
-        const endDate = searchParams.get('endDate');
+        const {
+            shopifyUrl,
+            shopifyApiPassword,
+            facebookAdAccountId,
+            googleAdsCustomerId,
+            customerMetaID
+        } = await fetchCustomerDetails(customerId);
 
-        if (!startDate || !endDate) {
-            return NextResponse.json(
-                { error: "startDate and endDate are required" },
-                { status: 400 }
-            );
-        }
-
-        console.log(`[API] Fetching Pace Report data for ${customerId} from ${startDate} to ${endDate}`);
-
-        // Fetch customer settings from database
-        await dbConnect();
-        const customerSettings = await CustomerSettings.findOne({ customer: customerId });
-        
-        const shopifyUrl = customerSettings?.shopifyUrl || "";
-        const shopifyApiPassword = customerSettings?.shopifyApiPassword || "";
-        const facebookAdAccountId = customerSettings?.facebookAdAccountId || "";
-        const googleAdsCustomerId = customerSettings?.googleAdsCustomerId || "";
-        const customerMetaID = customerSettings?.customerMetaID || "";
-
-        // Shopify API configuration
         const shopifyConfig = {
             shopUrl: shopifyUrl || process.env.TEMP_SHOPIFY_URL,
             accessToken: shopifyApiPassword || process.env.TEMP_SHOPIFY_PASSWORD,
@@ -91,16 +78,14 @@ export async function GET(request, { params }) {
             endDate
         };
 
-        // Facebook Ads API configuration
         const facebookConfig = {
             accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
             adAccountId: facebookAdAccountId,
             startDate,
             endDate,
-            countryCode: customerMetaID || undefined // Filter by country if specified
+            countryCode: customerMetaID || undefined
         };
 
-        // Google Ads API configuration
         const googleAdsConfig = {
             developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
             clientId: process.env.GOOGLE_ADS_CLIENT_ID,
@@ -112,11 +97,10 @@ export async function GET(request, { params }) {
             endDate
         };
 
-        // Fetch all data in parallel
-        const [shopifyMetrics, facebookAdsData, googleAdsData] = await Promise.all([
-            fetchShopifyOrderMetrics(shopifyConfig).catch(err => {
-                console.error("Failed to fetch Shopify data:", err.message);
-                return [];
+        const [salesResult, facebookAdsData, googleAdsData] = await Promise.all([
+            fetchShopifySalesAnalytics(shopifyConfig).catch(err => {
+                console.error("Failed to fetch Shopify sales data:", err.message);
+                return { salesData: [], totals: {}, columns: [] };
             }),
             fetchFacebookAdsMetrics(facebookConfig).catch(err => {
                 console.error("Failed to fetch Facebook Ads data:", err.message);
@@ -128,18 +112,59 @@ export async function GET(request, { params }) {
             })
         ]);
 
-        // Merge all data sources
-        const data = mergePaceReportData(shopifyMetrics, facebookAdsData, googleAdsData);
+        const dataByDate = {};
 
-        console.log(`[API] Successfully fetched ${data.length} days of Pace Report data`);
+        // Process Shopify sales data
+        salesResult.salesData.forEach(row => {
+            dataByDate[row.day] = {
+                date: row.day,
+                orders: parseInt(row.orders) || 0,
+                revenue: parseFloat(row.total_sales) || 0,
+                net_sales: parseFloat(row.net_sales) || 0,
+                ad_spend_fb: 0,
+                ad_spend_google: 0,
+            };
+        });
 
-        return NextResponse.json({ data });
+        // Add Facebook Ads data
+        facebookAdsData.forEach(row => {
+            if (!dataByDate[row.date]) {
+                dataByDate[row.date] = {
+                    date: row.date,
+                    orders: 0,
+                    revenue: 0,
+                    ad_spend_fb: 0,
+                    ad_spend_google: 0,
+                };
+            }
+            dataByDate[row.date].ad_spend_fb += row.ps_cost || 0;
+        });
 
+        // Add Google Ads data
+        googleAdsData.forEach(row => {
+            if (!dataByDate[row.date]) {
+                dataByDate[row.date] = {
+                    date: row.date,
+                    orders: 0,
+                    revenue: 0,
+                    ad_spend_fb: 0,
+                    ad_spend_google: 0,
+                };
+            }
+            dataByDate[row.date].ad_spend_google += row.ppc_cost || 0;
+        });
+
+        const result = Object.values(dataByDate).sort((a, b) => a.date.localeCompare(b.date));
+
+        return new Response(JSON.stringify({ daily_metrics: result }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+        });
     } catch (error) {
-        console.error("[API] Pace Report error:", error);
-        return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-        );
+        console.error("Error in Pace Report API:", error.message);
+        return new Response(JSON.stringify({ error: "Failed to fetch Pace Report data" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+        });
     }
 }

@@ -61,6 +61,11 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
         convertedRow.net_sales = convertCurrency(convertedRow.net_sales, fromCurrency);
     }
     
+    // Convert ppc_cost field
+    if (convertedRow.ppc_cost !== undefined && convertedRow.ppc_cost !== null) {
+        convertedRow.ppc_cost = convertCurrency(convertedRow.ppc_cost, fromCurrency);
+    }
+
     return convertedRow;
 };
 
@@ -173,6 +178,8 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                 };
             })
             .sort((a, b) => a.date.localeCompare(b.date));
+
+        console.log({daily_metrics})
         return filtered;
     }, [daily_metrics, dateStart, dateEnd, customerValutaCode, changeCurrency, customerRevenueType]);
 

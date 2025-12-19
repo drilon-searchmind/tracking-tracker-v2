@@ -31,7 +31,7 @@ const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
 const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     if (fromCurrency === "DKK" || !shouldConvertCurrency) return row;
 
-    const revenueFields = ['revenue', 'revenue_ex_tax'];
+    const revenueFields = ['revenue', 'revenue_ex_tax', 'net_sales'];
     const convertedRow = { ...row };
 
     revenueFields.forEach(field => {
@@ -514,7 +514,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                 <th className="px-2 py-3">Date</th>
                                                 <th className="px-2 py-3">Orders</th>
                                                 <th className="px-2 py-3">{tableHeader}</th>
-                                                <th className="px-2 py-3">Revenue Ex Tax</th>
+                                                {customerRevenueType !== "net_sales" && (
+                                                    <th className="px-2 py-3">Revenue Ex Tax</th>
+                                                )}
                                                 <th className="px-2 py-3">PPC Cost</th>
                                                 <th className="px-2 py-3">PS Cost</th>
                                                 <th className="px-2 py-3">{metricView === "ROAS/POAS" ? "ROAS" : "Spendshare"}</th>
@@ -533,9 +535,11 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                     <td className="px-2 py-1" style={getHeatmapStyle(row.revenue, 'revenue')}>
                                                         kr. {Math.round(row.revenue).toLocaleString()}
                                                     </td>
-                                                    <td className="px-2 py-1" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax')}>
-                                                        kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
-                                                    </td>
+                                                    {customerRevenueType !== "net_sales" && (
+                                                        <td className="px-2 py-1" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax')}>
+                                                            kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
+                                                        </td>
+                                                    )}
                                                     <td className="px-2 py-1" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost')}>
                                                         kr. {Math.round(row.ppc_cost).toLocaleString()}
                                                     </td>
@@ -560,7 +564,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)] font-bold">Total</td>
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(filteredTotals.orders).toLocaleString()}</td>
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.revenue).toLocaleString()}</td>
-                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.revenue_ex_tax).toLocaleString()}</td>
+                                                {customerRevenueType !== "net_sales" && (
+                                                    <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.revenue_ex_tax).toLocaleString()}</td>
+                                                )}
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.ppc_cost).toLocaleString()}</td>
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)]">kr. {Math.round(filteredTotals.ps_cost).toLocaleString()}</td>
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)]">{(metricView === "ROAS/POAS" ? filteredTotals.roas : (filteredTotals.spendshare * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</td>
@@ -572,7 +578,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                 <td className="px-2 py-2 text-[var(--color-green)] font-bold">Last Year</td>
                                                 <td className="px-2 py-2 text-[var(--color-green)]">{Math.round(filteredLastYearTotals.orders).toLocaleString()}</td>
                                                 <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</td>
-                                                <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
+                                                {customerRevenueType !== "net_sales" && (
+                                                    <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
+                                                )}
                                                 <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
                                                 <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
                                                 <td className="px-2 py-2 text-[var(--color-green)]">{(metricView === "ROAS/POAS" ? filteredLastYearTotals.roas : (filteredLastYearTotals.spendshare * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</td>
@@ -584,7 +592,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)] font-bold">Difference</td>
                                                 <td className={`px-2 py-2 ${differences.orders >= 0 ? 'text-green-600' : 'text-red-600'}`}>{Math.round(differences.orders).toLocaleString()}</td>
                                                 <td className={`px-2 py-2 ${differences.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.revenue).toLocaleString()}</td>
-                                                <td className={`px-2 py-2 ${differences.revenue_ex_tax >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.revenue_ex_tax).toLocaleString()}</td>
+                                                {customerRevenueType !== "net_sales" && (
+                                                    <td className={`px-2 py-2 ${differences.revenue_ex_tax >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(differences.revenue_ex_tax).toLocaleString()}</td>
+                                                )}
                                                 <td className={`px-2 py-2 ${differences.ppc_cost >= 0 ? 'text-red-600' : 'text-green-600'}`}>kr. {Math.round(differences.ppc_cost).toLocaleString()}</td>
                                                 <td className={`px-2 py-2 ${differences.ps_cost >= 0 ? 'text-red-600' : 'text-green-600'}`}>kr. {Math.round(differences.ps_cost).toLocaleString()}</td>
                                                 <td className={`px-2 py-2 ${differences.roas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "ROAS/POAS" ? differences.roas : (differences.spendshare * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</td>
@@ -596,7 +606,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)] font-bold">Index</td>
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.orders)}</td>
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.revenue)}</td>
-                                                <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.revenue_ex_tax)}</td>
+                                                {customerRevenueType !== "net_sales" && (
+                                                    <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.revenue_ex_tax)}</td>
+                                                )}
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.ppc_cost)}</td>
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.ps_cost)}</td>
                                                 <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(indexMetrics.roas)}</td>
@@ -812,7 +824,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                         <th className="px-2 py-2 font-medium">Date</th>
                                         <th className="px-2 py-2 font-medium">Orders</th>
                                         <th className="px-2 py-2 font-medium">{tableHeader}</th>
-                                        <th className="px-2 py-2 font-medium">Revenue Ex Tax</th>
+                                        {customerRevenueType !== "net_sales" && (
+                                            <th className="px-2 py-2 font-medium">Revenue Ex Tax</th>
+                                        )}
                                         <th className="px-2 py-2 font-medium">PPC Cost</th>
                                         <th className="px-2 py-2 font-medium">PS Cost</th>
                                         <th className="px-2 py-2 font-medium">{metricView === "ROAS/POAS" ? "ROAS" : "Spendshare"}</th>
@@ -826,7 +840,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                         <td className="px-2 py-2">Total</td>
                                         <td className="px-2 py-2">{Math.round(filteredLastYearTotals.orders).toLocaleString()}</td>
                                         <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.revenue).toLocaleString()}</td>
-                                        <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
+                                        {customerRevenueType !== "net_sales" && (
+                                            <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.revenue_ex_tax).toLocaleString()}</td>
+                                        )}
                                         <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.ppc_cost).toLocaleString()}</td>
                                         <td className="px-2 py-2">kr. {Math.round(filteredLastYearTotals.ps_cost).toLocaleString()}</td>
                                         <td className="px-2 py-2">{(metricView === "ROAS/POAS" ? filteredLastYearTotals.roas : (filteredLastYearTotals.spendshare * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</td>
@@ -838,7 +854,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                         <td className="px-2 py-2 text-[var(--color-green)] font-bold">2 Years Ago</td>
                                         <td className="px-2 py-2 text-[var(--color-green)]">{Math.round(two_years_ago_totals.orders || 0).toLocaleString()}</td>
                                         <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.revenue || 0).toLocaleString()}</td>
-                                        <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.revenue_ex_tax || 0).toLocaleString()}</td>
+                                        {customerRevenueType !== "net_sales" && (
+                                            <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.revenue_ex_tax || 0).toLocaleString()}</td>
+                                        )}
                                         <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.ppc_cost || 0).toLocaleString()}</td>
                                         <td className="px-2 py-2 text-[var(--color-green)]">kr. {Math.round(two_years_ago_totals.ps_cost || 0).toLocaleString()}</td>
                                         <td className="px-2 py-2 text-[var(--color-green)]">{(metricView === "ROAS/POAS" ? (two_years_ago_totals.roas || 0) : ((two_years_ago_totals.spendshare || 0) * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</td>
@@ -850,7 +868,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                         <td className="px-2 py-2 text-[var(--color-dark-green)] font-bold">Difference</td>
                                         <td className={`px-2 py-2 ${lastYearDifferences.orders >= 0 ? 'text-green-600' : 'text-red-600'}`}>{Math.round(lastYearDifferences.orders).toLocaleString()}</td>
                                         <td className={`px-2 py-2 ${lastYearDifferences.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(lastYearDifferences.revenue).toLocaleString()}</td>
-                                        <td className={`px-2 py-2 ${lastYearDifferences.revenue_ex_tax >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(lastYearDifferences.revenue_ex_tax).toLocaleString()}</td>
+                                        {customerRevenueType !== "net_sales" && (
+                                            <td className={`px-2 py-2 ${lastYearDifferences.revenue_ex_tax >= 0 ? 'text-green-600' : 'text-red-600'}`}>kr. {Math.round(lastYearDifferences.revenue_ex_tax).toLocaleString()}</td>
+                                        )}
                                         <td className={`px-2 py-2 ${lastYearDifferences.ppc_cost >= 0 ? 'text-red-600' : 'text-green-600'}`}>kr. {Math.round(lastYearDifferences.ppc_cost).toLocaleString()}</td>
                                         <td className={`px-2 py-2 ${lastYearDifferences.ps_cost >= 0 ? 'text-red-600' : 'text-green-600'}`}>kr. {Math.round(lastYearDifferences.ps_cost).toLocaleString()}</td>
                                         <td className={`px-2 py-2 ${lastYearDifferences.roas >= 0 ? 'text-green-600' : 'text-red-600'}`}>{(metricView === "ROAS/POAS" ? lastYearDifferences.roas : (lastYearDifferences.spendshare * 100)).toFixed(2)}{metricView === "ROAS/POAS" ? "" : "%"}</td>
@@ -862,7 +882,9 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                         <td className="px-2 py-2 text-[var(--color-dark-green)] font-bold">Index</td>
                                         <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.orders)}</td>
                                         <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.revenue)}</td>
-                                        <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.revenue_ex_tax)}</td>
+                                        {customerRevenueType !== "net_sales" && (
+                                            <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.revenue_ex_tax)}</td>
+                                        )}
                                         <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.ppc_cost)}</td>
                                         <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.ps_cost)}</td>
                                         <td className="px-2 py-2 text-[var(--color-dark-green)]">{Math.round(lastYearIndexMetrics.roas)}</td>
@@ -879,9 +901,11 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
                                             <td className="px-2 py-1" style={getHeatmapStyle(row.revenue, 'revenue', true)}>
                                                 kr. {Math.round(row.revenue).toLocaleString()}
                                             </td>
-                                            <td className="px-2 py-1" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax', true)}>
-                                                kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
-                                            </td>
+                                            {customerRevenueType !== "net_sales" && (
+                                                <td className="px-2 py-1" style={getHeatmapStyle(row.revenue_ex_tax, 'revenue_ex_tax', true)}>
+                                                    kr. {Math.round(row.revenue_ex_tax).toLocaleString()}
+                                                </td>
+                                            )}
                                             <td className="px-2 py-1" style={getHeatmapStyle(row.ppc_cost, 'ppc_cost', true)}>
                                                 kr. {Math.round(row.ppc_cost).toLocaleString()}
                                             </td>

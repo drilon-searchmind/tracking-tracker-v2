@@ -55,6 +55,11 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     if (convertedRow.revenue !== undefined && convertedRow.revenue !== null) {
         convertedRow.revenue = convertCurrency(convertedRow.revenue, fromCurrency);
     }
+
+    // Convert net_sales field
+    if (convertedRow.net_sales !== undefined && convertedRow.net_sales !== null) {
+        convertedRow.net_sales = convertCurrency(convertedRow.net_sales, fromCurrency);
+    }
     
     return convertedRow;
 };

@@ -244,6 +244,7 @@ export default function RollUpPage({ params, customerRevenueType }) {
                     initialStartDate={formatDate(firstDayOfMonth)}
                     initialEndDate={formatDate(yesterday)}
                     onDataUpdate={handleDataUpdate}
+                    customerMetaID={childCustomers.map(customer => customer.customerMetaID)}
                 />
 
                 {/* Parent Customer Info Card - moved below child customers */}

@@ -85,7 +85,8 @@ export async function POST(req) {
                     accessToken: process.env.TEMP_FACEBOOK_API_TOKEN,
                     adAccountId: facebookAdAccountId || process.env.TEMP_FACEBOOK_AD_ACCOUNT_ID,
                     startDate,
-                    endDate
+                    endDate,
+                    countryCode: customer.customerMetaID // Apply country filter for Facebook Ads
                 };
 
                 // Google Ads API configuration

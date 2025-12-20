@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { IoMdClose } from "react-icons/io";
 import { useSession } from "next-auth/react";
 import currencyData from '@/lib/static-data/commonCurrency.json';
@@ -360,34 +361,29 @@ export default function CustomerModal({ closeModal }) {
                                         .filter(parent => getCustomersByParent(parent._id).length > 0)
                                         .map((parent) => (
                                         <li key={parent._id} className="mb-4">
-                                            <div
+                                            <Link
+                                                href={`/roll-up/${parent._id}`}
                                                 className="font-bold text-[var(--color-dark-green)] mb-2 cursor-pointer hover:text-[var(--color-green)] transition-colors flex items-center"
-                                                onClick={() => {
-                                                    closeModal();
-                                                    router.push(`/roll-up/${parent._id}`);
-                                                }}
+                                                onClick={closeModal}
                                             >
                                                 {parent.name}
                                                 <span className="ml-2 text-xs text-gray-500 font-normal">
                                                     ({getCustomersByParent(parent._id).length} customers)
                                                     view all
                                                 </span>
-                                            </div>
+                                            </Link>
                                             <ul className="ml-4">
                                                 {getCustomersByParent(parent._id).map((customer) => (
-                                                    <li
-                                                        key={customer._id}
-                                                        className="cursor-pointer px-3 py-2 mt-1 text-sm rounded-lg hover:bg-[var(--color-natural)] text-[var(--color-dark-green)] border border-gray-100 transition-colors"
-                                                        onClick={() => {
-                                                            closeModal();
-                                                            router.push(`/dashboard/${customer._id}`);
-                                                        }}
-                                                    >
-                                                        <span className="flex items-center gap-2">
+                                                    <li key={customer._id}>
+                                                        <Link
+                                                            href={`/dashboard/${customer._id}`}
+                                                            className="flex items-center gap-2 cursor-pointer px-3 py-2 mt-1 text-sm rounded-lg hover:bg-[var(--color-natural)] text-[var(--color-dark-green)] border border-gray-100 transition-colors"
+                                                            onClick={closeModal}
+                                                        >
                                                             <span className="mr-2">↳</span>
                                                             {customer.name}
                                                             {getCustomerIcon(customer.customerType)}
-                                                        </span>
+                                                        </Link>
                                                     </li>
                                                 ))}
                                             </ul>
@@ -403,19 +399,16 @@ export default function CustomerModal({ closeModal }) {
                                             )}
                                             <ul className={filteredParentCustomers.length > 0 ? "ml-4" : ""}>
                                                 {getCustomersWithoutParent().map((customer) => (
-                                                    <li
-                                                        key={customer._id}
-                                                        className="cursor-pointer px-3 py-2 mt-1 text-sm rounded-lg hover:bg-[var(--color-natural)] text-[var(--color-dark-green)] border border-gray-100 transition-colors"
-                                                        onClick={() => {
-                                                            closeModal();
-                                                            router.push(`/dashboard/${customer._id}`);
-                                                        }}
-                                                    >
-                                                        <span className="flex items-center gap-2">
+                                                    <li key={customer._id}>
+                                                        <Link
+                                                            href={`/dashboard/${customer._id}`}
+                                                            className="flex items-center gap-2 cursor-pointer px-3 py-2 mt-1 text-sm rounded-lg hover:bg-[var(--color-natural)] text-[var(--color-dark-green)] border border-gray-100 transition-colors"
+                                                            onClick={closeModal}
+                                                        >
                                                             <span className="mr-2">↳</span>
                                                             {customer.name}
                                                             {getCustomerIcon(customer.customerType)}
-                                                        </span>
+                                                        </Link>
                                                     </li>
                                                 ))}
                                             </ul>

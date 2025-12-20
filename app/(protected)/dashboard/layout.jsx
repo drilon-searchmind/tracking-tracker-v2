@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useSelectedLayoutSegments } from "next/navigation";
+import Link from "next/link";
 import { PiCaretDownThin } from "react-icons/pi";
 import { CiShare2, CiUser } from "react-icons/ci";
 import { FaBars, FaTimes } from "react-icons/fa";
@@ -69,7 +70,7 @@ export default function DashboardLayout({ children }) {
 
                 <ul className="hidden md:flex gap-2 relative items-center">
                     <li>
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/performance-dashboard`}
                             className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}/performance-dashboard`) 
@@ -78,11 +79,11 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Performance Dashboard
-                        </a>
+                        </Link>
                     </li>
 
                     <li>
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}`}
                             className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}`) 
@@ -91,7 +92,7 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Daily Overview
-                        </a>
+                        </Link>
                     </li>
 
                     <li className="relative group">
@@ -106,7 +107,7 @@ export default function DashboardLayout({ children }) {
                         <ul className="absolute left-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-solid-11 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 origin-top z-20">
                             {["seo", "ppc", "ps"].map((slug) => (
                                 <li key={slug}>
-                                    <a
+                                    <Link
                                         href={`/dashboard/${customerId}/service-dashboard/${slug}`}
                                         className={`block px-4 py-3 text-xs hover:bg-[var(--color-natural)] transition-colors first:rounded-t-lg last:rounded-b-lg ${
                                             pathname === `/dashboard/${customerId}/service-dashboard/${slug}`
@@ -115,14 +116,14 @@ export default function DashboardLayout({ children }) {
                                         }`}
                                     >
                                         {slug.toUpperCase()}
-                                    </a>
+                                    </Link>
                                 </li>
                             ))}
                         </ul>
                     </li>
 
                     <li>
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/product-performance`}
                             className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}/product-performance`) 
@@ -131,11 +132,11 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Products
-                        </a>
+                        </Link>
                     </li>
 
                     <li>
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/tools/pace-report`}
                             className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}/tools/pace-report`) 
@@ -144,11 +145,11 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Pace Report
-                        </a>
+                        </Link>
                     </li>
 
                     <li>
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/tools/pnl`}
                             className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}/tools/pnl`) 
@@ -157,11 +158,11 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             P&L
-                        </a>
+                        </Link>
                     </li>
 
                     <li>
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/tools/kampagneplan`}
                             className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 isActive(`/dashboard/${customerId}/tools/kampagneplan`) 
@@ -170,11 +171,11 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Campaign Planner
-                        </a>
+                        </Link>
                     </li>
 
                     <li>
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/config`}
                             className={`text-xs px-3 py-2 rounded-lg font-medium transition-colors bg-[#f8fafc] ${
                                 pathname === `/dashboard/${customerId}/config` 
@@ -183,7 +184,7 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Config
-                        </a>
+                        </Link>
                     </li>
                 </ul>
 
@@ -207,7 +208,7 @@ export default function DashboardLayout({ children }) {
             <div className={`md:hidden fixed top-[150px] left-0 right-0 bg-white border-b border-gray-100 shadow-solid-11 z-40 transition-all duration-300 ${mobileMenuOpen ? 'translate-y-0 opacity-100 visible' : 'translate-y-full opacity-0 invisible'}`}>
                 <ul className="flex flex-col px-4 py-2">
                     <li className="py-3 border-b border-gray-100">
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/performance-dashboard`}
                             className={`block text-sm font-medium ${
                                 isActive(`/dashboard/${customerId}/performance-dashboard`) 
@@ -216,10 +217,10 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Performance Dashboard
-                        </a>
+                        </Link>
                     </li>
                     <li className="py-3 border-b border-gray-100">
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}`}
                             className={`block text-sm font-medium ${
                                 isActive(`/dashboard/${customerId}`) 
@@ -228,7 +229,7 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Daily Overview
-                        </a>
+                        </Link>
                     </li>
                     <li className="py-3 border-b border-gray-100">
                         <div className={`flex justify-between items-center text-sm font-medium ${
@@ -242,7 +243,7 @@ export default function DashboardLayout({ children }) {
                         <ul className="ml-4 mt-2">
                             {["seo", "ppc", "em", "ps"].map((slug) => (
                                 <li key={slug} className="py-2">
-                                    <a
+                                    <Link
                                         href={`/dashboard/${customerId}/service-dashboard/${slug}`}
                                         className={`block text-sm ${
                                             pathname === `/dashboard/${customerId}/service-dashboard/${slug}` 
@@ -251,13 +252,13 @@ export default function DashboardLayout({ children }) {
                                         }`}
                                     >
                                         {slug.toUpperCase()}
-                                    </a>
+                                    </Link>
                                 </li>
                             ))}
                         </ul>
                     </li>
                     <li className="py-3 border-b border-gray-100">
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/product-performance`}
                             className={`block text-sm font-medium ${
                                 isActive(`/dashboard/${customerId}/product-performance`) 
@@ -266,10 +267,10 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Products
-                        </a>
+                        </Link>
                     </li>
                     <li className="py-3 border-b border-gray-100">
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/tools/pace-report`}
                             className={`block text-sm font-medium ${
                                 isActive(`/dashboard/${customerId}/tools/pace-report`) 
@@ -278,10 +279,10 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Pace Report
-                        </a>
+                        </Link>
                     </li>
                     <li className="py-3 border-b border-gray-100">
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/tools/pnl`}
                             className={`block text-sm font-medium ${
                                 isActive(`/dashboard/${customerId}/tools/pnl`) 
@@ -290,10 +291,10 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             P&L
-                        </a>
+                        </Link>
                     </li>
                     <li className="py-3 border-b border-gray-100">
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/tools/kampagneplan`}
                             className={`block text-sm font-medium ${
                                 isActive(`/dashboard/${customerId}/tools/kampagneplan`) 
@@ -302,15 +303,15 @@ export default function DashboardLayout({ children }) {
                             }`}
                         >
                             Campaign Planner
-                        </a>
+                        </Link>
                     </li>
                     <li className="py-3">
-                        <a
+                        <Link
                             href={`/dashboard/${customerId}/config`}
                             className={`block text-sm ${isConfigActive ? "text-black font-bold" : "text-gray-700"}`}
                         >
                             Config
-                        </a>
+                        </Link>
                     </li>
                 </ul>
             </div>

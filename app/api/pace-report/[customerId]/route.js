@@ -57,7 +57,8 @@ function mergePaceReportData(shopifyMetrics, facebookAdsData, googleAdsData) {
  * Fetch Pace Report data for a specific date range
  */
 export async function GET(req, { params }) {
-    const { customerId } = params;
+    const resolvedParams = await params;
+    const { customerId } = resolvedParams;
     const { searchParams } = new URL(req.url);
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");

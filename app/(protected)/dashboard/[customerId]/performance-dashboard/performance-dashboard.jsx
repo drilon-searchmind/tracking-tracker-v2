@@ -80,7 +80,7 @@ ChartJS.register(
     ChartDataLabels,
 );
 
-export default function PerformanceDashboard({ customerId, customerName, customerValutaCode, initialData, customerRevenueType }) {
+export default function PerformanceDashboard({ customerId, customerName, customerValutaCode, customerRevenueType }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -105,7 +105,7 @@ export default function PerformanceDashboard({ customerId, customerName, custome
     const [isFetchingData, setIsFetchingData] = useState(false);
     const [initialLoadComplete, setInitialLoadComplete] = useState(false);
     const [changeCurrency, setChangeCurrency] = useState(true);
-    const [fetchedData, setFetchedData] = useState(initialData);
+    const [fetchedData, setFetchedData] = useState([]);
 
     const [revenueViewMode, setRevenueViewMode] = useState("Period");
     const [spendViewMode, setSpendViewMode] = useState("Period");
@@ -117,6 +117,63 @@ export default function PerformanceDashboard({ customerId, customerName, custome
     const [spendPeriodGranularity, setSpendPeriodGranularity] = useState("Daily");
     const [aovPeriodGranularity, setAovPeriodGranularity] = useState("Daily");
     const [sessionsPeriodGranularity, setSessionsPeriodGranularity] = useState("Daily");
+
+    const fetchData = async (start, end) => {
+        setIsLoading(true);
+        try {
+            // Calculate comparison dates to get the full range needed
+            const endDate = new Date(end);
+            const startDate = new Date(start);
+            const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+            let compStart, compEnd;
+            if (comparison === "Previous Year") {
+                const compStartDate = new Date(startDate);
+                compStartDate.setFullYear(compStartDate.getFullYear() - 1);
+                const compEndDate = new Date(endDate);
+                compEndDate.setFullYear(compEndDate.getFullYear() - 1);
+                compStart = formatDate(compStartDate);
+                compEnd = formatDate(compEndDate);
+            } else {
+                const compStartDate = new Date(startDate);
+                compStartDate.setDate(compStartDate.getDate() - daysDiff - 1);
+                const compEndDate = new Date(endDate);
+                compEndDate.setDate(compEndDate.getDate() - daysDiff - 1);
+                compStart = formatDate(compStartDate);
+                compEnd = formatDate(compEndDate);
+            }
+
+            // Calculate the full date range needed
+            const allDates = [start, end, compStart, compEnd].sort();
+            const earliestDate = allDates[0];
+            const latestDate = allDates[allDates.length - 1];
+
+            const response = await fetch(`/api/performance-dashboard/${customerId}?startDate=${earliestDate}&endDate=${latestDate}`);
+            if (response.ok) {
+                const result = await response.json();
+                setFetchedData(result.data || []);
+            } else {
+                console.error('Failed to fetch data');
+                setFetchedData([]);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setFetchedData([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (customerId && dateStart && dateEnd) {
+            fetchData(dateStart, dateEnd);
+        }
+    }, [customerId, dateStart, dateEnd]);
+
+    const handleApplyDates = () => {
+        setDateStart(tempDateStart);
+        setDateEnd(tempDateEnd);
+    };
 
     useEffect(() => {
         const fetchCustomerSettings = async () => {
@@ -145,94 +202,6 @@ export default function PerformanceDashboard({ customerId, customerName, custome
               })
             : [];
     }, [fetchedData, customerValutaCode, changeCurrency, customerRevenueType]);
-
-    useEffect(() => {
-        if (initialData) {
-            const timer = setTimeout(() => {
-                setIsLoading(false);
-                setInitialLoadComplete(true);
-            }, 800);
-
-            return () => clearTimeout(timer);
-        }
-    }, [initialData]);
-
-    // Function to fetch data for current period and comparison period
-    const fetchPerformanceData = async (start, end, compStart, compEnd) => {
-        setIsFetchingData(true);
-        try {
-            console.log(`Fetching data: Current (${start} to ${end}), Comparison (${compStart} to ${compEnd})`);
-            
-            // Calculate the full date range needed (current + comparison)
-            const allDates = [start, end, compStart, compEnd].sort();
-            const earliestDate = allDates[0];
-            const latestDate = allDates[allDates.length - 1];
-
-            const response = await fetch(
-                `/api/performance-dashboard/${customerId}?startDate=${earliestDate}&endDate=${latestDate}`
-            );
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data: ${response.statusText}`);
-            }
-
-            const result = await response.json();
-            setFetchedData(result.data || []);
-            console.log(`Successfully fetched ${result.data?.length || 0} days of data`);
-        } catch (error) {
-            console.error("Error fetching performance data:", error);
-            setFetchedData([]);
-        } finally {
-            setIsFetchingData(false);
-        }
-    };
-
-    // Handle Apply button click
-    const handleApplyDates = () => {
-        setDateStart(tempDateStart);
-        setDateEnd(tempDateEnd);
-        
-        // Calculate comparison dates
-        const end = new Date(tempDateEnd);
-        const start = new Date(tempDateStart);
-        const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-
-        let compStart, compEnd;
-        if (comparison === "Previous Year") {
-            const compStartDate = new Date(start);
-            compStartDate.setFullYear(compStartDate.getFullYear() - 1);
-            const compEndDate = new Date(end);
-            compEndDate.setFullYear(compEndDate.getFullYear() - 1);
-            compStart = formatDate(compStartDate);
-            compEnd = formatDate(compEndDate);
-        } else {
-            const compStartDate = new Date(start);
-            compStartDate.setDate(compStartDate.getDate() - daysDiff - 1);
-            const compEndDate = new Date(end);
-            compEndDate.setDate(compEndDate.getDate() - daysDiff - 1);
-            compStart = formatDate(compStartDate);
-            compEnd = formatDate(compEndDate);
-        }
-
-        // Fetch data for both periods
-        fetchPerformanceData(tempDateStart, tempDateEnd, compStart, compEnd);
-    };
-
-    // Initial load - fetch data for current period and previous period
-    useEffect(() => {
-        if (initialData && !initialLoadComplete) {
-            const timer = setTimeout(() => {
-                setIsLoading(false);
-                setInitialLoadComplete(true);
-                
-                // Don't fetch data automatically - we already have initialData from server
-                // Only fetch when user clicks Apply or changes comparison period
-                console.log("Initial data loaded from server, skipping automatic fetch");
-            }, 100);
-
-            return () => clearTimeout(timer);
-        }
-    }, [initialData, initialLoadComplete]);
 
     useEffect(() => {
         const fetchCustomerSettings = async () => {
@@ -434,7 +403,7 @@ export default function PerformanceDashboard({ customerId, customerName, custome
         (row) => row.date && !isNaN(new Date(row.date).getTime()) && row.revenue !== 0 && row.aov !== 0
     );
 
-    if (isLoading && !initialLoadComplete) {
+    if (isLoading) {
         return (
             <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
                 <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>

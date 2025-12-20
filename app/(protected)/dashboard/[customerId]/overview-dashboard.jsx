@@ -43,12 +43,13 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     return convertedRow;
 };
 
-export default function OverviewDashboard({ customerId, customerName, customerValutaCode, initialData, customerRevenueType }) {
+export default function OverviewDashboard({ customerId, customerName, customerValutaCode, customerRevenueType }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
 
-    const { overview_metrics = [], totals = {}, last_year_totals = {}, last_year_metrics = [], two_years_ago_totals = {} } = initialData || {};
+    const [initialData, setInitialData] = useState({ overview_metrics: [], totals: {}, last_year_totals: {}, last_year_metrics: [], two_years_ago_totals: {} });
+    const { overview_metrics = [], totals = {}, last_year_totals = {}, last_year_metrics = [], two_years_ago_totals = {} } = initialData;
 
     const today = new Date();
     const yesterday = new Date(today);
@@ -71,14 +72,28 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
     const [loading, setLoading] = useState(true);
     const [changeCurrency, setChangeCurrency] = useState(true);
 
-    useEffect(() => {
-        if (initialData) {
-            const timer = setTimeout(() => {
-                setLoading(false);
-            }, 500);
-            return () => clearTimeout(timer);
+    const fetchData = async (start, end) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/dashboard-metrics/${customerId}?startDate=${start}&endDate=${end}`);
+            if (response.ok) {
+                const data = await response.json();
+                setInitialData(data);
+            } else {
+                console.error('Failed to fetch data');
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
         }
-    }, [initialData]);
+    };
+
+    useEffect(() => {
+        if (customerId && startDate && endDate) {
+            fetchData(startDate, endDate);
+        }
+    }, [customerId, startDate, endDate]);
 
     /*
     useEffect(() => {
@@ -125,12 +140,6 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
     const handleApplyDates = () => {
         setStartDate(tempStartDate);
         setEndDate(tempEndDate);
-        
-        // Show loading state and trigger navigation
-        setLoading(true);
-        startTransition(() => {
-            router.push(`/dashboard/${customerId}?startDate=${tempStartDate}&endDate=${tempEndDate}`);
-        });
     };
 
     const toggleRowExpansion = (index) => {
@@ -146,10 +155,6 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
             [index]: !prev[index]
         }));
     };
-
-    if (!overview_metrics || overview_metrics.length === 0) {
-        return <div>No data available for {customerId}</div>;
-    }
 
     const COGS = 0.7;
 
@@ -427,6 +432,14 @@ export default function OverviewDashboard({ customerId, customerName, customerVa
         setExpandedRows({});
         setExpandedLastYearRows({});
     }, [startDate, endDate]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!overview_metrics || overview_metrics.length === 0) {
+        return <div>No data available for {customerId}</div>;
+    }
 
     const tableHeader = customerRevenueType === "net_sales" ? "NET SALES" : "REVENUE";
 

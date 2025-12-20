@@ -1,44 +1,20 @@
-import { NextResponse } from "next/server";
 import { fetchShopifySalesAnalyticsWithAds } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
-import { dbConnect } from "@/lib/dbConnect";
-import CustomerSettings from "@/models/CustomerSettings";
+import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
 
-/**
- * Helper function to merge Shopify, Facebook Ads, and Google Ads data for P&L
- */
-/**
- * GET /api/pnl-dashboard/[customerId]?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
- * Fetch P&L dashboard data for a specific date range
- */
 export async function GET(request, { params }) {
+    const { customerId } = await params;
+    const { searchParams } = new URL(request.url);
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+
+    if (!startDate || !endDate) {
+        return new Response(JSON.stringify({ error: 'startDate and endDate are required' }), { status: 400 });
+    }
+
     try {
-        const resolvedParams = await params;
-        const customerId = resolvedParams.customerId;
-        const { searchParams } = new URL(request.url);
-        
-        const startDate = searchParams.get('startDate');
-        const endDate = searchParams.get('endDate');
-
-        if (!startDate || !endDate) {
-            return NextResponse.json(
-                { error: "startDate and endDate are required" },
-                { status: 400 }
-            );
-        }
-
-        console.log(`[API] Fetching P&L data for ${customerId} from ${startDate} to ${endDate}`);
-
-        // Fetch customer settings from database
-        await dbConnect();
-        const customerSettings = await CustomerSettings.findOne({ customer: customerId });
-        
-        const shopifyUrl = customerSettings?.shopifyUrl || "";
-        const shopifyApiPassword = customerSettings?.shopifyApiPassword || "";
-        const facebookAdAccountId = customerSettings?.facebookAdAccountId || "";
-        const googleAdsCustomerId = customerSettings?.googleAdsCustomerId || "";
-        const customerMetaID = customerSettings?.customerMetaID || "";
+        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID, customerRevenueType } = await fetchCustomerDetails(customerId);
 
         // Calculate last year date range
         const startDateObj = new Date(startDate);
@@ -75,7 +51,7 @@ export async function GET(request, { params }) {
             adAccountId: facebookAdAccountId,
             startDate: startDate,
             endDate: endDate,
-            countryCode: customerMetaID || undefined // Filter by country if specified
+            countryCode: customerMetaID || undefined
         };
 
         // Last year Facebook Ads configuration
@@ -179,18 +155,12 @@ export async function GET(request, { params }) {
         );
 
         if (!data || !data.overview_metrics || data.overview_metrics.length === 0) {
-            return NextResponse.json({ data: [] });
+            return new Response(JSON.stringify({ error: 'No data available' }), { status: 404 });
         }
 
-        console.log(`[API] Successfully fetched ${data.overview_metrics.length} days of P&L data`);
-
-        return NextResponse.json({ data: data.overview_metrics });
-
+        return new Response(JSON.stringify(data), { status: 200 });
     } catch (error) {
-        console.error("[API] P&L dashboard error:", error);
-        return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-        );
+        console.error("Dashboard metrics API error:", error.message);
+        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
 }

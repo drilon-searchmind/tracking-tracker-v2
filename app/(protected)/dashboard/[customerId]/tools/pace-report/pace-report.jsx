@@ -70,7 +70,7 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     return convertedRow;
 };
 
-export default function PaceReport({ customerId, customerName, customerValutaCode, initialData, customerRevenueType }) {
+export default function PaceReport({ customerId, customerName, customerValutaCode, customerRevenueType }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -96,7 +96,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [changeCurrency, setChangeCurrency] = useState(true);
-    const [isFetchingData, setIsFetchingData] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [fetchedData, setFetchedData] = useState(null);
 
     const end = new Date(dateEnd);
@@ -119,7 +119,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     }, [customerId]);
 
     const fetchPaceData = async (startDate, endDate) => {
-        setIsFetchingData(true);
+        setIsLoading(true);
         try {
             const response = await fetch(
                 `/api/pace-report/${customerId}?startDate=${startDate}&endDate=${endDate}`
@@ -134,39 +134,23 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         } catch (error) {
             console.error('Error fetching Pace Report data:', error);
         } finally {
-            setIsFetchingData(false);
+            setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (customerId && dateStart && dateEnd) {
+            fetchPaceData(dateStart, dateEnd);
+        }
+    }, [customerId, dateStart, dateEnd]);
 
     const handleApplyDates = () => {
         setDateStart(tempStartDate);
         setDateEnd(tempEndDate);
-        fetchPaceData(tempStartDate, tempEndDate);
     };
 
-    if (!initialData || !initialData.daily_metrics) {
-        return (
-            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
-                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
-                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
-                    <Image
-                        width={1920}
-                        height={1080}
-                        src="/images/shape-dotted-light.svg"
-                        alt="bg"
-                        className="w-full h-full"
-                    />
-                </div>
-                <div className="px-0 md:px-20 mx-auto z-10 relative">
-                    <div className="flex justify-center items-center p-10 bg-white rounded-lg shadow-sm border border-[var(--color-natural)]">
-                        <p className="text-[var(--color-dark-green)] text-lg">No data available for {customerId}</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const daily_metrics = fetchedData?.data || initialData?.daily_metrics || [];
+    // Always define data before any conditional returns
+    const daily_metrics = fetchedData?.daily_metrics || [];
 
     const filteredMetrics = useMemo(() => {
         const filtered = daily_metrics
@@ -279,6 +263,28 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
 
         return result;
     }, [cumulativeMetrics, revenueBudget, ordersBudget, adSpendBudget, dateStart, dateEnd, daysInMonth, changeCurrency, customerValutaCode]);
+
+    if (!isLoading && (!fetchedData || !fetchedData.daily_metrics || fetchedData.daily_metrics.length === 0)) {
+        return (
+            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
+                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                    <Image
+                        width={1920}
+                        height={1080}
+                        src="/images/shape-dotted-light.svg"
+                        alt="bg"
+                        className="w-full h-full"
+                    />
+                </div>
+                <div className="px-0 md:px-20 mx-auto z-10 relative">
+                    <div className="flex justify-center items-center p-10 bg-white rounded-lg shadow-sm border border-[var(--color-natural)]">
+                        <p className="text-[var(--color-dark-green)] text-lg">No data available for {customerId}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const budgetChartData = {
         labels: cumulativeMetrics.map(row => row.date),
@@ -486,7 +492,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
             {/* Loading Overlay - positioned at top level */}
-            {isFetchingData && (
+            {isLoading && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center">
                     <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center gap-4 border-2 border-[var(--color-lime)]">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[var(--color-lime)]"></div>
@@ -541,10 +547,10 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                             
                             <button
                                 onClick={handleApplyDates}
-                                disabled={isFetchingData}
+                                disabled={isLoading}
                                 className="bg-[var(--color-lime)] hover:bg-[var(--color-lime-dark)] text-[var(--color-dark-green)] font-medium px-6 py-2 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full md:w-auto justify-center"
                             >
-                                {isFetchingData ? (
+                                {isLoading ? (
                                     <>
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--color-dark-green)]"></div>
                                         Loading...

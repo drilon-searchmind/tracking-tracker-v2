@@ -10,7 +10,8 @@ export default function RollUpChildCustomers({
     initialStartDate,
     initialEndDate,
     onDataUpdate,
-    customerRevenueType // Added prop for revenue type
+    customerRevenueType, // Added prop for revenue type
+    customerMetaID
 }) {
     // Applied date range (used for API calls)
     const [startDate, setStartDate] = useState(initialStartDate);
@@ -56,13 +57,16 @@ export default function RollUpChildCustomers({
                 body: JSON.stringify({
                     childCustomers,
                     startDate: newStartDate,
-                    endDate: newEndDate
+                    endDate: newEndDate,
+                    countryCode: customerMetaID // Include country code for filtering
                 })
             });
 
             if (response.ok) {
                 const data = await response.json();
                 const metrics = data.customer_metrics || [];
+
+                console.log('Fetched filtered roll-up data:', metrics);
                 setCustomerMetrics(metrics);
                 
                 // Call the callback to update parent component

@@ -33,7 +33,7 @@ ChartJS.register(
     CategoryScale
 );
 
-export default function ProductPerformanceDashboard({ customerId, customerName, customerValutaCode, initialData }) {
+export default function ProductPerformanceDashboard({ customerId, customerName, customerValutaCode }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -60,7 +60,7 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
     const [productSearch, setProductSearch] = useState("");
     const [sortBy, setSortBy] = useState("total_revenue");
     const [sortOrder, setSortOrder] = useState("desc");
-    const [isFetchingData, setIsFetchingData] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [fetchedData, setFetchedData] = useState(null);
     
     // View mode and granularity states
@@ -69,15 +69,8 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
     const [productsViewMode, setProductsViewMode] = useState("Period");
     const [productsPeriodGranularity, setProductsPeriodGranularity] = useState("Daily");
 
-    useEffect(() => {
-        console.log('Product Performance Dashboard mounted for customer:', customerId);
-        // Auto-fetch with default date range (first day of month to yesterday)
-        setIsFetchingData(true);
-        fetchProductData(formatDate(firstDayOfMonth), formatDate(yesterday));
-    }, [customerId]);
-
     const fetchProductData = async (startDate, endDate) => {
-        setIsFetchingData(true);
+        setIsLoading(true);
         try {
             const response = await fetch(
                 `/api/product-performance/${customerId}?startDate=${startDate}&endDate=${endDate}`
@@ -92,14 +85,19 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
         } catch (error) {
             console.error('Error fetching product data:', error);
         } finally {
-            setIsFetchingData(false);
+            setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (customerId && dateStart && dateEnd) {
+            fetchProductData(dateStart, dateEnd);
+        }
+    }, [customerId, dateStart, dateEnd]);
 
     const handleApplyDates = () => {
         setDateStart(tempStartDate);
         setDateEnd(tempEndDate);
-        fetchProductData(tempStartDate, tempEndDate);
     };
 
     // Use fetchedData (client-side only)
@@ -322,7 +320,7 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
         setExpandedProducts({});
     }, [dateStart, dateEnd]);
 
-    if (isFetchingData || !dashboard_data || !top_products || !product_daily_metrics) {
+    if (isLoading || !dashboard_data || !top_products || !product_daily_metrics) {
         return (
             <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
                 <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
@@ -350,7 +348,7 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
             {/* Loading Overlay */}
-            {isFetchingData && (
+            {isLoading && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
                     <div className="bg-white rounded-lg p-8 shadow-xl">
                         <div className="flex flex-col items-center gap-4">
@@ -404,10 +402,10 @@ export default function ProductPerformanceDashboard({ customerId, customerName, 
                                     />
                                     <button
                                         onClick={handleApplyDates}
-                                        disabled={isFetchingData}
+                                        disabled={isLoading}
                                         className="bg-[var(--color-lime)] text-[var(--color-dark-green)] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[var(--color-lime-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                     >
-                                        {isFetchingData ? (
+                                        {isLoading ? (
                                             <>
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--color-dark-green)]"></div>
                                                 Loading...

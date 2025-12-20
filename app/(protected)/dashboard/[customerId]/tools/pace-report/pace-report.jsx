@@ -48,18 +48,18 @@ const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
 // Apply currency conversion to a data row
 const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     if (fromCurrency === "DKK" || !shouldConvertCurrency) return row;
-    
+
     const convertedRow = { ...row };
-    
-    // Convert revenue field
+
+    // Convert revenue
     if (convertedRow.revenue !== undefined && convertedRow.revenue !== null) {
         convertedRow.revenue = convertCurrency(convertedRow.revenue, fromCurrency);
     }
-    
+
     return convertedRow;
 };
 
-export default function PaceReport({ customerId, customerName, customerValutaCode, initialData, customerRevenueType }) {
+export default function PaceReport({ customerId, customerName, customerValutaCode, customerRevenueType }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -85,7 +85,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     const [dateEnd, setDateEnd] = useState(formatDate(yesterday));
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [changeCurrency, setChangeCurrency] = useState(true);
-    const [isFetchingData, setIsFetchingData] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [fetchedData, setFetchedData] = useState(null);
 
     const end = new Date(dateEnd);
@@ -108,7 +108,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     }, [customerId]);
 
     const fetchPaceData = async (startDate, endDate) => {
-        setIsFetchingData(true);
+        setIsLoading(true);
         try {
             const response = await fetch(
                 `/api/pace-report/${customerId}?startDate=${startDate}&endDate=${endDate}`
@@ -123,17 +123,137 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
         } catch (error) {
             console.error('Error fetching Pace Report data:', error);
         } finally {
-            setIsFetchingData(false);
+            setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (customerId && dateStart && dateEnd) {
+            fetchPaceData(dateStart, dateEnd);
+        }
+    }, [customerId, dateStart, dateEnd]);
 
     const handleApplyDates = () => {
         setDateStart(tempStartDate);
         setDateEnd(tempEndDate);
-        fetchPaceData(tempStartDate, tempEndDate);
     };
 
-    if (!initialData || !initialData.daily_metrics) {
+    // Always define data before any conditional returns
+    const daily_metrics = fetchedData?.daily_metrics || [];
+
+    const filteredMetrics = useMemo(() => {
+        const filtered = daily_metrics
+            .filter(row => row.date >= dateStart && row.date <= dateEnd)
+            .map(row => {
+                const convertedRow = convertDataRow(row, customerValutaCode, changeCurrency);
+                return {
+                    ...convertedRow,
+                    revenue: customerRevenueType === "net_sales" ? convertedRow.net_sales : convertedRow.revenue,
+                };
+            })
+            .sort((a, b) => a.date.localeCompare(b.date));
+
+        console.log({daily_metrics})
+        return filtered;
+    }, [daily_metrics, dateStart, dateEnd, customerValutaCode, changeCurrency, customerRevenueType]);
+
+    const cumulativeMetrics = useMemo(() => {
+        let cumOrders = 0, cumRevenue = 0, cumNetSales = 0;
+        let cumGoogleAdSpend = 0, cumFacebookAdSpend = 0, cumAdSpend = 0;
+
+        const result = filteredMetrics.map(row => {
+            cumOrders += Number(row.orders || 0);
+            cumRevenue += Number(row.revenue || 0);
+            cumNetSales += Number(row.net_sales || 0);
+            cumGoogleAdSpend += Number(row.ad_spend_google || 0);
+            cumFacebookAdSpend += Number(row.ad_spend_fb || 0);
+            cumAdSpend = cumGoogleAdSpend + cumFacebookAdSpend;
+
+            return {
+                date: row.date,
+                orders: cumOrders,
+                revenue: cumRevenue,
+                net_sales: cumNetSales,
+                google_adspend: cumGoogleAdSpend,
+                facebook_adspend: cumFacebookAdSpend,
+                ad_spend: cumAdSpend,
+                roas: cumAdSpend > 0 ? cumRevenue / cumAdSpend : 0,
+            };
+        });
+
+        return result;
+    }, [filteredMetrics]);
+
+    const totals = useMemo(() => {
+        const aggregated = cumulativeMetrics.length > 0 ? cumulativeMetrics[cumulativeMetrics.length - 1] : {
+            orders: 0,
+            revenue: 0,
+            net_sales: 0,
+            ad_spend: 0,
+            roas: 0
+        };
+
+        const revenueBudgetNum = Number(revenueBudget.replace(/[^0-9.-]+/g, "")) || 500000;
+        const ordersBudgetNum = Number(ordersBudget.replace(/[^0-9.-]+/g, "")) || 1000;
+        const adSpendBudgetNum = Number(adSpendBudget.replace(/[^0-9.-]+/g, "")) || 100000;
+
+        const start = new Date(dateStart);
+        const daysInRange = Math.ceil((end - start + 1) / (1000 * 60 * 60 * 24));
+        const daysElapsed = daysInRange;
+        const daysRemaining = daysInMonth - daysElapsed;
+
+        // Convert revenue and net_sales if currency conversion is enabled
+        const convertedRevenue = changeCurrency ? convertCurrency(aggregated.revenue, customerValutaCode) : aggregated.revenue;
+        const convertedNetSales = changeCurrency ? convertCurrency(aggregated.net_sales, customerValutaCode) : aggregated.net_sales;
+
+        const revenuePace = (convertedRevenue / daysInMonth) * (daysElapsed - 1) > 0
+            ? revenueBudgetNum / ((convertedRevenue / daysInMonth) * (daysElapsed - 1))
+            : 0;
+
+        const ordersPace = (aggregated.orders / daysInMonth) * (daysElapsed - 1) > 0
+            ? ordersBudgetNum / ((aggregated.orders / daysInMonth) * (daysElapsed - 1))
+            : 0;
+
+        const adSpendPace = (aggregated.ad_spend / daysInMonth) * (daysElapsed - 1) > 0
+            ? adSpendBudgetNum / ((aggregated.ad_spend / daysInMonth) * (daysElapsed - 1))
+            : 0;
+
+        const dailyRevenueGap = daysRemaining > 0
+            ? (revenueBudgetNum - convertedRevenue) / daysRemaining
+            : 0;
+
+        const dailyOrdersGap = daysRemaining > 0
+            ? (ordersBudgetNum - aggregated.orders) / daysRemaining
+            : 0;
+
+        const dailyAdSpendGap = daysRemaining > 0
+            ? (adSpendBudgetNum - aggregated.ad_spend) / daysRemaining
+            : 0;
+
+        const result = {
+            orders: aggregated.orders,
+            revenue: convertedRevenue,
+            net_sales: convertedNetSales, // Ensure net_sales is included and converted
+            ad_spend: aggregated.ad_spend,
+            roas: isFinite(aggregated.roas) ? aggregated.roas : 0,
+            revenue_budget: revenueBudgetNum,
+            orders_budget: ordersBudgetNum,
+            ad_spend_budget: adSpendBudgetNum,
+            revenue_pace: revenueBudgetNum * (daysInRange / daysInMonth),
+            orders_pace: ordersBudgetNum * (daysInRange / daysInMonth),
+            ad_spend_pace: adSpendBudgetNum * (daysInRange / daysInMonth),
+            revenue_pace_ratio: isFinite(revenuePace) ? revenuePace : 0,
+            orders_pace_ratio: isFinite(ordersPace) ? ordersPace : 0,
+            ad_spend_pace_ratio: isFinite(adSpendPace) ? adSpendPace : 0,
+            daily_revenue_gap: isFinite(dailyRevenueGap) ? dailyRevenueGap : 0,
+            daily_orders_gap: isFinite(dailyOrdersGap) ? dailyOrdersGap : 0,
+            daily_ad_spend_gap: isFinite(dailyAdSpendGap) ? dailyAdSpendGap : 0
+        };
+
+        return result;
+    }, [cumulativeMetrics, revenueBudget, ordersBudget, adSpendBudget, dateStart, dateEnd, daysInMonth, changeCurrency, customerValutaCode]);
+
+    if (!isLoading && (!fetchedData || !fetchedData.daily_metrics || fetchedData.daily_metrics.length === 0)) {
         return (
             <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
                 <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
@@ -154,105 +274,6 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
             </div>
         );
     }
-
-    const daily_metrics = fetchedData?.data || initialData?.daily_metrics || [];
-
-    const filteredMetrics = useMemo(() => {
-        const filtered = daily_metrics
-            .filter(row => row.date >= dateStart && row.date <= dateEnd)
-            .map(row => {
-                const convertedRow = convertDataRow(row, customerValutaCode, changeCurrency);
-                return {
-                    ...convertedRow,
-                    revenue: customerRevenueType === "net_sales" ? convertedRow.net_sales : convertedRow.revenue,
-                };
-            })
-            .sort((a, b) => a.date.localeCompare(b.date));
-        return filtered;
-    }, [daily_metrics, dateStart, dateEnd, customerValutaCode, changeCurrency, customerRevenueType]);
-
-    const cumulativeMetrics = useMemo(() => {
-        let cumOrders = 0, cumRevenue = 0, cumNetSales = 0, cumAdSpend = 0;
-        const result = filteredMetrics.map(row => {
-            cumOrders += Number(row.orders || 0);
-            cumRevenue += Number(row.revenue || 0);
-            cumNetSales += Number(row.net_sales || 0); // Accumulate net_sales
-            cumAdSpend += Number(row.ad_spend || 0);
-            return {
-                date: row.date,
-                orders: cumOrders,
-                revenue: cumRevenue,
-                net_sales: cumNetSales, // Include net_sales in cumulative metrics
-                ad_spend: cumAdSpend,
-                roas: cumAdSpend > 0 ? cumRevenue / cumAdSpend : 0,
-            };
-        });
-        return result;
-    }, [filteredMetrics]);
-
-    const totals = useMemo(() => {
-        const aggregated = cumulativeMetrics.length > 0 ? cumulativeMetrics[cumulativeMetrics.length - 1] : {
-            orders: 0,
-            revenue: 0,
-            ad_spend: 0,
-            roas: 0
-        };
-
-        const revenueBudgetNum = Number(revenueBudget.replace(/[^0-9.-]+/g, "")) || 500000;
-        const ordersBudgetNum = Number(ordersBudget.replace(/[^0-9.-]+/g, "")) || 1000;
-        const adSpendBudgetNum = Number(adSpendBudget.replace(/[^0-9.-]+/g, "")) || 100000;
-
-        const start = new Date(dateStart);
-        const daysInRange = Math.ceil((end - start + 1) / (1000 * 60 * 60 * 24));
-        const daysElapsed = daysInRange;
-        const daysRemaining = daysInMonth - daysElapsed;
-
-        const revenuePace = (aggregated.revenue / daysInMonth) * (daysElapsed - 1) > 0
-            ? revenueBudgetNum / ((aggregated.revenue / daysInMonth) * (daysElapsed - 1))
-            : 0;
-
-        const ordersPace = (aggregated.orders / daysInMonth) * (daysElapsed - 1) > 0
-            ? ordersBudgetNum / ((aggregated.orders / daysInMonth) * (daysElapsed - 1))
-            : 0;
-
-        const adSpendPace = (aggregated.ad_spend / daysInMonth) * (daysElapsed - 1) > 0
-            ? adSpendBudgetNum / ((aggregated.ad_spend / daysInMonth) * (daysElapsed - 1))
-            : 0;
-
-        const dailyRevenueGap = daysRemaining > 0
-            ? (revenueBudgetNum - aggregated.revenue) / daysRemaining
-            : 0;
-
-        const dailyOrdersGap = daysRemaining > 0
-            ? (ordersBudgetNum - aggregated.orders) / daysRemaining
-            : 0;
-
-        const dailyAdSpendGap = daysRemaining > 0
-            ? (adSpendBudgetNum - aggregated.ad_spend) / daysRemaining
-            : 0;
-
-        const result = {
-            orders: aggregated.orders,
-            revenue: aggregated.revenue,
-            net_sales: aggregated.net_sales || 0, // Ensure net_sales is included
-            ad_spend: aggregated.ad_spend,
-            roas: isFinite(aggregated.roas) ? aggregated.roas : 0,
-            revenue_budget: revenueBudgetNum,
-            orders_budget: ordersBudgetNum,
-            ad_spend_budget: adSpendBudgetNum,
-            revenue_pace: revenueBudgetNum * (daysInRange / daysInMonth),
-            orders_pace: ordersBudgetNum * (daysInRange / daysInMonth),
-            ad_spend_pace: adSpendBudgetNum * (daysInRange / daysInMonth),
-            revenue_pace_ratio: isFinite(revenuePace) ? revenuePace : 0,
-            orders_pace_ratio: isFinite(ordersPace) ? ordersPace : 0,
-            ad_spend_pace_ratio: isFinite(adSpendPace) ? adSpendPace : 0,
-            daily_revenue_gap: isFinite(dailyRevenueGap) ? dailyRevenueGap : 0,
-            daily_orders_gap: isFinite(dailyOrdersGap) ? dailyOrdersGap : 0,
-            daily_ad_spend_gap: isFinite(dailyAdSpendGap) ? dailyAdSpendGap : 0
-        };
-
-        return result;
-    }, [cumulativeMetrics, revenueBudget, ordersBudget, adSpendBudget, dateStart, dateEnd, daysInMonth]);
 
     const budgetChartData = {
         labels: cumulativeMetrics.map(row => row.date),
@@ -460,7 +481,7 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
     return (
         <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
             {/* Loading Overlay - positioned at top level */}
-            {isFetchingData && (
+            {isLoading && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center">
                     <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center gap-4 border-2 border-[var(--color-lime)]">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[var(--color-lime)]"></div>
@@ -515,10 +536,10 @@ export default function PaceReport({ customerId, customerName, customerValutaCod
                             
                             <button
                                 onClick={handleApplyDates}
-                                disabled={isFetchingData}
+                                disabled={isLoading}
                                 className="bg-[var(--color-lime)] hover:bg-[var(--color-lime-dark)] text-[var(--color-dark-green)] font-medium px-6 py-2 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full md:w-auto justify-center"
                             >
-                                {isFetchingData ? (
+                                {isLoading ? (
                                     <>
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--color-dark-green)]"></div>
                                         Loading...

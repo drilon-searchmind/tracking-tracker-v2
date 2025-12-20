@@ -15,7 +15,8 @@ export async function PUT(req, { params }) {
             });
         }
 
-        const userId = params.id;
+        const resolvedParams = await params;
+        const userId = resolvedParams.id;
         const { name, email, isAdmin, password, isArchived } = await req.json();
 
         await dbConnect();

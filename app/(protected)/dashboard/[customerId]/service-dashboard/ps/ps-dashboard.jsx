@@ -30,7 +30,7 @@ ChartJS.register(
     CategoryScale
 );
 
-export default function PSDashboard({ customerId, customerName, initialData }) {
+export default function PSDashboard({ customerId, customerName }) {
     // Data is already sanitized in the server component
 
     const today = new Date();
@@ -58,8 +58,8 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
     const [activeChartIndex, setActiveChartIndex] = useState(0);
     const [expandedCampaigns, setExpandedCampaigns] = useState({});
     const [showAllMetrics, setShowAllMetrics] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [dashboardData, setDashboardData] = useState(initialData || null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [dashboardData, setDashboardData] = useState(null);
     
     // View mode and granularity states
     const [metricsViewMode, setMetricsViewMode] = useState("Period");
@@ -89,11 +89,16 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
         }
     };
 
+    useEffect(() => {
+        if (customerId && startDate && endDate) {
+            fetchData(startDate, endDate);
+        }
+    }, [customerId, startDate, endDate]);
+
     // Handle apply button click
     const handleApplyDates = () => {
         setStartDate(tempStartDate);
         setEndDate(tempEndDate);
-        fetchData(tempStartDate, tempEndDate);
     };
 
 
@@ -984,6 +989,29 @@ export default function PSDashboard({ customerId, customerName, initialData }) {
     useEffect(() => {
         setExpandedCampaigns({});
     }, [startDate, endDate]);
+
+    if (isLoading) {
+        return (
+            <div className="py-6 md:py-20 px-4 md:px-0 relative overflow-hidden min-h-screen">
+                <div className="absolute top-0 left-0 w-full h-2/3 bg-gradient-to-t from-white to-[var(--color-natural)] rounded-lg z-1"></div>
+                <div className="absolute bottom-[-355px] left-0 w-full h-full z-1">
+                    <Image
+                        width={1920}
+                        height={1080}
+                        src="/images/shape-dotted-light.svg"
+                        alt="bg"
+                        className="w-full h-full"
+                    />
+                </div>
+                <div className="px-0 md:px-20 mx-auto z-10 relative">
+                    <div className="text-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-lime)] mx-auto"></div>
+                        <p className="mt-4 text-[var(--color-dark-green)]">Loading PS dashboard data...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (!metrics_by_date || !top_campaigns || !campaigns_by_date) {
         return (

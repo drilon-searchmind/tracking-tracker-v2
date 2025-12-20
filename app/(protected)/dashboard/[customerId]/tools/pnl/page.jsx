@@ -1,51 +1,123 @@
 import PnLDashboard from "./pnl-dashboard";
-import { fetchShopifySalesAnalyticsWithAds } from "@/lib/shopifyApi";
+import { fetchShopifySalesAnalytics } from "@/lib/shopifyApi";
 import { fetchFacebookAdsMetrics } from "@/lib/facebookAdsApi";
 import { fetchGoogleAdsMetrics } from "@/lib/googleAdsApi";
 import { fetchCustomerDetails } from "@/lib/functions/fetchCustomerDetails";
-import { dbConnect } from "@/lib/dbConnect";
 import StaticExpenses from "@/models/StaticExpenses";
+import { dbConnect } from "@/lib/dbConnect";
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
-/**
- * Helper function to merge Shopify, Facebook Ads, and Google Ads data for P&L
- */
-// No merge function needed, handled in fetchShopifySalesAnalyticsWithAds
+function mergePnLData(salesData, facebookAdsData, googleAdsData) {
+    const dataByDate = {};
+
+    // Process Shopify sales data (from ShopifyQL)
+    salesData.forEach(row => {
+        dataByDate[row.day] = {
+            date: row.day,
+            net_sales: parseFloat(row.net_sales) || 0,
+            gross_sales: parseFloat(row.total_sales) || 0,
+            total_discounts: parseFloat(row.total_discounts) || 0,
+            total_refunds: parseFloat(row.total_refunds) || 0,
+            shipping_fees: parseFloat(row.shipping_fees) || 0,
+            total_taxes: parseFloat(row.total_taxes) || 0,
+            orders: parseInt(row.orders) || 0,
+            marketing_spend_facebook: 0,
+            marketing_spend_google: 0,
+        };
+    });
+
+    // Add Facebook Ads data
+    facebookAdsData.forEach(row => {
+        if (!dataByDate[row.date]) {
+            dataByDate[row.date] = {
+                date: row.date,
+                net_sales: 0,
+                gross_sales: 0,
+                total_discounts: 0,
+                total_refunds: 0,
+                shipping_fees: 0,
+                total_taxes: 0,
+                orders: 0,
+                marketing_spend_facebook: 0,
+                marketing_spend_google: 0,
+            };
+        }
+        dataByDate[row.date].marketing_spend_facebook += row.ps_cost || 0;
+    });
+
+    // Add Google Ads data
+    googleAdsData.forEach(row => {
+        if (!dataByDate[row.date]) {
+            dataByDate[row.date] = {
+                date: row.date,
+                net_sales: 0,
+                gross_sales: 0,
+                total_discounts: 0,
+                total_refunds: 0,
+                shipping_fees: 0,
+                total_taxes: 0,
+                orders: 0,
+                marketing_spend_facebook: 0,
+                marketing_spend_google: 0,
+            };
+        }
+        dataByDate[row.date].marketing_spend_google += row.ppc_cost || 0;
+    });
+
+    const result = Object.values(dataByDate);
+    return result.sort((a, b) => a.date.localeCompare(b.date));
+}
 
 export default async function PnLPage({ params }) {
     const resolvedParams = await params;
     const customerId = resolvedParams.customerId;
 
-    let staticExpenses = {
-        cogs_percentage: 0,
-        shipping_cost_per_order: 0,
-        transaction_cost_percentage: 0,
-        marketing_bureau_cost: 0,
-        marketing_tooling_cost: 0,
-        fixed_expenses: 0
-    };
-
     try {
-        await dbConnect()
-        const staticExpensesData = await StaticExpenses.findOne({ customer: customerId });
-        
-        if (staticExpensesData) {
-            staticExpenses = {
-                cogs_percentage: staticExpensesData.cogs_percentage || 0,
-                shipping_cost_per_order: staticExpensesData.shipping_cost_per_order || 0,
-                transaction_cost_percentage: staticExpensesData.transaction_cost_percentage || 0,
-                marketing_bureau_cost: staticExpensesData.marketing_bureau_cost || 0,
-                marketing_tooling_cost: staticExpensesData.marketing_tooling_cost || 0,
-                fixed_expenses: staticExpensesData.fixed_expenses || 0,
-            };
+        await dbConnect(); // Ensure database connection
+
+        const { customerName, customerValutaCode, customerRevenueType, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID } = await fetchCustomerDetails(customerId);
+
+        // Fetch static expenses for the customer
+        let staticExpenses = {
+            cogs_percentage: 0,
+            shipping_cost_per_order: 0,
+            transaction_cost_percentage: 0,
+            marketing_bureau_cost: 0,
+            marketing_tooling_cost: 0,
+            fixed_expenses: 0,
+        };
+
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "");
+
+            const apiUrl = `${baseUrl}/api/config-static-expenses-v2/${customerId}`; // Ensure absolute URL
+            const response = await fetch(apiUrl);
+
+            if (response.ok) {
+                const text = await response.text();
+
+                if (text && text.trim()) {
+                    try {
+                        const result = JSON.parse(text);
+
+                        if (result?.data) {
+                            staticExpenses = result.data;
+                        } else if (result && typeof result === "object" && result.cogs_percentage !== undefined) {
+                            staticExpenses = result;
+                        }
+
+                        console.log("Fetched static expenses for customer ID:", customerId, staticExpenses);
+                    } catch (parseErr) {
+                        console.error("Error parsing static expenses JSON:", parseErr, "raw:", text);
+                    }
+                }
+            } else {
+                console.error("Failed to fetch static expenses:", response.status);
+            }
+        } catch (error) {
+            console.error("Error fetching static expenses:", error);
         }
-    } catch (error) {
-        console.error("P&L Static Expenses error:", error.message, error.stack);
-    }
-
-    try {
-        const { customerName, customerValutaCode, shopifyUrl, shopifyApiPassword, facebookAdAccountId, googleAdsCustomerId, customerMetaID, customerRevenueType } = await fetchCustomerDetails(customerId);
 
         // Calculate date range for initial data (last 30 days)
         const today = new Date();
@@ -93,8 +165,12 @@ export default async function PnLPage({ params }) {
             endDate: endDateStr
         };
 
-        // Fetch initial data (last 30 days) in parallel using ShopifyQL analytics
-        const [facebookAdsData, googleAdsData] = await Promise.all([
+        // Fetch initial data (last 30 days) in parallel
+        const [salesResult, facebookAdsData, googleAdsData] = await Promise.all([
+            fetchShopifySalesAnalytics(shopifyConfig).catch(err => {
+                console.error("Failed to fetch Shopify sales data:", err.message);
+                return { salesData: [], totals: {}, columns: [] };
+            }),
             fetchFacebookAdsMetrics(facebookConfig).catch(err => {
                 console.error("Failed to fetch Facebook Ads data:", err.message);
                 return [];
@@ -105,26 +181,36 @@ export default async function PnLPage({ params }) {
             })
         ]);
 
-        // Use new ShopifyQL analytics with ad data merge
-        const analyticsResult = await fetchShopifySalesAnalyticsWithAds(shopifyConfig, facebookAdsData, googleAdsData);
-        const metrics_by_date = analyticsResult?.overview_metrics.map(metric => ({
-            ...metric,
-            net_sales: metric.net_sales || 0 // Ensure net_sales is included
-        })) || [];
+        const formattedStaticExpenses = {
+            cogs_percentage: staticExpenses?.cogs_percentage || 0,
+            shipping_cost_per_order: staticExpenses?.shipping_cost_per_order || 0,
+            transaction_cost_percentage: staticExpenses?.transaction_cost_percentage || 0,
+            marketing_bureau_cost: staticExpenses?.marketing_bureau_cost || 0,
+            marketing_tooling_cost: staticExpenses?.marketing_tooling_cost || 0,
+            fixed_expenses: staticExpenses?.fixed_expenses || 0,
+        };
 
-        console.log(`[P&L] Fetched ${metrics_by_date.length} days of initial data for ${customerId}`);
+        console.log("Formatted Static Expenses:", formattedStaticExpenses);
+
+        // Merge all data sources (use salesData from the result)
+        const metrics_by_date = mergePnLData(salesResult.salesData, facebookAdsData, googleAdsData);
+
+        console.log(`[PnL Dashboard] Fetched ${metrics_by_date.length} days of initial data for ${customerId}`);
 
         return (
             <PnLDashboard
                 customerId={customerId}
                 customerName={customerName}
                 customerValutaCode={customerValutaCode}
-                initialData={{ metrics_by_date, staticExpenses }}
                 customerRevenueType={customerRevenueType}
+                initialData={{
+                    metrics_by_date: metrics_by_date || [],
+                    staticExpenses: formattedStaticExpenses // Pass formatted static expenses
+                }}
             />
         );
     } catch (error) {
-        console.error("P&L Dashboard error:", error.message, error.stack);
-        return <div>Error: Failed to load P&L dashboard - {error.message}</div>;
+        console.error("PnL Dashboard error:", error.message, error.stack);
+        return <div>Error: Failed to load PnL Dashboard - {error.message}</div>;
     }
 }

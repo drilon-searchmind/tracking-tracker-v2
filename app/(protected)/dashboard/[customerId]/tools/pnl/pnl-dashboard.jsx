@@ -35,12 +35,7 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     if (convertedRow.net_sales !== undefined && convertedRow.net_sales !== null) {
         convertedRow.net_sales = convertCurrency(convertedRow.net_sales, fromCurrency);
     }
-
-    // Convert marketing_spend_google field
-    if (convertedRow.marketing_spend_google !== undefined && convertedRow.marketing_spend_google !== null) {
-        convertedRow.marketing_spend_google = convertCurrency(convertedRow.marketing_spend_google, fromCurrency);
-    }
-
+    
     return convertedRow;
 };
 

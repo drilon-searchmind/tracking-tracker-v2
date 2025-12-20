@@ -31,7 +31,7 @@ const convertCurrency = (amount, fromCurrency, toCurrency = "DKK") => {
 const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
     if (fromCurrency === "DKK" || !shouldConvertCurrency) return row;
 
-    const revenueFields = ['revenue', 'revenue_ex_tax', 'net_sales', 'ppc_cost'];
+    const revenueFields = ['revenue', 'revenue_ex_tax', 'net_sales',];
     const convertedRow = { ...row };
 
     revenueFields.forEach(field => {

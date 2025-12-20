@@ -56,17 +56,6 @@ const convertDataRow = (row, fromCurrency, shouldConvertCurrency) => {
         convertedRow.revenue = convertCurrency(convertedRow.revenue, fromCurrency);
     }
 
-    // Convert google ad spend
-    if (convertedRow.ad_spend_google !== undefined && convertedRow.ad_spend_google !== null) {
-        convertedRow.ad_spend_google = convertCurrency(convertedRow.ad_spend_google, fromCurrency);
-    }
-
-    // ad_spend_fb remains unchanged
-    convertedRow.ad_spend_fb = row.ad_spend_fb;
-
-    // Calculate total ad_spend
-    convertedRow.ad_spend = (convertedRow.ad_spend_google || 0) + (convertedRow.ad_spend_fb || 0);
-
     return convertedRow;
 };
 
